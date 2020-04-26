@@ -211,8 +211,6 @@ function pushNewComponent(data) {
 
 const tablename = location.pathname.split("/")[2];
 const myself = Math.floor(Math.random() * 1000000);
-const heading = el("h1", "you are " + getPlayer());
-mount(document.body, heading);
 const container = el("div.container");
 mount(document.body, container);
 const table = new Table();
@@ -221,6 +219,7 @@ mount(container, el("div.table_container", [ table.el ]));
 
 const menu = el("div.menu", { style: { textAlign: "right" } },
     [
+        el("div", "you are " + getPlayer()),
         "Menu",
         el("br"),
         el("a", { href: "/export?tablename=" + tablename }, "Export Table"),

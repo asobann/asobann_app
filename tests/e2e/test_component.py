@@ -65,6 +65,6 @@ def test_put_cards_in_hand(server, browser: webdriver.Firefox, another_browser: 
     WebDriverWait(another_browser, 5).until(
         expected_conditions.presence_of_element_located((By.CSS_SELECTOR, "div.component:nth-of-type(5)")))
     card_on_another = another_browser.find_element_by_css_selector(".component:nth-of-type(3)")
-    assert {'left': 64, 'top': 520} == compo_pos(another_browser, card_on_another)
+    card_pos_before_drag = compo_pos(another_browser, card_on_another)
     ActionChains(another_browser).move_to_element(card_on_another).click_and_hold().move_by_offset(50, 50).perform()
-    assert {'left': 64, 'top': 520} == compo_pos(another_browser, card_on_another), "not moved"
+    assert card_pos_before_drag == compo_pos(another_browser, card_on_another), "not moved"
