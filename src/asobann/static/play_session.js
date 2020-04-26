@@ -149,10 +149,10 @@ function showImport(ev) {
             ]
         )
     );
-    mount(document.body, importEl);
+    mount(menu, importEl);
 
     function hideImport() {
-        unmount(document.body, importEl);
+        unmount(menu, importEl);
     }
 }
 
