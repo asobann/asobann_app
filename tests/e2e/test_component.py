@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
 from selenium.common.exceptions import NoSuchElementException
+from .helper import compo_pos
 
 
 def rect(element):
@@ -35,7 +36,7 @@ def test_move_hand_area(server, browser: webdriver.Firefox):
     hand_area = browser.find_element_by_css_selector(".component:nth-of-type(5)")
     assert "test-player-A's hand" in hand_area.text
     ActionChains(browser).move_to_element(hand_area).click_and_hold().move_by_offset(0, 200).release().perform()
-    assert {'x': 214, 'y': 345} == hand_area.location
+    assert {'left': 64, 'top': 264} == compo_pos(browser, hand_area)
     ActionChains(browser).move_to_element(hand_area).move_by_offset(hand_area.size["width"] / 2 - 1, hand_area.size[
         "height"] / 2 - 1).click_and_hold().move_by_offset(100, 30).release().perform()
     assert {'width': 422, 'height': 96} == hand_area.size
@@ -64,6 +65,6 @@ def test_put_cards_in_hand(server, browser: webdriver.Firefox, another_browser: 
     WebDriverWait(another_browser, 5).until(
         expected_conditions.presence_of_element_located((By.CSS_SELECTOR, "div.component:nth-of-type(5)")))
     card_on_another = another_browser.find_element_by_css_selector(".component:nth-of-type(3)")
-    assert {'x': 214, 'y': 601} == card_on_another.location
+    assert {'left': 64, 'top': 520} == compo_pos(another_browser, card_on_another)
     ActionChains(another_browser).move_to_element(card_on_another).click_and_hold().move_by_offset(50, 50).perform()
-    assert {'x': 214, 'y': 601} == card_on_another.location, "not moved"
+    assert {'left': 64, 'top': 520} == compo_pos(another_browser, card_on_another), "not moved"
