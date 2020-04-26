@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='game.css') }}">
+</head>
+
+<body>
+<h1>play card game</h1>
+<form action="/join_session" method="POST">
+  <div>
+    <label for="tablename">enter key to join, empty to create new</label>
+    <input id="tablename" name="tablename">
+  </div>
+  <div>
+    <label for="player">your name</label>
+    <input id="player" name="player" value="player-{{ default_player_name }}">
+    <label for="observer">observer</label>
+    <input id="observer" name="observer" type="checkbox" disabled="true">
+  </div>
+  <input type="submit">
+</form>
+</body>
+</html>
