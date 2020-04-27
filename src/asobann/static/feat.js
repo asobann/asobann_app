@@ -41,7 +41,16 @@ const draggability = {
         });
 
         function getOverlappingHandArea(component) {
-            const rect = component.el.getBoundingClientRect();
+            const rect = {
+                top: parseFloat(component.el.style.top),
+                left: parseFloat(component.el.style.left),
+                bottom: parseFloat(component.el.style.top) + parseFloat(component.el.style.height),
+                right: parseFloat(component.el.style.left) + parseFloat(component.el.style.width),
+                height: parseFloat(component.el.style.height),
+                width: parseFloat(component.el.style.width),
+            };
+
+
             for (const target of draggability.tableData) {
                 if (target.handArea) {
                     const targetLeft = parseFloat(target.left);
