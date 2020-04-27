@@ -180,13 +180,12 @@ function getPlayer() {
 
 
 const tablename = location.pathname.split("/")[2];
-const myself = Math.floor(Math.random() * 1000000);
 const container = el("div.container");
 mount(document.body, container);
 const table = new Table();
 mount(container, el("div.table_container", [table.el]));
 
-setTableContext(tablename, getPlayer, initializeTable, myself, update_single_component, update_whole_table);
+setTableContext(tablename, getPlayer, initializeTable, update_single_component, update_whole_table);
 
 
 const menu = el("div.menu", { style: { textAlign: "right" } },

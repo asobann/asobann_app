@@ -1,13 +1,16 @@
 const socket = io();
 console.log(socket);
 
-const context = {};
+const context = {
+    client_connection_id: 'xxxxxxxxxxxx'.replace(/[x]/g, function(c) {
+        return (Math.random() * 16 | 0).toString(16);
+    }),
+};
 
-function setTableContext(tablename, getPlayer, initializeTable, myself, update_single_component, update_whole_table) {
+function setTableContext(tablename, getPlayer, initializeTable, update_single_component, update_whole_table) {
     context.tablename = tablename;
     context.getPlayer = getPlayer;
     context.initializeTable = initializeTable;
-    context.myself = myself;
     context.update_single_component = update_single_component;
     context.update_whole_table = update_whole_table;
 }
@@ -24,7 +27,7 @@ socket.on("update table", (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
     }
-    if (msg.originator === context.myself) {
+    if (msg.originator === context.client_connection_id) {
         return;
     }
     context.update_single_component(msg.index, msg.diff);
@@ -45,7 +48,7 @@ function pushUpdate(table, index, diff) {
     table.update(oldData);
     socket.emit("update table", {
         tablename: context.tablename,
-        originator: context.myself,
+        originator: context.client_connection_id,
         index: index,
         diff: diff,
     })
@@ -54,7 +57,7 @@ function pushUpdate(table, index, diff) {
 function pushNewComponent(data) {
     socket.emit("add component", {
         tablename: context.tablename,
-        originator: context.myself,
+        originator: context.client_connection_id,
         data: data,
     })
 }
