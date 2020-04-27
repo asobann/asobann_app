@@ -53,7 +53,7 @@ def create_app(test_config=None):
     def join_session():
         tablename = request.form.get("tablename")
         if not tablename:
-            tablename = str(random.randint(0, 9999))
+            tablename = str(random.randint(0, 9999)) + ''.join([random.choice('abddefghijklmnopqrstuvwxyz') for i in range(3)])
         player = request.form.get("player")
         response = make_response(redirect(url_for('.play_session', tablename=tablename)))
         response.set_cookie('player', player)
