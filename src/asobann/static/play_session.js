@@ -1,25 +1,8 @@
 import {el, mount, unmount, list, setStyle, setAttr} from "./redom.es.js";
 import {draggability, flippability, resizability} from "./feat.js";
-import {socket} from "./collaboration.js";
+import {socket, setTableContext} from "./sync_table.js";
 
-console.log(socket);
-socket.on('connect', () => {
-    socket.emit('join', { tablename: tablename, player: getPlayer() });
-});
-socket.on("initialize table", (msg) => {
-    initializeTable(msg);
-});
-socket.on("update table", (msg) => {
-    if (msg.tablename !== tablename) {
-        return;
-    }
-    if (msg.originator === myself) {
-        return;
-    }
-    const oldData = table.data;
-    Object.assign(oldData[msg.index], msg.diff);
-    table.update(oldData);
-});
+
 socket.on("refresh table", (msg) => {
     console.log("event received: refresh table");
     if (msg.tablename !== tablename) {
@@ -137,6 +120,12 @@ class Table {
     }
 }
 
+function update_single_component(index, diff) {
+    const oldData = table.data;
+    Object.assign(oldData[index], diff);
+    table.update(oldData);
+}
+
 
 function showImport(ev) {
     const importEl = el("div",
@@ -219,6 +208,8 @@ const container = el("div.container");
 mount(document.body, container);
 const table = new Table();
 mount(container, el("div.table_container", [ table.el ]));
+
+setTableContext(tablename, getPlayer, initializeTable, myself, table, update_single_component);
 
 
 const menu = el("div.menu", { style: { textAlign: "right" } },
