@@ -3,14 +3,6 @@ import {draggability, flippability, resizability} from "./feat.js";
 import {socket, setTableContext} from "./sync_table.js";
 
 
-socket.on("refresh table", (msg) => {
-    console.log("event received: refresh table");
-    if (msg.tablename !== tablename) {
-        return;
-    }
-    table.update(msg.table);
-});
-
 
 class Component {
     constructor() {
@@ -126,6 +118,10 @@ function update_single_component(index, diff) {
     table.update(oldData);
 }
 
+function update_whole_table(data) {
+    table.update(data);
+}
+
 
 function showImport(ev) {
     const importEl = el("div",
@@ -209,7 +205,7 @@ mount(document.body, container);
 const table = new Table();
 mount(container, el("div.table_container", [ table.el ]));
 
-setTableContext(tablename, getPlayer, initializeTable, myself, table, update_single_component);
+setTableContext(tablename, getPlayer, initializeTable, myself, update_single_component, update_whole_table);
 
 
 const menu = el("div.menu", { style: { textAlign: "right" } },
