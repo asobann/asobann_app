@@ -156,6 +156,24 @@ function showImport(ev) {
     }
 }
 
+function addHandArea() {
+    const newComponent = {
+        name: getPlayer() + "'s hand",
+        handArea: true,
+        owner: getPlayer(),
+        top: "64px",
+        left: "64px",
+        width: "320px",
+        height: "64px",
+        draggable: true,
+        flippable: false,
+        resizable: true,
+        ownable: false,
+        zIndex: maxZIndex + 1,
+    };
+    pushNewComponent(newComponent);
+}
+
 function initializeTable(tableData) {
     console.log("initializeTable");
     console.log("components: ", tableData);
@@ -166,22 +184,8 @@ function initializeTable(tableData) {
             break;
         }
     }
-    if (!found) {
-        const newComponent = {
-            name: getPlayer() + "'s hand",
-            handArea: true,
-            owner: getPlayer(),
-            top: "64px",
-            left: "64px",
-            width: "320px",
-            height: "64px",
-            draggable: true,
-            flippable: false,
-            resizable: true,
-            ownable: false,
-            zIndex: maxZIndex + 1,
-        };
-        pushNewComponent(newComponent);
+    if(!found) {
+        addHandArea();
         return;  // let refresh table event to add actual component
     }
     table.update(tableData);
