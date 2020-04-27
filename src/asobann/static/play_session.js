@@ -1,7 +1,7 @@
 import {el, mount, unmount, list, setStyle, setAttr} from "./redom.es.js";
 import {draggability, flippability, resizability} from "./feat.js";
+import {socket} from "./collaboration.js";
 
-const socket = io();
 console.log(socket);
 socket.on('connect', () => {
     socket.emit('join', { tablename: tablename, player: getPlayer() });
