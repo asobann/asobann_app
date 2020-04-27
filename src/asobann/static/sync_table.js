@@ -39,4 +39,24 @@ socket.on("refresh table", (msg) => {
 });
 
 
-export {socket, setTableContext};
+function pushUpdate(table, index, diff) {
+    const oldData = table.data;
+    Object.assign(oldData[index], diff);
+    table.update(oldData);
+    socket.emit("update table", {
+        tablename: context.tablename,
+        originator: context.myself,
+        index: index,
+        diff: diff,
+    })
+}
+
+function pushNewComponent(data) {
+    socket.emit("add component", {
+        tablename: context.tablename,
+        originator: context.myself,
+        data: data,
+    })
+}
+
+export {setTableContext, pushUpdate, pushNewComponent};

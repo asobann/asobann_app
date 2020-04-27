@@ -1,7 +1,6 @@
 import {el, mount, unmount, list, setStyle, setAttr} from "./redom.es.js";
 import {draggability, flippability, resizability} from "./feat.js";
-import {socket, setTableContext} from "./sync_table.js";
-
+import {setTableContext, pushUpdate, pushNewComponent} from "./sync_table.js";
 
 
 class Component {
@@ -17,15 +16,15 @@ class Component {
             maxZIndex += 1;
             this.zIndex = maxZIndex;
             setStyle(this.el, { zIndex: maxZIndex });
-            this.pushUpdate({ zIndex: this.zIndex });
+            this.propagate({ zIndex: this.zIndex });
         });
     }
 
     update(data, index, allData, context) {
         this.index = index;
-        if(data == null) {
+        if (data == null) {
             // this component is removed
-            setStyle({display: "none"});
+            setStyle({ display: "none" });
             return;
         }
         if (data.showImage) {
@@ -69,16 +68,8 @@ class Component {
         });
     }
 
-    pushUpdate(diff) {
-        const oldData = table.data;
-        Object.assign(oldData[this.index], diff);
-        table.update(oldData);
-        socket.emit("update table", {
-            tablename: tablename,
-            originator: myself,
-            index: this.index,
-            diff: diff,
-        })
+    propagate(diff) {
+        pushUpdate(table, this.index, diff);
     }
 }
 
@@ -169,7 +160,7 @@ function initializeTable(tableData) {
             break;
         }
     }
-    if(!found) {
+    if (!found) {
         addHandArea();
         return;  // let refresh table event to add actual component
     }
@@ -188,22 +179,12 @@ function getPlayer() {
 }
 
 
-function pushNewComponent(data) {
-    socket.emit("add component", {
-        tablename: tablename,
-        originator: myself,
-        data: data,
-    })
-}
-
-
-
 const tablename = location.pathname.split("/")[2];
 const myself = Math.floor(Math.random() * 1000000);
 const container = el("div.container");
 mount(document.body, container);
 const table = new Table();
-mount(container, el("div.table_container", [ table.el ]));
+mount(container, el("div.table_container", [table.el]));
 
 setTableContext(tablename, getPlayer, initializeTable, myself, update_single_component, update_whole_table);
 

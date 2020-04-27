@@ -15,7 +15,7 @@ const draggability = {
                     }
                     let top = parseFloat(component.el.style.top) + event.dy;
                     let left = parseFloat(component.el.style.left) + event.dx;
-                    component.pushUpdate({ top: top + "px", left: left + "px" });
+                    component.propagate({ top: top + "px", left: left + "px" });
                 },
                 end() {
                     if (!isDraggingPermitted()) {
@@ -28,12 +28,12 @@ const draggability = {
                     if (handArea) {
                         if (!(component.owner === handArea.owner)) {
                             component.owner = handArea.owner;
-                            component.pushUpdate({ owner: component.owner });
+                            component.propagate({ owner: component.owner });
                         }
                     } else {
                         if (component.owner) {
                             component.owner = null;
-                            component.pushUpdate({ owner: component.owner });
+                            component.propagate({ owner: component.owner });
                         }
                     }
                 }
@@ -103,7 +103,7 @@ const flippability = {
                 diff.faceup = component.faceup = true;
                 setAttr(component.image, { src: component.faceupImage });
             }
-            component.pushUpdate(diff);
+            component.propagate(diff);
         });
     },
     enabled: function (component, data) {
@@ -155,7 +155,7 @@ const resizability = {
                 let left = parseFloat(component.el.style.left) + event.deltaRect.left;
                 let width = parseFloat(component.el.style.width) + event.deltaRect.width;
                 let height = parseFloat(component.el.style.height) + event.deltaRect.height;
-                component.pushUpdate({ top: top, left: left, width: width, height: height });
+                component.propagate({ top: top, left: left, width: width, height: height });
             },
         })
     },
