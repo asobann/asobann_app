@@ -103,15 +103,34 @@ class Table {
     }
 }
 
-function update_single_component(index, diff) {
-    const oldData = table.data;
-    Object.assign(oldData[index], diff);
-    table.update(oldData);
-}
+const sync_table_connector = {
+    initializeTable: function (tableData) {
+        console.log("initializeTable");
+        console.log("components: ", tableData);
+        let found = false;
+        for (const cmp of tableData) {
+            if (cmp.handArea && cmp.owner === getPlayer()) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            addHandArea();
+            return;  // let refresh table event to add actual component
+        }
+        table.update(tableData);
+    },
 
-function update_whole_table(data) {
-    table.update(data);
-}
+    update_single_component: function (index, diff) {
+        const oldData = table.data;
+        Object.assign(oldData[index], diff);
+        table.update(oldData);
+    },
+
+    update_whole_table: function (data) {
+        table.update(data);
+    },
+};
 
 
 function showImport(ev) {
@@ -150,24 +169,6 @@ function addHandArea() {
     pushNewComponent(newComponent);
 }
 
-function initializeTable(tableData) {
-    console.log("initializeTable");
-    console.log("components: ", tableData);
-    let found = false;
-    for (const cmp of tableData) {
-        if (cmp.handArea && cmp.owner === getPlayer()) {
-            found = true;
-            break;
-        }
-    }
-    if (!found) {
-        addHandArea();
-        return;  // let refresh table event to add actual component
-    }
-    table.update(tableData);
-}
-
-
 function getPlayer() {
     for (const c of document.cookie.split(';')) {
         const ar = c.split("=");
@@ -185,7 +186,7 @@ mount(document.body, container);
 const table = new Table();
 mount(container, el("div.table_container", [table.el]));
 
-setTableContext(tablename, getPlayer, initializeTable, update_single_component, update_whole_table);
+setTableContext(tablename, getPlayer, sync_table_connector);
 
 
 const menu = el("div.menu", { style: { textAlign: "right" } },

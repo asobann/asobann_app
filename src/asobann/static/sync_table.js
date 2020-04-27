@@ -7,12 +7,12 @@ const context = {
     }),
 };
 
-function setTableContext(tablename, getPlayer, initializeTable, update_single_component, update_whole_table) {
+function setTableContext(tablename, getPlayer, connector) {
     context.tablename = tablename;
     context.getPlayer = getPlayer;
-    context.initializeTable = initializeTable;
-    context.update_single_component = update_single_component;
-    context.update_whole_table = update_whole_table;
+    context.initializeTable = connector.initializeTable;
+    context.update_single_component = connector.update_single_component;
+    context.update_whole_table = connector.update_whole_table;
 }
 
 socket.on("initialize table", (msg) => {
