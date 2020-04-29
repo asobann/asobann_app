@@ -18,37 +18,28 @@ TOP = "http://localhost:10011/"
 
 
 def test_golden_path(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
-    browser.get(TOP)
+    host = GameHelper(browser)
+    host.go(TOP)
 
     # index
-    assert "play card game" in browser.find_element_by_tag_name("body").text
-    browser.find_element_by_name("player").clear()
-    browser.find_element_by_name("player").send_keys("test-player-A")
-    browser.find_element_by_tag_name("form").submit()
-
-    # creating and joining new game
-    WebDriverWait(browser, 5).until(
-        expected_conditions.text_to_be_present_in_element((By.TAG_NAME, "body"), "you are test-player-A"))
     WebDriverWait(browser, 5).until(
         expected_conditions.presence_of_element_located((By.CSS_SELECTOR, "div.table")))
 
     # handle cards
-    card = browser.find_element_by_css_selector(".component:nth-of-type(3)")
-    assert Rect(left=150, top=175) == compo_pos(browser, card)
-    ActionChains(browser).move_to_element(card).move_by_offset(10, 10).click_and_hold().move_by_offset(300,
-                                                                                                       50).release().perform()
-    assert Rect(left=450, top=225) == compo_pos(browser, card)
-    assert "voice_back.png" in card.find_element_by_tag_name('img').get_attribute('src')
-    ActionChains(browser).double_click(card).perform()
-    assert "v02.jpg" in card.find_element_by_tag_name('img').get_attribute('src')
+    card = host.components(3)
+    assert Rect(left=150, top=175) == card.pos()
+    host.drag(card, x=300, y=50)
+    assert Rect(left=450, top=225) == card.pos()
+    assert "voice_back.png" in card.element.find_element_by_tag_name('img').get_attribute('src')
+    host.double_click(card)
+    assert "v02.jpg" in card.element.find_element_by_tag_name('img').get_attribute('src')
 
     # open another browser and see the same cards
-    another_browser.get(browser.current_url)
-    WebDriverWait(another_browser, 5).until(
-        expected_conditions.presence_of_element_located((By.CSS_SELECTOR, ".component:nth-of-type(3)")))
-    card_on_another_browser = another_browser.find_element_by_css_selector(".component:nth-of-type(3)")
-    assert Rect(left=450, top=225) == compo_pos(browser, card_on_another_browser)
-    assert "v02.jpg" in card_on_another_browser.find_element_by_tag_name('img').get_attribute('src')
+    another = GameHelper(another_browser)
+    another.go(browser.current_url)
+    card_on_another_browser = another.components(3)
+    assert Rect(left=450, top=225) == card_on_another_browser.pos()
+    assert "v02.jpg" in card_on_another_browser.element.find_element_by_tag_name('img').get_attribute('src')
 
 
 class GameHelper:
@@ -67,6 +58,15 @@ class GameHelper:
         except TimeoutException:
             pass
         assert False, f'text "{text}" cannot be found (timeout)'
+
+    def should_have_element(self, css_locator):
+        try:
+            WebDriverWait(self.browser, 5).until(
+                expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css_locator)))
+            return
+        except TimeoutException:
+            pass
+        assert False, f'element located by css locator "{css_locator}" cannot be found (timeout)'
 
     def components(self, nth):
         locator = f".component:nth-of-type({nth})"
