@@ -11,4 +11,5 @@ def client():
 
 def test_index(client):
     resp = client.get('/')
-    assert resp.status == "200 OK"
+    assert "302 FOUND" == resp.status
+    assert "http://localhost/tables/" in resp.headers["Location"]

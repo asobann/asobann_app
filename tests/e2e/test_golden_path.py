@@ -2,6 +2,8 @@ import pytest
 
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.remote.webelement import WebElement
+
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import Select
 
@@ -60,24 +62,27 @@ class GameHelper:
     def should_have_text(self, text):
         try:
             WebDriverWait(self.browser, 5).until(
-                expected_conditions.text_to_be_present_in_element((By.TAG_NAME, "body"), "text"))
+                expected_conditions.text_to_be_present_in_element((By.TAG_NAME, "body"), text))
             return
         except TimeoutException:
             pass
         assert False, f'text "{text}" cannot be found (timeout)'
 
     def components(self, nth):
-        return self.browser.find_element_by_css_selector(f".component:nth-of-type({nth})")
+        locator = f".component:nth-of-type({nth})"
+        WebDriverWait(self.browser, 5).until(
+            expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, locator)))
+        return Component(helper=self, element=self.browser.find_element_by_css_selector(locator))
 
-    def drag(self, component, x, y):
-        ActionChains(self.browser).move_to_element(component).click_and_hold().move_by_offset(x, y).release().perform()
+    def drag(self, component: "Component", x, y):
+        ActionChains(self.browser).move_to_element(component.element).click_and_hold().move_by_offset(x, y).release().perform()
 
-    def double_click(self, component):
-        ActionChains(self.browser).double_click(component).perform()
+    def double_click(self, component: "Component"):
+        ActionChains(self.browser).double_click(component.element).perform()
 
 
 class Component:
-    def __init__(self, helper: GameHelper, element):
+    def __init__(self, helper: GameHelper, element: WebElement):
         self.helper = helper
         self.element = element
 
@@ -85,6 +90,10 @@ class Component:
         return compo_pos(self.helper.browser, self.element)
 
     def face(self):
+        if self.element.find_element_by_tag_name('img'):
+            image_url = self.element.find_element_by_tag_name('img').get_attribute('src')
+            return f"image_url : {image_url}"
+
         return "not implemented"
 
 
@@ -92,10 +101,10 @@ def test_table_host(server, browser: webdriver.Firefox):
     host = GameHelper(browser)
     host.go(TOP)
 
-    host.should_have_text("your are host")
+    host.should_have_text("you are host")
 
     # host can move cards
-    card = host.components(nth=2)
+    card = host.components(nth=4)
     card_pos = card.pos()
     host.drag(card, x=200, y=50)
     assert card_pos.left + 200 == card.pos().left and  card_pos.top + 50 == card.pos().top

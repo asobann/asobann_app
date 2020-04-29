@@ -42,7 +42,7 @@ socket.on("refresh table", (msg) => {
 });
 
 
-function pushUpdate(table, index, diff) {
+function pushComponentUpdate(table, index, diff) {
     const oldData = table.data;
     Object.assign(oldData[index], diff);
     table.update(oldData);
@@ -62,4 +62,4 @@ function pushNewComponent(data) {
     })
 }
 
-export {setTableContext, pushUpdate, pushNewComponent};
+export {setTableContext, pushComponentUpdate, pushNewComponent};

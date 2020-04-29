@@ -46,21 +46,21 @@ def create_app(test_config=None):
 
     @app.route('/')
     def index():
-        default_player_name = "".join([random.choice(string.ascii_lowercase + string.digits) for i in range(6)])
-        return render_template('index.html', default_player_name=default_player_name)
-
-    @app.route('/join_session', methods=["POST"])
-    def join_session():
-        tablename = request.form.get("tablename")
-        if not tablename:
-            tablename = str(random.randint(0, 9999)) + ''.join([random.choice('abddefghijklmnopqrstuvwxyz') for i in range(3)])
-        player = request.form.get("player")
-        response = make_response(redirect(url_for('.play_session', tablename=tablename)))
-        response.set_cookie('player', player)
+        tablename = tables.generate_new_tablename()
+        response = make_response(redirect(url_for('.play_table', tablename=tablename)))
         return response
 
-    @app.route('/play_session/<tablename>')
-    def play_session(tablename):
+    # @app.route('/join_session', methods=["POST"])
+    # def join_session():
+    #     tablename = request.form.get("tablename")
+    #     if not tablename:
+    #         tablename = str(random.randint(0, 9999)) + ''.join([random.choice('abddefghijklmnopqrstuvwxyz') for i in range(3)])
+    #     player = request.form.get("player")
+    #     response = make_response(redirect(url_for('.play_session', tablename=tablename)))
+    #     return response
+
+    @app.route('/tables/<tablename>')
+    def play_table(tablename):
         return render_template('play_session.html')
 
     @app.route('/export', methods=["GET"])

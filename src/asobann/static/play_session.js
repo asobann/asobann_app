@@ -1,6 +1,6 @@
 import {el, mount, unmount, list, setStyle, setAttr} from "./redom.es.js";
 import {draggability, flippability, resizability} from "./feat.js";
-import {setTableContext, pushUpdate, pushNewComponent} from "./sync_table.js";
+import {setTableContext, pushComponentUpdate, pushNewComponent} from "./sync_table.js";
 
 
 class Component {
@@ -69,7 +69,7 @@ class Component {
     }
 
     propagate(diff) {
-        pushUpdate(table, this.index, diff);
+        pushComponentUpdate(table, this.index, diff);
     }
 }
 
@@ -108,7 +108,7 @@ const sync_table_connector = {
         console.log("initializeTable");
         console.log("components: ", tableData);
         let found = false;
-        for (const cmp of tableData) {
+        for (const cmp of tableData.components) {
             if (cmp.handArea && cmp.owner === getPlayer()) {
                 found = true;
                 break;
@@ -118,7 +118,7 @@ const sync_table_connector = {
             addHandArea();
             return;  // let refresh table event to add actual component
         }
-        table.update(tableData);
+        table.update(tableData.components);
     },
 
     update_single_component: function (index, diff) {
@@ -128,7 +128,7 @@ const sync_table_connector = {
     },
 
     update_whole_table: function (data) {
-        table.update(data);
+        table.update(data.components);
     },
 };
 
@@ -170,13 +170,7 @@ function addHandArea() {
 }
 
 function getPlayer() {
-    for (const c of document.cookie.split(';')) {
-        const ar = c.split("=");
-        if (ar[0] === 'player') {
-            return ar[1];
-        }
-    }
-    return "nobody";
+    return "host";
 }
 
 
