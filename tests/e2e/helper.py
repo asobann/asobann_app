@@ -10,6 +10,10 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
+
+TOP = "http://localhost:10011/"
+
+
 class GameHelper:
 
     def __init__(self, browser):
@@ -82,6 +86,9 @@ class Rect:
         self.width = width
 
     def __str__(self):
+        return f"Rect(top={self.top}, left={self.left}, bottom={self.bottom}, right={self.right}, height={self.height}, width={self.width})"
+
+    def __repr__(self):
         return f"Rect(top={self.top}, left={self.left}, bottom={self.bottom}, right={self.right}, height={self.height}, width={self.width})"
 
     def __eq__(self, other):

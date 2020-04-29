@@ -12,9 +12,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
-from .helper import compo_pos, Rect, GameHelper
+from .helper import compo_pos, Rect, GameHelper, TOP
 
-TOP = "http://localhost:10011/"
 
 
 def test_golden_path(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
