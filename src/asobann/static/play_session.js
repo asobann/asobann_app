@@ -113,17 +113,6 @@ const sync_table_connector = {
             joinTable("host", true);  // the first player is automatically becomes host
         }
 
-        // let found = false;
-        // for (const cmp of tableData.components) {
-        //     if (cmp.handArea && cmp.owner === getPlayer()) {
-        //         found = true;
-        //         break;
-        //     }
-        // }
-        // if (!found) {
-        //     addHandArea();
-        //     return;  // let refresh table event to add actual component
-        // }
         table.update(tableData.components);
     },
 
@@ -173,17 +162,22 @@ function addHandArea() {
         zIndex: maxZIndex + 1,
     };
     pushNewComponent(newComponent);
+    return false;
 }
 
+const SESSION_STORAGE_KEY = {
+    playerName: "asobann: player_name",
+};
+
 function getPlayer() {
-    if (sessionStorage.getItem("asobann: player")) {
-        return sessionStorage.getItem("asobann: player");
+    if (sessionStorage.getItem(SESSION_STORAGE_KEY.playerName)) {
+        return sessionStorage.getItem(SESSION_STORAGE_KEY.playerName);
     }
     return "nobody";
 }
 
 function setPlayer(player) {
-    sessionStorage.setItem("asobann: player", player);
+    sessionStorage.setItem(SESSION_STORAGE_KEY.playerName, player);
     menu.update({ player: player });
 }
 
@@ -199,16 +193,16 @@ setTableContext(tablename, getPlayer, setPlayer, sync_table_connector);
 class Menu {
     constructor(props) {
         this.playerNameEl = el("span", getPlayer());
-        this.el = el("div.menu", { style: { textAlign: "right" } },
+        this.el = el("div.menu",
             [
                 el("div", ["you are ", this.playerNameEl]),
                 "Menu",
-                el("br"),
-                el("a", { href: "/export?tablename=" + tablename }, "Export Table"),
-                el("br"),
-                el("a", { href: "#", onclick: showImport }, "Import Table"),
-                el("br"),
-                el("a", { href: "/" }, "Abandon Table"),
+                el("div.menuitem#add_hand_area",
+                    el("a", { href: "/", onclick: addHandArea }, "Add Hand Area")),
+                el("div.menuitem",
+                    el("a", { href: "/export?tablename=" + tablename }, "Export Table")),
+                el("div.menuitem",
+                    el("a", { href: "#", onclick: showImport }, "Import Table")),
             ],
         );
     }

@@ -50,3 +50,13 @@ body {
     width: 100%;
     height: 100%;
 }
+
+div.menu {
+    text-align: center;
+}
+
+div.menuitem {
+    display: block;
+    margin: 3px;
+    border: blue solid 1px;
+}

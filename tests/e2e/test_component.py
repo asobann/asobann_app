@@ -22,27 +22,27 @@ def rect(element):
     }
 
 
-def test_move_hand_area(server, browser: webdriver.Firefox):
+def test_add_and_move_hand_area(server, browser: webdriver.Firefox):
     host = GameHelper(browser)
     host.go(TOP)
 
-    # creating and joining new game
-    WebDriverWait(browser, 5).until(
-        expected_conditions.presence_of_element_located((By.CSS_SELECTOR, "div.component:nth-of-type(5)")))
+    host.should_have_text("you are host")
+    host.menu.add_my_hand_area.click()
 
     # move and resize hand area
-    hand_area = browser.find_element_by_css_selector(".component:nth-of-type(5)")
-    assert "nobody's hand" in hand_area.text
-    ActionChains(browser).move_to_element(hand_area).click_and_hold().move_by_offset(0, 200).release().perform()
-    assert Rect(left=64, top=264) == compo_pos(browser, hand_area)
-    ActionChains(browser).move_to_element(hand_area).move_by_offset(hand_area.size["width"] / 2 - 1, hand_area.size[
-        "height"] / 2 - 1).click_and_hold().move_by_offset(100, 30).release().perform()
-    assert {'width': 422, 'height': 96} == hand_area.size
+    hand_area = host.hand_area(owner="host")
+    host.drag(hand_area, 0, 200)
+    assert Rect(left=64, top=264) == hand_area.pos()
+    host.drag(hand_area, 200, 30, pos='lower right corner')
+    assert Rect(width=522, height=96) == hand_area.size()
 
 
 def test_put_cards_in_hand(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
     host = GameHelper(browser)
     host.go(TOP)
+
+    host.should_have_text("you are host")
+    host.menu.add_my_hand_area.click()
 
     # creating and joining new game
     WebDriverWait(browser, 5).until(
