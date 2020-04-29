@@ -175,18 +175,18 @@ function removeHandArea() {
 }
 
 const SESSION_STORAGE_KEY = {
-    playerName: "asobann: player_name",
+    playerName: "asobann: player_name: ",
 };
 
 function getPlayer() {
-    if (sessionStorage.getItem(SESSION_STORAGE_KEY.playerName)) {
-        return sessionStorage.getItem(SESSION_STORAGE_KEY.playerName);
+    if (sessionStorage.getItem(SESSION_STORAGE_KEY.playerName + tablename)) {
+        return sessionStorage.getItem(SESSION_STORAGE_KEY.playerName + tablename);
     }
     return "nobody";
 }
 
 function setPlayer(player) {
-    sessionStorage.setItem(SESSION_STORAGE_KEY.playerName, player);
+    sessionStorage.setItem(SESSION_STORAGE_KEY.playerName + tablename, player);
     menu.update({ player: player });
 }
 
