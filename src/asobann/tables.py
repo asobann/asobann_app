@@ -81,7 +81,7 @@ def create(tablename):
                 "zIndex": 4,
             },
         ],
-        "players": [],
+        "players": {},
     }
     tables.insert_one({"tablename": tablename, "table": table})
     return table

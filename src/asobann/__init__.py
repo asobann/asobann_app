@@ -7,7 +7,6 @@ import string
 
 from asobann import tables
 
-
 dictConfig({
     'version': 1,
     'formatters': {'default': {
@@ -81,20 +80,38 @@ def create_app(test_config=None):
         tables.store(tablename, table)
         return redirect(url_for('.play_session', tablename=tablename))
 
-    @app.socketio.on('join')
-    def handle_join(json):
-        app.logger.info(f'join: ${json}')
+    @app.socketio.on('come by table')
+    def handle_come_by_table(json):
+        app.logger.info(f'come by table: ${json}')
         table = tables.get(json["tablename"])
         if not table:
             table = tables.create(json["tablename"])
         join_room(json["tablename"])
-        emit("initialize table", table)
+        emit("load table", table)
 
-    @app.socketio.on("update table")
-    def handle_update_table(json):
+    @app.socketio.on('set player name')
+    def handle_set_player(json):
+        app.logger.info(f'set player: ${json}')
+        table = tables.get(json["tablename"])
+        if not table:
+            app.logger.error(f"table {json['tablename']} on set player")
+            return
+        player_name = json['player']['name']
+        if player_name in table["players"]:
+            emit("rejected player name", {"message": "duplicated"})
+            return
+        table["players"][player_name] = {
+            "name": player_name,
+            "isHost": json['player']['isHost'],
+        }
+        tables.store(json["tablename"], table)
+        emit("confirmed player name", {"player": {"name": player_name}})
+
+    @app.socketio.on("update single component")
+    def handle_update_single_component(json):
         app.logger.debug(f'update table: ${json}')
         tables.update_component(json["tablename"], json["index"], json["diff"])
-        emit("update table", json, broadcast=True, room=json["tablename"])
+        emit("update single component", json, broadcast=True, room=json["tablename"])
 
     @app.socketio.on("add component")
     def handle_add_component(json):
@@ -104,8 +121,3 @@ def create_app(test_config=None):
         emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
     return app
-
-
-
-
-

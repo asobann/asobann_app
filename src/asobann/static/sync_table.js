@@ -7,23 +7,24 @@ const context = {
     }),
 };
 
-function setTableContext(tablename, getPlayer, connector) {
+function setTableContext(tablename, getPlayer, setPlayer, connector) {
     context.tablename = tablename;
     context.getPlayer = getPlayer;
+    context.setPlayer = setPlayer;
     context.initializeTable = connector.initializeTable;
     context.update_single_component = connector.update_single_component;
     context.update_whole_table = connector.update_whole_table;
 }
 
-socket.on("initialize table", (msg) => {
+socket.on("load table", (msg) => {
     context.initializeTable(msg);
 });
 
 socket.on('connect', () => {
-    socket.emit('join', { tablename: context.tablename, player: context.getPlayer() });
+    socket.emit('come by table', { tablename: context.tablename });
 });
 
-socket.on("update table", (msg) => {
+socket.on("update single component", (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
     }
@@ -41,12 +42,16 @@ socket.on("refresh table", (msg) => {
     context.update_whole_table(msg.table);
 });
 
+socket.on("confirmed player name", (msg) => {
+    console.log("confirmed player name: ", msg);
+    context.setPlayer(msg.player.name);
+});
 
 function pushComponentUpdate(table, index, diff) {
     const oldData = table.data;
     Object.assign(oldData[index], diff);
     table.update(oldData);
-    socket.emit("update table", {
+    socket.emit("update single component", {
         tablename: context.tablename,
         originator: context.client_connection_id,
         index: index,
@@ -62,4 +67,14 @@ function pushNewComponent(data) {
     })
 }
 
-export {setTableContext, pushComponentUpdate, pushNewComponent};
+function joinTable(player, isHost) {
+    socket.emit("set player name", {
+        tablename: context.tablename,
+        player: {
+            name: player,
+            isHost: isHost,
+        },
+    });
+}
+
+export {setTableContext, pushComponentUpdate, pushNewComponent, joinTable};

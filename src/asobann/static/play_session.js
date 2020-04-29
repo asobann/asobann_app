@@ -1,6 +1,6 @@
 import {el, mount, unmount, list, setStyle, setAttr} from "./redom.es.js";
 import {draggability, flippability, resizability} from "./feat.js";
-import {setTableContext, pushComponentUpdate, pushNewComponent} from "./sync_table.js";
+import {setTableContext, pushComponentUpdate, pushNewComponent, joinTable} from "./sync_table.js";
 
 
 class Component {
@@ -106,22 +106,24 @@ class Table {
 const sync_table_connector = {
     initializeTable: function (tableData) {
         console.log("initializeTable");
-        console.log("components: ", tableData);
-        let found = false;
-        for (const cmp of tableData.components) {
-            if (cmp.handArea && cmp.owner === getPlayer()) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            addHandArea();
-            return;  // let refresh table event to add actual component
-        }
+        console.log("tableData: ", tableData);
         const players = tableData.players;
-        if(players.length == 0) {
-            setPlayer("host");  // the first player is automatically becomes host
+        console.log("players: ", players);
+        if (Object.keys(players) == 0) {
+            joinTable("host", true);  // the first player is automatically becomes host
         }
+
+        // let found = false;
+        // for (const cmp of tableData.components) {
+        //     if (cmp.handArea && cmp.owner === getPlayer()) {
+        //         found = true;
+        //         break;
+        //     }
+        // }
+        // if (!found) {
+        //     addHandArea();
+        //     return;  // let refresh table event to add actual component
+        // }
         table.update(tableData.components);
     },
 
@@ -174,7 +176,7 @@ function addHandArea() {
 }
 
 function getPlayer() {
-    if(sessionStorage.getItem("asobann: player")) {
+    if (sessionStorage.getItem("asobann: player")) {
         return sessionStorage.getItem("asobann: player");
     }
     return "nobody";
@@ -182,6 +184,7 @@ function getPlayer() {
 
 function setPlayer(player) {
     sessionStorage.setItem("asobann: player", player);
+    menu.update({ player: player });
 }
 
 
@@ -191,21 +194,31 @@ mount(document.body, container);
 const table = new Table();
 mount(container, el("div.table_container", [table.el]));
 
-setTableContext(tablename, getPlayer, sync_table_connector);
+setTableContext(tablename, getPlayer, setPlayer, sync_table_connector);
 
+class Menu {
+    constructor(props) {
+        this.playerNameEl = el("span", getPlayer());
+        this.el = el("div.menu", { style: { textAlign: "right" } },
+            [
+                el("div", ["you are ", this.playerNameEl]),
+                "Menu",
+                el("br"),
+                el("a", { href: "/export?tablename=" + tablename }, "Export Table"),
+                el("br"),
+                el("a", { href: "#", onclick: showImport }, "Import Table"),
+                el("br"),
+                el("a", { href: "/" }, "Abandon Table"),
+            ],
+        );
+    }
 
-const menu = el("div.menu", { style: { textAlign: "right" } },
-    [
-        el("div", "you are " + getPlayer()),
-        "Menu",
-        el("br"),
-        el("a", { href: "/export?tablename=" + tablename }, "Export Table"),
-        el("br"),
-        el("a", { href: "#", onclick: showImport }, "Import Table"),
-        el("br"),
-        el("a", { href: "/" }, "Abandon Table"),
-    ],
-);
-mount(container, menu);
+    update(data) {
+        this.playerNameEl.innerText = data.player;
+    }
+}
+
+const menu = new Menu();
+mount(container, menu.el);
 
 let maxZIndex = 0;
