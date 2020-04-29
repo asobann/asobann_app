@@ -118,6 +118,10 @@ const sync_table_connector = {
             addHandArea();
             return;  // let refresh table event to add actual component
         }
+        const players = tableData.players;
+        if(players.length == 0) {
+            setPlayer("host");  // the first player is automatically becomes host
+        }
         table.update(tableData.components);
     },
 
@@ -170,7 +174,14 @@ function addHandArea() {
 }
 
 function getPlayer() {
-    return "host";
+    if(sessionStorage.getItem("asobann: player")) {
+        return sessionStorage.getItem("asobann: player");
+    }
+    return "nobody";
+}
+
+function setPlayer(player) {
+    sessionStorage.setItem("asobann: player", player);
 }
 
 
