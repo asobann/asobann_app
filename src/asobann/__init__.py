@@ -120,4 +120,11 @@ def create_app(test_config=None):
         table = tables.get(json["tablename"])
         emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
+    @app.socketio.on("remove component")
+    def handle_remove_component(json):
+        app.logger.debug(f'remove component: ${json}')
+        tables.remove_component(json['tablename'], json['index'])
+        table = tables.get(json["tablename"])
+        emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
+
     return app

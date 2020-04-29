@@ -51,7 +51,7 @@ const draggability = {
             };
 
 
-            for (const target of draggability.tableData) {
+            for (const target of draggability.tableData.components) {
                 if (target.handArea) {
                     const targetLeft = parseFloat(target.left);
                     const targetTop = parseFloat(target.top);

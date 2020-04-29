@@ -110,6 +110,12 @@ def add_component(tablename, data):
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
 
 
+def remove_component(tablename, index):
+    table = get(tablename)
+    del table["components"][index]
+    tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
+
+
 def connect(mongo):
     global tables
     tables = mongo.db.tables

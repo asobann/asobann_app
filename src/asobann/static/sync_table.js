@@ -49,7 +49,7 @@ socket.on("confirmed player name", (msg) => {
 
 function pushComponentUpdate(table, index, diff) {
     const oldData = table.data;
-    Object.assign(oldData[index], diff);
+    Object.assign(oldData.components[index], diff);
     table.update(oldData);
     socket.emit("update single component", {
         tablename: context.tablename,
@@ -67,6 +67,14 @@ function pushNewComponent(data) {
     })
 }
 
+function pushRemoveComponent(index) {
+    socket.emit("remove component", {
+        tablename: context.tablename,
+        originator: context.client_connection_id,
+        index: index,
+    })
+}
+
 function joinTable(player, isHost) {
     socket.emit("set player name", {
         tablename: context.tablename,
@@ -77,4 +85,4 @@ function joinTable(player, isHost) {
     });
 }
 
-export {setTableContext, pushComponentUpdate, pushNewComponent, joinTable};
+export {setTableContext, pushComponentUpdate, pushNewComponent, pushRemoveComponent, joinTable};

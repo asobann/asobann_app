@@ -1,6 +1,6 @@
 import {el, mount, unmount, list, setStyle, setAttr} from "./redom.es.js";
 import {draggability, flippability, resizability} from "./feat.js";
-import {setTableContext, pushComponentUpdate, pushNewComponent, joinTable} from "./sync_table.js";
+import {setTableContext, pushComponentUpdate, pushNewComponent, pushRemoveComponent, joinTable} from "./sync_table.js";
 
 
 class Component {
@@ -22,11 +22,6 @@ class Component {
 
     update(data, index, allData, context) {
         this.index = index;
-        if (data == null) {
-            // this component is removed
-            setStyle({ display: "none" });
-            return;
-        }
         if (data.showImage) {
             if (this.image == null) {
                 this.image = el("img", { draggable: false });
@@ -77,7 +72,7 @@ class Table {
     constructor() {
         this.el = el("div.table");
         this.list = list(this.el, Component);
-        this.data = [];
+        this.data = {};
 
         interact("div.table").draggable({
             listeners: {
@@ -99,7 +94,7 @@ class Table {
         resizability.setContext(getPlayer(), data);
 
         this.data = data;
-        this.list.update(this.data);
+        this.list.update(this.data.components);
     }
 }
 
@@ -113,17 +108,20 @@ const sync_table_connector = {
             joinTable("host", true);  // the first player is automatically becomes host
         }
 
-        table.update(tableData.components);
+        table.update(tableData);
+        menu.update({})
     },
 
     update_single_component: function (index, diff) {
         const oldData = table.data;
-        Object.assign(oldData[index], diff);
+        Object.assign(oldData.components[index], diff);
         table.update(oldData);
+        menu.update({});
     },
 
     update_whole_table: function (data) {
-        table.update(data.components);
+        table.update(data);
+        menu.update({});
     },
 };
 
@@ -165,6 +163,17 @@ function addHandArea() {
     return false;
 }
 
+function removeHandArea() {
+    for (let i = 0; i < table.data.components.length; i++) {
+        const cmp = table.data.components[i];
+        if (cmp.handArea && cmp.owner === getPlayer()) {
+            pushRemoveComponent(i);
+            return false;
+        }
+    }
+    return false;
+}
+
 const SESSION_STORAGE_KEY = {
     playerName: "asobann: player_name",
 };
@@ -193,12 +202,17 @@ setTableContext(tablename, getPlayer, setPlayer, sync_table_connector);
 class Menu {
     constructor(props) {
         this.playerNameEl = el("span", getPlayer());
+        this.addHandAreaItem = el("div.menuitem#add_hand_area",
+            el("a", { href: "/", onclick: addHandArea }, "Add Hand Area"));
+        this.removeHandAreaItem = el("div.menuitem#remove_hand_area",
+            el("a", { href: "/", onclick: removeHandArea }, "Remove Hand Area"));
+
         this.el = el("div.menu",
             [
                 el("div", ["you are ", this.playerNameEl]),
                 "Menu",
-                el("div.menuitem#add_hand_area",
-                    el("a", { href: "/", onclick: addHandArea }, "Add Hand Area")),
+                this.addHandAreaItem,
+                this.removeHandAreaItem,
                 el("div.menuitem",
                     el("a", { href: "/export?tablename=" + tablename }, "Export Table")),
                 el("div.menuitem",
@@ -208,7 +222,28 @@ class Menu {
     }
 
     update(data) {
-        this.playerNameEl.innerText = data.player;
+        if (data.player) {
+            this.playerNameEl.innerText = data.player;
+        }
+
+        let found = false;
+        if (table.data.components) {
+            for (const cmp of table.data.components) {
+                if (cmp.handArea && cmp.owner === getPlayer()) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if (found) {
+            setStyle(this.addHandAreaItem, { display: 'none' });
+            setStyle(this.removeHandAreaItem, { display: null });
+        } else {
+            setStyle(this.addHandAreaItem, { display: null });
+            setStyle(this.removeHandAreaItem, { display: 'none' });
+        }
+
     }
 }
 
