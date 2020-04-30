@@ -28,7 +28,6 @@ body {
     grid-column: 1 / 2;
     background-color: cadetblue;
     background-image: url("./images/menu_bg.jpg");
-    background-size: contain;
 }
 
 .menuitem {
