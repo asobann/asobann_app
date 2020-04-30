@@ -237,7 +237,8 @@ const tablename = location.pathname.split("/")[2];
 const container = el("div.container");
 mount(document.body, container);
 const table = new Table();
-mount(container, el("div.table_container", [table.el]));
+const tableContainer = el("div.table_container", [table.el]);
+mount(container, tableContainer);
 
 const SESSION_STORAGE_KEY = {
     playerName: "asobann: " + tablename + ": playerName",
@@ -255,6 +256,9 @@ interact("div.table_container").draggable({
             left += event.dx;
             table.el.style.top = top + "px";
             table.el.style.left = left + "px";
+
+            tableContainer.style.backgroundPositionY = top + "px";
+            tableContainer.style.backgroundPositionX = left + "px";
         },
     },
 });
