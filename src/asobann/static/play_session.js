@@ -204,22 +204,37 @@ setTableContext(tablename, getPlayer, setPlayer, sync_table_connector);
 class Menu {
     constructor(props) {
         this.playerNameEl = el("span", getPlayer());
-        this.addHandAreaItem = el("div.menuitem#add_hand_area",
-            el("a", { href: "/", onclick: addHandArea }, "Add Hand Area"));
-        this.removeHandAreaItem = el("div.menuitem#remove_hand_area",
-            el("a", { href: "/", onclick: removeHandArea }, "Remove Hand Area"));
 
         this.el = el("div.menu",
             [
                 el("div.title", "asobann 遊盤"),
                 el("div", ["you are ", this.playerNameEl]),
-                "Menu",
-                this.addHandAreaItem,
-                this.removeHandAreaItem,
+                this.mmm = "Menu",
+                this.addHandAreaItem = el("div.menuitem#add_hand_area",
+                    el("a", { href: "", onclick: addHandArea }, "Add Hand Area")),
+                this.removeHandAreaItem = el("div.menuitem#remove_hand_area",
+                    el("a", { href: "", onclick: removeHandArea }, "Remove Hand Area")),
+                el("div.menuitem", [
+                    "Share URL for invitation",
+                    el("input#invitation_url", {
+                        value: location.href,
+                        readonly: true,
+                        onclick: (e) => {
+                            e.target.select();
+                        }
+                    }),
+                    el("a", {
+                        href: "", onclick: () => {
+                            document.querySelector('#invitation_url').select();
+                            document.execCommand('copy');
+                            return false;
+                        }
+                    }, "copy"),
+                ]),
                 el("div.menuitem",
                     el("a", { href: "/export?tablename=" + tablename }, "Export Table")),
                 el("div.menuitem",
-                    el("a", { href: "#", onclick: showImport }, "Import Table")),
+                    el("a", { href: "", onclick: showImport }, "Import Table")),
             ],
         );
     }
