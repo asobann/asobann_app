@@ -289,6 +289,7 @@ class Menu {
                             position: 'absolute',
                             top: '10%',
                             left: '30%',
+                            width: '40%',
                             textAlign: 'center',
                             fontSize: '200%',
                             color: 'lightgreen',
