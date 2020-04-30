@@ -39,7 +39,7 @@ def test_golden_path(server, browser: webdriver.Firefox, another_browser: webdri
     assert "v02.jpg" in card_on_another_browser.element.find_element_by_tag_name('img').get_attribute('src')
 
 
-def test_table_host(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+def test_table_host_invite_friend(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
     host = GameHelper(browser)
     host.go(TOP)
 
@@ -49,7 +49,8 @@ def test_table_host(server, browser: webdriver.Firefox, another_browser: webdriv
     card = host.components(nth=4)
     card_pos = card.pos()
     host.drag(card, x=200, y=50)
-    assert card_pos.left + 200 == card.pos().left and  card_pos.top + 50 == card.pos().top
+    card_pos_on_host = card.pos()
+    assert card_pos.left + 200 == card_pos_on_host.left and  card_pos.top + 50 == card_pos_on_host.top
     face = card.face()
     host.double_click(card)
     assert face != card.face()
@@ -65,19 +66,20 @@ def test_table_host(server, browser: webdriver.Firefox, another_browser: webdriv
     player.should_have_text("you are observing")
 
     # new player cannot move cards before joining
-    card = player.components(nth=4)
-    card_pos = card.pos()
-    player.drag(card, x=200, y=50)
-    assert card_pos == card.pos(), "not moved"
+    players_card = player.components(nth=4)
+    players_card_pos = players_card.pos()
+    player.drag(players_card, x=200, y=50)
+    assert players_card_pos == players_card.pos(), "not moved"
 
     # new player name herself and join
     player.menu.join("Player A")
     player.should_have_text("you are Player A")
 
     # now new player can move cards
-    card_pos = card.pos()
-    player.drag(card, x=200, y=50)
-    assert card_pos != card.pos(), "moved"
+    players_card_pos = players_card.pos()
+    assert card_pos_on_host == players_card_pos, "seeing same table"
+    player.drag(players_card, x=200, y=50)
+    assert players_card_pos != players_card.pos(), "moved"
 
 
 if __name__ == '__main__':
