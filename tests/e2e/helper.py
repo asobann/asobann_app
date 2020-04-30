@@ -47,6 +47,7 @@ class GameMenu:
     def join(self, player_name):
         input_element = self.browser.find_element_by_css_selector("input#player_name")
         join_button = self.browser.find_element_by_css_selector("button#join_button")
+        input_element.clear()
         ActionChains(self.browser).click(input_element).send_keys(player_name).click(join_button).perform()
 
 
