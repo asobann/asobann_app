@@ -21,7 +21,7 @@ const draggability = {
                     if (!isDraggingPermitted()) {
                         return;
                     }
-                    if(!component.ownable) {
+                    if (!component.ownable) {
                         return;
                     }
                     const handArea = getOverlappingHandArea(component);
@@ -108,22 +108,25 @@ const flippability = {
         component.faceup = data.faceup;
         if (component.faceup) {
             if (!component.owner || component.owner === featsContext.playerName) {
-                if(data.showImage) {
+                if (data.showImage) {
                     setAttr(component.image, { src: data.faceupImage });
-                } else {
+                }
+                if (data.faceupText) {
                     component.textEl.innerText = data.faceupText;
                 }
             } else {
-                if(data.showImage) {
+                if (data.showImage) {
                     setAttr(component.image, { src: data.facedownImage });
-                } else {
+                }
+                if (data.facedownText) {
                     component.textEl.innerText = data.facedownText;
                 }
             }
         } else {
-            if(data.showImage) {
+            if (data.showImage) {
                 setAttr(component.image, { src: data.facedownImage });
-            } else {
+            }
+            if (data.faceupText) {
                 component.textEl.innerText = data.facedownText;
             }
         }
@@ -138,6 +141,7 @@ const resizability = {
         function isResizingPermitted() {
             return component.resizable && featsContext.canOperateOn(component);
         }
+
         interact(component.el).resizable({
             edges: {
                 top: true,
@@ -168,11 +172,12 @@ const resizability = {
 };
 
 const featsContext = {
-    canOperateOn: function(component) {
+    canOperateOn: function (component) {
         return ((!component.owner || component.owner === featsContext.playerName)
-             && !featsContext.isPlayerObserver);
+            && !featsContext.isPlayerObserver);
     }
 };
+
 function setFeatsContext(playerName, isPlayerObserver, tableData) {
     featsContext.playerName = playerName;
     featsContext.isPlayerObserver = isPlayerObserver;

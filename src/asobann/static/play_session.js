@@ -14,7 +14,7 @@ class Component {
         resizability.add(this);
 
         this.el.addEventListener("mousedown", (ev) => {
-            if(isPlayerObserver()) {
+            if (isPlayerObserver()) {
                 return;
             }
             maxZIndex += 1;
@@ -34,13 +34,19 @@ class Component {
                 };
                 mount(this.el, this.image);
             }
-        } else {
-            if(this.textEl == null) {
-                this.textEl = el("span");
-                mount(this.el, this.textEl);
-            }
-            this.textEl.innerText = data.name;
         }
+
+        if (this.textEl == null) {
+            this.textEl = el("span");
+            mount(this.el, this.textEl);
+        }
+        if(data.text) {
+            this.textEl.innerText = data.text;
+        }
+        if(data.textColor) {
+            setStyle(this.textEl, { color: data.textColor });
+        }
+
 
         if (draggability.enabled(this, data)) {
             draggability.update(this, data);
@@ -297,7 +303,8 @@ class Menu {
                             textAlign: 'center',
                             fontSize: '200%',
                             color: 'lightgreen',
-                        }}, "You are observing.  Join to play!  On the left side, enter name and click Join!"),
+                        }
+                    }, "You are observing.  Join to play!  On the left side, enter name and click Join!"),
                 ], { style: { display: 'none' } }),
                 this.addHandAreaItem = el("div.menuitem#add_hand_area",
                     el("a", { href: "", onclick: addHandArea }, "Add Hand Area")),
