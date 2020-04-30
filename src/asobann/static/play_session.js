@@ -186,6 +186,7 @@ function addHandArea() {
     }
     const newComponent = {
         name: getPlayerName() + "'s hand",
+        text: getPlayerName() + "'s hand",
         handArea: true,
         owner: getPlayerName(),
         top: rect.top + "px",
