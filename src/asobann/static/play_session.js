@@ -78,9 +78,9 @@ class Table {
     }
 
     update(data) {
-        draggability.setContext(getPlayer(), data);
-        flippability.setContext(getPlayer(), data);
-        resizability.setContext(getPlayer(), data);
+        draggability.setContext(getPlayerName(), data);
+        flippability.setContext(getPlayerName(), data);
+        resizability.setContext(getPlayerName(), data);
 
         this.data = data;
         this.list.update(this.data.components);
@@ -93,8 +93,10 @@ const sync_table_connector = {
         console.log("tableData: ", tableData);
         const players = tableData.players;
         console.log("players: ", players);
-        if (Object.keys(players) == 0) {
+        if (Object.keys(players).length === 0) {
             joinTable("host", true);  // the first player is automatically becomes host
+        } else {
+
         }
 
         table.update(tableData);
@@ -135,9 +137,9 @@ function showImport(ev) {
 
 function addHandArea() {
     const newComponent = {
-        name: getPlayer() + "'s hand",
+        name: getPlayerName() + "'s hand",
         handArea: true,
-        owner: getPlayer(),
+        owner: getPlayerName(),
         top: "64px",
         left: "64px",
         width: "320px",
@@ -155,7 +157,7 @@ function addHandArea() {
 function removeHandArea() {
     for (let i = 0; i < table.data.components.length; i++) {
         const cmp = table.data.components[i];
-        if (cmp.handArea && cmp.owner === getPlayer()) {
+        if (cmp.handArea && cmp.owner === getPlayerName()) {
             pushRemoveComponent(i);
             return false;
         }
@@ -163,18 +165,14 @@ function removeHandArea() {
     return false;
 }
 
-const SESSION_STORAGE_KEY = {
-    playerName: "asobann: player_name: ",
-};
-
-function getPlayer() {
+function getPlayerName() {
     if (sessionStorage.getItem(SESSION_STORAGE_KEY.playerName + tablename)) {
         return sessionStorage.getItem(SESSION_STORAGE_KEY.playerName + tablename);
     }
     return "nobody";
 }
 
-function setPlayer(player) {
+function setPlayerName(player) {
     sessionStorage.setItem(SESSION_STORAGE_KEY.playerName + tablename, player);
     menu.update({ player: player });
 }
@@ -185,6 +183,13 @@ const container = el("div.container");
 mount(document.body, container);
 const table = new Table();
 mount(container, el("div.table_container", [table.el]));
+
+const SESSION_STORAGE_KEY = {
+    playerName: "asobann: " + tablename + ": playerName",
+    isHost: "asobann: " + tablename + ": isHost",
+    status: "asobann: " + tablename + ": status",
+};
+
 
 interact("div.table_container").draggable({
     listeners: {
@@ -199,11 +204,11 @@ interact("div.table_container").draggable({
     },
 });
 
-setTableContext(tablename, getPlayer, setPlayer, sync_table_connector);
+setTableContext(tablename, setPlayerName, sync_table_connector);
 
 class Menu {
     constructor(props) {
-        this.playerNameEl = el("span", getPlayer());
+        this.playerNameEl = el("span", getPlayerName());
 
         this.el = el("div.menu",
             [
@@ -223,7 +228,7 @@ class Menu {
                             e.target.select();
                         }
                     }),
-                    el("a", {
+                    el("a#copy_invitation_url", {
                         href: "", onclick: () => {
                             document.querySelector('#invitation_url').select();
                             document.execCommand('copy');
@@ -247,7 +252,7 @@ class Menu {
         let found = false;
         if (table.data.components) {
             for (const cmp of table.data.components) {
-                if (cmp.handArea && cmp.owner === getPlayer()) {
+                if (cmp.handArea && cmp.owner === getPlayerName()) {
                     found = true;
                     break;
                 }
