@@ -209,6 +209,7 @@ class Menu {
 
         this.el = el("div.menu",
             [
+                el("div.title", "asobann 遊盤"),
                 el("div", ["you are ", this.playerNameEl]),
                 "Menu",
                 this.addHandAreaItem,

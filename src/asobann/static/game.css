@@ -8,6 +8,10 @@ body {
 }
 
 
+.title {
+    color: blueviolet;
+}
+
 .container {
     display: grid;
     grid-template-rows: 1fr;
