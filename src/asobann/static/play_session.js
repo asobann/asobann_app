@@ -141,14 +141,42 @@ function showImport(ev) {
 }
 
 function addHandArea() {
+    const rect = {
+        top: 64,
+        left: 64,
+        width: 320,
+        height: 64,
+    };
+    for (let i = 0; i < 10; i++) {
+        let collision = false;
+        rect.bottom = rect.top + rect.height;
+        rect.right = rect.left + rect.width;
+        for (const target of table.data.components) {
+            const targetLeft = parseFloat(target.left);
+            const targetTop = parseFloat(target.top);
+            const targetRight = targetLeft + parseFloat(target.width);
+            const targetBottom = targetTop + parseFloat(target.height);
+            if (rect.left <= targetRight &&
+                targetLeft <= rect.right &&
+                rect.top <= targetBottom &&
+                targetTop <= rect.bottom) {
+                collision = true;
+                break;
+            }
+        }
+        if (!collision) {
+            break;
+        }
+        rect.top += 100;
+    }
     const newComponent = {
         name: getPlayerName() + "'s hand",
         handArea: true,
         owner: getPlayerName(),
-        top: "64px",
-        left: "64px",
-        width: "320px",
-        height: "64px",
+        top: rect.top + "px",
+        left: rect.left + "px",
+        width: rect.width + "px",
+        height: rect.height + "px",
         draggable: true,
         flippable: false,
         resizable: true,
@@ -281,12 +309,14 @@ class Menu {
     update(data) {
         if (isPlayerObserver()) {
             setStyle(this.joinItem, { display: null });
-        } else {
-            setStyle(this.joinItem, { display: 'none' });
-        }
-        if (isPlayerObserver()) {
             this.playerStatusEl.innerText = "observing";
-        } else if (data.playerName) {
+            setStyle(this.addHandAreaItem, { display: 'none' });
+            setStyle(this.removeHandAreaItem, { display: 'none' });
+            return;
+        }
+
+        setStyle(this.joinItem, { display: 'none' });
+        if (data.playerName) {
             this.playerStatusEl.innerText = data.playerName;
         }
 
