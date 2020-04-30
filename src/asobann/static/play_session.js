@@ -273,7 +273,6 @@ class Menu {
             [
                 el("div.title", "asobann 遊盤"),
                 el("div", ["you are ", this.playerStatusEl]),
-                this.mmm = "Menu",
                 this.joinItem = el("div.menuitem", [
                     "enter name and join",
                     this.playerNameInput = el("input#player_name", { value: getPlaceholderName() }),

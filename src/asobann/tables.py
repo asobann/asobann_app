@@ -24,7 +24,7 @@ def create(tablename):
                 "left": "40px",
                 "width": "300px",
                 "height": "80px",
-                "color": "pink",
+                "color": "darkgoldenrod",
                 "draggable": True,
                 "flippable": False,
                 "resizable": True,

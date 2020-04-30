@@ -10,7 +10,7 @@ body {
 
 
 .title {
-    color: blueviolet;
+    color: plum;
 }
 
 .container {
@@ -21,9 +21,23 @@ body {
 }
 
 .menu {
+    text-align: center;
+    border: brown 2px solid;
+    color: white;
     grid-row: 1 / 2;
     grid-column: 1 / 2;
-    background-color: aqua;
+    background-color: cadetblue;
+    background-image: url("./images/menu_bg.jpg");
+}
+
+.menuitem {
+    display: block;
+    margin: 3px;
+    border: bisque solid 1px;
+}
+
+.menuitem a {
+    color: lightblue;
 }
 
 .table_container {
@@ -42,7 +56,9 @@ body {
 
 .component {
     position: absolute;
-    border: gray solid 1px;
+    color: white;
+    border: seagreen solid 1px;
+    background-color: darkgreen;
     display: block;
 
     /*disable selecting text by double click*/
@@ -57,12 +73,3 @@ body {
     height: 100%;
 }
 
-div.menu {
-    text-align: center;
-}
-
-div.menuitem {
-    display: block;
-    margin: 3px;
-    border: blue solid 1px;
-}
