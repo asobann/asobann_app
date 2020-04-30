@@ -96,7 +96,7 @@ const sync_table_connector = {
         if (Object.keys(players).length === 0) {
             joinTable("host", true);  // the first player is automatically becomes host
         } else {
-
+            setPlayerIsObserver();
         }
 
         table.update(tableData);
@@ -113,6 +113,12 @@ const sync_table_connector = {
     update_whole_table: function (data) {
         table.update(data);
         menu.update({});
+    },
+
+    updatePlayer: function (playerData) {
+        if (playerData.name) {
+            setPlayerName(playerData.name);
+        }
     },
 };
 
@@ -166,15 +172,39 @@ function removeHandArea() {
 }
 
 function getPlayerName() {
-    if (sessionStorage.getItem(SESSION_STORAGE_KEY.playerName + tablename)) {
-        return sessionStorage.getItem(SESSION_STORAGE_KEY.playerName + tablename);
+    if (sessionStorage.getItem(SESSION_STORAGE_KEY.playerName)) {
+        return sessionStorage.getItem(SESSION_STORAGE_KEY.playerName);
     }
     return "nobody";
 }
 
-function setPlayerName(player) {
-    sessionStorage.setItem(SESSION_STORAGE_KEY.playerName + tablename, player);
-    menu.update({ player: player });
+function setPlayerName(playerName) {
+    sessionStorage.setItem(SESSION_STORAGE_KEY.playerName, playerName);
+    menu.update({ playerName: playerName });
+}
+
+function isPlayerHost() {
+    if (sessionStorage.getItem(SESSION_STORAGE_KEY.isHost)) {
+        return sessionStorage.getItem(SESSION_STORAGE_KEY.isHost) == "true";
+    }
+    return false;
+}
+
+function setPlayerIsHost() {
+    sessionStorage.setItem(SESSION_STORAGE_KEY.isHost, "true");
+    menu.update({ isHost: true });
+}
+
+function isPlayerObserver() {
+    if (sessionStorage.getItem(SESSION_STORAGE_KEY.status)) {
+        return sessionStorage.getItem(SESSION_STORAGE_KEY.status) == "observer";
+    }
+    return false;
+}
+
+function setPlayerIsObserver() {
+    sessionStorage.setItem(SESSION_STORAGE_KEY.status, "observer");
+    menu.update({});
 }
 
 
@@ -204,16 +234,16 @@ interact("div.table_container").draggable({
     },
 });
 
-setTableContext(tablename, setPlayerName, sync_table_connector);
+setTableContext(tablename, sync_table_connector);
 
 class Menu {
     constructor(props) {
-        this.playerNameEl = el("span", getPlayerName());
+        this.playerStatusEl = el("span", getPlayerName());
 
         this.el = el("div.menu",
             [
                 el("div.title", "asobann 遊盤"),
-                el("div", ["you are ", this.playerNameEl]),
+                el("div", ["you are ", this.playerStatusEl]),
                 this.mmm = "Menu",
                 this.addHandAreaItem = el("div.menuitem#add_hand_area",
                     el("a", { href: "", onclick: addHandArea }, "Add Hand Area")),
@@ -245,8 +275,10 @@ class Menu {
     }
 
     update(data) {
-        if (data.player) {
-            this.playerNameEl.innerText = data.player;
+        if (isPlayerObserver()) {
+            this.playerStatusEl.innerText = "observing";
+        } else if (data.playerName) {
+            this.playerStatusEl.innerText = data.playerName;
         }
 
         let found = false;

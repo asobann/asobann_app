@@ -7,12 +7,12 @@ const context = {
     }),
 };
 
-function setTableContext(tablename, setPlayerName, connector) {
+function setTableContext(tablename, connector) {
     context.tablename = tablename;
-    context.setPlayerName = setPlayerName;
     context.initializeTable = connector.initializeTable;
     context.update_single_component = connector.update_single_component;
     context.update_whole_table = connector.update_whole_table;
+    context.updatePlayer = connector.updatePlayer;
 }
 
 socket.on("load table", (msg) => {
@@ -43,7 +43,7 @@ socket.on("refresh table", (msg) => {
 
 socket.on("confirmed player name", (msg) => {
     console.log("confirmed player name: ", msg);
-    context.setPlayerName(msg.player.name);
+    context.updatePlayer({ name: msg.player.name });
 });
 
 function pushComponentUpdate(table, index, diff) {
