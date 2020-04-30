@@ -14,6 +14,9 @@ class Component {
         resizability.add(this);
 
         this.el.addEventListener("mousedown", (ev) => {
+            if(isPlayerObserver()) {
+                return;
+            }
             maxZIndex += 1;
             this.zIndex = maxZIndex;
             setStyle(this.el, { zIndex: maxZIndex });
