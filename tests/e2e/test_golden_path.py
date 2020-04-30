@@ -73,7 +73,13 @@ def test_table_host(server, browser: webdriver.Firefox, another_browser: webdriv
     assert card_pos == card.pos(), "not moved"
 
     # new player name herself and join
+    player.menu.join("Player A")
+    player.should_have_text("you are Player A")
+
     # now new player can move cards
+    card_pos = card.pos()
+    player.drag(card, x=200, y=50)
+    assert card_pos != card.pos(), "moved"
 
 
 if __name__ == '__main__':

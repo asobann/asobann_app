@@ -1,6 +1,7 @@
 import {el, mount, unmount, list, setStyle, setAttr} from "./redom.es.js";
 import {setFeatsContext, draggability, flippability, resizability} from "./feat.js";
 import {setTableContext, pushComponentUpdate, pushNewComponent, pushRemoveComponent, joinTable} from "./sync_table.js";
+import {names} from './names.js'
 
 
 class Component {
@@ -115,11 +116,11 @@ const sync_table_connector = {
 
     updatePlayer: function (playerData) {
         if (playerData.name) {
+            setPlayerIsJoined();
             setPlayerName(playerData.name);
         }
     },
 };
-
 
 function showImport(ev) {
     const importEl = el("div",
@@ -199,6 +200,10 @@ function setPlayerIsObserver() {
     menu.update({});
 }
 
+function setPlayerIsJoined() {
+    sessionStorage.setItem(SESSION_STORAGE_KEY.status, "joined");
+    menu.update({});
+}
 
 const tablename = location.pathname.split("/")[2];
 const container = el("div.container");
@@ -237,6 +242,13 @@ class Menu {
                 el("div.title", "asobann 遊盤"),
                 el("div", ["you are ", this.playerStatusEl]),
                 this.mmm = "Menu",
+                this.joinItem = el("div.menuitem", [
+                    "enter name and join",
+                    this.playerNameInput = el("input#player_name", { value: getPlaceholderName() }),
+                    el("button#join_button", {
+                        onclick: () => joinTable(menu.playerNameInput.value, false)
+                    }, "join!"),
+                ], { style: { display: 'none' } }),
                 this.addHandAreaItem = el("div.menuitem#add_hand_area",
                     el("a", { href: "", onclick: addHandArea }, "Add Hand Area")),
                 this.removeHandAreaItem = el("div.menuitem#remove_hand_area",
@@ -268,6 +280,11 @@ class Menu {
 
     update(data) {
         if (isPlayerObserver()) {
+            setStyle(this.joinItem, { display: null });
+        } else {
+            setStyle(this.joinItem, { display: 'none' });
+        }
+        if (isPlayerObserver()) {
             this.playerStatusEl.innerText = "observing";
         } else if (data.playerName) {
             this.playerStatusEl.innerText = data.playerName;
@@ -298,3 +315,7 @@ const menu = new Menu();
 mount(container, menu.el);
 
 let maxZIndex = 0;
+
+function getPlaceholderName() {
+    return names[Math.floor(Math.random() * names.length)];
+}

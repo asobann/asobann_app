@@ -44,6 +44,11 @@ class GameMenu:
     def invitation_url(self):
         return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu input#invitation_url"))
 
+    def join(self, player_name):
+        input_element = self.browser.find_element_by_css_selector("input#player_name")
+        join_button = self.browser.find_element_by_css_selector("button#join_button")
+        ActionChains(self.browser).click(input_element).send_keys(player_name).click(join_button).perform()
+
 
 class GameHelper:
 
