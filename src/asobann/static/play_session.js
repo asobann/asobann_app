@@ -184,10 +184,7 @@ function setPlayerName(playerName) {
 }
 
 function isPlayerHost() {
-    if (sessionStorage.getItem(SESSION_STORAGE_KEY.isHost)) {
-        return sessionStorage.getItem(SESSION_STORAGE_KEY.isHost) == "true";
-    }
-    return false;
+    return sessionStorage.getItem(SESSION_STORAGE_KEY.isHost) === "true";
 }
 
 function setPlayerIsHost() {
@@ -196,10 +193,7 @@ function setPlayerIsHost() {
 }
 
 function isPlayerObserver() {
-    if (sessionStorage.getItem(SESSION_STORAGE_KEY.status)) {
-        return sessionStorage.getItem(SESSION_STORAGE_KEY.status) == "observer";
-    }
-    return false;
+    return sessionStorage.getItem(SESSION_STORAGE_KEY.status) === "observer";
 }
 
 function setPlayerIsObserver() {
