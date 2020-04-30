@@ -23,6 +23,10 @@ class GameMenuItem:
     def click(self):
         self.element.click()
 
+    @property
+    def value(self):
+        return self.element.get_attribute("value")
+
 
 class GameMenu:
     def __init__(self, browser: WebDriver):
@@ -31,6 +35,14 @@ class GameMenu:
     @property
     def add_my_hand_area(self):
         return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu div#add_hand_area"))
+
+    @property
+    def copy_invitation_url(self):
+        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu a#copy_invitation_url"))
+
+    @property
+    def invitation_url(self):
+        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu input#invitation_url"))
 
 
 class GameHelper:

@@ -41,7 +41,7 @@ def test_golden_path(server, browser: webdriver.Firefox, another_browser: webdri
     assert "v02.jpg" in card_on_another_browser.element.find_element_by_tag_name('img').get_attribute('src')
 
 
-def test_table_host(server, browser: webdriver.Firefox):
+def test_table_host(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
     host = GameHelper(browser)
     host.go(TOP)
 
@@ -55,6 +55,20 @@ def test_table_host(server, browser: webdriver.Firefox):
     face = card.face()
     host.double_click(card)
     assert face != card.face()
+
+    # invite someone
+    host.menu.copy_invitation_url.click()
+    # in test ignore clipboard as it might get ugly on running environment
+    invitation_url = host.menu.invitation_url.value
+
+    # new player is invited
+    player = GameHelper(another_browser)
+    player.go(invitation_url)
+    player.should_have_text("you are observing")
+
+    # new player cannot move cards before joining
+    # new player name herself and join
+    # now new player can move cards
 
 
 if __name__ == '__main__':
