@@ -74,18 +74,7 @@ class Table {
         this.list = list(this.el, Component);
         this.data = {};
 
-        interact("div.table").draggable({
-            listeners: {
-                move(event) {
-                    let top = event.target.style.top === "" ? 0 : parseFloat(event.target.style.top);
-                    top += event.dy;
-                    let left = event.target.style.left === "" ? 0 : parseFloat(event.target.style.left);
-                    left += event.dx;
-                    event.target.style.top = top + "px";
-                    event.target.style.left = left + "px";
-                },
-            },
-        });
+
     }
 
     update(data) {
@@ -196,6 +185,19 @@ const container = el("div.container");
 mount(document.body, container);
 const table = new Table();
 mount(container, el("div.table_container", [table.el]));
+
+interact("div.table_container").draggable({
+    listeners: {
+        move(event) {
+            let top = table.el.style.top === "" ? 0 : parseFloat(table.el.style.top);
+            top += event.dy;
+            let left = table.el.style.left === "" ? 0 : parseFloat(table.el.style.left);
+            left += event.dx;
+            table.el.style.top = top + "px";
+            table.el.style.left = left + "px";
+        },
+    },
+});
 
 setTableContext(tablename, getPlayer, setPlayer, sync_table_connector);
 
