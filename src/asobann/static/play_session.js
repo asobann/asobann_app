@@ -138,6 +138,8 @@ function showImport(ev) {
     function hideImport() {
         unmount(menu, importEl);
     }
+
+    return false;
 }
 
 function addHandArea() {
