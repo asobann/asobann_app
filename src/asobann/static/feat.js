@@ -111,20 +111,20 @@ const flippability = {
                 if(data.showImage) {
                     setAttr(component.image, { src: data.faceupImage });
                 } else {
-                    component.el.innerText = data.faceupText;
+                    component.textEl.innerText = data.faceupText;
                 }
             } else {
                 if(data.showImage) {
                     setAttr(component.image, { src: data.facedownImage });
                 } else {
-                    component.el.innerText = data.facedownText;
+                    component.textEl.innerText = data.facedownText;
                 }
             }
         } else {
             if(data.showImage) {
                 setAttr(component.image, { src: data.facedownImage });
             } else {
-                component.el.innerText = data.facedownText;
+                component.textEl.innerText = data.facedownText;
             }
         }
         component.faceup = data.faceup;

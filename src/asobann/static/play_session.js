@@ -34,8 +34,12 @@ class Component {
                 };
                 mount(this.el, this.image);
             }
-        // } else {
-        //     this.el.innerText = data.name;
+        } else {
+            if(this.textEl == null) {
+                this.textEl = el("span");
+                mount(this.el, this.textEl);
+            }
+            this.textEl.innerText = data.name;
         }
 
         if (draggability.enabled(this, data)) {

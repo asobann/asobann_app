@@ -71,14 +71,14 @@ def create_app(test_config=None):
 
     @app.route('/import', methods=["POST"])
     def import_table():
-        tablename = request.form.get("tablename")
-        app.logger.info(f"importing table <${tablename}>")
+        tablename = tables.generate_new_tablename()
+        app.logger.info(f"importing table <{tablename}>")
         if 'data' not in request.files:
             return redirect(url_for('/'))
         file = request.files['data']
         table = json.loads(file.read())
         tables.store(tablename, table)
-        return redirect(url_for('.play_session', tablename=tablename))
+        return redirect(url_for('.play_table', tablename=tablename))
 
     @app.socketio.on('come by table')
     def handle_come_by_table(json):

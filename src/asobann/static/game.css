@@ -59,7 +59,9 @@ body {
     color: white;
     border: seagreen solid 1px;
     background-color: darkgreen;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     /*disable selecting text by double click*/
     -moz-user-select: none;
@@ -73,3 +75,6 @@ body {
     height: 100%;
 }
 
+.component span {
+    text-align: center;
+}
