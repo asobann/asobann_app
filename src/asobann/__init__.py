@@ -97,9 +97,6 @@ def create_app(test_config=None):
             app.logger.error(f"table {json['tablename']} on set player")
             return
         player_name = json['player']['name']
-        if player_name in table["players"]:
-            emit("rejected player name", {"message": "duplicated"})
-            return
         table["players"][player_name] = {
             "name": player_name,
             "isHost": json['player']['isHost'],

@@ -27,6 +27,9 @@ class GameMenuItem:
     def value(self):
         return self.element.get_attribute("value")
 
+    def is_visible(self):
+        return self.element.is_displayed()
+
 
 class GameMenu:
     def __init__(self, browser: WebDriver):
@@ -43,6 +46,10 @@ class GameMenu:
     @property
     def invitation_url(self):
         return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu input#invitation_url"))
+
+    @property
+    def join_item(self):
+        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu input#player_name"))
 
     def join(self, player_name):
         WebDriverWait(self.browser, 5).until(

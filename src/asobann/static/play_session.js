@@ -40,10 +40,10 @@ class Component {
             this.textEl = el("span");
             mount(this.el, this.textEl);
         }
-        if(data.text) {
+        if (data.text) {
             this.textEl.innerText = data.text;
         }
-        if(data.textColor) {
+        if (data.textColor) {
             setStyle(this.textEl, { color: data.textColor });
         }
 
@@ -107,6 +107,8 @@ const sync_table_connector = {
         console.log("players: ", players);
         if (Object.keys(players).length === 0) {
             joinTable("host", true);  // the first player is automatically becomes host
+        } else if (getPlayerName() != "nobody") {
+            joinTable(getPlayerName(), isPlayerHost());
         } else {
             setPlayerIsObserver();
         }
