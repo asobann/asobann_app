@@ -19,14 +19,16 @@ def create(tablename):
         "tablename": tablename,
         "components": [
             {
-                "name": "drag to move.  double click to flip.  you can share URL.",
+                "name": "usage",
                 "top": "100px",
                 "left": "40px",
                 "width": "300px",
                 "height": "80px",
                 "color": "darkgoldenrod",
                 "draggable": True,
-                "flippable": False,
+                "flippable": True,
+                "facedownText": "usage (double click to open)",
+                "faceupText": "drag to move.  double click to flip.  you can share URL.",
                 "resizable": True,
                 "ownable": False,
                 "showImage": False,

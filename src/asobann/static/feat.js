@@ -94,10 +94,8 @@ const flippability = {
             }
             if (component.faceup) {
                 diff.faceup = component.faceup = false;
-                setAttr(component.image, { src: component.facedownImage });
             } else {
                 diff.faceup = component.faceup = true;
-                setAttr(component.image, { src: component.faceupImage });
             }
             component.propagate(diff);
         });
@@ -107,17 +105,27 @@ const flippability = {
     },
     update: function (component, data) {
         component.flippable = data.flippable;
-        component.faceupImage = data.faceupImage;
-        component.facedownImage = data.facedownImage;
         component.faceup = data.faceup;
         if (component.faceup) {
             if (!component.owner || component.owner === featsContext.playerName) {
-                setAttr(component.image, { src: component.faceupImage });
+                if(data.showImage) {
+                    setAttr(component.image, { src: data.faceupImage });
+                } else {
+                    component.el.innerText = data.faceupText;
+                }
             } else {
-                setAttr(component.image, { src: component.facedownImage });
+                if(data.showImage) {
+                    setAttr(component.image, { src: data.facedownImage });
+                } else {
+                    component.el.innerText = data.facedownText;
+                }
             }
         } else {
-            setAttr(component.image, { src: component.facedownImage });
+            if(data.showImage) {
+                setAttr(component.image, { src: data.facedownImage });
+            } else {
+                component.el.innerText = data.facedownText;
+            }
         }
         component.faceup = data.faceup;
 

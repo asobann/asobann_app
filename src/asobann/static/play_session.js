@@ -34,8 +34,8 @@ class Component {
                 };
                 mount(this.el, this.image);
             }
-        } else {
-            this.el.innerText = data.name;
+        // } else {
+        //     this.el.innerText = data.name;
         }
 
         if (draggability.enabled(this, data)) {
