@@ -280,7 +280,16 @@ class Menu {
                     this.playerNameInput = el("input#player_name", { value: getPlaceholderName() }),
                     el("button#join_button", {
                         onclick: () => joinTable(menu.playerNameInput.value, false)
-                    }, "join!"),
+                    }, "Join!"),
+                    el("div", {
+                        style: {
+                            position: 'absolute',
+                            top: '10%',
+                            left: '30%',
+                            textAlign: 'center',
+                            fontSize: '200%',
+                            color: 'lightgreen',
+                        }}, "You are observing.  Join to play!  On the left side, enter name and click Join!"),
                 ], { style: { display: 'none' } }),
                 this.addHandAreaItem = el("div.menuitem#add_hand_area",
                     el("a", { href: "", onclick: addHandArea }, "Add Hand Area")),
