@@ -19,10 +19,7 @@ from .helper import compo_pos, Rect, GameHelper, TOP
 def test_golden_path(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
     host = GameHelper(browser)
     host.go(TOP)
-
-    # index
-    WebDriverWait(browser, 5).until(
-        expected_conditions.presence_of_element_located((By.CSS_SELECTOR, "div.table")))
+    host.should_have_text("you are host")
 
     # handle cards
     card = host.components(3)
@@ -36,6 +33,7 @@ def test_golden_path(server, browser: webdriver.Firefox, another_browser: webdri
     # open another browser and see the same cards
     another = GameHelper(another_browser)
     another.go(browser.current_url)
+    another.menu.join("Player 2")
     card_on_another_browser = another.components(3)
     assert Rect(left=450, top=225) == card_on_another_browser.pos()
     assert "v02.jpg" in card_on_another_browser.element.find_element_by_tag_name('img').get_attribute('src')

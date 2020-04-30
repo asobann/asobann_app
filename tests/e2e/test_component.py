@@ -32,9 +32,9 @@ def test_add_and_move_hand_area(server, browser: webdriver.Firefox):
     # move and resize hand area
     hand_area = host.hand_area(owner="host")
     host.drag(hand_area, 0, 200)
-    assert Rect(left=64, top=264) == hand_area.pos()
+    size = hand_area.size()
     host.drag(hand_area, 200, 30, pos='lower right corner')
-    assert Rect(width=522, height=96) == hand_area.size()
+    assert size.width + 200 == hand_area.size().width and size.height + 30 == hand_area.size().height
 
 
 def test_put_cards_in_hand(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
@@ -49,7 +49,7 @@ def test_put_cards_in_hand(server, browser: webdriver.Firefox, another_browser: 
         expected_conditions.presence_of_element_located((By.CSS_SELECTOR, "div.component:nth-of-type(5)")))
 
     hand_area = browser.find_element_by_css_selector(".component:nth-of-type(5)")
-    ActionChains(browser).move_to_element(hand_area).click_and_hold().move_by_offset(0, 500).release().perform()
+    ActionChains(browser).move_to_element(hand_area).click_and_hold().move_by_offset(0, 50).release().perform()
     hand_area_rect = rect(hand_area)
     card = browser.find_element_by_css_selector(".component:nth-of-type(3)")
     card_rect = rect(card)
@@ -58,6 +58,7 @@ def test_put_cards_in_hand(server, browser: webdriver.Firefox, another_browser: 
 
     another = GameHelper(another_browser)
     another.go(browser.current_url)
+    another.menu.join("Player 2")
     WebDriverWait(another_browser, 5).until(
         expected_conditions.presence_of_element_located((By.CSS_SELECTOR, "div.component:nth-of-type(5)")))
     card_on_another = another_browser.find_element_by_css_selector(".component:nth-of-type(3)")

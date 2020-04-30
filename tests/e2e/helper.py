@@ -45,6 +45,8 @@ class GameMenu:
         return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu input#invitation_url"))
 
     def join(self, player_name):
+        WebDriverWait(self.browser, 5).until(
+            expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, "button#join_button")))
         input_element = self.browser.find_element_by_css_selector("input#player_name")
         join_button = self.browser.find_element_by_css_selector("button#join_button")
         input_element.clear()
