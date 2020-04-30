@@ -67,6 +67,11 @@ def test_table_host(server, browser: webdriver.Firefox, another_browser: webdriv
     player.should_have_text("you are observing")
 
     # new player cannot move cards before joining
+    card = player.components(nth=4)
+    card_pos = card.pos()
+    player.drag(card, x=200, y=50)
+    assert card_pos == card.pos(), "not moved"
+
     # new player name herself and join
     # now new player can move cards
 

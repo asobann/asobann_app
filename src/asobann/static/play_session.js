@@ -1,5 +1,5 @@
 import {el, mount, unmount, list, setStyle, setAttr} from "./redom.es.js";
-import {draggability, flippability, resizability} from "./feat.js";
+import {setFeatsContext, draggability, flippability, resizability} from "./feat.js";
 import {setTableContext, pushComponentUpdate, pushNewComponent, pushRemoveComponent, joinTable} from "./sync_table.js";
 
 
@@ -78,9 +78,7 @@ class Table {
     }
 
     update(data) {
-        draggability.setContext(getPlayerName(), data);
-        flippability.setContext(getPlayerName(), data);
-        resizability.setContext(getPlayerName(), data);
+        setFeatsContext(getPlayerName(), isPlayerObserver(), data);
 
         this.data = data;
         this.list.update(this.data.components);

@@ -4,7 +4,7 @@ import {el, mount, setAttr} from "./redom.es.js";
 const draggability = {
     add: function (component) {
         function isDraggingPermitted() {
-            return component.draggable && (!component.owner || component.owner === draggability.player);
+            return component.draggable && featsContext.canOperateOn(component);
         }
 
         interact(component.el).draggable({
@@ -51,7 +51,7 @@ const draggability = {
             };
 
 
-            for (const target of draggability.tableData.components) {
+            for (const target of featsContext.tableData.components) {
                 if (target.handArea) {
                     const targetLeft = parseFloat(target.left);
                     const targetTop = parseFloat(target.top);
@@ -76,24 +76,20 @@ const draggability = {
         component.owner = data.owner;
         component.ownable = data.ownable;
     },
-    setContext(player, tableData) {
-        this.player = player;
-        this.tableData = tableData;
-    }
 };
 
 const flippability = {
     add: function (component) {
-        function disabled() {
-            return !component.flippable;
+        function isFlippingPermitted() {
+            return component.flippable && featsContext.canOperateOn(component);
         }
 
         component.el.addEventListener("dblclick", () => {
-            if (disabled()) {
+            if (!isFlippingPermitted()) {
                 return;
             }
             let diff = {};
-            if (component.owner && component.owner !== flippability.player) {
+            if (component.owner && component.owner !== featsContext.playerName) {
                 return;
             }
             if (component.faceup) {
@@ -115,7 +111,7 @@ const flippability = {
         component.facedownImage = data.facedownImage;
         component.faceup = data.faceup;
         if (component.faceup) {
-            if (!component.owner || component.owner === flippability.player) {
+            if (!component.owner || component.owner === featsContext.playerName) {
                 setAttr(component.image, { src: component.faceupImage });
             } else {
                 setAttr(component.image, { src: component.facedownImage });
@@ -126,17 +122,13 @@ const flippability = {
         component.faceup = data.faceup;
 
     },
-    setContext(player, tableData) {
-        this.player = player;
-        this.tableData = tableData;
-    }
 };
 
 
 const resizability = {
     add: function (component) {
         function isResizingPermitted() {
-            return component.resizable && (!component.owner || component.owner === resizability.player);
+            return component.resizable && featsContext.canOperateOn(component);
         }
         interact(component.el).resizable({
             edges: {
@@ -165,10 +157,18 @@ const resizability = {
     update: function (component, data) {
         component.resizable = data.resizable;
     },
-    setContext(player, tableData) {
-        this.player = player;
-        this.tableData = tableData;
-    }
 };
 
-export {draggability, flippability, resizability};
+const featsContext = {
+    canOperateOn: function(component) {
+        return ((!component.owner || component.owner === featsContext.playerName)
+             && !featsContext.isPlayerObserver);
+    }
+};
+function setFeatsContext(playerName, isPlayerObserver, tableData) {
+    featsContext.playerName = playerName;
+    featsContext.isPlayerObserver = isPlayerObserver;
+    featsContext.tableData = tableData;
+}
+
+export {setFeatsContext, draggability, flippability, resizability};
