@@ -1,4 +1,5 @@
-import json
+from pathlib import Path
+
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
@@ -18,7 +19,7 @@ def test_reload_retain_player(server, browser: webdriver.Firefox, another_browse
     host = GameHelper(browser)
     host.go(TOP)
 
-    host.menu.import_jsonfile("./test_load_on_heroku.json")
+    host.menu.import_jsonfile(str(Path(__file__).parent / "./test_load_on_heroku.json"))
 
     host.should_have_text("you are host")
     host.should_have_text("Table for load testing")

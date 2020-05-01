@@ -63,10 +63,11 @@ class GameMenu:
         WebDriverWait(self.browser, 5).until(
             expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, "div.menuitem#import_table")))
         self.browser.find_element_by_css_selector("div.menuitem#import_table").click()
-        form = self.browser.find_element_by_css_selector("form").click()
-        file_input = form.find_element_by_css_selector("input#file")
-        file_input.send_keys(filename)
-        form.submit()
+        WebDriverWait(self.browser, 5).until(
+            expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, "div.menu form")))
+        form = self.browser.find_element_by_css_selector("form")
+        form.find_element_by_css_selector("input#file").send_keys(filename)
+        form.find_element_by_css_selector("input#submit").click()
 
 
 class GameHelper:
