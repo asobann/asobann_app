@@ -59,6 +59,15 @@ class GameMenu:
         input_element.clear()
         ActionChains(self.browser).click(input_element).send_keys(player_name).click(join_button).perform()
 
+    def import_jsonfile(self, filename):
+        WebDriverWait(self.browser, 5).until(
+            expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, "div.menuitem#import_table")))
+        self.browser.find_element_by_css_selector("div.menuitem#import_table").click()
+        form = self.browser.find_element_by_css_selector("form").click()
+        file_input = form.find_element_by_css_selector("input#file")
+        file_input.send_keys(filename)
+        form.submit()
+
 
 class GameHelper:
 

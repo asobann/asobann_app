@@ -1,0 +1,20 @@
+{
+  "components": [
+    {
+      "color": "blue",
+      "draggable": true,
+      "flippable": false,
+      "height": "30px",
+      "left": "0px",
+      "name": "note",
+      "ownable": false,
+      "resizable": false,
+      "showImage": false,
+      "text": "Table for load testing!",
+      "top": "0px",
+      "width": "200px",
+      "zIndex": 1
+    }
+  ],
+  "players": {}
+}

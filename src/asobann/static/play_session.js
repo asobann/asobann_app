@@ -142,8 +142,8 @@ function showImport(ev) {
         el("form", { action: "/import", method: "POST", enctype: "multipart/form-data" },
             [
                 el("input", { type: "hidden", value: tablename, name: "tablename" }),
-                el("input", { type: "file", name: "data" }),
-                el("input", { type: "submit" }),
+                el("input#file", { type: "file", name: "data" }),
+                el("input#submit", { type: "submit" }),
                 el("button", { onclick: hideImport }, "Cancel"),
             ]
         )
@@ -332,7 +332,7 @@ class Menu {
                 ]),
                 el("div.menuitem",
                     el("a", { href: "/export?tablename=" + tablename }, "Export Table")),
-                el("div.menuitem",
+                el("div.menuitem#import_table",
                     el("a", { href: "", onclick: showImport }, "Import Table")),
             ],
         );
