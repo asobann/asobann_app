@@ -55,6 +55,19 @@ def another_browser(another_browser_window):
     yield another_browser_window
 
 
+@pytest.fixture
+def browser_factory():
+    browsers = []
+    def factory():
+        browser = webdriver.Firefox()
+        browsers.append(browser)
+        return browser
+    yield factory
+
+    for b in browsers:
+        b.close()
+
+
 @pytest.fixture(scope='session')
 def in_mem_app():
     from asobann import test_server

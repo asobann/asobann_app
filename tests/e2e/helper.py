@@ -97,10 +97,11 @@ class GameHelper:
             pass
         assert False, f'element located by css locator "{css_locator}" cannot be found (timeout)'
 
-    def components(self, nth):
+    def components(self, nth, wait=True):
         locator = f".component:nth-of-type({nth})"
-        WebDriverWait(self.browser, 5).until(
-            expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, locator)))
+        if wait:
+            WebDriverWait(self.browser, 5).until(
+                expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, locator)))
         return Component(helper=self, element=self.browser.find_element_by_css_selector(locator))
 
     def drag(self, component: "Component", x, y, pos='center'):
@@ -140,11 +141,14 @@ class Component:
         return compo_size(self.helper.browser, self.element)
 
     def face(self):
+        result = []
         if self.element.find_element_by_tag_name('img'):
             image_url = self.element.find_element_by_tag_name('img').get_attribute('src')
-            return f"image_url : {image_url}"
+            result.append(f"image_url : {image_url}")
+        if self.element.text:
+            result.append(f"text : {self.element.text}")
 
-        return "not implemented"
+        return ",".join(result) or "not implemented"
 
 
 class Rect:
