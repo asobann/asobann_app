@@ -64,8 +64,8 @@ def evaluate_saved_status():
 
 
 @pytest.mark.loadtest
-def test_simultaneous_dragging(server, browser: webdriver.Firefox, browser_factory):
-    host = GameHelper(browser)
+def test_simultaneous_dragging(server, browser_factory):
+    host = GameHelper(browser_factory())
     host.go(TOP)
 
     host.menu.import_jsonfile(str(Path(__file__).parent / "./test_load_on_heroku.json"))
