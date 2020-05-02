@@ -11,7 +11,6 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
-
 TOP = "http://localhost:10011/"
 
 
@@ -111,12 +110,12 @@ class GameHelper:
             xoffset, yoffset = (component.element.size["width"] / 2 - 1, component.element.size["height"] / 2 - 1)
         else:
             raise ValueError(f"pos '{pos}' is invalid")
-        ActionChains(self.browser).\
-            move_to_element(component.element).\
-            move_by_offset(xoffset, yoffset).\
-            click_and_hold().\
-            move_by_offset(x, y).\
-            release().\
+        ActionChains(self.browser). \
+            move_to_element(component.element). \
+            move_by_offset(xoffset, yoffset). \
+            click_and_hold(). \
+            move_by_offset(x, y). \
+            release(). \
             perform()
 
     def double_click(self, component: "Component"):
@@ -142,9 +141,11 @@ class Component:
 
     def face(self):
         result = []
-        if self.element.find_element_by_tag_name('img'):
+        try:
             image_url = self.element.find_element_by_tag_name('img').get_attribute('src')
             result.append(f"image_url : {image_url}")
+        except NoSuchElementException:
+            pass
         if self.element.text:
             result.append(f"text : {self.element.text}")
 
@@ -168,10 +169,10 @@ class Rect:
         self.width = width
 
     def __str__(self):
-        return f"Rect(top={self.top}, left={self.left}, bottom={self.bottom}, right={self.right}, height={self.height}, width={self.width})"
+        return f"Rect({self.top}, {self.left}, {self.bottom}, {self.right}, {self.height}, {self.width})"
 
     def __repr__(self):
-        return f"Rect(top={self.top}, left={self.left}, bottom={self.bottom}, right={self.right}, height={self.height}, width={self.width})"
+        return f"Rect({self.top}, {self.left}, {self.bottom}, {self.right}, {self.height}, {self.width})"
 
     def __eq__(self, other):
         if type(other) != Rect:
@@ -203,5 +204,3 @@ def compo_size(browser, element: WebElement) -> Rect:
     """
     comp_size = element.size
     return Rect(height=comp_size["height"], width=comp_size["width"])
-
-

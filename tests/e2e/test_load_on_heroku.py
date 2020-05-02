@@ -33,11 +33,19 @@ def save_status(iteration, tag, player: GameHelper):
     while True:
         try:
             c = player.components(n, wait=False)
-            status.append((c.pos(), c.size(), c.face))
+            status.append((c.pos(), c.size(), c.face()))
             n += 1
         except NoSuchElementException:
             break
     saved_status[iteration][tag] = status
+
+
+def run_in_multithread(run_factory, number):
+    threads = [Thread(target=run_factory(idx)) for idx in range(number)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
 
 
 def evaluate_saved_status():
@@ -47,6 +55,7 @@ def evaluate_saved_status():
         for status in [iteration[key] for key in iteration.keys() if key != "host"]:
             for i, c in enumerate(status):
                 if baseline[i] != c:
+                    print(f"diff! <{baseline[i]}> <{c}>")
                     diff += 1
                     break  # don't count diffs for same component
     return diff
@@ -64,33 +73,26 @@ def test_reload_retain_player(server, browser: webdriver.Firefox, browser_factor
     invitation_url = host.menu.invitation_url.value
 
     players = []
-    for i in range(4):
+    for i in range(8):
         player = GameHelper(browser_factory())
         player.go(invitation_url)
         player.menu.join(f"Player {i + 1}")
         player.should_have_text("Table for load testing")
         players.append(player)
 
-    for i in range(5):
-        def run_factory(idx):
-            def run():
-                print(f"starting {i} {idx}")
-                players[idx].drag(players[idx].components(idx + 2), 0, 300)
-                players[idx].drag(players[idx].components(idx + 2), 0, -300)
-                print(f"ending {i} {idx}")
-
-            return run
-
-        threads = [Thread(target=run_factory(idx)) for idx in range(len(players))]
+    for i in range(10):
         time.sleep(1)
-        for t in threads:
-            t.start()
-        for t in threads:
-            t.join()
-
         save_status(i, "host", host)
         for j, p in enumerate(players):
             save_status(i, f"player{j + 1}", p)
 
-    print(saved_status)
+        def run_factory(idx):
+            def run():
+                players[idx].drag(players[idx].components(idx + 2), 0, 300)
+                players[idx].drag(players[idx].components(idx + 2), 0, -300)
+
+            return run
+
+        run_in_multithread(run_factory, len(players))
+
     assert evaluate_saved_status() == 0
