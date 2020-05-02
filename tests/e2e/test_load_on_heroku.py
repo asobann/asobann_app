@@ -2,6 +2,8 @@ import time
 from threading import Thread
 from pathlib import Path
 
+import pytest
+
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
@@ -61,6 +63,7 @@ def evaluate_saved_status():
     return diff
 
 
+@pytest.mark.loadtest
 def test_simultaneous_dragging(server, browser: webdriver.Firefox, browser_factory):
     host = GameHelper(browser)
     host.go(TOP)
