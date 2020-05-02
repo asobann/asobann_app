@@ -21,26 +21,25 @@ const draggability = {
                     if (!isDraggingPermitted()) {
                         return;
                     }
-                    if (!component.ownable) {
-                        return;
-                    }
-
                     const top = parseFloat(component.el.style.top) + event.dy;
                     const left = parseFloat(component.el.style.left) + event.dx;
                     const diff = { top: top + "px", left: left + "px" };
 
-                    const handArea = getOverlappingHandArea(component);
-                    if (handArea) {
-                        if (!(component.owner === handArea.owner)) {
-                            component.owner = handArea.owner;
-                            diff.owner = component.owner;
-                        }
-                    } else {
-                        if (component.owner) {
-                            component.owner = null;
-                            diff.owner = component.owner;
+                    if (component.ownable) {
+                        const handArea = getOverlappingHandArea(component);
+                        if (handArea) {
+                            if (!(component.owner === handArea.owner)) {
+                                component.owner = handArea.owner;
+                                diff.owner = component.owner;
+                            }
+                        } else {
+                            if (component.owner) {
+                                component.owner = null;
+                                diff.owner = component.owner;
+                            }
                         }
                     }
+
                     component.propagate(diff);
                 }
             }

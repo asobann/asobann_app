@@ -12,7 +12,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from .helper import compo_pos, Rect, GameHelper
 
@@ -92,6 +92,7 @@ def test_simultaneous_dragging(server, browser_factory):
         def run_factory(idx):
             def run():
                 players[idx].drag(players[idx].components(idx + 2), 0, 300)
+                time.sleep(0.1)  # avoid double clicking
                 players[idx].drag(players[idx].components(idx + 2), 0, -300)
 
             return run
