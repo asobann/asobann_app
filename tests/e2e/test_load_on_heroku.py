@@ -61,7 +61,7 @@ def evaluate_saved_status():
     return diff
 
 
-def test_reload_retain_player(server, browser: webdriver.Firefox, browser_factory):
+def test_simultaneous_dragging(server, browser: webdriver.Firefox, browser_factory):
     host = GameHelper(browser)
     host.go(TOP)
 
