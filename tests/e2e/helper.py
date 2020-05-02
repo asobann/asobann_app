@@ -56,7 +56,11 @@ class GameMenu:
         input_element = self.browser.find_element_by_css_selector("input#player_name")
         join_button = self.browser.find_element_by_css_selector("button#join_button")
         input_element.clear()
-        ActionChains(self.browser).click(input_element).send_keys(player_name).click(join_button).perform()
+        input_element.send_keys(player_name)
+        join_button.click()
+        WebDriverWait(self.browser, 5).until(
+            expected_conditions.text_to_be_present_in_element((By.TAG_NAME, "body"), "you are " + player_name))
+
 
     def import_jsonfile(self, filename):
         WebDriverWait(self.browser, 5).until(

@@ -165,6 +165,17 @@ const resizability = {
                 let left = parseFloat(component.el.style.left) + event.deltaRect.left;
                 let width = parseFloat(component.el.style.width) + event.deltaRect.width;
                 let height = parseFloat(component.el.style.height) + event.deltaRect.height;
+                component.propagate_volatile({ top: top, left: left, width: width, height: height });
+            },
+            onend: (event) => {
+                if (!isResizingPermitted()) {
+                    return;
+                }
+                // resizeend event have wrong value in deltaRect so just ignore it
+                let top = parseFloat(component.el.style.top);
+                let left = parseFloat(component.el.style.left);
+                let width = parseFloat(component.el.style.width);
+                let height = parseFloat(component.el.style.height);
                 component.propagate({ top: top, left: left, width: width, height: height });
             },
         })

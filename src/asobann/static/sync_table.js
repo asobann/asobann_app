@@ -46,17 +46,39 @@ socket.on("confirmed player name", (msg) => {
     context.updatePlayer({ name: msg.player.name });
 });
 
+// sending out component update to server is queued and actually emit()ted intermittently
+const componentUpdateQueue = [];
+function sendComponentUpdateFromQueue() {
+    while(componentUpdateQueue.length > 0) {
+        const update = componentUpdateQueue.shift();
+        let shouldEmit = true;
+        if(update.volatile) {
+            for(const another of componentUpdateQueue) {
+                if(another.index === update.index) {
+                    // discard update as another is newer
+                    shouldEmit = false;
+                    break;
+                }
+            }
+        }
+        if(shouldEmit) {
+            socket.emit("update single component", update);
+        }
+    }
+}
+setInterval(sendComponentUpdateFromQueue, 75);
+
 function pushComponentUpdate(table, index, diff, volatile) {
     const oldData = table.data;
     Object.assign(oldData.components[index], diff);
     table.update(oldData);
-    socket.emit("update single component", {
+    componentUpdateQueue.push({
         tablename: context.tablename,
         originator: context.client_connection_id,
         index: index,
         diff: diff,
         volatile: volatile === true,
-    })
+    });
 }
 
 function pushNewComponent(data) {
