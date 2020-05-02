@@ -78,7 +78,11 @@ class Component {
     }
 
     propagate(diff) {
-        pushComponentUpdate(table, this.index, diff);
+        pushComponentUpdate(table, this.index, diff, false);
+    }
+
+    propagate_volatile(diff) {
+        pushComponentUpdate(table, this.index, diff, true);
     }
 }
 

@@ -13,29 +13,35 @@ const draggability = {
                     if (!isDraggingPermitted()) {
                         return;
                     }
-                    let top = parseFloat(component.el.style.top) + event.dy;
-                    let left = parseFloat(component.el.style.left) + event.dx;
-                    component.propagate({ top: top + "px", left: left + "px" });
+                    const top = parseFloat(component.el.style.top) + event.dy;
+                    const left = parseFloat(component.el.style.left) + event.dx;
+                    component.propagate_volatile({ top: top + "px", left: left + "px" });
                 },
-                end() {
+                end(event) {
                     if (!isDraggingPermitted()) {
                         return;
                     }
                     if (!component.ownable) {
                         return;
                     }
+
+                    const top = parseFloat(component.el.style.top) + event.dy;
+                    const left = parseFloat(component.el.style.left) + event.dx;
+                    const diff = { top: top + "px", left: left + "px" };
+
                     const handArea = getOverlappingHandArea(component);
                     if (handArea) {
                         if (!(component.owner === handArea.owner)) {
                             component.owner = handArea.owner;
-                            component.propagate({ owner: component.owner });
+                            diff.owner = component.owner;
                         }
                     } else {
                         if (component.owner) {
                             component.owner = null;
-                            component.propagate({ owner: component.owner });
+                            diff.owner = component.owner;
                         }
                     }
+                    component.propagate(diff);
                 }
             }
         });

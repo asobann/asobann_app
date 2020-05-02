@@ -46,7 +46,7 @@ socket.on("confirmed player name", (msg) => {
     context.updatePlayer({ name: msg.player.name });
 });
 
-function pushComponentUpdate(table, index, diff) {
+function pushComponentUpdate(table, index, diff, volatile) {
     const oldData = table.data;
     Object.assign(oldData.components[index], diff);
     table.update(oldData);
@@ -55,6 +55,7 @@ function pushComponentUpdate(table, index, diff) {
         originator: context.client_connection_id,
         index: index,
         diff: diff,
+        volatile: volatile === true,
     })
 }
 
