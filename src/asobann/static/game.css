@@ -55,6 +55,10 @@ body {
     width: 100%;
 }
 
+.table_list {
+    position: relative;
+}
+
 .component {
     position: absolute;
     color: white;
@@ -83,7 +87,7 @@ body {
 }
 
 div.others_mouse_cursor {
-    position: relative;
+    position: absolute;
 }
 
 div.others_mouse_cursor .icon {

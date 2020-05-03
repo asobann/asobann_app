@@ -151,6 +151,8 @@ const sync_table_connector = {
     },
 
     showOthersMouseMovement: function (playerName, mouseMovement) {
+        const ICON_OFFSET_X = -(32 / 2);  // see "div.others_mouse_cursor .icon " in game.css
+        const ICON_OFFSET_Y = -(32 / 2);
         if (playerName === getPlayerName()) {
             return;
         }
@@ -164,8 +166,8 @@ const sync_table_connector = {
             otherPlayersMouse[playerName] = e;
         }
         const e = otherPlayersMouse[playerName];
-        const top = mouseMovement.mouseOnTableY;
-        const left = mouseMovement.mouseOnTableX;
+        const top = mouseMovement.mouseOnTableY + ICON_OFFSET_Y;
+        const left = mouseMovement.mouseOnTableX + ICON_OFFSET_X;
         const className = mouseMovement.mouseButtons === 0 ? "" : "buttons_down";
         setAttr(e, { className: "others_mouse_cursor " + className});
         setStyle(e, { top: top + "px", left: left + "px", zIndex: nextZIndex });
