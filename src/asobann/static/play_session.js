@@ -101,8 +101,6 @@ class Table {
         );
         this.list = list(this.list_el, Component);
         this.data = {};
-
-
     }
 
     update(data) {

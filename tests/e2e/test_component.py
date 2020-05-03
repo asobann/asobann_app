@@ -1,3 +1,5 @@
+import pytest
+
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
@@ -65,3 +67,17 @@ def test_put_cards_in_hand(server, browser: webdriver.Firefox, another_browser: 
     card_pos_before_drag = compo_pos(another_browser, card_on_another)
     ActionChains(another_browser).move_to_element(card_on_another).click_and_hold().move_by_offset(50, 50).perform()
     assert card_pos_before_drag == compo_pos(another_browser, card_on_another), "not moved"
+
+
+@pytest.mark.usefixtures("server")
+class TestDice:
+    def test_add_dice_from_menu(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        host.go(TOP)
+        host.should_have_text("you are host")
+
+        host.menu.add_component.execute()
+        host.menu.check_component_from_list("dice")
+        host.menu.update.execute()
+
+        assert host.components_by_name("dice")

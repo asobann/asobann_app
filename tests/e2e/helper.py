@@ -100,8 +100,15 @@ class GameHelper:
             pass
         assert False, f'element located by css locator "{css_locator}" cannot be found (timeout)'
 
-    def components(self, nth, wait=True):
+    def components(self, nth, wait=True) -> "Component":
         locator = f".component:nth-of-type({nth})"
+        if wait:
+            WebDriverWait(self.browser, 5).until(
+                expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, locator)))
+        return Component(helper=self, element=self.browser.find_element_by_css_selector(locator))
+
+    def components_by_name(self, name, wait=True) -> "Component":
+        locator = f'.component[data-compponent-name="{name}")'
         if wait:
             WebDriverWait(self.browser, 5).until(
                 expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, locator)))
