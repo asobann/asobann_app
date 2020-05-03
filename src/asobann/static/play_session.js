@@ -9,7 +9,6 @@ import {
     pushCursorMovement
 } from "./sync_table.js";
 import {Menu} from "./menu.js";
-import {names} from './names.js'
 
 
 class Component {
