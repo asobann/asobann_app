@@ -1,6 +1,13 @@
 import {el, mount, unmount, list, setStyle, setAttr} from "./redom.es.js";
 import {setFeatsContext, draggability, flippability, resizability} from "./feat.js";
-import {setTableContext, pushComponentUpdate, pushNewComponent, pushRemoveComponent, joinTable} from "./sync_table.js";
+import {
+    setTableContext,
+    pushComponentUpdate,
+    pushNewComponent,
+    pushRemoveComponent,
+    joinTable,
+    pushCursorMovement
+} from "./sync_table.js";
 import {names} from './names.js'
 
 
@@ -17,9 +24,9 @@ class Component {
             if (isPlayerObserver()) {
                 return;
             }
-            maxZIndex += 1;
-            this.zIndex = maxZIndex;
-            setStyle(this.el, { zIndex: maxZIndex });
+            this.zIndex = nextZIndex;
+            setStyle(this.el, { zIndex: this.zIndex });
+            nextZIndex += 1;
             this.propagate({ zIndex: this.zIndex });
         });
     }
@@ -59,12 +66,12 @@ class Component {
         }
         if (data.zIndex) {
             this.zIndex = data.zIndex;
-            if (maxZIndex < this.zIndex) {
-                maxZIndex = this.zIndex;
+            if (nextZIndex <= this.zIndex) {
+                nextZIndex = this.zIndex + 1;
             }
         } else {
-            maxZIndex += 1;
-            this.zIndex = maxZIndex;
+            this.zIndex = nextZIndex;
+            nextZIndex += 1;
         }
 
         setStyle(this.el, {
@@ -88,7 +95,7 @@ class Component {
 
 class Table {
     constructor() {
-        this.el = el("div.table");
+        this.el = el("div.table", { style: { top: '0px', left: '0px' } });
         this.list = list(this.el, Component);
         this.data = {};
 
@@ -139,7 +146,26 @@ const sync_table_connector = {
             setPlayerName(playerData.name);
         }
     },
+
+    showOthersMouseMovement: function (playerName, mouseMovement) {
+        if (playerName === getPlayerName()) {
+            return;
+        }
+        if (!otherPlayersMouse[playerName]) {
+            const e = el("div.others_mouse_cursor", playerName);
+            mount(tableContainer, e);
+            otherPlayersMouse[playerName] = e;
+        }
+        const e = otherPlayersMouse[playerName];
+        const r = tableContainer.getBoundingClientRect();
+        const top = mouseMovement.mouseOnTableY + r.top + parseFloat(table.el.style.top);
+        const left = mouseMovement.mouseOnTableX + r.left + parseFloat(table.el.style.left);
+        const color = mouseMovement.mouseButtons === 0 ? "red" : "blue";
+        setStyle(e, { top: top + "px", left: left + "px", zIndex: nextZIndex, backgroundColor: color });
+    }
 };
+
+const otherPlayersMouse = {};
 
 function showImport(ev) {
     const importEl = el("div",
@@ -203,8 +229,9 @@ function addHandArea() {
         flippable: false,
         resizable: true,
         ownable: false,
-        zIndex: maxZIndex + 1,
+        zIndex: nextZIndex,
     };
+    nextZIndex += 1;
     pushNewComponent(newComponent);
     return false;
 }
@@ -380,8 +407,19 @@ class Menu {
 const menu = new Menu();
 mount(container, menu.el);
 
-let maxZIndex = 0;
+let nextZIndex = 1;
 
 function getPlaceholderName() {
     return names[Math.floor(Math.random() * names.length)];
 }
+
+tableContainer.addEventListener("mousemove", (event) => {
+    const r = tableContainer.getBoundingClientRect();
+    const mouseOnTableX = event.clientX - r.left - parseFloat(table.el.style.left);
+    const mouseOnTableY = event.clientY - r.top - parseFloat(table.el.style.top);
+    pushCursorMovement(getPlayerName(), {
+        mouseOnTableX: mouseOnTableX,
+        mouseOnTableY: mouseOnTableY,
+        mouseButtons: event.buttons,
+    })
+});

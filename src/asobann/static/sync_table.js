@@ -2,7 +2,7 @@ const socket = io();
 console.log(socket);
 
 const context = {
-    client_connection_id: 'xxxxxxxxxxxx'.replace(/[x]/g, function(c) {
+    client_connection_id: 'xxxxxxxxxxxx'.replace(/[x]/g, function (c) {
         return (Math.random() * 16 | 0).toString(16);
     }),
 };
@@ -13,6 +13,7 @@ function setTableContext(tablename, connector) {
     context.update_single_component = connector.update_single_component;
     context.update_whole_table = connector.update_whole_table;
     context.updatePlayer = connector.updatePlayer;
+    context.showOthersMouseMovement = connector.showOthersMouseMovement;
 }
 
 socket.on("load table", (msg) => {
@@ -46,26 +47,37 @@ socket.on("confirmed player name", (msg) => {
     context.updatePlayer({ name: msg.player.name });
 });
 
+
+socket.on("mouse movement", (msg) => {
+    console.log("mouse movement: ", msg);
+    if (msg.tablename !== context.tablename) {
+        return;
+    }
+    context.showOthersMouseMovement(msg.playerName, msg.mouseMovement);
+});
+
 // sending out component update to server is queued and actually emit()ted intermittently
 const componentUpdateQueue = [];
+
 function sendComponentUpdateFromQueue() {
-    while(componentUpdateQueue.length > 0) {
+    while (componentUpdateQueue.length > 0) {
         const update = componentUpdateQueue.shift();
         let shouldEmit = true;
-        if(update.volatile) {
-            for(const another of componentUpdateQueue) {
-                if(another.index === update.index) {
+        if (update.volatile) {
+            for (const another of componentUpdateQueue) {
+                if (another.index === update.index) {
                     // discard update as another is newer
                     shouldEmit = false;
                     break;
                 }
             }
         }
-        if(shouldEmit) {
+        if (shouldEmit) {
             socket.emit("update single component", update);
         }
     }
 }
+
 setInterval(sendComponentUpdateFromQueue, 75);
 
 function pushComponentUpdate(table, index, diff, volatile) {
@@ -107,4 +119,12 @@ function joinTable(player, isHost) {
     });
 }
 
-export {setTableContext, pushComponentUpdate, pushNewComponent, pushRemoveComponent, joinTable};
+function pushCursorMovement(playerName, mouseMovement) {
+    socket.emit("mouse movement", {
+        tablename: context.tablename,
+        playerName: playerName,
+        mouseMovement: mouseMovement,
+    });
+}
+
+export {setTableContext, pushComponentUpdate, pushNewComponent, pushRemoveComponent, joinTable, pushCursorMovement};

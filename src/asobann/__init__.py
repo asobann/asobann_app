@@ -125,4 +125,10 @@ def create_app(test_config=None):
         table = tables.get(json["tablename"])
         emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
+    @app.socketio.on("mouse movement")
+    def handle_mouse_movement(json):
+        app.logger.debug(f'mouse movement: ${json}')
+        emit("mouse movement", json, broadcast=True, room=json["tablename"])
+
     return app
+
