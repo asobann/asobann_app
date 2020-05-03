@@ -83,8 +83,12 @@ body {
 }
 
 div.others_mouse_cursor {
-    position: absolute;
+    position: relative;
     width: 32px;
     height: 32px;
     background-color: red;
+}
+
+div.others_mouse_cursor.buttons_down {
+    background-color: blue;
 }

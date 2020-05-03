@@ -95,8 +95,11 @@ class Component {
 
 class Table {
     constructor() {
-        this.el = el("div.table", { style: { top: '0px', left: '0px' } });
-        this.list = list(this.el, Component);
+        console.log("new Table");
+        this.el = el("div.table", { style: { top: '0px', left: '0px' } },
+            this.list_el = el("div.table_list")
+        );
+        this.list = list(this.list_el, Component);
         this.data = {};
 
 
@@ -153,15 +156,15 @@ const sync_table_connector = {
         }
         if (!otherPlayersMouse[playerName]) {
             const e = el("div.others_mouse_cursor", playerName);
-            mount(tableContainer, e);
+            mount(table.el, e);
             otherPlayersMouse[playerName] = e;
         }
         const e = otherPlayersMouse[playerName];
-        const r = tableContainer.getBoundingClientRect();
-        const top = mouseMovement.mouseOnTableY + r.top + parseFloat(table.el.style.top);
-        const left = mouseMovement.mouseOnTableX + r.left + parseFloat(table.el.style.left);
-        const color = mouseMovement.mouseButtons === 0 ? "red" : "blue";
-        setStyle(e, { top: top + "px", left: left + "px", zIndex: nextZIndex, backgroundColor: color });
+        const top = mouseMovement.mouseOnTableY;
+        const left = mouseMovement.mouseOnTableX;
+        const className = mouseMovement.mouseButtons === 0 ? "" : "buttons_down";
+        setAttr(e, { className: "others_mouse_cursor " + className});
+        setStyle(e, { top: top + "px", left: left + "px", zIndex: nextZIndex });
     }
 };
 
