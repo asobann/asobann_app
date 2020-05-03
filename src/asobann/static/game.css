@@ -84,11 +84,22 @@ body {
 
 div.others_mouse_cursor {
     position: relative;
-    width: 32px;
-    height: 32px;
-    background-color: red;
 }
 
-div.others_mouse_cursor.buttons_down {
-    background-color: blue;
+div.others_mouse_cursor .icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background-color: darkcyan;
+    background-image: url("./images/mouse_cursor.png");
+    background-size: 100% 100%;
+}
+
+div.others_mouse_cursor.buttons_down .icon {
+    background-image: url("./images/mouse_cursor_buttons_down.png");
+    background-size: 100% 100%;
+}
+
+div.others_mouse_cursor.buttons_down span {
+    text-align: center;
 }

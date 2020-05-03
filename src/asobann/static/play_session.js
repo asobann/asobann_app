@@ -155,7 +155,11 @@ const sync_table_connector = {
             return;
         }
         if (!otherPlayersMouse[playerName]) {
-            const e = el("div.others_mouse_cursor", playerName);
+            const e = el("div.others_mouse_cursor",
+                [
+                    el("div.icon"),
+                    el("span", playerName),
+                ]);
             mount(table.el, e);
             otherPlayersMouse[playerName] = e;
         }
