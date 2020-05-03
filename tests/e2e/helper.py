@@ -125,6 +125,9 @@ class GameHelper:
     def double_click(self, component: "Component"):
         ActionChains(self.browser).double_click(component.element).perform()
 
+    def click(self, component: "Component"):
+        ActionChains(self.browser).click(component.element).perform()
+
     def hand_area(self, owner):
         for e in self.browser.find_elements_by_class_name("component"):
             if e.text == f"{owner}'s hand":
@@ -138,10 +141,22 @@ class Component:
         self.element = element
 
     def pos(self):
-        return compo_pos(self.helper.browser, self.element)
+        """
+        return position of the component relative to table
+        :return: Rect(top, left)
+        """
+        table = self.helper.browser.find_element_by_css_selector("div.table")
+        table_loc = table.location
+        comp_loc = self.element.location
+        return Rect(left=comp_loc["x"] - table_loc["x"], top=comp_loc["y"] - table_loc["y"])
 
     def size(self):
-        return compo_size(self.helper.browser, self.element)
+        """
+        return size of the component
+        :return: Rect(height, width)
+        """
+        comp_size = self.element.size
+        return Rect(height=comp_size["height"], width=comp_size["width"])
 
     def face(self):
         result = []

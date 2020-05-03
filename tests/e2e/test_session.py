@@ -32,3 +32,31 @@ def test_reload_retain_player(server, browser: webdriver.Firefox, another_browse
     host.go(invitation_url)
     host.should_have_text("you are host")
     assert not host.menu.join_item.is_visible()
+
+
+def test_late_comer_shall_see_the_same_table(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    host = GameHelper(browser)
+    host.go(TOP)
+
+    host.should_have_text("you are host")
+
+    # host moves a card
+    card = host.components(nth=4)
+    host.drag(card, x=200, y=50)
+    host.click(card)
+
+    # move and resize hand area
+    host.menu.add_my_hand_area.click()
+    hand_area = host.hand_area(owner="host")
+    host.drag(hand_area, 0, 200)
+    host.drag(hand_area, 200, 30, pos='lower right corner')
+
+    invitation_url = host.menu.invitation_url.value
+    # new player is invited
+    player = GameHelper(another_browser)
+    player.go(invitation_url)
+
+    for i in [1, 2, 3, 4]:
+        assert host.components(i).pos() == player.components(i).pos()
+        assert host.components(i).size() == player.components(i).size()
+        assert host.components(i).face() == player.components(i).face()
