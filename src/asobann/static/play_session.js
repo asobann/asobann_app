@@ -409,7 +409,6 @@ class Menu {
             setStyle(this.addHandAreaItem, { display: null });
             setStyle(this.removeHandAreaItem, { display: 'none' });
         }
-
     }
 }
 

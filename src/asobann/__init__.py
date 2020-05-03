@@ -82,7 +82,7 @@ def create_app(test_config=None):
 
     @app.socketio.on('come by table')
     def handle_come_by_table(json):
-        app.logger.info(f'come by table: ${json}')
+        app.logger.info(f'come by table: {json}')
         table = tables.get(json["tablename"])
         if not table:
             table = tables.create(json["tablename"])
@@ -91,7 +91,7 @@ def create_app(test_config=None):
 
     @app.socketio.on('set player name')
     def handle_set_player(json):
-        app.logger.info(f'set player: ${json}')
+        app.logger.info(f'set player: {json}')
         table = tables.get(json["tablename"])
         if not table:
             app.logger.error(f"table {json['tablename']} on set player")
@@ -106,28 +106,28 @@ def create_app(test_config=None):
 
     @app.socketio.on("update single component")
     def handle_update_single_component(json):
-        app.logger.debug(f'update table: ${json}')
+        app.logger.debug(f'update table: {json}')
         if "volatile" not in json or not json["volatile"]:
             tables.update_component(json["tablename"], json["index"], json["diff"])
         emit("update single component", json, broadcast=True, room=json["tablename"])
 
     @app.socketio.on("add component")
     def handle_add_component(json):
-        app.logger.debug(f'add component: ${json}')
+        app.logger.debug(f'add component: {json}')
         tables.add_component(json["tablename"], json["data"])
         table = tables.get(json["tablename"])
         emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
     @app.socketio.on("remove component")
     def handle_remove_component(json):
-        app.logger.debug(f'remove component: ${json}')
+        app.logger.debug(f'remove component: {json}')
         tables.remove_component(json['tablename'], json['index'])
         table = tables.get(json["tablename"])
         emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
     @app.socketio.on("mouse movement")
     def handle_mouse_movement(json):
-        app.logger.debug(f'mouse movement: ${json}')
+        app.logger.debug(f'mouse movement: {json}')
         emit("mouse movement", json, broadcast=True, room=json["tablename"])
 
     return app
