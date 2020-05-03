@@ -423,6 +423,9 @@ function getPlaceholderName() {
 }
 
 tableContainer.addEventListener("mousemove", (event) => {
+    if(isPlayerObserver()) {
+        return;
+    }
     const r = tableContainer.getBoundingClientRect();
     const mouseOnTableX = event.clientX - r.left - parseFloat(table.el.style.left);
     const mouseOnTableY = event.clientY - r.top - parseFloat(table.el.style.top);
