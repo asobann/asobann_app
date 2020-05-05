@@ -131,3 +131,12 @@ div.component_selection_container .item {
     display: block;
     width: 100%;
 }
+
+@keyframes dice_rolling {
+    from {
+        background-size: 0% 100%, 100% 100%;
+    }
+    to {
+        background-size: 100% 100%, 0% 100%;
+    }
+}

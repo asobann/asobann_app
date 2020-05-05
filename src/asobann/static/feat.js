@@ -1,4 +1,4 @@
-import {el, mount, setAttr} from "./redom.es.js";
+import {el, mount, unmount, setAttr, setStyle} from "./redom.es.js";
 // import interact from './interact.js'
 
 const draggability = {
@@ -196,14 +196,17 @@ const rollability = {
         component.el.addEventListener("dblclick", startRoll);
 
         function startRoll(event) {
-            if(!isRollingPermitted()) {
+            console.log("startRoll");
+            if (!isRollingPermitted()) {
                 return;
+            }
+            if(component.rolling) {
+                return false;
             }
             const duration = Math.random() * 1000 + 500;
             const finalValue = Math.floor(Math.random() * 6) + 1;
+            component.rolling = true;
             component.propagate({ rollDuration: duration, rollFinalValue: finalValue, startRoll: true });
-
-            rollability.roll(component, duration, finalValue);
             return false;
         }
     },
@@ -211,29 +214,84 @@ const rollability = {
         return data.rollable === true;
     },
     update: function (component, data) {
+        console.log("update", component.index, component.rolling, component.el);
         component.rollable = data.rollable;
 
-        if(data.startRoll) {
+        if (data.startRoll) {
             data.startRoll = undefined;
+            component.rolling = true;
             rollability.roll(component, data.rollDuration, data.rollFinalValue);
+        }
+
+        if (data.rollFinalValue && !component.rolling) {
+            if (data.rollFinalValue === component.rollCurrentValue) {
+                return;
+            }
+            const previousEls = [];
+            for (const e of component.el.children) {
+                if (e.className === 'dice_image') {
+                    previousEls.push(e);
+                }
+            }
+            for (const e of previousEls) {
+                unmount(component.el, e);
+            }
+            const finalEl = el("div.dice_image", { style: { width: "100%", height: "100%" } });
+            setStyle(finalEl, {
+                animation: 'none',
+                backgroundImage: `url("/static/images/dice_blue_${data.rollFinalValue}.jpg")`,
+                backgroundSize: '100% 100%',
+                backgroundPosition: 'left',
+                backgroundRepeat: 'no-repeat',
+            });
+            mount(component.el, finalEl);
+            component.rollCurrentValue = data.rollFinalValue;
         }
     },
     roll: function (component, duration, finalValue) {
-        const startTime = Date.now();
-        setTimeout(() => showRolling(Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1), 200);
+        const ANIMATION_INTERVAL = 200;
 
-        function showRolling(fromValue, toValue) {
-            component.el.innerText = fromValue;
-            if (Date.now() < startTime + duration - 200) {
-                setTimeout(() => showRolling(toValue, Math.floor(Math.random() * 6) + 1), 200);
-            } else if (Date.now() < startTime + duration) {
-                setTimeout(() => showRolling(toValue, finalValue), 200);
+        component.rolling = true;
+        const fromValue = Math.floor(Math.random() * 6) + 1;
+        const toValue = Math.floor(Math.random() * 6) + 1;
+        const startTime = Date.now();
+        let previousRollingEl = null;
+        for (const e of component.el.children) {
+            if (e.className === 'dice_image') {
+                previousRollingEl = e;
             }
-            component.el.innerText = toValue;
-            component.propagate({ rollDuration: 0, rollFinalValue: finalValue, startRoll: false });
+        }
+        showRolling(fromValue, toValue, previousRollingEl);
+
+        function showRolling(fromValue, toValue, previousRollingEl) {
+            if (previousRollingEl) {
+                unmount(component.el, previousRollingEl);
+            }
+            // repeating animation requires new element
+            const rollingEl = el("div.dice_image", { style: { width: "100%", height: "100%" } });
+            setStyle(rollingEl, {
+                animation: `dice_rolling ${ANIMATION_INTERVAL}ms linear 0s 1  `,
+                backgroundImage: `url("/static/images/dice_blue_${toValue}.jpg"), url("/static/images/dice_blue_${fromValue}.jpg")`,
+                backgroundPosition: 'left, right',
+                backgroundRepeat: 'no-repeat, no-repeat',
+            });
+            mount(component.el, rollingEl);
+
+            if (Date.now() < startTime + duration - ANIMATION_INTERVAL) {
+                setTimeout(() => showRolling(toValue, Math.floor(Math.random() * 6) + 1, rollingEl), ANIMATION_INTERVAL);
+            } else if (Date.now() < startTime + duration) {
+                setTimeout(() => showRolling(toValue, finalValue, rollingEl), ANIMATION_INTERVAL);
+            } else {
+                setTimeout(() => {
+                    component.rolling = false;
+                    component.propagate({ rollDuration: 0, rollFinalValue: finalValue, startRoll: false });
+                }, ANIMATION_INTERVAL);
+            }
+
         }
     }
 };
+
 
 const featsContext = {
     canOperateOn: function (component) {

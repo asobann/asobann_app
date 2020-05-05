@@ -144,12 +144,12 @@ class Menu {
 
                 const newComponent = {
                     name: componentName,
-                    text: "1",
                     handArea: false,
                     top: "0px",
                     left: "0px",
                     width: "64px",
                     height: "64px",
+                    showImage: false,
                     draggable: true,
                     flippable: false,
                     resizable: false,
