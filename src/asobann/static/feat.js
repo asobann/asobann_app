@@ -196,7 +196,6 @@ const rollability = {
         component.el.addEventListener("dblclick", startRoll);
 
         function startRoll(event) {
-            console.log("startRoll");
             if (!isRollingPermitted()) {
                 return;
             }
@@ -214,7 +213,6 @@ const rollability = {
         return data.rollable === true;
     },
     update: function (component, data) {
-        console.log("update", component.index, component.rolling, component.el);
         component.rollable = data.rollable;
 
         if (data.startRoll) {
@@ -252,6 +250,7 @@ const rollability = {
         const ANIMATION_INTERVAL = 200;
 
         component.rolling = true;
+        component.rollCurrentValue = null;
         const fromValue = Math.floor(Math.random() * 6) + 1;
         const toValue = Math.floor(Math.random() * 6) + 1;
         const startTime = Date.now();
