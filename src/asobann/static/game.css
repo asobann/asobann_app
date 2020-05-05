@@ -107,3 +107,27 @@ div.others_mouse_cursor.buttons_down .icon {
 div.others_mouse_cursor.buttons_down span {
     text-align: center;
 }
+
+div.component_selection_container {
+    background-color: rgba(48, 48, 48, 0.4);
+    position: fixed;
+    width: 150px;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+div.component_selection_container .component_selection {
+    background-color: rgba(255, 255, 255, 1.0);
+    color: black;
+    position: fixed;
+    width: 150px;
+    height: 100%;
+    top: 25%;
+    /*left: 25%;*/
+}
+
+div.component_selection_container .item {
+    display: block;
+    width: 100%;
+}

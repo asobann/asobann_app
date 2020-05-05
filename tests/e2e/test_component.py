@@ -77,7 +77,21 @@ class TestDice:
         host.should_have_text("you are host")
 
         host.menu.add_component.execute()
-        host.menu.check_component_from_list("dice")
-        host.menu.update.execute()
+        host.menu.add_component_from_list("dice")
 
         assert host.components_by_name("dice")
+
+    @pytest.mark.skip
+    def test_by_dragging(self, browser: webdriver.Firefox):
+        pass
+
+    @pytest.mark.skip
+    def test_roll(self, browser: webdriver.Firefox):
+        pass
+
+    @pytest.mark.skip
+    def test_remove_dice_from_table(self, browser: webdriver.Firefox):
+        pass
+
+
+

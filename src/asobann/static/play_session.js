@@ -74,6 +74,10 @@ class Component {
             nextZIndex += 1;
         }
 
+        setAttr(this.el, {
+            'data-component-name': data.name,
+        });
+
         setStyle(this.el, {
             top: parseFloat(data.top) + "px",
             left: parseFloat(data.left) + "px",
@@ -174,12 +178,12 @@ const sync_table_connector = {
 
 const otherPlayersMouse = {};
 
-function addHandArea() {
+function addNewComponent(newComponent) {
     const rect = {
         top: 64,
         left: 64,
-        width: 320,
-        height: 64,
+        width: parseInt(newComponent.width),
+        height: parseInt(newComponent.height),
     };
     for (let i = 0; i < 10; i++) {
         let collision = false;
@@ -203,21 +207,10 @@ function addHandArea() {
         }
         rect.top += 100;
     }
-    const newComponent = {
-        name: getPlayerName() + "'s hand",
-        text: getPlayerName() + "'s hand",
-        handArea: true,
-        owner: getPlayerName(),
-        top: rect.top + "px",
-        left: rect.left + "px",
-        width: rect.width + "px",
-        height: rect.height + "px",
-        draggable: true,
-        flippable: false,
-        resizable: true,
-        ownable: false,
-        zIndex: nextZIndex,
-    };
+    newComponent.top = rect.top + "px";
+    newComponent.left = rect.left + "px";
+    newComponent.zIndex = nextZIndex;
+
     nextZIndex += 1;
     pushNewComponent(newComponent);
     return false;
@@ -315,7 +308,7 @@ setTableContext(tablename, sync_table_connector);
 const menuConnector = {
     tablename: tablename,
     getPlayerName: getPlayerName,
-    addHandArea: addHandArea,
+    addNewComponent: addNewComponent,
     removeHandArea: removeHandArea,
     isPlayerObserver: isPlayerObserver,
     isTherePlayersHandArea: isTherePlayersHandArea,

@@ -49,7 +49,6 @@ socket.on("confirmed player name", (msg) => {
 
 
 socket.on("mouse movement", (msg) => {
-    console.log("mouse movement: ", msg);
     if (msg.tablename !== context.tablename) {
         return;
     }

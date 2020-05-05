@@ -22,6 +22,9 @@ class GameMenuItem:
     def click(self):
         self.element.click()
 
+    def execute(self):
+        self.element.click()
+
     @property
     def value(self):
         return self.element.get_attribute("value")
@@ -33,6 +36,11 @@ class GameMenuItem:
 class GameMenu:
     def __init__(self, browser: WebDriver):
         self.browser = browser
+
+    @property
+    def add_component(self):
+        return GameMenuItem(self.browser,
+                            self.browser.find_element_by_css_selector("div.menu div#add_remove_component"))
 
     @property
     def add_my_hand_area(self):
@@ -61,7 +69,6 @@ class GameMenu:
         WebDriverWait(self.browser, 5).until(
             expected_conditions.text_to_be_present_in_element((By.TAG_NAME, "body"), "you are " + player_name))
 
-
     def import_jsonfile(self, filename):
         WebDriverWait(self.browser, 5).until(
             expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, "div.menuitem#import_table")))
@@ -71,6 +78,13 @@ class GameMenu:
         form = self.browser.find_element_by_css_selector("form")
         form.find_element_by_css_selector("input#file").send_keys(filename)
         form.find_element_by_css_selector("input#submit").click()
+
+    def add_component_from_list(self, component_name):
+        css_selector = f"div.component_selection div.item[data-component-name='{component_name}'"
+        WebDriverWait(self.browser, 5).until(
+            expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
+        item = self.browser.find_element_by_css_selector(css_selector)
+        item.find_element_by_class_name("add_new_component").click()
 
 
 class GameHelper:
@@ -108,11 +122,12 @@ class GameHelper:
         return Component(helper=self, element=self.browser.find_element_by_css_selector(locator))
 
     def components_by_name(self, name, wait=True) -> "Component":
-        locator = f'.component[data-compponent-name="{name}")'
+        selector = f'.component[data-component-name="{name}"]'
+        print(selector)
         if wait:
             WebDriverWait(self.browser, 5).until(
-                expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, locator)))
-        return Component(helper=self, element=self.browser.find_element_by_css_selector(locator))
+                expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, selector)))
+        return Component(helper=self, element=self.browser.find_element_by_css_selector(selector))
 
     def drag(self, component: "Component", x, y, pos='center'):
         if pos == 'center':

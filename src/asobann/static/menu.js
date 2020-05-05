@@ -34,8 +34,10 @@ class Menu {
                         }
                     }, "You are observing.  Join to play!  On the left side, enter name and click Join!"),
                 ], { style: { display: 'none' } }),
+                this.addRemoveComponentItem = el("div.menuitem#add_remove_component",
+                    el("a", { href: "", onclick: showAddRemoveComponentMenu }, "Add / Remove Components")),
                 this.addHandAreaItem = el("div.menuitem#add_hand_area",
-                    el("a", { href: "", onclick: this.connector.addHandArea }, "Add Hand Area")),
+                    el("a", { href: "", onclick: addHandArea }, "Add Hand Area")),
                 this.removeHandAreaItem = el("div.menuitem#remove_hand_area",
                     el("a", { href: "", onclick: this.connector.removeHandArea }, "Remove Hand Area")),
                 el("div.menuitem", [
@@ -62,7 +64,27 @@ class Menu {
             ],
         );
 
-        function showImport(ev) {
+        function addHandArea() {
+            const newComponent = {
+                name: self.connector.getPlayerName() + "'s hand",
+                text: self.connector.getPlayerName() + "'s hand",
+                handArea: true,
+                owner: self.connector.getPlayerName(),
+                top: "0px",
+                left: "0px",
+                width: "320px",
+                height: "60px",
+                draggable: true,
+                flippable: false,
+                resizable: true,
+                ownable: false,
+                zIndex: 0,
+            };
+            self.connector.addNewComponent(newComponent);
+            return false;
+        }
+
+        function showImport() {
             const importEl = el("div",
                 el("form", { action: "/import", method: "POST", enctype: "multipart/form-data" },
                     [
@@ -80,6 +102,49 @@ class Menu {
             }
 
             return false;
+        }
+
+        function showAddRemoveComponentMenu() {
+            const REASONABLY_BIG_ZINDEX_VALUE = 99999999;
+            const modalMenu = el("div.component_selection_container", { style: { zIndex: REASONABLY_BIG_ZINDEX_VALUE } },
+                [
+                    el("div.component_selection", [
+                        el("div.item", { 'data-component-name': 'dice' }, [
+                            el("span", "Dice"),
+                            el("a.add_new_component", { href: '', 'data-component-name': 'dice', onclick: addNewComponent }, "Add"),
+                        ]),
+                        el("button", { onclick: hideAddRemoveComponentMenu }, "Done"),
+                    ])
+                ]
+            );
+            mount(self.addRemoveComponentItem, modalMenu);
+            return false;
+
+            function addNewComponent(event) {
+                const componentName = event.target.getAttribute("data-component-name");
+                console.log("add component " + componentName);
+
+                const newComponent = {
+                    name: componentName,
+                    text: "1",
+                    handArea: false,
+                    top: "0px",
+                    left: "0px",
+                    width: "64px",
+                    height: "64px",
+                    draggable: true,
+                    flippable: false,
+                    resizable: false,
+                    ownable: false,
+                    zIndex: 0,
+                };
+                self.connector.addNewComponent(newComponent);
+                return false;
+            }
+
+            function hideAddRemoveComponentMenu() {
+                unmount(self.addRemoveComponentItem, modalMenu);
+            }
         }
     }
 
