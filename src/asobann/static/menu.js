@@ -6,8 +6,22 @@ function getPlaceholderName() {
     return names[Math.floor(Math.random() * names.length)];
 }
 
+const CONNECTOR_TEMPLATE = {
+    tablename: null,
+    getPlayerName: null,
+    addNewComponent: null,
+    removeHandArea: null,
+    isPlayerObserver: null,
+    isTherePlayersHandArea: null,
+};
+
 class Menu {
     constructor(connector) {
+        for(const key in CONNECTOR_TEMPLATE) {
+            if(!connector[key]) {
+                console.debug(`menu connector must have ${key}`);
+            }
+        }
         const self = this;
         this.connector = connector;
         this.playerStatusEl = el("span", this.connector.getPlayerName());
@@ -111,7 +125,11 @@ class Menu {
                     el("div.component_selection", [
                         el("div.item", { 'data-component-name': 'dice' }, [
                             el("span", "Dice"),
-                            el("a.add_new_component", { href: '', 'data-component-name': 'dice', onclick: addNewComponent }, "Add"),
+                            el("a.add_new_component", {
+                                href: '',
+                                'data-component-name': 'dice',
+                                onclick: addNewComponent
+                            }, "Add"),
                         ]),
                         el("button", { onclick: hideAddRemoveComponentMenu }, "Done"),
                     ])
