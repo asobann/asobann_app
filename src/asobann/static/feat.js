@@ -73,7 +73,7 @@ const draggability = {
             return null;
         }
     },
-    enabled: function (component, data) {
+    isEnabled: function (component, data) {
         return data.draggable === true;
     },
     update: function (component, data) {
@@ -105,7 +105,7 @@ const flippability = {
             component.propagate(diff);
         });
     },
-    enabled: function (component, data) {
+    isEnabled: function (component, data) {
         return data.flippable === true;
     },
     update: function (component, data) {
@@ -179,7 +179,7 @@ const resizability = {
             },
         })
     },
-    enabled: function (component, data) {
+    isEnabled: function (component, data) {
         return data.resizable === true;
     },
     update: function (component, data) {
@@ -189,13 +189,50 @@ const resizability = {
 
 const rollability = {
     add: function (component) {
+        function isRollingPermitted() {
+            return component.rollable && featsContext.canOperateOn(component);
+        }
+
+        component.el.addEventListener("dblclick", startRoll);
+
+        function startRoll(event) {
+            if(!isRollingPermitted()) {
+                return;
+            }
+            const duration = Math.random() * 1000 + 500;
+            const finalValue = Math.floor(Math.random() * 6) + 1;
+            component.propagate({ rollDuration: duration, rollFinalValue: finalValue, startRoll: true });
+
+            rollability.roll(component, duration, finalValue);
+            return false;
+        }
     },
-    enabled: function (component, data) {
+    isEnabled: function (component, data) {
         return data.rollable === true;
     },
     update: function (component, data) {
         component.rollable = data.rollable;
+
+        if(data.startRoll) {
+            data.startRoll = undefined;
+            rollability.roll(component, data.rollDuration, data.rollFinalValue);
+        }
     },
+    roll: function (component, duration, finalValue) {
+        const startTime = Date.now();
+        setTimeout(() => showRolling(Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1), 200);
+
+        function showRolling(fromValue, toValue) {
+            component.el.innerText = fromValue;
+            if (Date.now() < startTime + duration - 200) {
+                setTimeout(() => showRolling(toValue, Math.floor(Math.random() * 6) + 1), 200);
+            } else if (Date.now() < startTime + duration) {
+                setTimeout(() => showRolling(toValue, finalValue), 200);
+            }
+            component.el.innerText = toValue;
+            component.propagate({ rollDuration: 0, rollFinalValue: finalValue, startRoll: false });
+        }
+    }
 };
 
 const featsContext = {

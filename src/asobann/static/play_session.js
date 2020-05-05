@@ -56,7 +56,7 @@ class Component {
 
 
         for(const ability of feats) {
-            if (ability.enabled(this, data)) {
+            if (ability.isEnabled(this, data)) {
                 ability.update(this, data);
             }
         }
