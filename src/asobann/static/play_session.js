@@ -1,5 +1,5 @@
 import {el, mount, unmount, list, setStyle, setAttr} from "./redom.es.js";
-import {setFeatsContext, draggability, flippability, resizability} from "./feat.js";
+import {setFeatsContext, feats} from "./feat.js";
 import {
     setTableContext,
     pushComponentUpdate,
@@ -16,9 +16,9 @@ class Component {
         this.el = el(".component");
         this.image = null;
 
-        draggability.add(this);
-        flippability.add(this);
-        resizability.add(this);
+        for(const ability of feats) {
+            ability.add(this);
+        }
 
         this.el.addEventListener("mousedown", (ev) => {
             if (isPlayerObserver()) {
@@ -55,14 +55,10 @@ class Component {
         }
 
 
-        if (draggability.enabled(this, data)) {
-            draggability.update(this, data);
-        }
-        if (flippability.enabled(this, data)) {
-            flippability.update(this, data);
-        }
-        if (resizability.enabled(this, data)) {
-            resizability.update(this, data);
+        for(const ability of feats) {
+            if (ability.enabled(this, data)) {
+                ability.update(this, data);
+            }
         }
         if (data.zIndex) {
             this.zIndex = data.zIndex;
@@ -123,7 +119,7 @@ const sync_table_connector = {
         console.log("players: ", players);
         if (Object.keys(players).length === 0) {
             joinTable("host", true);  // the first player is automatically becomes host
-        } else if (getPlayerName() != "nobody") {
+        } else if (getPlayerName() !== "nobody") {
             joinTable(getPlayerName(), isPlayerHost());
         } else {
             setPlayerIsObserver();

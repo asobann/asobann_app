@@ -153,6 +153,7 @@ class Menu {
                     draggable: true,
                     flippable: false,
                     resizable: false,
+                    rollable: true,
                     ownable: false,
                     zIndex: 0,
                 };

@@ -187,6 +187,17 @@ const resizability = {
     },
 };
 
+const rollability = {
+    add: function (component) {
+    },
+    enabled: function (component, data) {
+        return data.rollable === true;
+    },
+    update: function (component, data) {
+        component.rollable = data.rollable;
+    },
+};
+
 const featsContext = {
     canOperateOn: function (component) {
         return ((!component.owner || component.owner === featsContext.playerName)
@@ -200,4 +211,8 @@ function setFeatsContext(playerName, isPlayerObserver, tableData) {
     featsContext.tableData = tableData;
 }
 
-export {setFeatsContext, draggability, flippability, resizability};
+const feats = [
+    draggability, flippability, resizability, rollability,
+];
+
+export {setFeatsContext, feats};
