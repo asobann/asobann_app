@@ -1,3 +1,5 @@
+import time
+
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
@@ -43,7 +45,8 @@ def test_late_comer_shall_see_the_same_table(server, browser: webdriver.Firefox,
     # host moves a card
     card = host.components(nth=4)
     host.drag(card, x=200, y=50)
-    host.click(card)
+    time.sleep(0.5)
+    # host.double_click(card)
 
     # move and resize hand area
     host.menu.add_my_hand_area.click()
