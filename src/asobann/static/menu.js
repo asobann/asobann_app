@@ -205,6 +205,9 @@ function createAddRemoveComponentMenu(parent, connector) {
                     rollable: true,
                     ownable: false,
                     zIndex: 0,
+                    rollFinalValue: Math.floor(Math.random() * 6) + 1,
+                    rollDuration: 500,
+                    startRoll: true,
                 };
                 connector.addNewComponent(newComponent);
                 return false;
