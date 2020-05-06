@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
@@ -19,6 +20,7 @@ from .helper import compo_pos, Rect, GameHelper, TOP
 def test_golden_path(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
     host = GameHelper(browser)
     host.go(TOP)
+    host.menu.import_jsonfile(str(Path(__file__).parent / "./table_for_e2etests.json"))
     host.should_have_text("you are host")
 
     # handle cards
@@ -42,6 +44,7 @@ def test_golden_path(server, browser: webdriver.Firefox, another_browser: webdri
 def test_table_host_invite_friend(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
     host = GameHelper(browser)
     host.go(TOP)
+    host.menu.import_jsonfile(str(Path(__file__).parent / "./table_for_e2etests.json"))
 
     host.should_have_text("you are host")
 

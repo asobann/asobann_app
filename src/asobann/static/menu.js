@@ -249,7 +249,7 @@ function createAddRemoveComponentMenu(parent, connector) {
             this.commponentMenuItemList.update([
                 {
                     component: {
-                        name: 'dice_blue',
+                        name: 'Dice (Blue)',
                         handArea: false,
                         top: "0px",
                         left: "0px",

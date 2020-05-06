@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
@@ -27,8 +28,10 @@ def rect(element):
 def test_add_and_move_hand_area(server, browser: webdriver.Firefox):
     host = GameHelper(browser)
     host.go(TOP)
+    host.menu.import_jsonfile(str(Path(__file__).parent / "./table_for_e2etests.json"))
 
     host.should_have_text("you are host")
+
     host.menu.add_my_hand_area.click()
 
     # move and resize hand area
@@ -42,6 +45,7 @@ def test_add_and_move_hand_area(server, browser: webdriver.Firefox):
 def test_put_cards_in_hand(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
     host = GameHelper(browser)
     host.go(TOP)
+    host.menu.import_jsonfile(str(Path(__file__).parent / "./table_for_e2etests.json"))
 
     host.should_have_text("you are host")
     host.menu.add_my_hand_area.click()
@@ -77,9 +81,9 @@ class TestDice:
         host.should_have_text("you are host")
 
         host.menu.add_component.execute()
-        host.menu.add_component_from_list("dice_blue")
+        host.menu.add_component_from_list("Dice (Blue)")
 
-        assert host.components_by_name("dice_blue")
+        assert host.components_by_name("Dice (Blue)")
 
     def test_show_number_of_dices_on_the_table(self, browser: webdriver.Firefox):
         host = GameHelper(browser)
@@ -87,10 +91,10 @@ class TestDice:
         host.should_have_text("you are host")
         host.menu.add_component.execute()
 
-        host.menu.add_component_from_list("dice_blue")
+        host.menu.add_component_from_list("Dice (Blue)")
         host.should_have_text("1 on the table")
 
-        host.menu.add_component_from_list("dice_blue")
+        host.menu.add_component_from_list("Dice (Blue)")
         host.should_have_text("2 on the table")
 
     @pytest.mark.skip

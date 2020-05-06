@@ -1,4 +1,6 @@
 import random
+import json
+from pathlib import Path
 
 tables = None
 
@@ -15,75 +17,8 @@ def get(tablename):
 
 
 def create(tablename):
-    table = {
-        "tablename": tablename,
-        "components": [
-            {
-                "name": "usage",
-                "text": "drag to move.  double click to flip.  you can share URL.",
-                "top": "100px",
-                "left": "40px",
-                "width": "300px",
-                "height": "80px",
-                "color": "darkgoldenrod",
-                "draggable": True,
-                "flippable": False,
-                "resizable": True,
-                "ownable": False,
-                "showImage": False,
-                "zIndex": 1,
-            },
-            {
-                "name": "Card 1",
-                "top": "175px",
-                "left": "0px",
-                "width": "150px",
-                "height": "200px",
-                "draggable": True,
-                "flippable": True,
-                "resizable": False,
-                "ownable": True,
-                "faceup": False,
-                "showImage": True,
-                "faceupImage": "/static/images/v01.jpg",
-                "facedownImage": "/static/images/voice_back.png",
-                "zIndex": 2,
-            },
-            {
-                "name": "Card 2",
-                "top": "175px",
-                "left": "150px",
-                "width": "150px",
-                "height": "200px",
-                "draggable": True,
-                "flippable": True,
-                "resizable": False,
-                "ownable": True,
-                "faceup": False,
-                "showImage": True,
-                "faceupImage": "/static/images/v02.jpg",
-                "facedownImage": "/static/images/voice_back.png",
-                "zIndex": 3,
-            },
-            {
-                "name": "Card 3",
-                "top": "250px",
-                "left": "0px",
-                "width": "150px",
-                "height": "200px",
-                "draggable": True,
-                "flippable": True,
-                "resizable": False,
-                "ownable": True,
-                "faceup": False,
-                "showImage": True,
-                "faceupImage": "/static/images/v03.jpg",
-                "facedownImage": "/static/images/voice_back.png",
-                "zIndex": 4,
-            },
-        ],
-        "players": {},
-    }
+    with open(str(Path(__file__).parent / "./playing_card.json")) as f:
+        table = json.load(f)
     tables.insert_one({"tablename": tablename, "table": table})
     return table
 
