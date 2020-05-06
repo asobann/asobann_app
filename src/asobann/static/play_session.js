@@ -308,6 +308,7 @@ setTableContext(tablename, sync_table_connector);
 const menuConnector = {
     tablename: tablename,
     getTableData: () => { return table.data; },
+    fireMenuUpdate: () => { menu.update(table.data); },
     removeComponent: removeComponent,
     getPlayerName: getPlayerName,
     addNewComponent: addNewComponent,

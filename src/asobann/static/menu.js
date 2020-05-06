@@ -9,6 +9,7 @@ function getPlaceholderName() {
 const CONNECTOR_TEMPLATE = {
     tablename: null,
     getTableData: null,
+    fireMenuUpdate: null,
     getPlayerName: null,
     addNewComponent: null,
     removeComponent: null,
@@ -121,7 +122,9 @@ class Menu {
         }
 
         function showAddRemoveComponentMenu() {
-            createAddRemoveComponentMenu(self.addRemoveComponentItem, self.connector);
+            self.componentMenu = createAddRemoveComponentMenu(self.addRemoveComponentItem, self.connector);
+            mount(self.addRemoveComponentItem, self.componentMenu.el);
+            connector.fireMenuUpdate();
             return false;
         }
     }
@@ -147,9 +150,11 @@ class Menu {
             setStyle(this.addHandAreaItem, { display: null });
             setStyle(this.removeHandAreaItem, { display: 'none' });
         }
+
+        if (this.componentMenu) {
+            this.componentMenu.update(tableData);
+        }
     }
-
-
 }
 
 
@@ -172,12 +177,12 @@ function createAddRemoveComponentMenu(parent, connector) {
             setAttr(this.el, { 'data-component-name': data.component.name });
             this.nameEl.innerText = data.component.name;
             let numberOnTable = 0;
-            for(const cmp of connector.getTableData().components) {
-                if(cmp.name === data.component.name) {
+            for (const cmp of connector.getTableData().components) {
+                if (cmp.name === data.component.name) {
                     numberOnTable += 1;
                 }
             }
-            if(numberOnTable > 0) {
+            if (numberOnTable > 0) {
                 this.countEl.innerText = `${numberOnTable} on the table`;
                 this.removeEl.style.display = null;
             } else {
@@ -205,9 +210,9 @@ function createAddRemoveComponentMenu(parent, connector) {
                 return false;
             };
             this.removeEl.onclick = () => {
-                for(let i = connector.getTableData().components.length - 1; i >= 0; i -= 1) {
+                for (let i = connector.getTableData().components.length - 1; i >= 0; i -= 1) {
                     const cmp = connector.getTableData().components[i];
-                    if(cmp.name === data.component.name) {
+                    if (cmp.name === data.component.name) {
                         connector.removeComponent(i);
                         break;
                     }
@@ -217,42 +222,50 @@ function createAddRemoveComponentMenu(parent, connector) {
         }
     }
 
-    const REASONABLY_BIG_ZINDEX_VALUE = 99999999;
-    const commponentMenuItemList = list("div", ComponentMenuItem);
-    const modalMenu = el("div.component_selection_container", { style: { zIndex: REASONABLY_BIG_ZINDEX_VALUE } },
-        [
-            el("div.component_selection", [
-                el("button", { onclick: hideAddRemoveComponentMenu }, "Done"),
-                commponentMenuItemList.el,
-                el("button", { onclick: hideAddRemoveComponentMenu }, "Done"),
-            ])
-        ]
-    );
-    mount(parent, modalMenu);
+    class ComponentMenu {
+        constructor(props) {
+            const REASONABLY_BIG_ZINDEX_VALUE = 99999999;
+            const self = this;
+            this.commponentMenuItemList = list("div", ComponentMenuItem);
+            this.el = el("div.component_selection_container", { style: { zIndex: REASONABLY_BIG_ZINDEX_VALUE } },
+                [
+                    el("div.component_selection", [
+                        el("button", { onclick: hideAddRemoveComponentMenu }, "Done"),
+                        this.commponentMenuItemList.el,
+                        el("button", { onclick: hideAddRemoveComponentMenu }, "Done"),
+                    ])
+                ]
+            );
 
-    commponentMenuItemList.update([
-        {
-            component: {
-                name: 'dice_blue',
-                handArea: false,
-                top: "0px",
-                left: "0px",
-                width: "64px",
-                height: "64px",
-                showImage: false,
-                draggable: true,
-                flippable: false,
-                resizable: false,
-                rollable: true,
-                ownable: false,
-                zIndex: 0,
+            function hideAddRemoveComponentMenu() {
+                unmount(parent, self.el);
             }
         }
-    ]);
 
-    function hideAddRemoveComponentMenu() {
-        unmount(parent, modalMenu);
+        update(tableData, context) {
+            this.commponentMenuItemList.update([
+                {
+                    component: {
+                        name: 'dice_blue',
+                        handArea: false,
+                        top: "0px",
+                        left: "0px",
+                        width: "64px",
+                        height: "64px",
+                        showImage: false,
+                        draggable: true,
+                        flippable: false,
+                        resizable: false,
+                        rollable: true,
+                        ownable: false,
+                        zIndex: 0,
+                    }
+                }
+            ], { tableData: tableData });
+        }
     }
+
+    return new ComponentMenu();
 }
 
 export {Menu};
