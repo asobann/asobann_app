@@ -118,6 +118,8 @@ const flippability = {
                 }
                 if (data.faceupText) {
                     component.textEl.innerText = data.faceupText;
+                } else {
+                    component.textEl.innerText = '';
                 }
             } else {
                 if (data.showImage) {
@@ -125,6 +127,8 @@ const flippability = {
                 }
                 if (data.facedownText) {
                     component.textEl.innerText = data.facedownText;
+                } else {
+                    component.textEl.innerText = '';
                 }
             }
         } else {
@@ -133,6 +137,8 @@ const flippability = {
             }
             if (data.faceupText) {
                 component.textEl.innerText = data.facedownText;
+            } else {
+                component.textEl.innerText = '';
             }
         }
         component.faceup = data.faceup;
