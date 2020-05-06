@@ -126,19 +126,19 @@ const sync_table_connector = {
         }
 
         table.update(tableData);
-        menu.update({})
+        menu.update(tableData)
     },
 
     update_single_component: function (index, diff) {
-        const oldData = table.data;
-        Object.assign(oldData.components[index], diff);
-        table.update(oldData);
-        menu.update({});
+        const tableData = table.data;
+        Object.assign(tableData.components[index], diff);
+        table.update(tableData);
+        menu.update(tableData);
     },
 
     update_whole_table: function (data) {
         table.update(data);
-        menu.update({});
+        menu.update(data);
     },
 
     updatePlayer: function (playerData) {
@@ -216,11 +216,15 @@ function removeHandArea() {
     for (let i = 0; i < table.data.components.length; i++) {
         const cmp = table.data.components[i];
         if (cmp.handArea && cmp.owner === getPlayerName()) {
-            pushRemoveComponent(i);
+            removeComponent(i);
             return false;
         }
     }
     return false;
+}
+
+function removeComponent(i) {
+    pushRemoveComponent(i);
 }
 
 function getPlayerName() {
@@ -303,6 +307,8 @@ setTableContext(tablename, sync_table_connector);
 
 const menuConnector = {
     tablename: tablename,
+    getTableData: () => { return table.data; },
+    removeComponent: removeComponent,
     getPlayerName: getPlayerName,
     addNewComponent: addNewComponent,
     removeHandArea: removeHandArea,

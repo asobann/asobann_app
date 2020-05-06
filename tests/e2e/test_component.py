@@ -77,12 +77,24 @@ class TestDice:
         host.should_have_text("you are host")
 
         host.menu.add_component.execute()
-        host.menu.add_component_from_list("dice")
+        host.menu.add_component_from_list("dice_blue")
 
-        assert host.components_by_name("dice")
+        assert host.components_by_name("dice_blue")
+
+    def test_show_number_of_dices_on_the_table(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        host.go(TOP)
+        host.should_have_text("you are host")
+        host.menu.add_component.execute()
+
+        host.menu.add_component_from_list("dice_blue")
+        host.should_have_text("1 on the table")
+
+        host.menu.add_component_from_list("dice_blue")
+        host.should_have_text("2 on the table")
 
     @pytest.mark.skip
-    def test_by_dragging(self, browser: webdriver.Firefox):
+    def test_add_by_dragging(self, browser: webdriver.Firefox):
         pass
 
     @pytest.mark.skip

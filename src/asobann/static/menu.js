@@ -1,4 +1,4 @@
-import {el, mount, setStyle, unmount} from "./redom.es.js";
+import {el, list, mount, setAttr, setStyle, unmount} from "./redom.es.js";
 import {joinTable} from "./sync_table.js";
 import {names} from "./names.js";
 
@@ -8,8 +8,10 @@ function getPlaceholderName() {
 
 const CONNECTOR_TEMPLATE = {
     tablename: null,
+    getTableData: null,
     getPlayerName: null,
     addNewComponent: null,
+    removeComponent: null,
     removeHandArea: null,
     isPlayerObserver: null,
     isTherePlayersHandArea: null,
@@ -17,8 +19,8 @@ const CONNECTOR_TEMPLATE = {
 
 class Menu {
     constructor(connector) {
-        for(const key in CONNECTOR_TEMPLATE) {
-            if(!connector[key]) {
+        for (const key in CONNECTOR_TEMPLATE) {
+            if (!connector[key]) {
                 console.debug(`menu connector must have ${key}`);
             }
         }
@@ -119,31 +121,73 @@ class Menu {
         }
 
         function showAddRemoveComponentMenu() {
-            const REASONABLY_BIG_ZINDEX_VALUE = 99999999;
-            const modalMenu = el("div.component_selection_container", { style: { zIndex: REASONABLY_BIG_ZINDEX_VALUE } },
-                [
-                    el("div.component_selection", [
-                        el("div.item", { 'data-component-name': 'dice' }, [
-                            el("span", "Dice"),
-                            el("a.add_new_component", {
-                                href: '',
-                                'data-component-name': 'dice',
-                                onclick: addNewComponent
-                            }, "Add"),
-                        ]),
-                        el("button", { onclick: hideAddRemoveComponentMenu }, "Done"),
-                    ])
-                ]
-            );
-            mount(self.addRemoveComponentItem, modalMenu);
+            createAddRemoveComponentMenu(self.addRemoveComponentItem, self.connector);
             return false;
+        }
+    }
 
-            function addNewComponent(event) {
-                const componentName = event.target.getAttribute("data-component-name");
-                console.log("add component " + componentName);
+    update(tableData) {
+        if (this.connector.isPlayerObserver()) {
+            setStyle(this.joinItem, { display: null });
+            this.playerStatusEl.innerText = "observing";
+            setStyle(this.addHandAreaItem, { display: 'none' });
+            setStyle(this.removeHandAreaItem, { display: 'none' });
+            return;
+        }
 
+        setStyle(this.joinItem, { display: 'none' });
+        if (tableData.playerName) {
+            this.playerStatusEl.innerText = tableData.playerName;
+        }
+
+        if (this.connector.isTherePlayersHandArea(this.connector.getPlayerName())) {
+            setStyle(this.addHandAreaItem, { display: 'none' });
+            setStyle(this.removeHandAreaItem, { display: null });
+        } else {
+            setStyle(this.addHandAreaItem, { display: null });
+            setStyle(this.removeHandAreaItem, { display: 'none' });
+        }
+    }
+
+
+}
+
+
+function createAddRemoveComponentMenu(parent, connector) {
+    class ComponentMenuItem {
+        constructor(props) {
+            this.el = el("div.item", [
+                this.nameEl = el("div"),
+                this.countEl = el("div"),
+                this.addEl = el("a.add_new_component", {
+                    href: '',
+                }, "Add"),
+                this.removeEl = el("a.remove_component", {
+                    href: '',
+                }, "Remove"),
+            ]);
+        }
+
+        update(data, index, items, context) {
+            setAttr(this.el, { 'data-component-name': data.component.name });
+            this.nameEl.innerText = data.component.name;
+            let numberOnTable = 0;
+            for(const cmp of connector.getTableData().components) {
+                if(cmp.name === data.component.name) {
+                    numberOnTable += 1;
+                }
+            }
+            if(numberOnTable > 0) {
+                this.countEl.innerText = `${numberOnTable} on the table`;
+                this.removeEl.style.display = null;
+            } else {
+                this.countEl.innerText = '';
+                this.removeEl.style.display = 'none';
+            }
+            this.component = data.component;
+            this.addEl.onclick = (event) => {
                 const newComponent = {
-                    name: componentName,
+                    name: data.component.name,
                     handArea: false,
                     top: "0px",
                     left: "0px",
@@ -157,40 +201,58 @@ class Menu {
                     ownable: false,
                     zIndex: 0,
                 };
-                self.connector.addNewComponent(newComponent);
+                connector.addNewComponent(newComponent);
+                return false;
+            };
+            this.removeEl.onclick = () => {
+                for(let i = connector.getTableData().components.length - 1; i >= 0; i -= 1) {
+                    const cmp = connector.getTableData().components[i];
+                    if(cmp.name === data.component.name) {
+                        connector.removeComponent(i);
+                        break;
+                    }
+                }
                 return false;
             }
+        }
+    }
 
-            function hideAddRemoveComponentMenu() {
-                unmount(self.addRemoveComponentItem, modalMenu);
+    const REASONABLY_BIG_ZINDEX_VALUE = 99999999;
+    const commponentMenuItemList = list("div", ComponentMenuItem);
+    const modalMenu = el("div.component_selection_container", { style: { zIndex: REASONABLY_BIG_ZINDEX_VALUE } },
+        [
+            el("div.component_selection", [
+                el("button", { onclick: hideAddRemoveComponentMenu }, "Done"),
+                commponentMenuItemList.el,
+                el("button", { onclick: hideAddRemoveComponentMenu }, "Done"),
+            ])
+        ]
+    );
+    mount(parent, modalMenu);
+
+    commponentMenuItemList.update([
+        {
+            component: {
+                name: 'dice_blue',
+                handArea: false,
+                top: "0px",
+                left: "0px",
+                width: "64px",
+                height: "64px",
+                showImage: false,
+                draggable: true,
+                flippable: false,
+                resizable: false,
+                rollable: true,
+                ownable: false,
+                zIndex: 0,
             }
         }
+    ]);
+
+    function hideAddRemoveComponentMenu() {
+        unmount(parent, modalMenu);
     }
-
-    update(data) {
-        if (this.connector.isPlayerObserver()) {
-            setStyle(this.joinItem, { display: null });
-            this.playerStatusEl.innerText = "observing";
-            setStyle(this.addHandAreaItem, { display: 'none' });
-            setStyle(this.removeHandAreaItem, { display: 'none' });
-            return;
-        }
-
-        setStyle(this.joinItem, { display: 'none' });
-        if (data.playerName) {
-            this.playerStatusEl.innerText = data.playerName;
-        }
-
-        if (this.connector.isTherePlayersHandArea(this.connector.getPlayerName())) {
-            setStyle(this.addHandAreaItem, { display: 'none' });
-            setStyle(this.removeHandAreaItem, { display: null });
-        } else {
-            setStyle(this.addHandAreaItem, { display: null });
-            setStyle(this.removeHandAreaItem, { display: 'none' });
-        }
-    }
-
-
 }
 
 export {Menu};
