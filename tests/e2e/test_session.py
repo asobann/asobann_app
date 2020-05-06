@@ -43,7 +43,7 @@ def test_late_comer_shall_see_the_same_table(server, browser: webdriver.Firefox,
     host.should_have_text("you are host")
 
     # host moves a card
-    card = host.components(nth=4)
+    card = host.component(nth=4)
     host.drag(card, x=200, y=50)
     time.sleep(0.5)
     # host.double_click(card)
@@ -60,6 +60,6 @@ def test_late_comer_shall_see_the_same_table(server, browser: webdriver.Firefox,
     player.go(invitation_url)
 
     for i in [1, 2, 3, 4]:
-        assert host.components(i).pos() == player.components(i).pos()
-        assert host.components(i).size() == player.components(i).size()
-        assert host.components(i).face() == player.components(i).face()
+        assert host.component(i).pos() == player.component(i).pos()
+        assert host.component(i).size() == player.component(i).size()
+        assert host.component(i).face() == player.component(i).face()

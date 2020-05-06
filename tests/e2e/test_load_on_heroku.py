@@ -34,7 +34,7 @@ def save_status(iteration, tag, player: GameHelper):
     n = 1
     while True:
         try:
-            c = player.components(n, wait=False)
+            c = player.component(n, wait=False)
             status.append((c.pos(), c.size(), c.face()))
             n += 1
         except NoSuchElementException:
@@ -91,9 +91,9 @@ def test_simultaneous_dragging(server, browser_factory):
 
         def run_factory(idx):
             def run():
-                players[idx].drag(players[idx].components(idx + 2), 0, 300)
+                players[idx].drag(players[idx].component(idx + 2), 0, 300)
                 time.sleep(0.1)  # avoid double clicking
-                players[idx].drag(players[idx].components(idx + 2), 0, -300)
+                players[idx].drag(players[idx].component(idx + 2), 0, -300)
 
             return run
 

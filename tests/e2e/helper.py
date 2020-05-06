@@ -114,16 +114,15 @@ class GameHelper:
             pass
         assert False, f'element located by css locator "{css_locator}" cannot be found (timeout)'
 
-    def components(self, nth, wait=True) -> "Component":
+    def component(self, nth, wait=True) -> "Component":
         locator = f".component:nth-of-type({nth})"
         if wait:
             WebDriverWait(self.browser, 5).until(
                 expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, locator)))
         return Component(helper=self, element=self.browser.find_element_by_css_selector(locator))
 
-    def components_by_name(self, name, wait=True) -> "Component":
+    def component_by_name(self, name, wait=True) -> "Component":
         selector = f'.component[data-component-name="{name}"]'
-        print(selector)
         if wait:
             WebDriverWait(self.browser, 5).until(
                 expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, selector)))
@@ -143,6 +142,14 @@ class GameHelper:
             move_by_offset(x, y). \
             release(). \
             perform()
+
+    def move_card_to_hand_area(self, card: 'Component', player_name: str, offset=(0, 0)):
+        hand_area_rect = self.hand_area(player_name).rect()
+        card_rect = card.rect()
+        dx = (hand_area_rect.left + hand_area_rect.width / 2) - (card_rect.left + card_rect.width / 2) + offset[0]
+        dy = (hand_area_rect.top + hand_area_rect.height / 2) - (card_rect.top + card_rect.height / 2) + offset[1]
+        ActionChains(self.browser).move_to_element(card.element).click_and_hold().move_by_offset(dx, dy) \
+            .release().perform()
 
     def double_click(self, component: "Component"):
         ActionChains(self.browser).double_click(component.element).perform()
@@ -179,6 +186,17 @@ class Component:
         """
         comp_size = self.element.size
         return Rect(height=comp_size["height"], width=comp_size["width"])
+
+    def rect(self):
+        """
+        return rect of the component
+        :return: Rect(left, top, right, bottom, height, width)
+        """
+        pos = self.pos()
+        size = self.size()
+        return Rect(left=pos.left, top=pos.top,
+                    right=pos.left + size.width, bottom=pos.top + size.height,
+                    width=size.width, height=size.height)
 
     def face(self):
         result = []
