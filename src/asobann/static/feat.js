@@ -13,65 +13,26 @@ const draggability = {
                     if (!isDraggingPermitted()) {
                         return;
                     }
+                    component.moving = true;
                     const top = parseFloat(component.el.style.top) + event.dy;
                     const left = parseFloat(component.el.style.left) + event.dx;
-                    component.propagate_volatile({ top: top + "px", left: left + "px" });
+                    component.propagate_volatile({ top: top + "px", left: left + "px", moving: true });
                 },
                 end(event) {
                     if (!isDraggingPermitted()) {
                         return;
                     }
+                    component.moving = false;
                     const top = parseFloat(component.el.style.top) + event.dy;
                     const left = parseFloat(component.el.style.left) + event.dx;
-                    const diff = { top: top + "px", left: left + "px" };
-
-                    if (component.ownable) {
-                        const handArea = getOverlappingHandArea(component);
-                        if (handArea) {
-                            if (!(component.owner === handArea.owner)) {
-                                component.owner = handArea.owner;
-                                diff.owner = component.owner;
-                            }
-                        } else {
-                            if (component.owner) {
-                                component.owner = null;
-                                diff.owner = component.owner;
-                            }
-                        }
-                    }
+                    const diff = { top: top + "px", left: left + "px", moving: false };
 
                     component.propagate(diff);
                 }
             }
         });
 
-        function getOverlappingHandArea(component) {
-            const rect = {
-                top: parseFloat(component.el.style.top),
-                left: parseFloat(component.el.style.left),
-                bottom: parseFloat(component.el.style.top) + parseFloat(component.el.style.height),
-                right: parseFloat(component.el.style.left) + parseFloat(component.el.style.width),
-                height: parseFloat(component.el.style.height),
-                width: parseFloat(component.el.style.width),
-            };
 
-
-            for (const target of featsContext.tableData.components) {
-                if (target.handArea) {
-                    const targetLeft = parseFloat(target.left);
-                    const targetTop = parseFloat(target.top);
-                    const targetRight = targetLeft + parseFloat(target.width);
-                    const targetBottom = targetTop + parseFloat(target.height);
-                    if (rect.left <= targetRight &&
-                        targetLeft <= rect.right &&
-                        rect.top <= targetBottom &&
-                        targetTop <= rect.bottom) {
-                        return target;
-                    }
-                }
-            }
-            return null;
-        }
     },
     isEnabled: function (component, data) {
         return data.draggable === true;
@@ -298,6 +259,69 @@ const rollability = {
 };
 
 
+const ownership = {
+    add: function (component) {
+    },
+    isEnabled: function (component, data) {
+        return true;
+    },
+    update: function (component, data) {
+        component.moving = data.moving;
+        if(component.moving) {
+            return;
+        }
+        const diff = {};
+        updateDiffWithOverlap(component, diff);
+        if(diff.owner !== undefined) {
+            component.propagate(diff);
+        }
+
+        function getOverlappingHandArea(component) {
+            const rect = {
+                top: parseFloat(component.el.style.top),
+                left: parseFloat(component.el.style.left),
+                bottom: parseFloat(component.el.style.top) + parseFloat(component.el.style.height),
+                right: parseFloat(component.el.style.left) + parseFloat(component.el.style.width),
+                height: parseFloat(component.el.style.height),
+                width: parseFloat(component.el.style.width),
+            };
+
+            for (const target of featsContext.tableData.components) {
+                if (target.handArea) {
+                    const targetLeft = parseFloat(target.left);
+                    const targetTop = parseFloat(target.top);
+                    const targetRight = targetLeft + parseFloat(target.width);
+                    const targetBottom = targetTop + parseFloat(target.height);
+                    if (rect.left <= targetRight &&
+                        targetLeft <= rect.right &&
+                        rect.top <= targetBottom &&
+                        targetTop <= rect.bottom) {
+                        return target;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function updateDiffWithOverlap(component, diff) {
+            if (component.ownable) {
+                const handArea = getOverlappingHandArea(component);
+                if (handArea) {
+                    if (!(component.owner === handArea.owner)) {
+                        console.log(component, " owner " + component.owner + "->" + handArea.owner)
+                        diff.owner = component.owner = handArea.owner;
+                    }
+                } else {
+                    if (component.owner) {
+                        console.log(component, " owner " + component.owner + "-> null")
+                        diff.owner = component.owner = null;
+                    }
+                }
+            }
+        }
+    },
+};
+
 const featsContext = {
     canOperateOn: function (component) {
         return ((!component.owner || component.owner === featsContext.playerName)
@@ -312,7 +336,7 @@ function setFeatsContext(playerName, isPlayerObserver, tableData) {
 }
 
 const feats = [
-    draggability, flippability, resizability, rollability,
+    ownership, draggability, flippability, resizability, rollability,
 ];
 
 export {setFeatsContext, feats};
