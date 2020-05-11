@@ -96,6 +96,10 @@ class GameHelper:
     def go(self, url):
         self.browser.get(url)
 
+    @property
+    def current_url(self):
+        return self.browser.current_url
+
     def should_have_text(self, text):
         try:
             WebDriverWait(self.browser, 5).until(

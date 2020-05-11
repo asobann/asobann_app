@@ -75,16 +75,14 @@ def test_put_cards_in_hand(server, browser: webdriver.Firefox, another_browser: 
 
 @pytest.mark.usefixtures("server")
 class TestHandArea:
-    def test_cards_in_hand_are_looks_facedown(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
-        host = GameHelper(browser)
+    def put_one_card_each_on_2_hand_areas(self, host, another):
         host.go(TOP)
         host.should_have_text("you are host")
 
         host.menu.add_my_hand_area.click()
         host.move_card_to_hand_area(host.component_by_name('S01'), 'host')
 
-        another = GameHelper(another_browser)
-        another.go(browser.current_url)
+        another.go(host.current_url)
         another.menu.join("Player 2")
         another.should_have_text("you are Player 2")
 
@@ -93,6 +91,11 @@ class TestHandArea:
 
         host.double_click(host.component_by_name('S01'))
         another.double_click(another.component_by_name('S02'))
+
+    def test_cards_in_hand_are_looks_facedown(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        another = GameHelper(another_browser)
+        self.put_one_card_each_on_2_hand_areas(host, another)
 
         # assert text
         assert '♠A' in host.component_by_name('S01').face()
@@ -108,25 +111,8 @@ class TestHandArea:
 
     def test_up_card_in_my_hand_become_down_when_moved_to_others_hand(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
-        host.go(TOP)
-        host.should_have_text("you are host")
-
-        host.menu.add_my_hand_area.click()
-        host.move_card_to_hand_area(host.component_by_name('S01'), 'host')
-
         another = GameHelper(another_browser)
-        another.go(browser.current_url)
-        another.menu.join("Player 2")
-        another.should_have_text("you are Player 2")
-
-        another.menu.add_my_hand_area.click()
-        another.move_card_to_hand_area(another.component_by_name('S02'), 'Player 2')
-
-        host.double_click(host.component_by_name('S01'))
-        another.double_click(another.component_by_name('S02'))
-
-        host.move_card_to_hand_area(host.component_by_name('S01'), 'Player 2', (-100, 0))
-        another.move_card_to_hand_area(another.component_by_name('S02'), 'host', (100, 0))
+        self.put_one_card_each_on_2_hand_areas(host, another)
 
         # assert text
         assert '♠A' not in host.component_by_name('S01').face()
@@ -139,6 +125,31 @@ class TestHandArea:
         assert 'card_up.png' in another.component_by_name('S01').face()
         assert 'card_up.png' in host.component_by_name('S02').face()
         assert 'card_back.png' in another.component_by_name('S02').face()
+
+    def test_cards_on_hand_area_follows_when_hand_are_is_moved(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        another = GameHelper(another_browser)
+        self.put_one_card_each_on_2_hand_areas(host, another)
+
+        host_card = host.component_by_name('S01')
+        host_card_pos = host_card.pos()
+        hand_area = host.hand_area(owner="host")
+        host.drag(host_card, -100, 0)
+        host.drag(hand_area, 600, 100)
+        assert host_card_pos.left + 600 == host_card.pos().left
+        assert host_card_pos.top + 100 == host_card.pos().top
+
+        # host_card is still owned by host
+        assert '♠A' in host.component_by_name('S01').face()
+        assert '♠A' not in another.component_by_name('S01').face()
+
+        host.double_click(host_card)
+        assert '♠A' not in host.component_by_name('S01').face()
+        assert '♠A' not in another.component_by_name('S01').face()
+
+        host.double_click(host_card)
+        assert '♠A' in host.component_by_name('S01').face()
+        assert '♠A' not in another.component_by_name('S01').face()
 
 
 @pytest.mark.usefixtures("server")
