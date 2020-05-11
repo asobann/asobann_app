@@ -43,37 +43,6 @@ def test_add_and_move_hand_area(server, browser: webdriver.Firefox):
     assert size.width + 200 == hand_area.size().width and size.height + 30 == hand_area.size().height
 
 
-def test_put_cards_in_hand(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
-    host = GameHelper(browser)
-    host.go(TOP)
-    host.menu.import_jsonfile(str(Path(__file__).parent / "./table_for_e2etests.json"))
-
-    host.should_have_text("you are host")
-    host.menu.add_my_hand_area.click()
-
-    # creating and joining new game
-    WebDriverWait(browser, 5).until(
-        expected_conditions.presence_of_element_located((By.CSS_SELECTOR, "div.component:nth-of-type(5)")))
-
-    hand_area = browser.find_element_by_css_selector(".component:nth-of-type(5)")
-    ActionChains(browser).move_to_element(hand_area).click_and_hold().move_by_offset(0, 50).release().perform()
-    hand_area_rect = rect(hand_area)
-    card = browser.find_element_by_css_selector(".component:nth-of-type(3)")
-    card_rect = rect(card)
-    ActionChains(browser).move_to_element(card).click_and_hold().move_by_offset(
-        hand_area_rect["left"] - card_rect["left"], hand_area_rect["top"] - card_rect["left"]).release().perform()
-
-    another = GameHelper(another_browser)
-    another.go(browser.current_url)
-    another.menu.join("Player 2")
-    WebDriverWait(another_browser, 5).until(
-        expected_conditions.presence_of_element_located((By.CSS_SELECTOR, "div.component:nth-of-type(5)")))
-    card_on_another = another_browser.find_element_by_css_selector(".component:nth-of-type(3)")
-    card_pos_before_drag = compo_pos(another_browser, card_on_another)
-    ActionChains(another_browser).move_to_element(card_on_another).click_and_hold().move_by_offset(50, 50).perform()
-    assert card_pos_before_drag == compo_pos(another_browser, card_on_another), "not moved"
-
-
 @pytest.mark.usefixtures("server")
 class TestHandArea:
     def put_one_card_each_on_2_hand_areas(self, host, another):
@@ -109,6 +78,30 @@ class TestHandArea:
         assert 'card_back.png' in another.component_by_name('S01').face()
         assert 'card_back.png' in host.component_by_name('S02').face()
         assert 'card_up.png' in another.component_by_name('S02').face()
+
+    def test_cannot_handle_cards_owned_by_someone_else(self, browser: webdriver.Firefox,
+                                                       another_browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        another = GameHelper(another_browser)
+        self.put_one_card_each_on_2_hand_areas(host, another)
+
+        # cannot move
+        before = host.component_by_name('S02').rect()
+        host.drag(host.component_by_name('S02'), 20, 0)
+        assert before == host.component_by_name('S02').rect()
+
+        before = another.component_by_name('S01').rect()
+        another.drag(another.component_by_name('S01'), 20, 0)
+        assert before == another.component_by_name('S01').rect()
+
+        # cannot flip
+        face = host.component_by_name('S02').face()
+        host.double_click(host.component_by_name('S02'))
+        assert face == host.component_by_name('S02').face()
+
+        face = another.component_by_name('S01').face()
+        another.double_click(another.component_by_name('S01'))
+        assert face == another.component_by_name('S01').face()
 
     def test_up_card_in_my_hand_become_down_when_moved_to_others_hand(self, browser: webdriver.Firefox,
                                                                       another_browser: webdriver.Firefox):
