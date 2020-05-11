@@ -137,6 +137,10 @@ class GameHelper:
             xoffset, yoffset = (0, 0)
         elif pos == 'lower right corner':
             xoffset, yoffset = (component.element.size["width"] / 2 - 1, component.element.size["height"] / 2 - 1)
+        elif pos == 'top':
+            xoffset, yoffset = (0, -(component.element.size["height"] / 2 - 1))
+        elif pos == 'bottom':
+            xoffset, yoffset = (0, component.element.size["height"] / 2 - 1)
         else:
             raise ValueError(f"pos '{pos}' is invalid")
         ActionChains(self.browser). \
