@@ -124,7 +124,7 @@ class TestHandArea:
         assert 'card_up.png' in host.component_by_name('S02').face()
         assert 'card_back.png' in another.component_by_name('S02').face()
 
-    def test_cards_on_hand_area_follows_when_hand_are_is_moved(self, browser: webdriver.Firefox,
+    def test_cards_on_hand_area_follows_when_hand_area_is_moved(self, browser: webdriver.Firefox,
                                                                another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
