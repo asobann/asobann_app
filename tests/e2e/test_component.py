@@ -133,9 +133,9 @@ class TestHandArea:
         host_card = host.component_by_name('S01')
         host_card_pos = host_card.pos()
         hand_area = host.hand_area(owner="host")
-        host.drag(hand_area, 600, 100)
-        assert host_card_pos.left + 600 == host_card.pos().left
-        assert host_card_pos.top + 100 == host_card.pos().top
+        host.drag(hand_area, -50, -100)
+        assert host_card_pos.left - 50 == host_card.pos().left
+        assert host_card_pos.top - 100 == host_card.pos().top
 
         # host_card is still owned by host
         assert '♠A' in host.component_by_name('S01').face()
