@@ -96,6 +96,9 @@ class GameHelper:
     def go(self, url):
         self.browser.get(url)
 
+    def create_table(self, number):
+        pass
+
     @property
     def current_url(self):
         return self.browser.current_url
