@@ -313,8 +313,20 @@ const ownership = {
     },
     update: function (component, data) {
         component.moving = data.moving;
+        component.handArea = data.handArea;
         if (component.moving) {
             return;
+        }
+        if (!component.handArea) {
+            if (component.owner) {
+                setStyle(component.el, {
+                    boxShadow: '0 0 20px green',
+                })
+            } else {
+                setStyle(component.el, {
+                    boxShadow: null,
+                })
+            }
         }
         const diff = {};
         updateDiffWithOverlap(component, diff);

@@ -169,6 +169,14 @@ class TestHandArea:
         assert '♠3' in host.component_by_name('S03').face()
         assert '♠3' not in another.component_by_name('S03').face()
 
+    def test_cards_on_hand_area_have_visible_clue(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        another = GameHelper(another_browser)
+
+        self.put_one_card_each_on_2_hand_areas(host, another)
+        assert 'box-shadow' in host.component_by_name('S01').element.get_attribute('style');
+        assert 'box-shadow' not in host.component_by_name('H01').element.get_attribute('style');
+
 
 @pytest.mark.usefixtures("server")
 class TestDice:
