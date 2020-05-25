@@ -218,6 +218,9 @@ class Component:
 
         return ",".join(result) or "not implemented"
 
+    def owner(self):
+        return 'box-shadow' in self.element.get_attribute('style')
+
 
 class Rect:
     top: float

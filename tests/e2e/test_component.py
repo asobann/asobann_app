@@ -174,8 +174,9 @@ class TestHandArea:
         another = GameHelper(another_browser)
 
         self.put_one_card_each_on_2_hand_areas(host, another)
-        assert 'box-shadow' in host.component_by_name('S01').element.get_attribute('style');
-        assert 'box-shadow' not in host.component_by_name('H01').element.get_attribute('style');
+        assert host.component_by_name('S01').owner()
+        assert host.component_by_name('S02').owner()
+        assert not host.component_by_name('H01').owner()
 
 
 @pytest.mark.usefixtures("server")
