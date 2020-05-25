@@ -68,8 +68,8 @@ const draggability = {
                     const left = parseFloat(component.el.style.left) + event.dx;
                     const diff = { top: top + "px", left: left + "px", moving: false };
 
-                    featsContext.fireEvent(component, draggability.events.onmoveend, {});
                     component.propagate(diff);
+                    featsContext.fireEvent(component, featsContext.events.onPositionChanged, {});
                 }
             }
         });
@@ -84,10 +84,6 @@ const draggability = {
         component.owner = data.owner;
         component.ownable = data.ownable;
     },
-    events: {
-        onmove: "draggability.onmove",
-        onmoveend: "draggability.onmoveend",
-    }
 };
 
 const flippability = {
@@ -189,6 +185,7 @@ const resizability = {
                 let width = parseFloat(component.el.style.width);
                 let height = parseFloat(component.el.style.height);
                 component.propagate({ top: top, left: left, width: width, height: height });
+                featsContext.fireEvent(component, featsContext.events.onPositionChanged, {});
             },
         })
     },
@@ -307,12 +304,87 @@ const rollability = {
 
 const ownership = {
     add: function (component) {
+        if (!featsContext.ownershipComponents) {
+            featsContext.ownershipComponents = {};
+        }
+        if(!component.currentCollisions) {
+            component.currentCollisions = {};
+        }
+
+        featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
+            const collided = [];
+            for (const index in featsContext.ownershipComponents) {
+                const target = featsContext.ownershipComponents[index];
+                if (target === component) {
+                    continue;
+                }
+                if (isOverlapped(component, target)) {
+                    collided.push(target);
+                }
+            }
+
+            for (const other of collided) {
+                if (component.currentCollisions[other.index]) {
+                    continue;
+                }
+                component.currentCollisions[other.index] = true;
+                other.currentCollisions[component.index] = true;
+
+                // collision_start
+                if (component.handArea && !other.handArea) {
+                    const hand = component;
+                    const onHand = other;
+                    if (!(onHand.owner === hand.owner)) {
+                        console.log(onHand, " owner " + onHand.owner + "->" + hand.owner);
+                        onHand.propagate({ owner: onHand.owner = hand.owner });
+                    }
+                } else if (!component.handArea && other.handArea) {
+                    const hand = other;
+                    const onHand = component;
+                    if (!(onHand.owner === hand.owner)) {
+                        console.log(onHand, " owner " + onHand.owner + "->" + hand.owner);
+                        onHand.propagate({ owner: onHand.owner = hand.owner });
+                    }
+                }
+            }
+            for (const index in component.currentCollisions) {
+                if(collided.find(e=>e.index == parseInt(index))) {
+                    continue;
+                }
+
+                const other = featsContext.ownershipComponents[index];
+                delete component.currentCollisions[other.index];
+                delete other.currentCollisions[component.index];
+
+                // collision_end
+                if (component.handArea && !other.handArea) {
+                    const hand = component;
+                    const onHand = other;
+                    if (onHand.owner === hand.owner) {
+                        console.log(onHand, " owner " + onHand.owner + "->" + null);
+                        onHand.propagate({ owner: onHand.owner = null });
+                    }
+                } else if (!component.handArea && other.handArea) {
+                    const hand = other;
+                    const onHand = component;
+                    if (onHand.owner === hand.owner) {
+                        console.log(onHand, " owner " + onHand.owner + "->" + null);
+                        onHand.propagate({ owner: onHand.owner = null });
+                    }
+                }
+            }
+        });
     },
     isEnabled: function (component, data) {
         return true;
     },
     update: function (component, data) {
+        if (!featsContext.ownershipComponents[component.index]) {
+            featsContext.ownershipComponents[component.index] = component;
+        }
+
         component.moving = data.moving;
+        component.owner = data.owner;
         component.handArea = data.handArea;
         if (component.moving) {
             return;
@@ -328,55 +400,6 @@ const ownership = {
                 })
             }
         }
-        const diff = {};
-        updateDiffWithOverlap(component, diff);
-        if (diff.owner !== undefined) {
-            component.propagate(diff);
-        }
-
-        function getOverlappingHandArea(component) {
-            const rect = {
-                top: parseFloat(component.el.style.top),
-                left: parseFloat(component.el.style.left),
-                bottom: parseFloat(component.el.style.top) + parseFloat(component.el.style.height),
-                right: parseFloat(component.el.style.left) + parseFloat(component.el.style.width),
-                height: parseFloat(component.el.style.height),
-                width: parseFloat(component.el.style.width),
-            };
-
-            for (const target of featsContext.tableData.components) {
-                if (target.handArea) {
-                    const targetLeft = parseFloat(target.left);
-                    const targetTop = parseFloat(target.top);
-                    const targetRight = targetLeft + parseFloat(target.width);
-                    const targetBottom = targetTop + parseFloat(target.height);
-                    if (rect.left <= targetRight &&
-                        targetLeft <= rect.right &&
-                        rect.top <= targetBottom &&
-                        targetTop <= rect.bottom) {
-                        return target;
-                    }
-                }
-            }
-            return null;
-        }
-
-        function updateDiffWithOverlap(component, diff) {
-            if (component.ownable) {
-                const handArea = getOverlappingHandArea(component);
-                if (handArea) {
-                    if (!(component.owner === handArea.owner)) {
-                        console.log(component, " owner " + component.owner + "->" + handArea.owner)
-                        diff.owner = component.owner = handArea.owner;
-                    }
-                } else {
-                    if (component.owner) {
-                        console.log(component, " owner " + component.owner + "-> null")
-                        diff.owner = component.owner = null;
-                    }
-                }
-            }
-        }
     },
 };
 
@@ -387,7 +410,7 @@ const traylike = {
     // Hand Area is a tray-like object.  A box is another example of tray-like object.
     // Currently everything not tray-like can be put on tray-like.  Tray-like does not be put on another tray-like.
     add: function (component) {
-        featsContext.addEventListener(component, draggability.events.onmoveend, (e) => {
+        featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
         });
     },
     isEnabled: function (component, data) {
@@ -423,6 +446,9 @@ const featsContext = {
         }
     },
     eventListeners: {},
+    events: {
+        onPositionChanged: 'onPositionChanged',
+    }
 };
 
 function setFeatsContext(playerName, isPlayerObserver, tableData) {
