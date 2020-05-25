@@ -334,6 +334,8 @@ const collidability = {
                 component.currentCollisions[other.index] = true;
                 other.currentCollisions[component.index] = true;
 
+                component.propagate({ 'currentCollisions': component.currentCollisions });
+                other.propagate({ 'currentCollisions': other.currentCollisions });
                 featsContext.fireEvent(component, collidability.events.onCollisionStart, { collider: other });
                 featsContext.fireEvent(other, collidability.events.onCollisionStart, { collider: component });
             }
@@ -346,6 +348,8 @@ const collidability = {
                 delete component.currentCollisions[other.index];
                 delete other.currentCollisions[component.index];
 
+                component.propagate({ 'currentCollisions': component.currentCollisions });
+                other.propagate({ 'currentCollisions': other.currentCollisions });
                 featsContext.fireEvent(component, collidability.events.onCollisionEnd, { collider: other });
                 featsContext.fireEvent(other, collidability.events.onCollisionEnd, { collider: component });
             }
@@ -357,6 +361,9 @@ const collidability = {
     update: function (component, data) {
         if (!featsContext.collisionComponents[component.index]) {
             featsContext.collisionComponents[component.index] = component;
+        }
+        if (data.currentCollisions) {
+            component.currentCollisions = data.currentCollisions;
         }
 
         component.moving = data.moving;
