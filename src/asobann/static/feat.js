@@ -58,6 +58,7 @@ const draggability = {
                     const top = parseFloat(component.el.style.top) + event.dy;
                     const left = parseFloat(component.el.style.left) + event.dx;
                     component.propagate_volatile({ top: top + "px", left: left + "px", moving: true });
+                    featsContext.fireEvent(component, draggability.events.onMoving, { dx: event.dx, dy: event.dy });
                 },
                 end(event) {
                     if (!isDraggingPermitted()) {
@@ -84,6 +85,9 @@ const draggability = {
         component.owner = data.owner;
         component.ownable = data.ownable;
     },
+    events: {
+        onMoving: "draggability.onMoving",
+    }
 };
 
 const flippability = {
@@ -307,7 +311,7 @@ const collidability = {
         if (!featsContext.collisionComponents) {
             featsContext.collisionComponents = {};
         }
-        if(!component.currentCollisions) {
+        if (!component.currentCollisions) {
             component.currentCollisions = {};
         }
 
@@ -330,10 +334,11 @@ const collidability = {
                 component.currentCollisions[other.index] = true;
                 other.currentCollisions[component.index] = true;
 
-                featsContext.fireEvent(component, collidability.events.onCollisionStart, { collider: other});
+                featsContext.fireEvent(component, collidability.events.onCollisionStart, { collider: other });
+                featsContext.fireEvent(other, collidability.events.onCollisionStart, { collider: component });
             }
             for (const index in component.currentCollisions) {
-                if(collided.find(e=>e.index === parseInt(index))) {
+                if (collided.find(e => e.index === parseInt(index))) {
                     continue;
                 }
 
@@ -341,8 +346,8 @@ const collidability = {
                 delete component.currentCollisions[other.index];
                 delete other.currentCollisions[component.index];
 
-                // collision_end
-                featsContext.fireEvent(component, collidability.events.onCollisionEnd, { collider: other});
+                featsContext.fireEvent(component, collidability.events.onCollisionEnd, { collider: other });
+                featsContext.fireEvent(other, collidability.events.onCollisionEnd, { collider: component });
             }
         });
     },
@@ -357,8 +362,8 @@ const collidability = {
         component.moving = data.moving;
     },
     events: {
-        onCollisionStart: 'onCollisionStart',
-        onCollisionEnd: 'onCollisionEnd',
+        onCollisionStart: 'collidability.onCollisionStart',
+        onCollisionEnd: 'collidability.onCollisionEnd',
     }
 };
 
@@ -370,14 +375,6 @@ const ownership = {
                 const hand = component;
                 const onHand = other;
                 if (!(onHand.owner === hand.owner)) {
-                    console.log(onHand, " owner " + onHand.owner + "->" + hand.owner);
-                    onHand.propagate({ owner: onHand.owner = hand.owner });
-                }
-            } else if (!component.handArea && other.handArea) {
-                const hand = other;
-                const onHand = component;
-                if (!(onHand.owner === hand.owner)) {
-                    console.log(onHand, " owner " + onHand.owner + "->" + hand.owner);
                     onHand.propagate({ owner: onHand.owner = hand.owner });
                 }
             }
@@ -388,14 +385,6 @@ const ownership = {
                 const hand = component;
                 const onHand = other;
                 if (onHand.owner === hand.owner) {
-                    console.log(onHand, " owner " + onHand.owner + "->" + null);
-                    onHand.propagate({ owner: onHand.owner = null });
-                }
-            } else if (!component.handArea && other.handArea) {
-                const hand = other;
-                const onHand = component;
-                if (onHand.owner === hand.owner) {
-                    console.log(onHand, " owner " + onHand.owner + "->" + null);
                     onHand.propagate({ owner: onHand.owner = null });
                 }
             }
@@ -431,7 +420,7 @@ const traylike = {
     // Hand Area is a tray-like object.  A box is another example of tray-like object.
     // Currently everything not tray-like can be put on tray-like.  Tray-like does not be put on another tray-like.
     add: function (component) {
-        featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
+        featsContext.addEventListener(component, draggability.events.onMoving, (e) => {
         });
     },
     isEnabled: function (component, data) {
