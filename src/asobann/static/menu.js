@@ -95,6 +95,7 @@ class Menu {
                 flippable: false,
                 resizable: true,
                 ownable: false,
+                traylike: true,
                 zIndex: 0,
             };
             self.connector.addNewComponent(newComponent);

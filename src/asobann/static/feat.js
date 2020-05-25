@@ -1,5 +1,46 @@
 import {el, mount, unmount, setAttr, setStyle} from "./redom.es.js";
+
 // import interact from './interact.js'
+
+function arraysEqual(a, b) {
+    if (a === b) return true;
+    if (a == null || b == null) return false;
+    if (a.length !== b.length) return false;
+
+    for (let i = 0; i < a.length; ++i) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
+}
+
+function toRect(c) {
+    if (c.top && c.left && c.width && c.height) {
+        return {
+            top: parseFloat(c.top),
+            left: parseFloat(c.left),
+            height: parseFloat(c.height),
+            width: parseFloat(c.width),
+        }
+    }
+    if (c.el) {
+        return {
+            top: parseFloat(c.el.style.top),
+            left: parseFloat(c.el.style.left),
+            height: parseFloat(c.el.style.height),
+            width: parseFloat(c.el.style.width),
+        }
+    }
+    throw 'Cannot detect rect';
+}
+
+function isOverlapped(c1, c2) {
+    const rect1 = toRect(c1);
+    const rect2 = toRect(c2);
+    return (rect1.left <= rect2.left + rect2.width &&
+        rect2.left <= rect1.left + rect1.width &&
+        rect1.top <= rect2.top + rect2.height &&
+        rect2.top <= rect1.top + rect1.height);
+}
 
 const draggability = {
     add: function (component) {
@@ -27,6 +68,7 @@ const draggability = {
                     const left = parseFloat(component.el.style.left) + event.dx;
                     const diff = { top: top + "px", left: left + "px", moving: false };
 
+                    featsContext.fireEvent(component, draggability.events.onmoveend, {});
                     component.propagate(diff);
                 }
             }
@@ -42,6 +84,10 @@ const draggability = {
         component.owner = data.owner;
         component.ownable = data.ownable;
     },
+    events: {
+        onmove: "draggability.onmove",
+        onmoveend: "draggability.onmoveend",
+    }
 };
 
 const flippability = {
@@ -166,7 +212,7 @@ const rollability = {
             if (!isRollingPermitted()) {
                 return;
             }
-            if(component.rolling) {
+            if (component.rolling) {
                 return false;
             }
             const duration = Math.random() * 1000 + 500;
@@ -267,12 +313,12 @@ const ownership = {
     },
     update: function (component, data) {
         component.moving = data.moving;
-        if(component.moving) {
+        if (component.moving) {
             return;
         }
         const diff = {};
         updateDiffWithOverlap(component, diff);
-        if(diff.owner !== undefined) {
+        if (diff.owner !== undefined) {
             component.propagate(diff);
         }
 
@@ -322,11 +368,49 @@ const ownership = {
     },
 };
 
+
+const traylike = {
+    // This feat is for tray-like object.  Non tray-like object can be put on tray-like objects.
+    // Objects on a tray moves with the tray.
+    // Hand Area is a tray-like object.  A box is another example of tray-like object.
+    // Currently everything not tray-like can be put on tray-like.  Tray-like does not be put on another tray-like.
+    add: function (component) {
+        featsContext.addEventListener(component, draggability.events.onmoveend, (e) => {
+        });
+    },
+    isEnabled: function (component, data) {
+        return data.traylike === true;
+    },
+    update: function (component, data) {
+        // On or off of a tray decision is handled in tray-like object's update.
+        // This is chiefly to reduce computation.  And also for simplicity.
+        component.traylike = data.traylike;
+    },
+};
+
+
 const featsContext = {
     canOperateOn: function (component) {
         return ((!component.owner || component.owner === featsContext.playerName)
             && !featsContext.isPlayerObserver);
-    }
+    },
+    addEventListener: function (component, eventName, handler) {
+        if (!featsContext.eventListeners[eventName]) {
+            featsContext.eventListeners[eventName] = [];
+        }
+        featsContext.eventListeners[eventName].push({ component: component, handler: handler });
+    },
+    fireEvent: function (component, eventName, event) {
+        if (!featsContext.eventListeners[eventName]) {
+            return;
+        }
+        for (const entry of featsContext.eventListeners[eventName]) {
+            if (entry.component === component) {
+                entry.handler(event);
+            }
+        }
+    },
+    eventListeners: {},
 };
 
 function setFeatsContext(playerName, isPlayerObserver, tableData) {
@@ -336,7 +420,7 @@ function setFeatsContext(playerName, isPlayerObserver, tableData) {
 }
 
 const feats = [
-    ownership, draggability, flippability, resizability, rollability,
+    ownership, draggability, flippability, resizability, rollability, traylike,
 ];
 
 export {setFeatsContext, feats};
