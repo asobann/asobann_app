@@ -71,6 +71,7 @@ const draggability = {
 
                     component.propagate(diff);
                     featsContext.fireEvent(component, featsContext.events.onPositionChanged, {});
+                    featsContext.fireEvent(component, featsContext.events.onMoveEnd, {});
                 }
             }
         });
@@ -87,6 +88,7 @@ const draggability = {
     },
     events: {
         onMoving: "draggability.onMoving",
+        onMoveEnd: "draggability.onMoveEnd",
     }
 };
 
@@ -427,8 +429,57 @@ const traylike = {
     // Hand Area is a tray-like object.  A box is another example of tray-like object.
     // Currently everything not tray-like can be put on tray-like.  Tray-like does not be put on another tray-like.
     add: function (component) {
-        featsContext.addEventListener(component, draggability.events.onMoving, (e) => {
+        component.onTray = {};
+
+        featsContext.addEventListener(component, collidability.events.onCollisionStart, (e) => {
+            if(!component.traylike) {
+                return;
+            }
+            if(e.collider.traylike) {
+                return;
+            }
+            component.onTray[e.collider.index] = true;
+            component.propagate({ onTray: component.onTray });
         });
+
+        featsContext.addEventListener(component, collidability.events.onCollisionEnd, (e) => {
+            if(!component.traylike) {
+                return;
+            }
+            if(e.collider.traylike) {
+                return;
+            }
+            delete component.onTray[e.collider.index];
+            component.propagate({ onTray: component.onTray });
+        });
+
+        featsContext.addEventListener(component, draggability.events.onMoving, (e) => {
+            if(!component.traylike) {
+                return;
+            }
+            const dx = e.dx;
+            const dy = e.dy;
+            for (const idx in component.onTray) {
+                const target = featsContext.collisionComponents[idx];
+                target.propagate_volatile({
+                    top: parseFloat(target.el.style.top) + dy,
+                    left: parseFloat(target.el.style.left) + dx
+                });
+            }
+        })
+
+        featsContext.addEventListener(component, draggability.events.onMoveEnd, (e) => {
+            if(!component.traylike) {
+                return;
+            }
+            for (const idx in component.onTray) {
+                const target = featsContext.collisionComponents[idx];
+                target.propagate({
+                    top: target.el.style.top,
+                    left: target.el.style.left
+                });
+            }
+        })
     },
     isEnabled: function (component, data) {
         return data.traylike === true;
@@ -437,6 +488,9 @@ const traylike = {
         // On or off of a tray decision is handled in tray-like object's update.
         // This is chiefly to reduce computation.  And also for simplicity.
         component.traylike = data.traylike;
+        if (data.onTray) {
+            component.onTray = data.onTray;
+        }
     },
 };
 

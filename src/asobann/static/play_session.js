@@ -24,6 +24,9 @@ class Component {
             if (isPlayerObserver()) {
                 return;
             }
+            if(this.handArea) { // FIXME: possible contamination from feats.js
+                return;
+            }
             this.zIndex = nextZIndex;
             setStyle(this.el, { zIndex: this.zIndex });
             nextZIndex += 1;
