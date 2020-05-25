@@ -24,9 +24,17 @@ def test_create_empty_table(server, browser: webdriver.Firefox):
     assert host.count_components() == 0
 
 
-@pytest.mark.skip
-def test_load_playing_card_kit():
-    pass
+def test_load_playing_card_kit(server, browser: webdriver.Firefox):
+    host = GameHelper(browser)
+    host.create_table(0)
+
+    host.should_have_text("you are host")
+
+    host.menu.add_component.execute()
+    host.menu.add_component_from_list("Playing Card")
+
+    assert host.count_components() == 53 + 1
+
 
 
 @pytest.mark.skip
