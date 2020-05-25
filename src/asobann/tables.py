@@ -16,9 +16,13 @@ def get(tablename):
     return data["table"]
 
 
-def create(tablename):
-    with open(str(Path(__file__).parent / "./playing_card.json")) as f:
-        table = json.load(f)
+def create(tablename, prepared_table):
+    if prepared_table is None:
+        with open(str(Path(__file__).parent / "./default.json")) as f:
+            table = json.load(f)
+    elif prepared_table == '0':
+        table = {'components': [], 'players': {}}
+
     tables.insert_one({"tablename": tablename, "table": table})
     return table
 

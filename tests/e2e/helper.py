@@ -12,6 +12,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 TOP = "http://localhost:10011/"
+CUSTOMIZATION = TOP + "customize"
 
 
 class GameMenuItem:
@@ -96,8 +97,12 @@ class GameHelper:
     def go(self, url):
         self.browser.get(url)
 
-    def create_table(self, number):
-        pass
+    def create_table(self, prepared_table):
+        self.go(CUSTOMIZATION)
+        input_element = self.browser.find_element_by_css_selector("input#prepared_table")
+        input_element.clear()
+        input_element.send_keys(str(prepared_table))
+        self.browser.find_element_by_css_selector("input#create").click()
 
     @property
     def current_url(self):
@@ -134,6 +139,10 @@ class GameHelper:
             WebDriverWait(self.browser, 5).until(
                 expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, selector)))
         return Component(helper=self, element=self.browser.find_element_by_css_selector(selector))
+
+    def count_components(self):
+        selector = f'.component'
+        return len(self.browser.find_elements_by_css_selector(selector))
 
     def drag(self, component: "Component", x, y, pos='center'):
         if pos == 'center':

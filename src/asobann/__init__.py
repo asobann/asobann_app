@@ -58,7 +58,7 @@ def create_app(test_config=None):
     #     response = make_response(redirect(url_for('.play_session', tablename=tablename)))
     #     return response
 
-    @app.route('/tables/<tablename>')
+    @app.route('/tables/<tablename>', methods=["GET"])
     def play_table(tablename):
         return render_template('play_session.html')
 
@@ -85,7 +85,7 @@ def create_app(test_config=None):
         app.logger.info(f'come by table: {json}')
         table = tables.get(json["tablename"])
         if not table:
-            table = tables.create(json["tablename"])
+            table = tables.create(json["tablename"], None)
         join_room(json["tablename"])
         emit("load table", table)
 
@@ -129,6 +129,18 @@ def create_app(test_config=None):
     def handle_mouse_movement(json):
         app.logger.debug(f'mouse movement: {json}')
         emit("mouse movement", json, broadcast=True, room=json["tablename"])
+
+    @app.route('/customize')
+    def customize():
+        return render_template('customize.html')
+
+    @app.route('/tables', methods=["POST"])
+    def create_table():
+        tablename = tables.generate_new_tablename()
+        print(request.form)
+        tables.create(tablename, request.form.get('prepared_table'))
+        response = make_response(redirect(url_for('.play_table', tablename=tablename)))
+        return response
 
     return app
 
