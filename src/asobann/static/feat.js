@@ -302,10 +302,10 @@ const rollability = {
 };
 
 
-const ownership = {
+const collidability = {
     add: function (component) {
-        if (!featsContext.ownershipComponents) {
-            featsContext.ownershipComponents = {};
+        if (!featsContext.collisionComponents) {
+            featsContext.collisionComponents = {};
         }
         if(!component.currentCollisions) {
             component.currentCollisions = {};
@@ -313,8 +313,8 @@ const ownership = {
 
         featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
             const collided = [];
-            for (const index in featsContext.ownershipComponents) {
-                const target = featsContext.ownershipComponents[index];
+            for (const index in featsContext.collisionComponents) {
+                const target = featsContext.collisionComponents[index];
                 if (target === component) {
                     continue;
                 }
@@ -330,47 +330,73 @@ const ownership = {
                 component.currentCollisions[other.index] = true;
                 other.currentCollisions[component.index] = true;
 
-                // collision_start
-                if (component.handArea && !other.handArea) {
-                    const hand = component;
-                    const onHand = other;
-                    if (!(onHand.owner === hand.owner)) {
-                        console.log(onHand, " owner " + onHand.owner + "->" + hand.owner);
-                        onHand.propagate({ owner: onHand.owner = hand.owner });
-                    }
-                } else if (!component.handArea && other.handArea) {
-                    const hand = other;
-                    const onHand = component;
-                    if (!(onHand.owner === hand.owner)) {
-                        console.log(onHand, " owner " + onHand.owner + "->" + hand.owner);
-                        onHand.propagate({ owner: onHand.owner = hand.owner });
-                    }
-                }
+                featsContext.fireEvent(component, collidability.events.onCollisionStart, { collider: other});
             }
             for (const index in component.currentCollisions) {
-                if(collided.find(e=>e.index == parseInt(index))) {
+                if(collided.find(e=>e.index === parseInt(index))) {
                     continue;
                 }
 
-                const other = featsContext.ownershipComponents[index];
+                const other = featsContext.collisionComponents[index];
                 delete component.currentCollisions[other.index];
                 delete other.currentCollisions[component.index];
 
                 // collision_end
-                if (component.handArea && !other.handArea) {
-                    const hand = component;
-                    const onHand = other;
-                    if (onHand.owner === hand.owner) {
-                        console.log(onHand, " owner " + onHand.owner + "->" + null);
-                        onHand.propagate({ owner: onHand.owner = null });
-                    }
-                } else if (!component.handArea && other.handArea) {
-                    const hand = other;
-                    const onHand = component;
-                    if (onHand.owner === hand.owner) {
-                        console.log(onHand, " owner " + onHand.owner + "->" + null);
-                        onHand.propagate({ owner: onHand.owner = null });
-                    }
+                featsContext.fireEvent(component, collidability.events.onCollisionEnd, { collider: other});
+            }
+        });
+    },
+    isEnabled: function (component, data) {
+        return true;
+    },
+    update: function (component, data) {
+        if (!featsContext.collisionComponents[component.index]) {
+            featsContext.collisionComponents[component.index] = component;
+        }
+
+        component.moving = data.moving;
+    },
+    events: {
+        onCollisionStart: 'onCollisionStart',
+        onCollisionEnd: 'onCollisionEnd',
+    }
+};
+
+const ownership = {
+    add: function (component) {
+        featsContext.addEventListener(component, collidability.events.onCollisionStart, (e) => {
+            const other = e.collider;
+            if (component.handArea && !other.handArea) {
+                const hand = component;
+                const onHand = other;
+                if (!(onHand.owner === hand.owner)) {
+                    console.log(onHand, " owner " + onHand.owner + "->" + hand.owner);
+                    onHand.propagate({ owner: onHand.owner = hand.owner });
+                }
+            } else if (!component.handArea && other.handArea) {
+                const hand = other;
+                const onHand = component;
+                if (!(onHand.owner === hand.owner)) {
+                    console.log(onHand, " owner " + onHand.owner + "->" + hand.owner);
+                    onHand.propagate({ owner: onHand.owner = hand.owner });
+                }
+            }
+        });
+        featsContext.addEventListener(component, collidability.events.onCollisionEnd, (e) => {
+            const other = e.collider;
+            if (component.handArea && !other.handArea) {
+                const hand = component;
+                const onHand = other;
+                if (onHand.owner === hand.owner) {
+                    console.log(onHand, " owner " + onHand.owner + "->" + null);
+                    onHand.propagate({ owner: onHand.owner = null });
+                }
+            } else if (!component.handArea && other.handArea) {
+                const hand = other;
+                const onHand = component;
+                if (onHand.owner === hand.owner) {
+                    console.log(onHand, " owner " + onHand.owner + "->" + null);
+                    onHand.propagate({ owner: onHand.owner = null });
                 }
             }
         });
@@ -379,11 +405,6 @@ const ownership = {
         return true;
     },
     update: function (component, data) {
-        if (!featsContext.ownershipComponents[component.index]) {
-            featsContext.ownershipComponents[component.index] = component;
-        }
-
-        component.moving = data.moving;
         component.owner = data.owner;
         component.handArea = data.handArea;
         if (component.moving) {
@@ -458,7 +479,7 @@ function setFeatsContext(playerName, isPlayerObserver, tableData) {
 }
 
 const feats = [
-    ownership, draggability, flippability, resizability, rollability, traylike,
+    collidability, draggability, flippability, resizability, rollability, traylike, ownership,
 ];
 
 export {setFeatsContext, feats};
