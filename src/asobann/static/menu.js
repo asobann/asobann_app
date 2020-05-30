@@ -192,24 +192,12 @@ function createAddRemoveComponentMenu(parent, connector) {
             }
             this.component = data.component;
             this.addEl.onclick = (event) => {
-                const newComponent = {
-                    name: data.component.name,
-                    handArea: false,
-                    top: "0px",
-                    left: "0px",
-                    width: "64px",
-                    height: "64px",
-                    showImage: false,
-                    draggable: true,
-                    flippable: false,
-                    resizable: false,
-                    rollable: true,
-                    ownable: false,
-                    zIndex: 0,
-                    rollFinalValue: Math.floor(Math.random() * 6) + 1,
-                    rollDuration: 500,
-                    startRoll: true,
-                };
+                const newComponent = Object.assign({}, data.component);
+                if(data.component.onAdd) {
+                    const s = '"use strict"; return ' + data.component.onAdd;
+                    const f = Function(s);
+                    f()(newComponent);
+                }
                 connector.addNewComponent(newComponent);
                 return false;
             };
@@ -262,7 +250,11 @@ function createAddRemoveComponentMenu(parent, connector) {
                         resizable: false,
                         rollable: true,
                         ownable: false,
-                        zIndex: 0,
+                        onAdd: "function(component) { " +
+                               "  component.rollFinalValue = Math.floor(Math.random() * 6) + 1;" +
+                               "  component.rollDuration = 500;" +
+                               "  component.startRoll = true;" +
+                               "}",
                     }
                 }
             ], { tableData: tableData });
