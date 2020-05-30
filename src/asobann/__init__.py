@@ -5,7 +5,7 @@ from logging.config import dictConfig
 import random
 import string
 
-from asobann import tables
+from asobann import tables, components
 
 dictConfig({
     'version': 1,
@@ -42,6 +42,7 @@ def create_app(test_config=None):
     app.logger.info("connected to mongo")
 
     tables.connect(app.mongo)
+    components.connect(app.mongo)
 
     @app.route('/')
     def index():
@@ -144,30 +145,8 @@ def create_app(test_config=None):
 
     @app.route('/component')
     def get_components():
-        components = [
-            {
-                'component': {
-                    'name': 'Dice (Blue)',
-                    'handArea': False,
-                    'top': "0px",
-                    'left': "0px",
-                    'width': "64px",
-                    'height': "64px",
-                    'showImage': False,
-                    'draggable': True,
-                    'flippable': False,
-                    'resizable': False,
-                    'rollable': True,
-                    'ownable': False,
-                    'onAdd': "function(component) { " +
-                             "  component.rollFinalValue = Math.floor(Math.random() * 6) + 1;" +
-                             "  component.rollDuration = 500;" +
-                             "  component.startRoll = true;" +
-                             "}",
-                }
-            }
-        ]
-        return jsonify(components)
+
+        return jsonify(components.get_all())
 
     return app
 
