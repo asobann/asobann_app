@@ -142,5 +142,32 @@ def create_app(test_config=None):
         response = make_response(redirect(url_for('.play_table', tablename=tablename)))
         return response
 
+    @app.route('/component')
+    def get_components():
+        components = [
+            {
+                'component': {
+                    'name': 'Dice (Blue)',
+                    'handArea': False,
+                    'top': "0px",
+                    'left': "0px",
+                    'width': "64px",
+                    'height': "64px",
+                    'showImage': False,
+                    'draggable': True,
+                    'flippable': False,
+                    'resizable': False,
+                    'rollable': True,
+                    'ownable': False,
+                    'onAdd': "function(component) { " +
+                             "  component.rollFinalValue = Math.floor(Math.random() * 6) + 1;" +
+                             "  component.rollDuration = 500;" +
+                             "  component.startRoll = true;" +
+                             "}",
+                }
+            }
+        ]
+        return jsonify(components)
+
     return app
 

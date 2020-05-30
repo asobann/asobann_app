@@ -2,6 +2,10 @@ import {el, list, mount, setAttr, setStyle, unmount} from "./redom.es.js";
 import {joinTable} from "./sync_table.js";
 import {names} from "./names.js";
 
+function baseUrl() {
+    return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
+}
+
 function getPlaceholderName() {
     return names[Math.floor(Math.random() * names.length)];
 }
@@ -228,6 +232,15 @@ function createAddRemoveComponentMenu(parent, connector) {
                     ])
                 ]
             );
+            loadComponentList();
+
+            async function loadComponentList() {
+                const url = baseUrl() + "component";
+                const response = await fetch(url);
+                const components = (await response).json();
+                self.componentList = await components;
+                self.commponentMenuItemList.update(self.componentList);
+            }
 
             function hideAddRemoveComponentMenu() {
                 unmount(parent, self.el);
@@ -235,29 +248,7 @@ function createAddRemoveComponentMenu(parent, connector) {
         }
 
         update(tableData, context) {
-            this.commponentMenuItemList.update([
-                {
-                    component: {
-                        name: 'Dice (Blue)',
-                        handArea: false,
-                        top: "0px",
-                        left: "0px",
-                        width: "64px",
-                        height: "64px",
-                        showImage: false,
-                        draggable: true,
-                        flippable: false,
-                        resizable: false,
-                        rollable: true,
-                        ownable: false,
-                        onAdd: "function(component) { " +
-                               "  component.rollFinalValue = Math.floor(Math.random() * 6) + 1;" +
-                               "  component.rollDuration = 500;" +
-                               "  component.startRoll = true;" +
-                               "}",
-                    }
-                }
-            ], { tableData: tableData });
+            this.commponentMenuItemList.update(this.componentList, tableData);
         }
     }
 
