@@ -3,4 +3,7 @@ import asobann
 app = asobann.create_app()
 
 if __name__ == '__main__':
-    app.socketio.run(app, host="0.0.0.0")
+    if "PORT" in app.config:
+        app.socketio.run(app, host="0.0.0.0", port=app.config["PORT"])
+    else:
+        app.socketio.run(app, host="0.0.0.0")

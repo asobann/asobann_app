@@ -24,17 +24,18 @@ dictConfig({
 })
 
 
-def create_app(test_config=None):
+def create_app(testing=False):
     app = Flask(__name__)
     app.config.from_mapping(
         SECRET_KEY='secret!',
-        MONGO_URI='mongodb://localhost:27017/ex2dev',
     )
 
-    if test_config is None:
+    if app.config["ENV"] == "test" or testing:
+        app.config.from_pyfile('config_test.py', silent=True)
+    elif app.config["ENV"] == "production":
         app.config.from_pyfile('config.py', silent=True)
     else:
-        app.config.from_mapping(test_config)
+        app.config.from_pyfile('config_dev.py', silent=True)
 
     app.logger.info("connecting mongo")
     app.mongo = PyMongo(app)

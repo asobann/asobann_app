@@ -1,11 +1,14 @@
+import os
 import pytest
 
-from asobann import test_server
+os.environ["FLASK_ENV"] = "test"
+
+from asobann import wsgi
 
 
 @pytest.fixture
 def client():
-    with test_server.app.test_client() as client:
+    with wsgi.app.test_client() as client:
         yield client
 
 

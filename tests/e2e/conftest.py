@@ -10,7 +10,8 @@ import pytest
 @pytest.fixture(scope='session')
 def server():
     os.environ["FLASK_ENV"] = "test"
-    with subprocess.Popen(["/usr/local/bin/pipenv", "run", "python", "-m", "asobann.test_server"], env=os.environ) as proc:
+    subprocess.run(["/usr/local/bin/pipenv", "run", "python", "-m", "asobann.deploy"], env=os.environ)
+    with subprocess.Popen(["/usr/local/bin/pipenv", "run", "python", "-m", "asobann.wsgi"], env=os.environ) as proc:
         time.sleep(1)
         yield
         proc.terminate()
@@ -70,8 +71,8 @@ def browser_factory():
 
 @pytest.fixture(scope='session')
 def in_mem_app():
-    from asobann import test_server
-    return test_server.app
+    import asobann
+    return asobann.create_app(testing=True)
 
 
 @pytest.fixture(autouse=True)

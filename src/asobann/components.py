@@ -25,4 +25,4 @@ def connect(mongo):
 
 def store_default(data):
     components.bulk_write(
-        [operations.UpdateOne({"component": {"name": c["component"]["name"]}}, {"$set": c}, upsert=True) for c in data])
+        [operations.UpdateOne({"component.name": c["component"]["name"]}, {"$set": c}, upsert=True) for c in data])
