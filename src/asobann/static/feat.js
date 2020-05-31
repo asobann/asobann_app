@@ -373,7 +373,28 @@ const collidability = {
     events: {
         onCollisionStart: 'collidability.onCollisionStart',
         onCollisionEnd: 'collidability.onCollisionEnd',
-    }
+    },
+    recalculate: function (tableData) {
+        featsContext.collisionComponents = {};
+        for(const component of tableData.components) {
+            featsContext.collisionComponents[component.index] = component;
+            component.currentCollisions = {};
+        }
+
+        for (const i in featsContext.collisionComponents) {
+            const component = featsContext.collisionComponents[i];
+
+            for (const j in featsContext.collisionComponents) {
+                const target = featsContext.collisionComponents[j];
+                if (i === j) {
+                    continue;
+                }
+                if (isOverlapped(component, target)) {
+                    component.currentCollisions[j] = true;
+                }
+            }
+        }
+    },
 };
 
 const ownership = {
@@ -432,10 +453,10 @@ const traylike = {
         component.onTray = {};
 
         featsContext.addEventListener(component, collidability.events.onCollisionStart, (e) => {
-            if(!component.traylike) {
+            if (!component.traylike) {
                 return;
             }
-            if(e.collider.traylike) {
+            if (e.collider.traylike) {
                 return;
             }
             component.onTray[e.collider.index] = true;
@@ -443,10 +464,10 @@ const traylike = {
         });
 
         featsContext.addEventListener(component, collidability.events.onCollisionEnd, (e) => {
-            if(!component.traylike) {
+            if (!component.traylike) {
                 return;
             }
-            if(e.collider.traylike) {
+            if (e.collider.traylike) {
                 return;
             }
             delete component.onTray[e.collider.index];
@@ -454,7 +475,7 @@ const traylike = {
         });
 
         featsContext.addEventListener(component, draggability.events.onMoving, (e) => {
-            if(!component.traylike) {
+            if (!component.traylike) {
                 return;
             }
             const dx = e.dx;
@@ -469,7 +490,7 @@ const traylike = {
         })
 
         featsContext.addEventListener(component, draggability.events.onMoveEnd, (e) => {
-            if(!component.traylike) {
+            if (!component.traylike) {
                 return;
             }
             for (const idx in component.onTray) {

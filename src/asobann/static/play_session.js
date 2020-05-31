@@ -147,7 +147,6 @@ const sync_table_connector = {
     update_whole_table: function (data) {
         table.update(data);
         menu.update(data);
-        //TODO: recalculate overlap and tray-like
     },
 
     updatePlayer: function (playerData) {
@@ -214,6 +213,7 @@ function removeKit(kitId) {
     }
     table.data.components = after;
     table.data.kits.splice(table.data.kits.findIndex((e)=>e.kitId === kitId), 1);
+    //TODO: recalculate overlap and tray-like
     pushSyncWithMe(table.data);
 }
 
