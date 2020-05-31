@@ -121,6 +121,14 @@ def create_app(testing=False):
         table = tables.get(json["tablename"])
         emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
+    @app.socketio.on("add many components")
+    def handle_add_many_component(json):
+        app.logger.debug(f'add many components: {json}')
+        for d in json["data"]:
+            tables.add_component(json["tablename"], d)
+        table = tables.get(json["tablename"])
+        emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
+
     @app.socketio.on("remove component")
     def handle_remove_component(json):
         app.logger.debug(f'remove component: {json}')

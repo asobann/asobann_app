@@ -100,6 +100,14 @@ function pushNewComponent(data) {
     })
 }
 
+function pushManyNewComponents(data) {
+    socket.emit("add many components", {
+        tablename: context.tablename,
+        originator: context.client_connection_id,
+        data: data,
+    })
+}
+
 function pushRemoveComponent(index) {
     socket.emit("remove component", {
         tablename: context.tablename,
@@ -126,4 +134,4 @@ function pushCursorMovement(playerName, mouseMovement) {
     });
 }
 
-export {setTableContext, pushComponentUpdate, pushNewComponent, pushRemoveComponent, joinTable, pushCursorMovement};
+export {setTableContext, pushComponentUpdate, pushNewComponent, pushManyNewComponents, pushRemoveComponent, joinTable, pushCursorMovement};

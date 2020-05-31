@@ -194,16 +194,7 @@ function createAddRemoveKitsMenu(parent, connector) {
             };
 
             function addKitOnTable() {
-                (async () => {
-                    const componentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitData.kit.name))).json();
-                    for (const data of componentsData) {
-                        const component = data.component;
-                        if (component.onAdd) {
-                            Function('"use strict"; return ' + component.onAdd)()(component);
-                        }
-                        connector.addNewComponent(component);
-                    }
-                })();
+                connector.addNewKit(kitData.kit.name);
             }
 
             function removeOneKitFromTable() {

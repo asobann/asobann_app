@@ -4,12 +4,16 @@ import {
     setTableContext,
     pushComponentUpdate,
     pushNewComponent,
+    pushManyNewComponents,
     pushRemoveComponent,
     joinTable,
     pushCursorMovement
 } from "./sync_table.js";
 import {Menu} from "./menu.js";
 
+function baseUrl() {
+    return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
+}
 
 class Component {
     constructor() {
@@ -177,7 +181,20 @@ const sync_table_connector = {
 
 const otherPlayersMouse = {};
 
-function addNewComponent(newComponent) {
+function addNewKit(kitName) {
+    (async () => {
+        const newComponents = [];
+        const componentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitName))).json();
+        for (const data of await componentsData) {
+            const component = data.component;
+            placeNewComponent(component);
+            newComponents.push(component);
+        }
+        pushManyNewComponents(newComponents);
+    })();
+}
+
+function placeNewComponent(newComponent) {
     const rect = {
         top: 64,
         left: 64,
@@ -209,8 +226,15 @@ function addNewComponent(newComponent) {
     newComponent.top = rect.top + "px";
     newComponent.left = rect.left + "px";
     newComponent.zIndex = nextZIndex;
+    if (newComponent.onAdd) {
+        Function('"use strict"; return ' + newComponent.onAdd)()(newComponent);
+    }
 
     nextZIndex += 1;
+}
+
+function addNewComponent(newComponent) {
+    placeNewComponent(newComponent);
     pushNewComponent(newComponent);
     return false;
 }
@@ -314,6 +338,7 @@ const menuConnector = {
     fireMenuUpdate: () => { menu.update(table.data); },
     removeComponent: removeComponent,
     getPlayerName: getPlayerName,
+    addNewKit: addNewKit,
     addNewComponent: addNewComponent,
     removeHandArea: removeHandArea,
     isPlayerObserver: isPlayerObserver,
