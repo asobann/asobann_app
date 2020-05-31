@@ -4,7 +4,8 @@ import {
     setTableContext,
     pushComponentUpdate,
     pushNewComponent,
-    pushManyNewComponents,
+    pushNewKit,
+    pushSyncWithMe,
     pushRemoveComponent,
     joinTable,
     pushCursorMovement
@@ -20,7 +21,7 @@ class Component {
         this.el = el(".component");
         this.image = null;
 
-        for(const ability of feats) {
+        for (const ability of feats) {
             ability.add(this);
         }
 
@@ -28,7 +29,7 @@ class Component {
             if (isPlayerObserver()) {
                 return;
             }
-            if(this.handArea) { // FIXME: possible contamination from feats.js
+            if (this.handArea) { // FIXME: possible contamination from feats.js
                 return;
             }
             this.zIndex = nextZIndex;
@@ -62,7 +63,7 @@ class Component {
         }
 
 
-        for(const ability of feats) {
+        for (const ability of feats) {
             if (ability.isEnabled(this, data)) {
                 ability.update(this, data);
             }
@@ -146,6 +147,7 @@ const sync_table_connector = {
     update_whole_table: function (data) {
         table.update(data);
         menu.update(data);
+        //TODO: recalculate overlap and tray-like
     },
 
     updatePlayer: function (playerData) {
@@ -174,7 +176,7 @@ const sync_table_connector = {
         const top = mouseMovement.mouseOnTableY + ICON_OFFSET_Y;
         const left = mouseMovement.mouseOnTableX + ICON_OFFSET_X;
         const className = mouseMovement.mouseButtons === 0 ? "" : "buttons_down";
-        setAttr(e, { className: "others_mouse_cursor " + className});
+        setAttr(e, { className: "others_mouse_cursor " + className });
         setStyle(e, { top: top + "px", left: left + "px", zIndex: nextZIndex });
     }
 };
@@ -182,16 +184,37 @@ const sync_table_connector = {
 const otherPlayersMouse = {};
 
 function addNewKit(kitName) {
+    const kitId = 'xxxxxxxxxxxx'.replace(/[x]/g, function (c) {
+        return (Math.random() * 16 | 0).toString(16);
+    });
+
     (async () => {
         const newComponents = [];
         const componentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitName))).json();
         for (const data of await componentsData) {
             const component = data.component;
+            component.kitId = kitId;
             placeNewComponent(component);
             newComponents.push(component);
         }
-        pushManyNewComponents(newComponents);
+        pushNewKit({
+            kit: { name: kitName, kitId: kitId },
+            components: newComponents
+        });
     })();
+}
+
+function removeKit(kitId) {
+    const after = [];
+    for (let i = 0; i < table.data.components.length; i++) {
+        const cmp = table.data.components[i];
+        if (cmp.kitId !== kitId) {
+            after.push(cmp);
+        }
+    }
+    table.data.components = after;
+    table.data.kits.splice(table.data.kits.findIndex((e)=>e.kitId === kitId), 1);
+    pushSyncWithMe(table.data);
 }
 
 function placeNewComponent(newComponent) {
@@ -334,11 +357,16 @@ setTableContext(tablename, sync_table_connector);
 
 const menuConnector = {
     tablename: tablename,
-    getTableData: () => { return table.data; },
-    fireMenuUpdate: () => { menu.update(table.data); },
+    getTableData: () => {
+        return table.data;
+    },
+    fireMenuUpdate: () => {
+        menu.update(table.data);
+    },
     removeComponent: removeComponent,
     getPlayerName: getPlayerName,
     addNewKit: addNewKit,
+    removeKit: removeKit,
     addNewComponent: addNewComponent,
     removeHandArea: removeHandArea,
     isPlayerObserver: isPlayerObserver,
@@ -351,7 +379,7 @@ mount(container, menu.el);
 let nextZIndex = 1;
 
 tableContainer.addEventListener("mousemove", (event) => {
-    if(isPlayerObserver()) {
+    if (isPlayerObserver()) {
         return;
     }
     const r = tableContainer.getBoundingClientRect();

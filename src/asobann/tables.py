@@ -21,7 +21,7 @@ def create(tablename, prepared_table):
         with open(str(Path(__file__).parent / "./default.json")) as f:
             table = json.load(f)
     elif prepared_table == '0':
-        table = {'components': [], 'players': {}}
+        table = {'components': [], 'kits': [], 'players': {}}
 
     tables.insert_one({"tablename": tablename, "table": table})
     return table
@@ -57,6 +57,19 @@ def remove_component(tablename, index):
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
 
 
+def add_kit(tablename, kitData):
+    table = get(tablename)
+    table["kits"].append(kitData)
+    tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
+
+
+def remove_kit(tablename, kit_id):
+    table = get(tablename)
+    table["kits"] = [e for e in table["kits"] if e["kitId"] != kit_id]
+    tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
+
+
 def connect(mongo):
     global tables
     tables = mongo.db.tables
+

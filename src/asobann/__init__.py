@@ -121,10 +121,11 @@ def create_app(testing=False):
         table = tables.get(json["tablename"])
         emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
-    @app.socketio.on("add many components")
-    def handle_add_many_component(json):
-        app.logger.debug(f'add many components: {json}')
-        for d in json["data"]:
+    @app.socketio.on("add kit")
+    def handle_add_kit(json):
+        app.logger.debug(f'add kit: {json}')
+        tables.add_kit(json["tablename"], json["data"]["kit"])
+        for d in json["data"]["components"]:
             tables.add_component(json["tablename"], d)
         table = tables.get(json["tablename"])
         emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
@@ -133,6 +134,20 @@ def create_app(testing=False):
     def handle_remove_component(json):
         app.logger.debug(f'remove component: {json}')
         tables.remove_component(json['tablename'], json['index'])
+        table = tables.get(json["tablename"])
+        emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
+
+    @app.socketio.on("remove kit")
+    def handle_remove_kit(json):
+        app.logger.debug(f'remove kit: {json}')
+        tables.remove_kit(json['tablename'], json['kitId'])
+        table = tables.get(json["tablename"])
+        emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
+
+    @app.socketio.on("sync with me")
+    def handle_sync_with_me(json):
+        app.logger.debug(f'sync with me: {json}')
+        tables.store(json['tablename'], json['tableData'])
         table = tables.get(json["tablename"])
         emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 

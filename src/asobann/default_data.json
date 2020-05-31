@@ -7,7 +7,6 @@
         "handArea": false,
         "top": "0px",
         "left": "0px",
-        "width": "64px",
         "height": "64px",
         "showImage": false,
         "draggable": true,
@@ -1206,11 +1205,15 @@
     {
       "kit": {
         "name": "Dice (Blue)",
+        "width": "64px",
+        "height": "64px",
       }
     },
     {
       "kit": {
-        "name": "Playing Card"
+        "name": "Playing Card",
+        "width": "150px",
+        "height": "150px"
       }
     }
   ]

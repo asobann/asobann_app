@@ -15,6 +15,8 @@ const CONNECTOR_TEMPLATE = {
     getTableData: null,
     fireMenuUpdate: null,
     getPlayerName: null,
+    addNewKit: null,
+    removeKit: null,
     addNewComponent: null,
     removeComponent: null,
     removeHandArea: null,
@@ -198,10 +200,10 @@ function createAddRemoveKitsMenu(parent, connector) {
             }
 
             function removeOneKitFromTable() {
-                for (let i = connector.getTableData().components.length - 1; i >= 0; i -= 1) {
-                    const cmp = connector.getTableData().components[i];
-                    if (cmp.kitName === kitData.kit.name) {
-                        connector.removeComponent(i);
+                for (let i = connector.getTableData().kits.length - 1; i >= 0; i -= 1) {
+                    const kit = connector.getTableData().kits[i];
+                    if (kit.name === kitData.kit.name) {
+                        connector.removeKit(kit.kitId);
                         break;
                     }
                 }
@@ -209,8 +211,8 @@ function createAddRemoveKitsMenu(parent, connector) {
 
             function updateNumberOnTable() {
                 let numberOnTable = 0;
-                for (const cmp of connector.getTableData().components) {
-                    if (cmp.name === kitData.kit.name) {
+                for (const kit of connector.getTableData().kits) {
+                    if (kit.name === kitData.kit.name) {
                         numberOnTable += 1;
                     }
                 }

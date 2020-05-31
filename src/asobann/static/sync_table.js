@@ -100,15 +100,24 @@ function pushNewComponent(data) {
     })
 }
 
-function pushManyNewComponents(data) {
-    socket.emit("add many components", {
+function pushNewKit(data) {
+    socket.emit("add kit", {
         tablename: context.tablename,
         originator: context.client_connection_id,
         data: data,
     })
 }
 
+function pushRemoveKit(kitId) {
+    socket.emit("remove kit", {
+        tablename: context.tablename,
+        originator: context.client_connection_id,
+        kitId: kitId,
+    })
+}
+
 function pushRemoveComponent(index) {
+    console.log("pushRemoveComponent", index);
     socket.emit("remove component", {
         tablename: context.tablename,
         originator: context.client_connection_id,
@@ -116,6 +125,14 @@ function pushRemoveComponent(index) {
     })
 }
 
+
+function pushSyncWithMe(tableData) {
+    socket.emit("sync with me", {
+        tablename: context.tablename,
+        originator: context.client_connection_id,
+        tableData: tableData,
+    })
+}
 function joinTable(player, isHost) {
     socket.emit("set player name", {
         tablename: context.tablename,
@@ -134,4 +151,14 @@ function pushCursorMovement(playerName, mouseMovement) {
     });
 }
 
-export {setTableContext, pushComponentUpdate, pushNewComponent, pushManyNewComponents, pushRemoveComponent, joinTable, pushCursorMovement};
+export {
+    setTableContext,
+    pushComponentUpdate,
+    pushNewComponent,
+    pushRemoveComponent,
+    pushNewKit,
+    pushRemoveKit,
+    pushSyncWithMe,
+    joinTable,
+    pushCursorMovement
+};
