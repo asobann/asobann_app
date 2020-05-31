@@ -178,42 +178,55 @@ function createAddRemoveKitsMenu(parent, connector) {
             ]);
         }
 
-        update(data, index, items, context) {
-            setAttr(this.el, { 'data-component-name': data.component.name });
-            this.nameEl.innerText = data.component.name;
-            let numberOnTable = 0;
-            for (const cmp of connector.getTableData().components) {
-                if (cmp.name === data.component.name) {
-                    numberOnTable += 1;
-                }
-            }
-            if (numberOnTable > 0) {
-                this.countEl.innerText = `${numberOnTable} on the table`;
-                this.removeEl.style.display = null;
-            } else {
-                this.countEl.innerText = '';
-                this.removeEl.style.display = 'none';
-            }
-            this.component = data.component;
-            this.addEl.onclick = (event) => {
-                const newComponent = Object.assign({}, data.component);
-                if(data.component.onAdd) {
-                    const s = '"use strict"; return ' + data.component.onAdd;
+        update(kitData, index, items, context) {
+            const self = this;
+            setAttr(self.el, { 'data-kit-name': kitData.kit.name });
+            self.nameEl.innerText = kitData.kit.name;
+            updateNumberOnTable();
+            self.component = kitData.component;
+            self.addEl.onclick = () => {
+                addKitOnTable();
+                return false;
+            };
+            this.removeEl.onclick = () => {
+                removeOneKitFromTable();
+                return false;
+            };
+
+            function addKitOnTable() {
+                const newComponent = Object.assign({}, kitData.component);
+                if(kitData.component.onAdd) {
+                    const s = '"use strict"; return ' + kitData.component.onAdd;
                     const f = Function(s);
                     f()(newComponent);
                 }
                 connector.addNewComponent(newComponent);
-                return false;
-            };
-            this.removeEl.onclick = () => {
+            }
+
+            function removeOneKitFromTable() {
                 for (let i = connector.getTableData().components.length - 1; i >= 0; i -= 1) {
                     const cmp = connector.getTableData().components[i];
-                    if (cmp.name === data.component.name) {
+                    if (cmp.name === kitData.component.name) {
                         connector.removeComponent(i);
                         break;
                     }
                 }
-                return false;
+            }
+
+            function updateNumberOnTable() {
+                let numberOnTable = 0;
+                for (const cmp of connector.getTableData().components) {
+                    if (cmp.name === kitData.kit.name) {
+                        numberOnTable += 1;
+                    }
+                }
+                if (numberOnTable > 0) {
+                    self.countEl.innerText = `${numberOnTable} on the table`;
+                    self.removeEl.style.display = null;
+                } else {
+                    self.countEl.innerText = '';
+                    self.removeEl.style.display = 'none';
+                }
             }
         }
     }
@@ -235,7 +248,7 @@ function createAddRemoveKitsMenu(parent, connector) {
             loadKitList();
 
             async function loadKitList() {
-                const url = baseUrl() + "component";
+                const url = baseUrl() + "kits";
                 const response = await fetch(url);
                 const kits = (await response).json();
                 self.kitsList = await kits;

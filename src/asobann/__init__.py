@@ -5,7 +5,7 @@ from logging.config import dictConfig
 import random
 import string
 
-from asobann import tables, components
+from asobann import tables, components, kits
 
 dictConfig({
     'version': 1,
@@ -44,6 +44,7 @@ def create_app(testing=False):
 
     tables.connect(app.mongo)
     components.connect(app.mongo)
+    kits.connect(app.mongo)
 
     @app.route('/')
     def index():
@@ -146,8 +147,11 @@ def create_app(testing=False):
 
     @app.route('/component')
     def get_components():
-
         return jsonify(components.get_all())
+
+    @app.route('/kits')
+    def get_kits():
+        return jsonify(kits.get_all())
 
     return app
 
