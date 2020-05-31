@@ -1,6 +1,6 @@
 {
-  "components": [
-    {
+  "components": {
+    "c1": {
       "name": "usage",
       "text": "drag to move.  double click to flip.  you can share URL.",
       "top": "100px",
@@ -15,7 +15,7 @@
       "showImage": false,
       "zIndex": 1
     },
-    {
+    "c2": {
       "name": "Card 1",
       "top": "175px",
       "left": "0px",
@@ -31,7 +31,7 @@
       "facedownImage": "/static/images/voice_back.png",
       "zIndex": 2
     },
-    {
+    "c3": {
       "name": "Card 2",
       "top": "175px",
       "left": "150px",
@@ -47,7 +47,7 @@
       "facedownImage": "/static/images/voice_back.png",
       "zIndex": 3
     },
-    {
+    "c4": {
       "name": "Card 3",
       "top": "250px",
       "left": "0px",
@@ -63,7 +63,7 @@
       "facedownImage": "/static/images/voice_back.png",
       "zIndex": 4
     }
-  ],
+  },
   "kits": [],
   "players": {}
 }

@@ -31,7 +31,7 @@ socket.on("update single component", (msg) => {
     if (msg.originator === context.client_connection_id) {
         return;
     }
-    context.update_single_component(msg.index, msg.diff);
+    context.update_single_component(msg.componentId, msg.diff);
 });
 
 socket.on("refresh table", (msg) => {
@@ -79,14 +79,14 @@ function sendComponentUpdateFromQueue() {
 
 setInterval(sendComponentUpdateFromQueue, 75);
 
-function pushComponentUpdate(table, index, diff, volatile) {
+function pushComponentUpdate(table, componentId, diff, volatile) {
     const oldData = table.data;
-    Object.assign(oldData.components[index], diff);
+    Object.assign(oldData.components[componentId], diff);
     table.update(oldData);
     componentUpdateQueue.push({
         tablename: context.tablename,
         originator: context.client_connection_id,
-        index: index,
+        componentId: componentId,
         diff: diff,
         volatile: volatile === true,
     });

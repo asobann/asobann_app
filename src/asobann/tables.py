@@ -21,7 +21,7 @@ def create(tablename, prepared_table):
         with open(str(Path(__file__).parent / "./default.json")) as f:
             table = json.load(f)
     elif prepared_table == '0':
-        table = {'components': [], 'kits': [], 'players': {}}
+        table = {'components': {}, 'kits': [], 'players': {}}
 
     tables.insert_one({"tablename": tablename, "table": table})
     return table
@@ -39,21 +39,22 @@ def purge_all():
     tables.delete_many({})
 
 
-def update_component(tablename, index, diff):
+def update_component(tablename, component_id, diff):
     table = get(tablename)
-    table["components"][index].update(diff)
+    table["components"][component_id].update(diff)
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
 
 
 def add_component(tablename, data):
+    print(f"add_component({tablename}, {data}")
     table = get(tablename)
-    table["components"].append(data)
+    table["components"][data["componentId"]] = data
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
 
 
-def remove_component(tablename, index):
+def remove_component(tablename, component_id):
     table = get(tablename)
-    del table["components"][index]
+    del table["components"][component_id]
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
 
 

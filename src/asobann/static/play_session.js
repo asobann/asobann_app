@@ -39,8 +39,8 @@ class Component {
         });
     }
 
-    update(data, index, allData, context) {
-        this.index = index;
+    update(data, componentId, allData, context) {
+        this.componentId = componentId;
         if (data.showImage) {
             if (this.image == null) {
                 this.image = el("img", { draggable: false });
@@ -93,11 +93,11 @@ class Component {
     }
 
     propagate(diff) {
-        pushComponentUpdate(table, this.index, diff, false);
+        pushComponentUpdate(table, this.componentId, diff, false);
     }
 
     propagate_volatile(diff) {
-        pushComponentUpdate(table, this.index, diff, true);
+        pushComponentUpdate(table, this.componentId, diff, true);
     }
 }
 
@@ -107,7 +107,8 @@ class Table {
         this.el = el("div.table", { style: { top: '0px', left: '0px' } },
             this.list_el = el("div.table_list")
         );
-        this.list = list(this.list_el, Component);
+        // this.list = list(this.list_el, Component);
+        this.list_el_childs = {};
         this.data = {};
     }
 
@@ -115,7 +116,18 @@ class Table {
         setFeatsContext(getPlayerName(), isPlayerObserver(), data);
 
         this.data = data;
-        this.list.update(this.data.components);
+
+        for(const componentId in this.data.components) {
+            if(!this.data.components.hasOwnProperty(componentId)) {
+                continue;
+            }
+            const componentData = this.data.components[componentId];
+            if(!this.list_el_childs[componentId]) {
+                this.list_el_childs[componentId] = new Component();
+                mount(this.list_el, this.list_el_childs[componentId].el);
+            }
+            this.list_el_childs[componentId].update(componentData, componentId, this.data.components)
+        }
     }
 }
 
@@ -137,9 +149,9 @@ const sync_table_connector = {
         menu.update(tableData)
     },
 
-    update_single_component: function (index, diff) {
+    update_single_component: function (componentId, diff) {
         const tableData = table.data;
-        Object.assign(tableData.components[index], diff);
+        Object.assign(tableData.components[componentId], diff);
         table.update(tableData);
         menu.update(tableData);
     },
@@ -182,19 +194,27 @@ const sync_table_connector = {
 
 const otherPlayersMouse = {};
 
+function generateComponentId() {
+    return 'xxxxxxxxxxxx'.replace(/[x]/g, function (c) {
+        return (Math.random() * 16 | 0).toString(16);
+    });
+}
+
 function addNewKit(kitName) {
     const kitId = 'xxxxxxxxxxxx'.replace(/[x]/g, function (c) {
         return (Math.random() * 16 | 0).toString(16);
     });
 
     (async () => {
-        const newComponents = [];
+        const newComponents = {};
         const componentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitName))).json();
         for (const data of await componentsData) {
             const component = data.component;
             component.kitId = kitId;
+            const componentId = generateComponentId();
+            component.componentId = componentId;
             placeNewComponent(component);
-            newComponents.push(component);
+            newComponents[componentId] = component;
         }
         pushNewKit({
             kit: { name: kitName, kitId: kitId },
@@ -204,11 +224,11 @@ function addNewKit(kitName) {
 }
 
 function removeKit(kitId) {
-    const after = [];
+    const after = {};
     for (let i = 0; i < table.data.components.length; i++) {
         const cmp = table.data.components[i];
         if (cmp.kitId !== kitId) {
-            after.push(cmp);
+            after[cmp.componentId] = cmp;
         }
     }
     table.data.components = after;
@@ -228,7 +248,8 @@ function placeNewComponent(newComponent) {
         let collision = false;
         rect.bottom = rect.top + rect.height;
         rect.right = rect.left + rect.width;
-        for (const target of table.data.components) {
+        for (const componentId in table.data.components) {
+            const target = table.data.components[componentId];
             const targetLeft = parseFloat(target.left);
             const targetTop = parseFloat(target.top);
             const targetRight = targetLeft + parseFloat(target.width);
@@ -256,10 +277,13 @@ function placeNewComponent(newComponent) {
     nextZIndex += 1;
 }
 
-function addNewComponent(newComponent) {
-    placeNewComponent(newComponent);
-    pushNewComponent(newComponent);
+function addNewComponent(newComponentData) {
+    newComponentData.componentId = generateComponentId();
+    placeNewComponent(newComponentData);
+    pushNewComponent(newComponentData);
     return false;
+
+
 }
 
 function removeHandArea() {
@@ -344,7 +368,8 @@ interact("div.table_container").draggable({
 
 function isTherePlayersHandArea(playerName) {
     if (table.data.components) {
-        for (const cmp of table.data.components) {
+        for (const cmpId in table.data.components) {
+            const cmp = table.data.components[cmpId];
             if (cmp.handArea && cmp.owner === playerName) {
                 return true;
             }

@@ -111,7 +111,7 @@ def create_app(testing=False):
     def handle_update_single_component(json):
         app.logger.debug(f'update table: {json}')
         if "volatile" not in json or not json["volatile"]:
-            tables.update_component(json["tablename"], json["index"], json["diff"])
+            tables.update_component(json["tablename"], json["componentId"], json["diff"])
         emit("update single component", json, broadcast=True, room=json["tablename"])
 
     @app.socketio.on("add component")
@@ -125,8 +125,8 @@ def create_app(testing=False):
     def handle_add_kit(json):
         app.logger.debug(f'add kit: {json}')
         tables.add_kit(json["tablename"], json["data"]["kit"])
-        for d in json["data"]["components"]:
-            tables.add_component(json["tablename"], d)
+        for component_data in json["data"]["components"].values():
+            tables.add_component(json["tablename"], component_data)
         table = tables.get(json["tablename"])
         emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
