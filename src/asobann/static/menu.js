@@ -209,7 +209,7 @@ function createAddRemoveKitsMenu(parent, connector) {
             function removeOneKitFromTable() {
                 for (let i = connector.getTableData().components.length - 1; i >= 0; i -= 1) {
                     const cmp = connector.getTableData().components[i];
-                    if (cmp.name === kitData.component.name) {
+                    if (cmp.kitName === kitData.kit.name) {
                         connector.removeComponent(i);
                         break;
                     }
