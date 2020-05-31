@@ -3,6 +3,7 @@
     {
       "component": {
         "name": "Dice (Blue)",
+        "kitName": "Dice (Blue)",
         "handArea": false,
         "top": "0px",
         "left": "0px",
@@ -15,6 +16,13 @@
         "rollable": true,
         "ownable": false,
         "onAdd": "function(component) { \n  component.rollFinalValue = Math.floor(Math.random() * 6) + 1;\n  component.rollDuration = 500;\n  component.startRoll = true;\n}"
+      }
+    }
+  ],
+  "kits": [
+    {
+      "kit": {
+        "name": "Dice (Blue)"
       }
     }
   ]

@@ -81,7 +81,7 @@ class GameMenu:
         form.find_element_by_css_selector("input#submit").click()
 
     def add_component_from_list(self, component_name):
-        css_selector = f"div.component_selection div.item[data-component-name='{component_name}'"
+        css_selector = f"div.component_selection div.item[data-kit-name='{component_name}'"
         WebDriverWait(self.browser, 5).until(
             expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
         item = self.browser.find_element_by_css_selector(css_selector)

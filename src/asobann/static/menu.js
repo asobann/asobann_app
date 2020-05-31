@@ -194,13 +194,16 @@ function createAddRemoveKitsMenu(parent, connector) {
             };
 
             function addKitOnTable() {
-                const newComponent = Object.assign({}, kitData.component);
-                if(kitData.component.onAdd) {
-                    const s = '"use strict"; return ' + kitData.component.onAdd;
-                    const f = Function(s);
-                    f()(newComponent);
-                }
-                connector.addNewComponent(newComponent);
+                (async () => {
+                    const componentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitData.kit.name))).json();
+                    for (const data of componentsData) {
+                        const component = data.component;
+                        if (component.onAdd) {
+                            Function('"use strict"; return ' + component.onAdd)()(component);
+                        }
+                        connector.addNewComponent(component);
+                    }
+                })();
             }
 
             function removeOneKitFromTable() {

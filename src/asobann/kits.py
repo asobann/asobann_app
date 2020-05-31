@@ -14,14 +14,7 @@ def get(name):
 
 
 def get_all():
-    # data = kits.find()
-    data = [
-        {
-            "kit": {
-                "name": "Dice (Blue)",
-            },
-        },
-    ]
+    data = kits.find()
     return [{"kit": d["kit"]} for d in data]
 
 

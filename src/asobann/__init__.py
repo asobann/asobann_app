@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response
+from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, abort
 from flask_socketio import SocketIO, emit, join_room
 from flask_pymongo import PyMongo
 from logging.config import dictConfig
@@ -145,9 +145,12 @@ def create_app(testing=False):
         response = make_response(redirect(url_for('.play_table', tablename=tablename)))
         return response
 
-    @app.route('/component')
-    def get_components():
-        return jsonify(components.get_all())
+    @app.route('/components')
+    def get_components_for_kit():
+        kit_name = request.args.get("kit_name")
+        if not kit_name:
+            return abort(500)
+        return jsonify(components.get_for_kit(kit_name))
 
     @app.route('/kits')
     def get_kits():
