@@ -56,7 +56,7 @@ class Menu {
                     }, "You are observing.  Join to play!  On the left side, enter name and click Join!"),
                 ], { style: { display: 'none' } }),
                 this.addRemoveComponentItem = el("div.menuitem#add_remove_component",
-                    el("a", { href: "", onclick: showAddRemoveComponentMenu }, "Add / Remove Components")),
+                    el("a", { href: "", onclick: showAddRemoveKitsMenu }, "Add / Remove Kits")),
                 this.addHandAreaItem = el("div.menuitem#add_hand_area",
                     el("a", { href: "", onclick: addHandArea }, "Add Hand Area")),
                 this.removeHandAreaItem = el("div.menuitem#remove_hand_area",
@@ -126,8 +126,8 @@ class Menu {
             return false;
         }
 
-        function showAddRemoveComponentMenu() {
-            self.componentMenu = createAddRemoveComponentMenu(self.addRemoveComponentItem, self.connector);
+        function showAddRemoveKitsMenu() {
+            self.componentMenu = createAddRemoveKitsMenu(self.addRemoveComponentItem, self.connector);
             mount(self.addRemoveComponentItem, self.componentMenu.el);
             connector.fireMenuUpdate();
             return false;
@@ -163,8 +163,8 @@ class Menu {
 }
 
 
-function createAddRemoveComponentMenu(parent, connector) {
-    class ComponentMenuItem {
+function createAddRemoveKitsMenu(parent, connector) {
+    class KitsMenuItem {
         constructor(props) {
             this.el = el("div.item", [
                 this.nameEl = el("div"),
@@ -218,41 +218,41 @@ function createAddRemoveComponentMenu(parent, connector) {
         }
     }
 
-    class ComponentMenu {
+    class KitsMenu {
         constructor(props) {
             const REASONABLY_BIG_ZINDEX_VALUE = 99999999;
             const self = this;
-            this.commponentMenuItemList = list("div", ComponentMenuItem);
-            this.el = el("div.component_selection_container", { style: { zIndex: REASONABLY_BIG_ZINDEX_VALUE } },
+            this.kitsMenuItemList = list("div", KitsMenuItem);
+            this.el = el("div.kit_selection_container", { style: { zIndex: REASONABLY_BIG_ZINDEX_VALUE } },
                 [
-                    el("div.component_selection", [
-                        el("button", { onclick: hideAddRemoveComponentMenu }, "Done"),
-                        this.commponentMenuItemList.el,
-                        el("button", { onclick: hideAddRemoveComponentMenu }, "Done"),
+                    el("div.kit_selection", [
+                        el("button", { onclick: hideAddRemoveKitsMenu }, "Done"),
+                        this.kitsMenuItemList.el,
+                        el("button", { onclick: hideAddRemoveKitsMenu }, "Done"),
                     ])
                 ]
             );
-            loadComponentList();
+            loadKitList();
 
-            async function loadComponentList() {
+            async function loadKitList() {
                 const url = baseUrl() + "component";
                 const response = await fetch(url);
-                const components = (await response).json();
-                self.componentList = await components;
-                self.commponentMenuItemList.update(self.componentList);
+                const kits = (await response).json();
+                self.kitsList = await kits;
+                self.kitsMenuItemList.update(self.kitsList);
             }
 
-            function hideAddRemoveComponentMenu() {
+            function hideAddRemoveKitsMenu() {
                 unmount(parent, self.el);
             }
         }
 
         update(tableData, context) {
-            this.commponentMenuItemList.update(this.componentList, tableData);
+            this.kitsMenuItemList.update(this.kitsList, tableData);
         }
     }
 
-    return new ComponentMenu();
+    return new KitsMenu();
 }
 
 export {Menu};

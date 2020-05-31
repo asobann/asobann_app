@@ -108,7 +108,7 @@ div.others_mouse_cursor.buttons_down span {
     text-align: center;
 }
 
-div.component_selection_container {
+div.kit_selection_container {
     background-color: rgba(48, 48, 48, 0.4);
     position: fixed;
     width: 150px;
@@ -117,7 +117,7 @@ div.component_selection_container {
     left: 0;
 }
 
-div.component_selection_container .component_selection {
+div.kit_selection_container .kit_selection {
     background-color: rgba(255, 255, 255, 1.0);
     color: black;
     position: fixed;
@@ -127,7 +127,7 @@ div.component_selection_container .component_selection {
     /*left: 25%;*/
 }
 
-div.component_selection_container .item {
+div.kitt_selection_container .item {
     display: block;
     width: 100%;
 }
