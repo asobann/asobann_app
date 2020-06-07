@@ -15,17 +15,6 @@ from selenium.common.exceptions import NoSuchElementException
 from .helper import compo_pos, Rect, GameHelper, TOP
 
 
-def rect(element):
-    return {
-        'top': element.location["y"],
-        'left': element.location["x"],
-        'bottom': element.location["y"] + element.size["height"],
-        'right': element.location["x"] + element.size["width"],
-        'height': element.size["height"],
-        'width': element.size["width"],
-    }
-
-
 C1 = 'PlayingCard S_A'
 C2 = 'PlayingCard S_2'
 C3 = 'PlayingCard S_3'
