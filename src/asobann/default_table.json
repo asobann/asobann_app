@@ -1,21 +1,21 @@
 {
   "components": {
-    "0001": {
+    "C0000": {
       "name": "title",
       "top": "20px",
       "left": "20px",
-      "width": "300px",
       "height": "40px",
-      "text": "\u30c8\u30e9\u30f3\u30d7\u306e\u30c6\u30fc\u30d6\u30eb\u3078\u3088\u3046\u3053\u305d\uff01",
+      "width": "300px",
       "color": "blue",
+      "showImage": false,
+      "text": "\u30c8\u30e9\u30f3\u30d7\u306e\u30c6\u30fc\u30d6\u30eb\u3078\u3088\u3046\u3053\u305d\uff01",
       "draggable": true,
       "flippable": false,
       "ownable": false,
       "resizable": true,
-      "showImage": false,
       "zIndex": 1
     },
-    "0002": {
+    "C0001": {
       "name": "usage",
       "top": "20px",
       "left": "340px",
@@ -31,8 +31,8 @@
       "resizable": true,
       "zIndex": 2
     },
-    "C0003": {
-      "name": "SA",
+    "C0002": {
+      "name": "PlayingCard S_A",
       "kitName": "Playing Card",
       "top": "0px",
       "left": "0px",
@@ -44,15 +44,15 @@
       "faceupText": "\u2660A",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 100
     },
-    "C0004": {
-      "name": "SK",
+    "C0003": {
+      "name": "PlayingCard S_K",
       "kitName": "Playing Card",
       "top": "1px",
       "left": "1px",
@@ -64,15 +64,15 @@
       "faceupText": "\u2660K",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 99
     },
-    "C0005": {
-      "name": "SQ",
+    "C0004": {
+      "name": "PlayingCard S_Q",
       "kitName": "Playing Card",
       "top": "2px",
       "left": "2px",
@@ -84,15 +84,15 @@
       "faceupText": "\u2660Q",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 98
     },
-    "C0006": {
-      "name": "SJ",
+    "C0005": {
+      "name": "PlayingCard S_J",
       "kitName": "Playing Card",
       "top": "3px",
       "left": "3px",
@@ -104,15 +104,15 @@
       "faceupText": "\u2660J",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 97
     },
-    "C0007": {
-      "name": "S10",
+    "C0006": {
+      "name": "PlayingCard S_10",
       "kitName": "Playing Card",
       "top": "4px",
       "left": "4px",
@@ -124,15 +124,15 @@
       "faceupText": "\u266010",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 96
     },
-    "C0008": {
-      "name": "S9",
+    "C0007": {
+      "name": "PlayingCard S_9",
       "kitName": "Playing Card",
       "top": "5px",
       "left": "5px",
@@ -144,15 +144,15 @@
       "faceupText": "\u26609",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 95
     },
-    "C0009": {
-      "name": "S8",
+    "C0008": {
+      "name": "PlayingCard S_8",
       "kitName": "Playing Card",
       "top": "6px",
       "left": "6px",
@@ -164,15 +164,15 @@
       "faceupText": "\u26608",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 94
     },
-    "C0010": {
-      "name": "S7",
+    "C0009": {
+      "name": "PlayingCard S_7",
       "kitName": "Playing Card",
       "top": "7px",
       "left": "7px",
@@ -184,15 +184,15 @@
       "faceupText": "\u26607",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 93
     },
-    "C0011": {
-      "name": "S6",
+    "C0010": {
+      "name": "PlayingCard S_6",
       "kitName": "Playing Card",
       "top": "8px",
       "left": "8px",
@@ -204,15 +204,15 @@
       "faceupText": "\u26606",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 92
     },
-    "C0012": {
-      "name": "S5",
+    "C0011": {
+      "name": "PlayingCard S_5",
       "kitName": "Playing Card",
       "top": "9px",
       "left": "9px",
@@ -224,15 +224,15 @@
       "faceupText": "\u26605",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 91
     },
-    "C0013": {
-      "name": "S4",
+    "C0012": {
+      "name": "PlayingCard S_4",
       "kitName": "Playing Card",
       "top": "10px",
       "left": "10px",
@@ -244,15 +244,15 @@
       "faceupText": "\u26604",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 90
     },
-    "C0014": {
-      "name": "S3",
+    "C0013": {
+      "name": "PlayingCard S_3",
       "kitName": "Playing Card",
       "top": "11px",
       "left": "11px",
@@ -264,15 +264,15 @@
       "faceupText": "\u26603",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 89
     },
-    "C0015": {
-      "name": "S2",
+    "C0014": {
+      "name": "PlayingCard S_2",
       "kitName": "Playing Card",
       "top": "12px",
       "left": "12px",
@@ -284,15 +284,15 @@
       "faceupText": "\u26602",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 88
     },
-    "C0016": {
-      "name": "HA",
+    "C0015": {
+      "name": "PlayingCard H_A",
       "kitName": "Playing Card",
       "top": "13px",
       "left": "13px",
@@ -304,15 +304,15 @@
       "faceupText": "\u2665A",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 87
     },
-    "C0017": {
-      "name": "HK",
+    "C0016": {
+      "name": "PlayingCard H_K",
       "kitName": "Playing Card",
       "top": "14px",
       "left": "14px",
@@ -324,15 +324,15 @@
       "faceupText": "\u2665K",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 86
     },
-    "C0018": {
-      "name": "HQ",
+    "C0017": {
+      "name": "PlayingCard H_Q",
       "kitName": "Playing Card",
       "top": "15px",
       "left": "15px",
@@ -344,15 +344,15 @@
       "faceupText": "\u2665Q",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 85
     },
-    "C0019": {
-      "name": "HJ",
+    "C0018": {
+      "name": "PlayingCard H_J",
       "kitName": "Playing Card",
       "top": "16px",
       "left": "16px",
@@ -364,15 +364,15 @@
       "faceupText": "\u2665J",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 84
     },
-    "C0020": {
-      "name": "H10",
+    "C0019": {
+      "name": "PlayingCard H_10",
       "kitName": "Playing Card",
       "top": "17px",
       "left": "17px",
@@ -384,15 +384,15 @@
       "faceupText": "\u266510",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 83
     },
-    "C0021": {
-      "name": "H9",
+    "C0020": {
+      "name": "PlayingCard H_9",
       "kitName": "Playing Card",
       "top": "18px",
       "left": "18px",
@@ -404,15 +404,15 @@
       "faceupText": "\u26659",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 82
     },
-    "C0022": {
-      "name": "H8",
+    "C0021": {
+      "name": "PlayingCard H_8",
       "kitName": "Playing Card",
       "top": "19px",
       "left": "19px",
@@ -424,15 +424,15 @@
       "faceupText": "\u26658",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 81
     },
-    "C0023": {
-      "name": "H7",
+    "C0022": {
+      "name": "PlayingCard H_7",
       "kitName": "Playing Card",
       "top": "20px",
       "left": "20px",
@@ -444,15 +444,15 @@
       "faceupText": "\u26657",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 80
     },
-    "C0024": {
-      "name": "H6",
+    "C0023": {
+      "name": "PlayingCard H_6",
       "kitName": "Playing Card",
       "top": "21px",
       "left": "21px",
@@ -464,15 +464,15 @@
       "faceupText": "\u26656",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 79
     },
-    "C0025": {
-      "name": "H5",
+    "C0024": {
+      "name": "PlayingCard H_5",
       "kitName": "Playing Card",
       "top": "22px",
       "left": "22px",
@@ -484,15 +484,15 @@
       "faceupText": "\u26655",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 78
     },
-    "C0026": {
-      "name": "H4",
+    "C0025": {
+      "name": "PlayingCard H_4",
       "kitName": "Playing Card",
       "top": "23px",
       "left": "23px",
@@ -504,15 +504,15 @@
       "faceupText": "\u26654",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 77
     },
-    "C0027": {
-      "name": "H3",
+    "C0026": {
+      "name": "PlayingCard H_3",
       "kitName": "Playing Card",
       "top": "24px",
       "left": "24px",
@@ -524,15 +524,15 @@
       "faceupText": "\u26653",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 76
     },
-    "C0028": {
-      "name": "H2",
+    "C0027": {
+      "name": "PlayingCard H_2",
       "kitName": "Playing Card",
       "top": "25px",
       "left": "25px",
@@ -544,15 +544,15 @@
       "faceupText": "\u26652",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 75
     },
-    "C0029": {
-      "name": "DA",
+    "C0028": {
+      "name": "PlayingCard D_A",
       "kitName": "Playing Card",
       "top": "26px",
       "left": "26px",
@@ -564,15 +564,15 @@
       "faceupText": "\u2666A",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 74
     },
-    "C0030": {
-      "name": "DK",
+    "C0029": {
+      "name": "PlayingCard D_K",
       "kitName": "Playing Card",
       "top": "27px",
       "left": "27px",
@@ -584,15 +584,15 @@
       "faceupText": "\u2666K",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 73
     },
-    "C0031": {
-      "name": "DQ",
+    "C0030": {
+      "name": "PlayingCard D_Q",
       "kitName": "Playing Card",
       "top": "28px",
       "left": "28px",
@@ -604,15 +604,15 @@
       "faceupText": "\u2666Q",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 72
     },
-    "C0032": {
-      "name": "DJ",
+    "C0031": {
+      "name": "PlayingCard D_J",
       "kitName": "Playing Card",
       "top": "29px",
       "left": "29px",
@@ -624,15 +624,15 @@
       "faceupText": "\u2666J",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 71
     },
-    "C0033": {
-      "name": "D10",
+    "C0032": {
+      "name": "PlayingCard D_10",
       "kitName": "Playing Card",
       "top": "30px",
       "left": "30px",
@@ -644,15 +644,15 @@
       "faceupText": "\u266610",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 70
     },
-    "C0034": {
-      "name": "D9",
+    "C0033": {
+      "name": "PlayingCard D_9",
       "kitName": "Playing Card",
       "top": "31px",
       "left": "31px",
@@ -664,15 +664,15 @@
       "faceupText": "\u26669",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 69
     },
-    "C0035": {
-      "name": "D8",
+    "C0034": {
+      "name": "PlayingCard D_8",
       "kitName": "Playing Card",
       "top": "32px",
       "left": "32px",
@@ -684,15 +684,15 @@
       "faceupText": "\u26668",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 68
     },
-    "C0036": {
-      "name": "D7",
+    "C0035": {
+      "name": "PlayingCard D_7",
       "kitName": "Playing Card",
       "top": "33px",
       "left": "33px",
@@ -704,15 +704,15 @@
       "faceupText": "\u26667",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 67
     },
-    "C0037": {
-      "name": "D6",
+    "C0036": {
+      "name": "PlayingCard D_6",
       "kitName": "Playing Card",
       "top": "34px",
       "left": "34px",
@@ -724,15 +724,15 @@
       "faceupText": "\u26666",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 66
     },
-    "C0038": {
-      "name": "D5",
+    "C0037": {
+      "name": "PlayingCard D_5",
       "kitName": "Playing Card",
       "top": "35px",
       "left": "35px",
@@ -744,15 +744,15 @@
       "faceupText": "\u26665",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 65
     },
-    "C0039": {
-      "name": "D4",
+    "C0038": {
+      "name": "PlayingCard D_4",
       "kitName": "Playing Card",
       "top": "36px",
       "left": "36px",
@@ -764,15 +764,15 @@
       "faceupText": "\u26664",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 64
     },
-    "C0040": {
-      "name": "D3",
+    "C0039": {
+      "name": "PlayingCard D_3",
       "kitName": "Playing Card",
       "top": "37px",
       "left": "37px",
@@ -784,15 +784,15 @@
       "faceupText": "\u26663",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 63
     },
-    "C0041": {
-      "name": "D2",
+    "C0040": {
+      "name": "PlayingCard D_2",
       "kitName": "Playing Card",
       "top": "38px",
       "left": "38px",
@@ -804,15 +804,15 @@
       "faceupText": "\u26662",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 62
     },
-    "C0042": {
-      "name": "CA",
+    "C0041": {
+      "name": "PlayingCard C_A",
       "kitName": "Playing Card",
       "top": "39px",
       "left": "39px",
@@ -824,15 +824,15 @@
       "faceupText": "\u2663A",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 61
     },
-    "C0043": {
-      "name": "CK",
+    "C0042": {
+      "name": "PlayingCard C_K",
       "kitName": "Playing Card",
       "top": "40px",
       "left": "40px",
@@ -844,15 +844,15 @@
       "faceupText": "\u2663K",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 60
     },
-    "C0044": {
-      "name": "CQ",
+    "C0043": {
+      "name": "PlayingCard C_Q",
       "kitName": "Playing Card",
       "top": "41px",
       "left": "41px",
@@ -864,15 +864,15 @@
       "faceupText": "\u2663Q",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 59
     },
-    "C0045": {
-      "name": "CJ",
+    "C0044": {
+      "name": "PlayingCard C_J",
       "kitName": "Playing Card",
       "top": "42px",
       "left": "42px",
@@ -884,15 +884,15 @@
       "faceupText": "\u2663J",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 58
     },
-    "C0046": {
-      "name": "C10",
+    "C0045": {
+      "name": "PlayingCard C_10",
       "kitName": "Playing Card",
       "top": "43px",
       "left": "43px",
@@ -904,15 +904,15 @@
       "faceupText": "\u266310",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 57
     },
-    "C0047": {
-      "name": "C9",
+    "C0046": {
+      "name": "PlayingCard C_9",
       "kitName": "Playing Card",
       "top": "44px",
       "left": "44px",
@@ -924,15 +924,15 @@
       "faceupText": "\u26639",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 56
     },
-    "C0048": {
-      "name": "C8",
+    "C0047": {
+      "name": "PlayingCard C_8",
       "kitName": "Playing Card",
       "top": "45px",
       "left": "45px",
@@ -944,15 +944,15 @@
       "faceupText": "\u26638",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 55
     },
-    "C0049": {
-      "name": "C7",
+    "C0048": {
+      "name": "PlayingCard C_7",
       "kitName": "Playing Card",
       "top": "46px",
       "left": "46px",
@@ -964,15 +964,15 @@
       "faceupText": "\u26637",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 54
     },
-    "C0050": {
-      "name": "C6",
+    "C0049": {
+      "name": "PlayingCard C_6",
       "kitName": "Playing Card",
       "top": "47px",
       "left": "47px",
@@ -984,15 +984,15 @@
       "faceupText": "\u26636",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 53
     },
-    "C0051": {
-      "name": "C5",
+    "C0050": {
+      "name": "PlayingCard C_5",
       "kitName": "Playing Card",
       "top": "48px",
       "left": "48px",
@@ -1004,15 +1004,15 @@
       "faceupText": "\u26635",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 52
     },
-    "C0052": {
-      "name": "C4",
+    "C0051": {
+      "name": "PlayingCard C_4",
       "kitName": "Playing Card",
       "top": "49px",
       "left": "49px",
@@ -1024,15 +1024,15 @@
       "faceupText": "\u26634",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 51
     },
-    "C0053": {
-      "name": "C3",
+    "C0052": {
+      "name": "PlayingCard C_3",
       "kitName": "Playing Card",
       "top": "50px",
       "left": "50px",
@@ -1044,15 +1044,15 @@
       "faceupText": "\u26633",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 50
     },
-    "C0054": {
-      "name": "C2",
+    "C0053": {
+      "name": "PlayingCard C_2",
       "kitName": "Playing Card",
       "top": "51px",
       "left": "51px",
@@ -1064,15 +1064,16 @@
       "faceupText": "\u26632",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 49
     },
-    "C0055": {
+    "C0054": {
       "name": "JOKER1",
+      "kitName": "Playing Card",
       "top": "52px",
       "left": "52px",
       "height": "100px",
@@ -1083,15 +1084,16 @@
       "faceupText": "JOKER",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 48
     },
-    "C0056": {
+    "C0055": {
       "name": "JOKER2",
+      "kitName": "Playing Card",
       "top": "53px",
       "left": "53px",
       "height": "100px",
@@ -1102,28 +1104,14 @@
       "faceupText": "JOKER",
       "facedownImage": "/static/images/playing_card_back.png",
       "facedownText": "",
-      "faceup": false,
       "draggable": true,
       "flippable": true,
       "ownable": true,
       "resizable": false,
+      "faceup": false,
       "zIndex": 47
     }
   },
-  "kits": [
-    {
-      "kit": {
-        "name": "Dice (Blue)",
-        "width": "64px",
-        "height": "64px"
-      }
-    },
-    {
-      "kit": {
-        "name": "Playing Card",
-        "width": "150px",
-        "height": "150px"
-      }
-    }
-  ]
+  "players": {},
+  "tablename": "dummy"
 }

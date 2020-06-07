@@ -18,7 +18,7 @@ def get(tablename):
 
 def create(tablename, prepared_table):
     if prepared_table is None:
-        with open(str(Path(__file__).parent / "./default.json")) as f:
+        with open(str(Path(__file__).parent / "./default_table.json")) as f:
             table = json.load(f)
     elif prepared_table == '0':
         table = {'components': {}, 'kits': [], 'players': {}}
