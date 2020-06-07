@@ -26,23 +26,6 @@ def rect(element):
     }
 
 
-def test_add_and_move_hand_area(server, browser: webdriver.Firefox):
-    host = GameHelper(browser)
-    host.go(TOP)
-    host.menu.import_jsonfile(str(Path(__file__).parent / "./table_for_e2etests.json"))
-
-    host.should_have_text("you are host")
-
-    host.menu.add_my_hand_area.click()
-
-    # move and resize hand area
-    hand_area = host.hand_area(owner="host")
-    host.drag(hand_area, 0, 200)
-    size = hand_area.size()
-    host.drag(hand_area, 200, 30, pos='lower right corner')
-    assert size.width + 200 == hand_area.size().width and size.height + 30 == hand_area.size().height
-
-
 C1 = 'PlayingCard S_A'
 C2 = 'PlayingCard S_2'
 C3 = 'PlayingCard S_3'
