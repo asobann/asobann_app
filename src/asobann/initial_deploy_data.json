@@ -1196,6 +1196,7 @@
         "top": "0px",
         "left": "0px",
         "height": "64px",
+        "width": "64px",
         "showImage": false,
         "draggable": true,
         "flippable": false,

@@ -167,6 +167,8 @@ class TestDice:
         host.menu.add_component_from_list("Dice (Blue)")
 
         assert host.component_by_name("Dice (Blue)")
+        assert host.component_by_name("Dice (Blue)").rect().height == 66
+        assert host.component_by_name("Dice (Blue)").rect().width == 66
 
     def test_show_number_of_dices_on_the_table(self, browser: webdriver.Firefox):
         host = GameHelper(browser)
@@ -188,6 +190,11 @@ class TestDice:
     def test_roll(self, browser: webdriver.Firefox):
         pass
 
-    @pytest.mark.skip
     def test_remove_dice_from_table(self, browser: webdriver.Firefox):
-        pass
+        host = GameHelper(browser)
+        host.go(TOP)
+        host.menu.add_component.execute()
+        host.menu.add_component_from_list("Dice (Blue)")
+
+        host.menu.remove_component_from_list("Dice (Blue)")
+        host.should_not_see_component("Dice (Blue)")

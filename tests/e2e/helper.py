@@ -87,6 +87,13 @@ class GameMenu:
         item = self.browser.find_element_by_css_selector(css_selector)
         item.find_element_by_class_name("add_new_component").click()
 
+    def remove_component_from_list(self, component_name):
+        css_selector = f"div.kit_selection div.item[data-kit-name='{component_name}'"
+        WebDriverWait(self.browser, 5).until(
+            expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
+        item = self.browser.find_element_by_css_selector(css_selector)
+        item.find_element_by_class_name("remove_component").click()
+
 
 class GameHelper:
 
@@ -125,6 +132,15 @@ class GameHelper:
         except TimeoutException:
             pass
         assert False, f'element located by css locator "{css_locator}" cannot be found (timeout)'
+
+    def should_not_see_component(self, name):
+        selector = f'.component[data-component-name="{name}"]'
+        try:
+            WebDriverWait(self.browser, 5).until(
+                expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, selector)))
+            assert False, f'component "{name}" is on the table'
+        except TimeoutException:
+            return
 
     def component(self, nth, wait=True) -> "Component":
         locator = f".component:nth-of-type({nth})"

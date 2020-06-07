@@ -165,6 +165,7 @@ def write_initial_deploy_data_json():
             "top": "0px",
             "left": "0px",
             "height": "64px",
+            "width": "64px",
             "showImage": False,
             "draggable": True,
             "flippable": False,
