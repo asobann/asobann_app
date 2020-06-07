@@ -319,8 +319,8 @@ const collidability = {
 
         featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
             const collided = [];
-            for (const index in featsContext.collisionComponents) {
-                const target = featsContext.collisionComponents[index];
+            for (const componentId in featsContext.collisionComponents) {
+                const target = featsContext.collisionComponents[componentId];
                 if (target === component) {
                     continue;
                 }
@@ -330,25 +330,25 @@ const collidability = {
             }
 
             for (const other of collided) {
-                if (component.currentCollisions[other.index]) {
+                if (component.currentCollisions[other.componentId]) {
                     continue;
                 }
-                component.currentCollisions[other.index] = true;
-                other.currentCollisions[component.index] = true;
+                component.currentCollisions[other.componentId] = true;
+                other.currentCollisions[component.componentId] = true;
 
                 component.propagate({ 'currentCollisions': component.currentCollisions });
                 other.propagate({ 'currentCollisions': other.currentCollisions });
                 featsContext.fireEvent(component, collidability.events.onCollisionStart, { collider: other });
                 featsContext.fireEvent(other, collidability.events.onCollisionStart, { collider: component });
             }
-            for (const index in component.currentCollisions) {
-                if (collided.find(e => e.index === parseInt(index))) {
+            for (const componentId in component.currentCollisions) {
+                if (collided.find(e => e.componentId === componentId)) {
                     continue;
                 }
 
-                const other = featsContext.collisionComponents[index];
-                delete component.currentCollisions[other.index];
-                delete other.currentCollisions[component.index];
+                const other = featsContext.collisionComponents[componentId];
+                delete component.currentCollisions[other.componentId];
+                delete other.currentCollisions[component.componentId];
 
                 component.propagate({ 'currentCollisions': component.currentCollisions });
                 other.propagate({ 'currentCollisions': other.currentCollisions });
@@ -361,8 +361,8 @@ const collidability = {
         return true;
     },
     update: function (component, data) {
-        if (!featsContext.collisionComponents[component.index]) {
-            featsContext.collisionComponents[component.index] = component;
+        if (!featsContext.collisionComponents[component.componentId]) {
+            featsContext.collisionComponents[component.componentId] = component;
         }
         if (data.currentCollisions) {
             component.currentCollisions = data.currentCollisions;
@@ -374,27 +374,6 @@ const collidability = {
         onCollisionStart: 'collidability.onCollisionStart',
         onCollisionEnd: 'collidability.onCollisionEnd',
     },
-    // recalculate: function (tableData) {
-    //     featsContext.collisionComponents = {};
-    //     for(const component of tableData.components) {
-    //         featsContext.collisionComponents[component.index] = component;
-    //         component.currentCollisions = {};
-    //     }
-    //
-    //     for (const i in featsContext.collisionComponents) {
-    //         const component = featsContext.collisionComponents[i];
-    //
-    //         for (const j in featsContext.collisionComponents) {
-    //             const target = featsContext.collisionComponents[j];
-    //             if (i === j) {
-    //                 continue;
-    //             }
-    //             if (isOverlapped(component, target)) {
-    //                 component.currentCollisions[j] = true;
-    //             }
-    //         }
-    //     }
-    // },
 };
 
 const ownership = {
@@ -459,7 +438,7 @@ const traylike = {
             if (e.collider.traylike) {
                 return;
             }
-            component.onTray[e.collider.index] = true;
+            component.onTray[e.collider.componentId] = true;
             component.propagate({ onTray: component.onTray });
         });
 
@@ -470,7 +449,7 @@ const traylike = {
             if (e.collider.traylike) {
                 return;
             }
-            delete component.onTray[e.collider.index];
+            delete component.onTray[e.collider.componentId];
             component.propagate({ onTray: component.onTray });
         });
 
@@ -480,21 +459,21 @@ const traylike = {
             }
             const dx = e.dx;
             const dy = e.dy;
-            for (const idx in component.onTray) {
-                const target = featsContext.collisionComponents[idx];
+            for (const componentId in component.onTray) {
+                const target = featsContext.collisionComponents[componentId];
                 target.propagate_volatile({
                     top: parseFloat(target.el.style.top) + dy,
                     left: parseFloat(target.el.style.left) + dx
                 });
             }
-        })
+        });
 
         featsContext.addEventListener(component, draggability.events.onMoveEnd, (e) => {
             if (!component.traylike) {
                 return;
             }
-            for (const idx in component.onTray) {
-                const target = featsContext.collisionComponents[idx];
+            for (const componentId in component.onTray) {
+                const target = featsContext.collisionComponents[componentId];
                 target.propagate({
                     top: target.el.style.top,
                     left: target.el.style.left

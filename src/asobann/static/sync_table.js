@@ -64,7 +64,7 @@ function sendComponentUpdateFromQueue() {
         let shouldEmit = true;
         if (update.volatile) {
             for (const another of componentUpdateQueue) {
-                if (another.index === update.index) {
+                if (another.componentId === update.componentId) {
                     // discard update as another is newer
                     shouldEmit = false;
                     break;
