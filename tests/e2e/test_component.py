@@ -43,6 +43,11 @@ def test_add_and_move_hand_area(server, browser: webdriver.Firefox):
     assert size.width + 200 == hand_area.size().width and size.height + 30 == hand_area.size().height
 
 
+C1 = 'PlayingCard S_A'
+C2 = 'PlayingCard S_2'
+C3 = 'PlayingCard S_3'
+
+
 @pytest.mark.usefixtures("server")
 class TestHandArea:
     def put_one_card_each_on_2_hand_areas(self, host, another):
@@ -50,17 +55,17 @@ class TestHandArea:
         host.should_have_text("you are host")
 
         host.menu.add_my_hand_area.click()
-        host.move_card_to_hand_area(host.component_by_name('PlayingCard S_A'), 'host', (-100, 0))
+        host.move_card_to_hand_area(host.component_by_name(C1), 'host', (-100, 0))
 
         another.go(host.current_url)
         another.menu.join("Player 2")
         another.should_have_text("you are Player 2")
 
         another.menu.add_my_hand_area.click()
-        another.move_card_to_hand_area(another.component_by_name('PlayingCard S_2'), 'Player 2', (100, 0))
+        another.move_card_to_hand_area(another.component_by_name(C2), 'Player 2', (100, 0))
 
-        host.double_click(host.component_by_name('PlayingCard S_A'))
-        another.double_click(another.component_by_name('PlayingCard S_2'))
+        host.double_click(host.component_by_name(C1))
+        another.double_click(another.component_by_name(C2))
 
     def test_cards_in_hand_are_looks_facedown(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
@@ -68,16 +73,16 @@ class TestHandArea:
         self.put_one_card_each_on_2_hand_areas(host, another)
 
         # assert text
-        assert '♠A' in host.component_by_name('PlayingCard S_A').face()
-        assert '♠A' not in another.component_by_name('PlayingCard S_A').face()
-        assert '♠2' not in host.component_by_name('PlayingCard S_2').face()
-        assert '♠2' in another.component_by_name('PlayingCard S_2').face()
+        assert '♠A' in host.component_by_name(C1).face()
+        assert '♠A' not in another.component_by_name(C1).face()
+        assert '♠2' not in host.component_by_name(C2).face()
+        assert '♠2' in another.component_by_name(C2).face()
 
         # assert image
-        assert 'card_up.png' in host.component_by_name('PlayingCard S_A').face()
-        assert 'card_back.png' in another.component_by_name('PlayingCard S_A').face()
-        assert 'card_back.png' in host.component_by_name('PlayingCard S_2').face()
-        assert 'card_up.png' in another.component_by_name('PlayingCard S_2').face()
+        assert 'card_up.png' in host.component_by_name(C1).face()
+        assert 'card_back.png' in another.component_by_name(C1).face()
+        assert 'card_back.png' in host.component_by_name(C2).face()
+        assert 'card_up.png' in another.component_by_name(C2).face()
 
     def test_cannot_handle_cards_owned_by_someone_else(self, browser: webdriver.Firefox,
                                                        another_browser: webdriver.Firefox):
@@ -86,22 +91,22 @@ class TestHandArea:
         self.put_one_card_each_on_2_hand_areas(host, another)
 
         # cannot move
-        before = host.component_by_name('PlayingCard S_2').rect()
-        host.drag(host.component_by_name('PlayingCard S_2'), 20, 0)
-        assert before == host.component_by_name('PlayingCard S_2').rect()
+        before = host.component_by_name(C2).rect()
+        host.drag(host.component_by_name(C2), 20, 0)
+        assert before == host.component_by_name(C2).rect()
 
-        before = another.component_by_name('PlayingCard S_A').rect()
-        another.drag(another.component_by_name('PlayingCard S_A'), 20, 0)
-        assert before == another.component_by_name('PlayingCard S_A').rect()
+        before = another.component_by_name(C1).rect()
+        another.drag(another.component_by_name(C1), 20, 0)
+        assert before == another.component_by_name(C1).rect()
 
         # cannot flip
-        face = host.component_by_name('PlayingCard S_2').face()
-        host.double_click(host.component_by_name('PlayingCard S_2'))
-        assert face == host.component_by_name('PlayingCard S_2').face()
+        face = host.component_by_name(C2).face()
+        host.double_click(host.component_by_name(C2))
+        assert face == host.component_by_name(C2).face()
 
-        face = another.component_by_name('PlayingCard S_A').face()
-        another.double_click(another.component_by_name('PlayingCard S_A'))
-        assert face == another.component_by_name('PlayingCard S_A').face()
+        face = another.component_by_name(C1).face()
+        another.double_click(another.component_by_name(C1))
+        assert face == another.component_by_name(C1).face()
 
     def test_up_card_in_my_hand_become_down_when_moved_to_others_hand(self, browser: webdriver.Firefox,
                                                                       another_browser: webdriver.Firefox):
@@ -109,20 +114,20 @@ class TestHandArea:
         another = GameHelper(another_browser)
         self.put_one_card_each_on_2_hand_areas(host, another)
 
-        host.move_card_to_hand_area(host.component_by_name('PlayingCard S_A'), 'Player 2')
-        another.move_card_to_hand_area(another.component_by_name('PlayingCard S_2'), 'host')
+        host.move_card_to_hand_area(host.component_by_name(C1), 'Player 2')
+        another.move_card_to_hand_area(another.component_by_name(C2), 'host')
 
         # assert text
-        assert '♠A' not in host.component_by_name('PlayingCard S_A').face()
-        assert '♠A' in another.component_by_name('PlayingCard S_A').face()
-        assert '♠2' in host.component_by_name('PlayingCard S_2').face()
-        assert '♠2' not in another.component_by_name('PlayingCard S_2').face()
+        assert '♠A' not in host.component_by_name(C1).face()
+        assert '♠A' in another.component_by_name(C1).face()
+        assert '♠2' in host.component_by_name(C2).face()
+        assert '♠2' not in another.component_by_name(C2).face()
 
         # assert image
-        assert 'card_back.png' in host.component_by_name('PlayingCard S_A').face()
-        assert 'card_up.png' in another.component_by_name('PlayingCard S_A').face()
-        assert 'card_up.png' in host.component_by_name('PlayingCard S_2').face()
-        assert 'card_back.png' in another.component_by_name('PlayingCard S_2').face()
+        assert 'card_back.png' in host.component_by_name(C1).face()
+        assert 'card_up.png' in another.component_by_name(C1).face()
+        assert 'card_up.png' in host.component_by_name(C2).face()
+        assert 'card_back.png' in another.component_by_name(C2).face()
 
     def test_cards_on_hand_area_follows_when_hand_area_is_moved(self, browser: webdriver.Firefox,
                                                                another_browser: webdriver.Firefox):
@@ -130,7 +135,7 @@ class TestHandArea:
         another = GameHelper(another_browser)
         self.put_one_card_each_on_2_hand_areas(host, another)
 
-        host_card = host.component_by_name('PlayingCard S_A')
+        host_card = host.component_by_name(C1)
         host_card_pos = host_card.pos()
         hand_area = host.hand_area(owner="host")
         host.drag(hand_area, -50, -100)
@@ -138,44 +143,44 @@ class TestHandArea:
         assert host_card_pos.top - 100 == host_card.pos().top
 
         # host_card is still owned by host
-        assert '♠A' in host.component_by_name('PlayingCard S_A').face()
-        assert '♠A' not in another.component_by_name('PlayingCard S_A').face()
+        assert '♠A' in host.component_by_name(C1).face()
+        assert '♠A' not in another.component_by_name(C1).face()
 
         host.double_click(host_card)
-        assert '♠A' not in host.component_by_name('PlayingCard S_A').face()
-        assert '♠A' not in another.component_by_name('PlayingCard S_A').face()
+        assert '♠A' not in host.component_by_name(C1).face()
+        assert '♠A' not in another.component_by_name(C1).face()
 
         host.double_click(host_card)
-        assert '♠A' in host.component_by_name('PlayingCard S_A').face()
-        assert '♠A' not in another.component_by_name('PlayingCard S_A').face()
+        assert '♠A' in host.component_by_name(C1).face()
+        assert '♠A' not in another.component_by_name(C1).face()
 
     def test_resizing_hand_area_updates_ownership(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
         self.put_one_card_each_on_2_hand_areas(host, another)
 
-        host.double_click(host.component_by_name('PlayingCard S_3'))
+        host.double_click(host.component_by_name(C3))
         time.sleep(0.1)  # prevent unintended double clicking
-        host.move_card_to_hand_area(host.component_by_name('PlayingCard S_3'), 'host', (0, -100))  # just outside
+        host.move_card_to_hand_area(host.component_by_name(C3), 'host', (0, -100))  # just outside
 
         hand_area = host.hand_area(owner="host")
         host.drag(hand_area, 0, -100, 'top')
         host.drag(hand_area, 0, -100, 'bottom')
 
         # host_card is no longer owned by host
-        assert '♠A' in another.component_by_name('PlayingCard S_A').face()
+        assert '♠A' in another.component_by_name(C1).face()
 
         # PlayingCard S_3 is owned by host
-        assert '♠3' in host.component_by_name('PlayingCard S_3').face()
-        assert '♠3' not in another.component_by_name('PlayingCard S_3').face()
+        assert '♠3' in host.component_by_name(C3).face()
+        assert '♠3' not in another.component_by_name(C3).face()
 
     def test_cards_on_hand_area_have_visible_clue(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
 
         self.put_one_card_each_on_2_hand_areas(host, another)
-        assert host.component_by_name('PlayingCard S_A').owner()
-        assert host.component_by_name('PlayingCard S_2').owner()
+        assert host.component_by_name(C1).owner()
+        assert host.component_by_name(C2).owner()
         assert not host.component_by_name('H01').owner()
 
 
