@@ -374,27 +374,27 @@ const collidability = {
         onCollisionStart: 'collidability.onCollisionStart',
         onCollisionEnd: 'collidability.onCollisionEnd',
     },
-    recalculate: function (tableData) {
-        featsContext.collisionComponents = {};
-        for(const component of tableData.components) {
-            featsContext.collisionComponents[component.index] = component;
-            component.currentCollisions = {};
-        }
-
-        for (const i in featsContext.collisionComponents) {
-            const component = featsContext.collisionComponents[i];
-
-            for (const j in featsContext.collisionComponents) {
-                const target = featsContext.collisionComponents[j];
-                if (i === j) {
-                    continue;
-                }
-                if (isOverlapped(component, target)) {
-                    component.currentCollisions[j] = true;
-                }
-            }
-        }
-    },
+    // recalculate: function (tableData) {
+    //     featsContext.collisionComponents = {};
+    //     for(const component of tableData.components) {
+    //         featsContext.collisionComponents[component.index] = component;
+    //         component.currentCollisions = {};
+    //     }
+    //
+    //     for (const i in featsContext.collisionComponents) {
+    //         const component = featsContext.collisionComponents[i];
+    //
+    //         for (const j in featsContext.collisionComponents) {
+    //             const target = featsContext.collisionComponents[j];
+    //             if (i === j) {
+    //                 continue;
+    //             }
+    //             if (isOverlapped(component, target)) {
+    //                 component.currentCollisions[j] = true;
+    //             }
+    //         }
+    //     }
+    // },
 };
 
 const ownership = {
