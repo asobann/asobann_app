@@ -138,6 +138,7 @@ def generate_playing_card():
 def write_default_table_json():
     table = OrderedDict(
         components=OrderedDict(),
+        kits=[],
         players=OrderedDict(),
         tablename="dummy"
     )
