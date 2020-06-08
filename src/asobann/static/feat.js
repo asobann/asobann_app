@@ -86,6 +86,9 @@ const draggability = {
         component.owner = data.owner;
         component.ownable = data.ownable;
     },
+    remove: function (component) {
+        interact(component.el).draggable(false);
+    },
     events: {
         onMoving: "draggability.onMoving",
         onMoveEnd: "draggability.onMoveEnd",
@@ -153,6 +156,9 @@ const flippability = {
         component.faceup = data.faceup;
 
     },
+    remove: function (component) {
+    },
+
 };
 
 
@@ -200,6 +206,9 @@ const resizability = {
     },
     update: function (component, data) {
         component.resizable = data.resizable;
+    },
+    remove: function (component) {
+        interact(component.el).resizable(false);
     },
 };
 
@@ -261,6 +270,9 @@ const rollability = {
             mount(component.el, finalEl);
             component.rollCurrentValue = data.rollFinalValue;
         }
+    },
+    remove: function (component) {
+        interact(component.el).resizable(false);
     },
     roll: function (component, duration, finalValue) {
         const ANIMATION_INTERVAL = 200;
@@ -400,6 +412,24 @@ const collidability = {
 
         component.moving = data.moving;
     },
+    remove: function (component) {
+        for (const componentId in component.currentCollisions) {
+            const other = featsContext.collisionComponents[componentId];
+            if (other) {
+                // there is a chance that other is already removed from table
+                delete other.currentCollisions[component.componentId];
+
+                other.propagate({ 'currentCollisions': other.currentCollisions });
+                featsContext.fireEvent(component, collidability.events.onCollisionEnd, { collider: other });
+                featsContext.fireEvent(other, collidability.events.onCollisionEnd, { collider: component });
+            }
+        }
+
+        if (featsContext.collisionComponents[component.componentId]) {
+            delete featsContext.collisionComponents[component.componentId];
+        }
+    },
+
     events: {
         onCollisionStart: 'collidability.onCollisionStart',
         onCollisionEnd: 'collidability.onCollisionEnd',
@@ -450,6 +480,9 @@ const ownership = {
             }
         }
     },
+    remove: function(component) {
+
+    }
 };
 
 
@@ -522,6 +555,9 @@ const traylike = {
             component.onTray = data.onTray;
         }
     },
+    remove: function(component) {
+
+    }
 };
 
 

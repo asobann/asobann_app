@@ -92,6 +92,12 @@ class Component {
         });
     }
 
+    disappear() {
+        for (const ability of feats) {
+            ability.remove(this);
+        }
+    }
+
     propagate(diff) {
         pushComponentUpdate(table, this.componentId, diff, false);
     }
@@ -108,32 +114,33 @@ class Table {
             this.list_el = el("div.table_list")
         );
         // this.list = list(this.list_el, Component);
-        this.list_el_childs = {};
+        this.componentsOnTable = {};
         this.data = {};
     }
 
     update(data) {
-        const notUpdatedElements = Object.assign({}, this.list_el_childs);
+        const notUpdatedComponents = Object.assign({}, this.componentsOnTable);
         setFeatsContext(getPlayerName(), isPlayerObserver(), data);
 
         this.data = data;
 
-        for(const componentId in this.data.components) {
-            if(!this.data.components.hasOwnProperty(componentId)) {
+        for (const componentId in this.data.components) {
+            if (!this.data.components.hasOwnProperty(componentId)) {
                 continue;
             }
             const componentData = this.data.components[componentId];
-            if(!this.list_el_childs[componentId]) {
-                this.list_el_childs[componentId] = new Component();
-                mount(this.list_el, this.list_el_childs[componentId].el);
+            if (!this.componentsOnTable[componentId]) {
+                this.componentsOnTable[componentId] = new Component();
+                mount(this.list_el, this.componentsOnTable[componentId].el);
             }
-            this.list_el_childs[componentId].update(componentData, componentId, this.data.components);
+            this.componentsOnTable[componentId].update(componentData, componentId, this.data.components);
 
-            delete notUpdatedElements[componentId]
+            delete notUpdatedComponents[componentId]
         }
 
-        for(const componentIdToRemove in notUpdatedElements) {
-            unmount(this.list_el, notUpdatedElements[componentIdToRemove]);
+        for (const componentIdToRemove in notUpdatedComponents) {
+            // notUpdatedComponents[componentIdToRemove].disappear();
+            unmount(this.list_el, notUpdatedComponents[componentIdToRemove].el);
         }
     }
 }
@@ -232,14 +239,14 @@ function addNewKit(kitName) {
 
 function removeKit(kitId) {
     const after = {};
-    for(const componentId in table.data.components) {
+    for (const componentId in table.data.components) {
         const cmp = table.data.components[componentId];
         if (cmp.kitId !== kitId) {
             after[cmp.componentId] = cmp;
         }
     }
     table.data.components = after;
-    table.data.kits.splice(table.data.kits.findIndex((e)=>e.kitId === kitId), 1);
+    table.data.kits.splice(table.data.kits.findIndex((e) => e.kitId === kitId), 1);
     //TODO: recalculate overlap and tray-like
     pushSyncWithMe(table.data);
 }
@@ -294,7 +301,7 @@ function addNewComponent(newComponentData) {
 }
 
 function removeHandArea() {
-    for(const componentId in table.data.components) {
+    for (const componentId in table.data.components) {
         const cmp = table.data.components[componentId];
         if (cmp.handArea && cmp.owner === getPlayerName()) {
             removeComponent(componentId);
