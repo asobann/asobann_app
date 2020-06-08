@@ -113,6 +113,7 @@ class Table {
     }
 
     update(data) {
+        const notUpdatedElements = Object.assign({}, this.list_el_childs);
         setFeatsContext(getPlayerName(), isPlayerObserver(), data);
 
         this.data = data;
@@ -126,7 +127,13 @@ class Table {
                 this.list_el_childs[componentId] = new Component();
                 mount(this.list_el, this.list_el_childs[componentId].el);
             }
-            this.list_el_childs[componentId].update(componentData, componentId, this.data.components)
+            this.list_el_childs[componentId].update(componentData, componentId, this.data.components);
+
+            delete notUpdatedElements[componentId]
+        }
+
+        for(const componentIdToRemove in notUpdatedElements) {
+            unmount(this.list_el, notUpdatedElements[componentIdToRemove]);
         }
     }
 }
@@ -225,8 +232,8 @@ function addNewKit(kitName) {
 
 function removeKit(kitId) {
     const after = {};
-    for (let i = 0; i < table.data.components.length; i++) {
-        const cmp = table.data.components[i];
+    for(const componentId in table.data.components) {
+        const cmp = table.data.components[componentId];
         if (cmp.kitId !== kitId) {
             after[cmp.componentId] = cmp;
         }
@@ -287,18 +294,18 @@ function addNewComponent(newComponentData) {
 }
 
 function removeHandArea() {
-    for (let i = 0; i < table.data.components.length; i++) {
-        const cmp = table.data.components[i];
+    for(const componentId in table.data.components) {
+        const cmp = table.data.components[componentId];
         if (cmp.handArea && cmp.owner === getPlayerName()) {
-            removeComponent(i);
+            removeComponent(componentId);
             return false;
         }
     }
     return false;
 }
 
-function removeComponent(i) {
-    pushRemoveComponent(i);
+function removeComponent(componentId) {
+    pushRemoveComponent(componentId);
 }
 
 function getPlayerName() {

@@ -318,43 +318,73 @@ const collidability = {
         }
 
         featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
-            const collided = [];
-            for (const componentId in featsContext.collisionComponents) {
-                const target = featsContext.collisionComponents[componentId];
-                if (target === component) {
-                    continue;
+            const collided = pickCollidedComponents();
+            processAllStart(collided);
+            processAllEnd(collided);
+
+            function pickCollidedComponents() {
+                const collided = [];
+                for (const componentId in featsContext.collisionComponents) {
+                    const target = featsContext.collisionComponents[componentId];
+                    if (target === component) {
+                        continue;
+                    }
+                    if (!areTheyCollidable(component, target)) {
+                        continue;
+                    }
+                    if (isOverlapped(component, target)) {
+                        collided.push(target);
+                    }
                 }
-                if (isOverlapped(component, target)) {
-                    collided.push(target);
+                return collided;
+            }
+
+            function areTheyCollidable(c1, c2) {
+                if (c1.traylike && !c2.traylike) {
+                    return true;
+                }
+                if (!c1.traylike && c2.traylike) {
+                    return true;
+                }
+                return false;
+            }
+
+            function processAllStart(collided) {
+                for (const other of collided) {
+                    if (component.currentCollisions[other.componentId]) {
+                        continue;
+                    }
+                    component.currentCollisions[other.componentId] = true;
+                    other.currentCollisions[component.componentId] = true;
+
+                    component.propagate({ 'currentCollisions': component.currentCollisions });
+                    other.propagate({ 'currentCollisions': other.currentCollisions });
+                    featsContext.fireEvent(component, collidability.events.onCollisionStart, { collider: other });
+                    featsContext.fireEvent(other, collidability.events.onCollisionStart, { collider: component });
                 }
             }
 
-            for (const other of collided) {
-                if (component.currentCollisions[other.componentId]) {
-                    continue;
+            function processAllEnd(collided) {
+                for (const componentId in component.currentCollisions) {
+                    if (collided.find(e => e.componentId === componentId)) {
+                        continue;
+                    }
+
+                    delete component.currentCollisions[componentId];
+                    component.propagate({ 'currentCollisions': component.currentCollisions });
+
+                    const other = featsContext.collisionComponents[componentId];
+                    if (other) {
+                        // there is a chance that other is already removed from table
+                        delete other.currentCollisions[component.componentId];
+
+                        other.propagate({ 'currentCollisions': other.currentCollisions });
+                        featsContext.fireEvent(component, collidability.events.onCollisionEnd, { collider: other });
+                        featsContext.fireEvent(other, collidability.events.onCollisionEnd, { collider: component });
+                    }
                 }
-                component.currentCollisions[other.componentId] = true;
-                other.currentCollisions[component.componentId] = true;
-
-                component.propagate({ 'currentCollisions': component.currentCollisions });
-                other.propagate({ 'currentCollisions': other.currentCollisions });
-                featsContext.fireEvent(component, collidability.events.onCollisionStart, { collider: other });
-                featsContext.fireEvent(other, collidability.events.onCollisionStart, { collider: component });
             }
-            for (const componentId in component.currentCollisions) {
-                if (collided.find(e => e.componentId === componentId)) {
-                    continue;
-                }
 
-                const other = featsContext.collisionComponents[componentId];
-                delete component.currentCollisions[other.componentId];
-                delete other.currentCollisions[component.componentId];
-
-                component.propagate({ 'currentCollisions': component.currentCollisions });
-                other.propagate({ 'currentCollisions': other.currentCollisions });
-                featsContext.fireEvent(component, collidability.events.onCollisionEnd, { collider: other });
-                featsContext.fireEvent(other, collidability.events.onCollisionEnd, { collider: component });
-            }
         });
     },
     isEnabled: function (component, data) {

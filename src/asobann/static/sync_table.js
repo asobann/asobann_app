@@ -116,12 +116,12 @@ function pushRemoveKit(kitId) {
     })
 }
 
-function pushRemoveComponent(index) {
-    console.log("pushRemoveComponent", index);
+function pushRemoveComponent(componentId) {
+    console.log("pushRemoveComponent", componentId);
     socket.emit("remove component", {
         tablename: context.tablename,
         originator: context.client_connection_id,
-        index: index,
+        componentId: componentId,
     })
 }
 

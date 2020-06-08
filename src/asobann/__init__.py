@@ -133,7 +133,7 @@ def create_app(testing=False):
     @app.socketio.on("remove component")
     def handle_remove_component(json):
         app.logger.debug(f'remove component: {json}')
-        tables.remove_component(json['tablename'], json['index'])
+        tables.remove_component(json['tablename'], json['componentId'])
         table = tables.get(json["tablename"])
         emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
