@@ -35,7 +35,7 @@ socket.on("update single component", (msg) => {
 });
 
 socket.on("refresh table", (msg) => {
-    console.log("event received: refresh table");
+    console.log("event received: refresh table", msg);
     if (msg.tablename !== context.tablename) {
         return;
     }
@@ -62,7 +62,7 @@ function sendComponentUpdateFromQueue() {
     while (componentUpdateQueue.length > 0) {
         const update = componentUpdateQueue.shift();
         let shouldEmit = true;
-        if (update.volatile) {
+        if (update.payload.volatile) {
             for (const another of componentUpdateQueue) {
                 if (another.componentId === update.componentId) {
                     // discard update as another is newer
@@ -72,7 +72,7 @@ function sendComponentUpdateFromQueue() {
             }
         }
         if (shouldEmit) {
-            socket.emit("update single component", update);
+            socket.emit(update.message, update.payload);
         }
     }
 }
@@ -80,15 +80,21 @@ function sendComponentUpdateFromQueue() {
 setInterval(sendComponentUpdateFromQueue, 75);
 
 function pushComponentUpdate(table, componentId, diff, volatile) {
+    if (!volatile) {
+        console.log("pushComponentUpdate", componentId, diff);
+    }
     const oldData = table.data;
     Object.assign(oldData.components[componentId], diff);
     table.update(oldData);
     componentUpdateQueue.push({
-        tablename: context.tablename,
-        originator: context.client_connection_id,
-        componentId: componentId,
-        diff: diff,
-        volatile: volatile === true,
+        message: "update single component",
+        payload: {
+            tablename: context.tablename,
+            originator: context.client_connection_id,
+            componentId: componentId,
+            diff: diff,
+            volatile: volatile === true,
+        }
     });
 }
 
@@ -118,11 +124,14 @@ function pushRemoveKit(kitId) {
 
 function pushRemoveComponent(componentId) {
     console.log("pushRemoveComponent", componentId);
-    socket.emit("remove component", {
-        tablename: context.tablename,
-        originator: context.client_connection_id,
-        componentId: componentId,
-    })
+    componentUpdateQueue.push({
+        message: "remove component",
+        payload: {
+            tablename: context.tablename,
+            originator: context.client_connection_id,
+            componentId: componentId,
+        },
+    });
 }
 
 
@@ -133,6 +142,7 @@ function pushSyncWithMe(tableData) {
         tableData: tableData,
     })
 }
+
 function joinTable(player, isHost) {
     socket.emit("set player name", {
         tablename: context.tablename,

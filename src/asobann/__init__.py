@@ -153,7 +153,6 @@ def create_app(testing=False):
 
     @app.socketio.on("mouse movement")
     def handle_mouse_movement(json):
-        app.logger.debug(f'mouse movement: {json}')
         emit("mouse movement", json, broadcast=True, room=json["tablename"])
 
     @app.route('/customize')

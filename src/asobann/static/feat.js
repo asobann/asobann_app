@@ -83,8 +83,7 @@ const draggability = {
     },
     update: function (component, data) {
         component.draggable = data.draggable;
-        component.owner = data.owner;
-        component.ownable = data.ownable;
+        component.ownable = data.ownable;  // TODO: good chance ownable will not be used
     },
     remove: function (component) {
         interact(component.el).draggable(false);
@@ -122,6 +121,7 @@ const flippability = {
     },
     update: function (component, data) {
         component.flippable = data.flippable;
+        component.owner = data.owner;
         component.faceup = data.faceup;
         if (component.faceup) {
             if (!component.owner || component.owner === featsContext.playerName) {
@@ -272,7 +272,6 @@ const rollability = {
         }
     },
     remove: function (component) {
-        interact(component.el).resizable(false);
     },
     roll: function (component, duration, finalValue) {
         const ANIMATION_INTERVAL = 200;
@@ -377,15 +376,19 @@ const collidability = {
             }
 
             function processAllEnd(collided) {
+                console.log("processAllEnd", component.componentId);
+
                 for (const componentId in component.currentCollisions) {
                     if (collided.find(e => e.componentId === componentId)) {
                         continue;
                     }
+                    console.log("collision end with", componentId);
 
                     delete component.currentCollisions[componentId];
                     component.propagate({ 'currentCollisions': component.currentCollisions });
 
                     const other = featsContext.collisionComponents[componentId];
+                    console.log("other", other);
                     if (other) {
                         // there is a chance that other is already removed from table
                         delete other.currentCollisions[component.componentId];
@@ -413,9 +416,15 @@ const collidability = {
         component.moving = data.moving;
     },
     remove: function (component) {
-        for (const componentId in component.currentCollisions) {
+        console.log("collidable.remove", component.componentId);
+
+        const currentCollisiond = component.currentCollisions;
+        component.currentCollisions = [];  // avoid recurse
+        for (const componentId in currentCollisiond) {
+            console.log("other componentId", componentId);
             const other = featsContext.collisionComponents[componentId];
             if (other) {
+                console.log("other", other);
                 // there is a chance that other is already removed from table
                 delete other.currentCollisions[component.componentId];
 
@@ -444,6 +453,7 @@ const ownership = {
                 const hand = component;
                 const onHand = other;
                 if (!(onHand.owner === hand.owner)) {
+                    console.log("ownership onCollisionStart", component.componentId, "owner", hand.owner);
                     onHand.propagate({ owner: onHand.owner = hand.owner });
                 }
             }
@@ -454,6 +464,7 @@ const ownership = {
                 const hand = component;
                 const onHand = other;
                 if (onHand.owner === hand.owner) {
+                    console.log("ownership onCollisionEnd", component.componentId, "owner", null);
                     onHand.propagate({ owner: onHand.owner = null });
                 }
             }
@@ -463,6 +474,9 @@ const ownership = {
         return true;
     },
     update: function (component, data) {
+        if(component.owner !== data.owner) {
+            console.log("ownership update change", component.componentId, component.owner, "to", data.owner);
+        }
         component.owner = data.owner;
         component.handArea = data.handArea;
         if (component.moving) {
@@ -480,7 +494,7 @@ const ownership = {
             }
         }
     },
-    remove: function(component) {
+    remove: function (component) {
 
     }
 };
@@ -506,6 +520,7 @@ const traylike = {
         });
 
         featsContext.addEventListener(component, collidability.events.onCollisionEnd, (e) => {
+            console.log("traylike onCollisionEnd", component.componentId, e.collider.componentId);
             if (!component.traylike) {
                 return;
             }
@@ -555,7 +570,7 @@ const traylike = {
             component.onTray = data.onTray;
         }
     },
-    remove: function(component) {
+    remove: function (component) {
 
     }
 };

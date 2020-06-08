@@ -139,9 +139,20 @@ class Table {
         }
 
         for (const componentIdToRemove in notUpdatedComponents) {
+            console.log("componentIdToRemove", componentIdToRemove);
             // notUpdatedComponents[componentIdToRemove].disappear();
+            delete this.componentsOnTable[componentIdToRemove];
             unmount(this.list_el, notUpdatedComponents[componentIdToRemove].el);
         }
+    }
+
+    removeComponent(componentId) {
+        // This is called when a component removed ON THIS BROWSER.
+        // Because component removal is not directly synced but propagated as table refresh,
+        // table relies on update() to detect unused / non-referenced components
+        // to remove Component object and DOM object.
+        // TODO: maybe it's economical to sync component removal directly...
+        this.componentsOnTable[componentId].disappear();
     }
 }
 
@@ -241,13 +252,14 @@ function removeKit(kitId) {
     const after = {};
     for (const componentId in table.data.components) {
         const cmp = table.data.components[componentId];
-        if (cmp.kitId !== kitId) {
+        if (cmp.kitId === kitId) {
+            table.removeComponent(cmp.componentId);
+        } else {
             after[cmp.componentId] = cmp;
         }
     }
     table.data.components = after;
     table.data.kits.splice(table.data.kits.findIndex((e) => e.kitId === kitId), 1);
-    //TODO: recalculate overlap and tray-like
     pushSyncWithMe(table.data);
 }
 
@@ -312,6 +324,7 @@ function removeHandArea() {
 }
 
 function removeComponent(componentId) {
+    table.removeComponent(componentId);
     pushRemoveComponent(componentId);
 }
 
