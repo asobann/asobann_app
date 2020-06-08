@@ -24,19 +24,6 @@ class Component {
         for (const ability of feats) {
             ability.add(this);
         }
-
-        this.el.addEventListener("mousedown", (ev) => {
-            if (isPlayerObserver()) {
-                return;
-            }
-            if (this.handArea) { // FIXME: possible contamination from feats.js
-                return;
-            }
-            this.zIndex = nextZIndex;
-            setStyle(this.el, { zIndex: this.zIndex });
-            nextZIndex += 1;
-            this.propagate({ zIndex: this.zIndex });
-        });
     }
 
     update(data, componentId, allData, context) {
@@ -62,20 +49,10 @@ class Component {
             setStyle(this.textEl, { color: data.textColor });
         }
 
-
         for (const ability of feats) {
             if (ability.isEnabled(this, data)) {
                 ability.update(this, data);
             }
-        }
-        if (data.zIndex) {
-            this.zIndex = data.zIndex;
-            if (nextZIndex <= this.zIndex) {
-                nextZIndex = this.zIndex + 1;
-            }
-        } else {
-            this.zIndex = nextZIndex;
-            nextZIndex += 1;
         }
 
         setAttr(this.el, {
@@ -212,7 +189,7 @@ const sync_table_connector = {
         const left = mouseMovement.mouseOnTableX + ICON_OFFSET_X;
         const className = mouseMovement.mouseButtons === 0 ? "" : "buttons_down";
         setAttr(e, { className: "others_mouse_cursor " + className });
-        setStyle(e, { top: top + "px", left: left + "px", zIndex: nextZIndex });
+        setStyle(e, { top: top + "px", left: left + "px", zIndex: 999999999 });
     }
 };
 
@@ -294,12 +271,17 @@ function placeNewComponent(newComponent) {
     }
     newComponent.top = rect.top + "px";
     newComponent.left = rect.left + "px";
-    newComponent.zIndex = nextZIndex;
+    newComponent.zIndex = 0;
+    for(const otherId in table.data.components) {
+        const other = table.data.components[otherId];
+        if(newComponent.zIndex < other.zIndex) {
+            newComponent.zIndex = other.zIndex + 1;
+        }
+    }
+
     if (newComponent.onAdd) {
         Function('"use strict"; return ' + newComponent.onAdd)()(newComponent);
     }
-
-    nextZIndex += 1;
 }
 
 function addNewComponent(newComponentData) {
@@ -426,8 +408,6 @@ const menuConnector = {
 
 const menu = new Menu(menuConnector);
 mount(container, menu.el);
-
-let nextZIndex = 1;
 
 tableContainer.addEventListener("mousemove", (event) => {
     if (isPlayerObserver()) {

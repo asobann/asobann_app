@@ -579,6 +579,45 @@ const traylike = {
     }
 };
 
+const touchToRaise = {
+    add(component) {
+        if(!featsContext.nextZIndex) {
+            featsContext.nextZIndex = 1;
+        }
+
+        component.el.addEventListener("mousedown", (ev) => {
+            if (featsContext.isPlayerObserver) {
+                return;
+            }
+            if (component.handArea) {
+                return;
+            }
+            component.zIndex = featsContext.nextZIndex;
+            console.log("touchToRaise", component.componentId, component.zIndex);
+            setStyle(component.el, { zIndex: component.zIndex });
+            featsContext.nextZIndex += 1;
+            component.propagate({ zIndex: component.zIndex });
+        });
+    },
+
+    isEnabled: function (component, data) {
+        return true;
+    },
+
+    update: function(component, data) {
+        if (data.zIndex) {
+            component.zIndex = data.zIndex;
+            if (featsContext.nextZIndex <= component.zIndex) {
+                featsContext.nextZIndex = component.zIndex + 1;
+            }
+        } else {
+            component.zIndex = featsContext.nextZIndex;
+            featsContext.nextZIndex += 1;
+        }
+    },
+
+    remove: function (component) {}
+};
 
 const featsContext = {
     canOperateOn: function (component) {
@@ -614,7 +653,7 @@ function setFeatsContext(playerName, isPlayerObserver, tableData) {
 }
 
 const feats = [
-    collidability, draggability, flippability, resizability, rollability, traylike, ownership,
+    collidability, draggability, flippability, resizability, rollability, traylike, ownership, touchToRaise,
 ];
 
 export {setFeatsContext, feats};
