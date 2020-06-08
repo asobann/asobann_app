@@ -48,6 +48,10 @@ class GameMenu:
         return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu div#add_hand_area"))
 
     @property
+    def remove_my_hand_area(self):
+        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu div#remove_hand_area"))
+
+    @property
     def copy_invitation_url(self):
         return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu a#copy_invitation_url"))
 

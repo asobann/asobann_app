@@ -155,6 +155,20 @@ class TestHandArea:
         assert host.component_by_name(C_K).owner()
         assert not host.component_by_name('PlayingCard H_A').owner()
 
+    def test_removing_hand_area(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        another = GameHelper(another_browser)
+        self.put_one_card_each_on_2_hand_areas(host, another)
+
+        host.menu.remove_my_hand_area.click()
+        another.menu.remove_my_hand_area.click()
+
+        assert not host.component_by_name(C_A).owner()
+        assert not host.component_by_name(C_K).owner()
+        assert not another.component_by_name(C_A).owner()
+        assert not another.component_by_name(C_K).owner()
+
+
 
 @pytest.mark.usefixtures("server")
 class TestDice:
