@@ -64,7 +64,7 @@ function sendComponentUpdateFromQueue() {
         let shouldEmit = true;
         if (update.payload.volatile) {
             for (const another of componentUpdateQueue) {
-                if (another.componentId === update.componentId) {
+                if (another.payload.componentId === update.payload.componentId) {
                     // discard update as another is newer
                     shouldEmit = false;
                     break;
@@ -80,9 +80,7 @@ function sendComponentUpdateFromQueue() {
 setInterval(sendComponentUpdateFromQueue, 75);
 
 function pushComponentUpdate(table, componentId, diff, volatile) {
-    if (!volatile) {
-        console.log("pushComponentUpdate", componentId, diff);
-    }
+    console.log("pushComponentUpdate", componentId, diff, volatile);
     const oldData = table.data;
     Object.assign(oldData.components[componentId], diff);
     table.update(oldData);

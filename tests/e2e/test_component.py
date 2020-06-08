@@ -126,6 +126,35 @@ class TestHandArea:
         assert '♠A' in host.component_by_name(C_A).face()
         assert '♠A' not in another.component_by_name(C_A).face()
 
+    def test_many_cards_on_hand_area_move_with_the_area(self, browser: webdriver.Firefox,
+                                                        another_browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        another = GameHelper(another_browser)
+
+        host.go(TOP)
+        host.should_have_text("you are host")
+        another.go(host.current_url)
+        another.menu.join("Player 2")
+        another.should_have_text("you are Player 2")
+
+        host.menu.add_my_hand_area.click()
+        c1, c2, c3 = "PlayingCard S_A", "PlayingCard S_K", "PlayingCard S_Q"
+        host.move_card_to_hand_area(host.component_by_name(c1), 'host', (-100, 10))
+        host.move_card_to_hand_area(host.component_by_name(c2), 'host', (0, 0))
+        host.move_card_to_hand_area(host.component_by_name(c3), 'host', (75, -10))
+
+        pos_before = [host.component_by_name(c).pos() for c in (c1, c2, c3)]
+        host.drag(host.hand_area(owner="host"), 200, 300, grab_at=(-40, 0))
+        pos_after = [host.component_by_name(c).pos() for c in (c1, c2, c3)]
+
+        assert pos_before[0].left + 200 == pos_after[0].left and pos_before[0].top + 300 == pos_after[0].top
+        assert pos_before[1].left + 200 == pos_after[1].left and pos_before[1].top + 300 == pos_after[1].top
+        assert pos_before[2].left + 200 == pos_after[2].left and pos_before[2].top + 300 == pos_after[2].top
+
+        pos_another = [another.component_by_name(c).pos() for c in (c1, c2, c3)]
+        assert pos_after == pos_another
+
+
     def test_resizing_hand_area_updates_ownership(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         another = GameHelper(another_browser)

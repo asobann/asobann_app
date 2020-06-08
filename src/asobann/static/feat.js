@@ -64,6 +64,7 @@ const draggability = {
                     if (!isDraggingPermitted()) {
                         return;
                     }
+                    console.log("draggable end", component.componentId);
                     component.moving = false;
                     const top = parseFloat(component.el.style.top) + event.dy;
                     const left = parseFloat(component.el.style.left) + event.dx;
@@ -535,9 +536,11 @@ const traylike = {
             if (!component.traylike) {
                 return;
             }
+            console.log("traylike onMoving", component.componentId, component.onTray, e);
             const dx = e.dx;
             const dy = e.dy;
             for (const componentId in component.onTray) {
+                console.log("move onTray", componentId);
                 const target = featsContext.collisionComponents[componentId];
                 target.propagate_volatile({
                     top: parseFloat(target.el.style.top) + dy,
@@ -550,6 +553,7 @@ const traylike = {
             if (!component.traylike) {
                 return;
             }
+            console.log("traylike onMoveEnd", component.componentId, component.onTray, e);
             for (const componentId in component.onTray) {
                 const target = featsContext.collisionComponents[componentId];
                 target.propagate({

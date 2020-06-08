@@ -52,7 +52,7 @@ def test_late_comer_shall_see_the_same_table(server, browser: webdriver.Firefox,
     host.menu.add_my_hand_area.click()
     hand_area = host.hand_area(owner="host")
     host.drag(hand_area, 0, 200)
-    host.drag(hand_area, 200, 30, pos='lower right corner')
+    host.drag(hand_area, 200, 30, grab_at='lower right corner')
 
     invitation_url = host.menu.invitation_url.value
     # new player is invited

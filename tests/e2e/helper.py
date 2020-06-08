@@ -164,17 +164,19 @@ class GameHelper:
         selector = f'.component'
         return len(self.browser.find_elements_by_css_selector(selector))
 
-    def drag(self, component: "Component", x, y, pos='center'):
-        if pos == 'center':
+    def drag(self, component: "Component", x, y, grab_at='center'):
+        if grab_at == 'center':
             xoffset, yoffset = (0, 0)
-        elif pos == 'lower right corner':
+        elif grab_at == 'lower right corner':
             xoffset, yoffset = (component.element.size["width"] / 2 - 1, component.element.size["height"] / 2 - 1)
-        elif pos == 'top':
+        elif grab_at == 'top':
             xoffset, yoffset = (0, -(component.element.size["height"] / 2 - 1))
-        elif pos == 'bottom':
+        elif grab_at == 'bottom':
             xoffset, yoffset = (0, component.element.size["height"] / 2 - 1)
+        elif type(grab_at) == tuple and len(grab_at) == 2:
+            xoffset, yoffset = grab_at
         else:
-            raise ValueError(f"pos '{pos}' is invalid")
+            raise ValueError(f"grab_at '{grab_at}' is invalid")
         ActionChains(self.browser). \
             move_to_element(component.element). \
             move_by_offset(xoffset, yoffset). \
