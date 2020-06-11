@@ -196,7 +196,7 @@ function createAddRemoveKitsMenu(parent, connector) {
             };
 
             function addKitOnTable() {
-                connector.addNewKit(kitData.kit.name);
+                connector.addNewKit(kitData);
             }
 
             function removeOneKitFromTable() {

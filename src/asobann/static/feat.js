@@ -589,7 +589,7 @@ const touchToRaise = {
             if (featsContext.isPlayerObserver) {
                 return;
             }
-            if (component.handArea) {
+            if (component.handArea || component.traylike) {
                 return;
             }
             component.zIndex = featsContext.nextZIndex;

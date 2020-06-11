@@ -33,8 +33,11 @@ def test_load_playing_card_kit(server, browser: webdriver.Firefox):
     host.menu.add_component.execute()
     host.menu.add_component_from_list("Playing Card")
 
-    assert host.count_components() == 53 + 1
+    assert host.count_components() == 52 + 2 + 1
 
+    assert host.component_by_name("PlayingCard S_A").pos().top == 64
+    host.drag(host.component_by_name("Playing Card Box"), 200, 100, grab_at=(70, 0))
+    assert host.component_by_name("PlayingCard S_A").pos().top == 64 + 200
 
 
 @pytest.mark.skip

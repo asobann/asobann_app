@@ -152,6 +152,28 @@ def write_default_table_json():
 
 def write_initial_deploy_data_json():
     output = dict(components=[], kits=[])
+    playing_card_box = {
+        "component": {
+            "name": "Playing Card Box",
+            "kitName": "Playing Card",
+            "handArea": False,
+            "top": "0px",
+            "left": "0px",
+            "height": "150px",
+            "width": "150px",
+            "color": "blue",
+            "showImage": False,
+            "draggable": True,
+            "flippable": False,
+            "resizable": False,
+            "rollable": False,
+            "ownable": False,
+            "traylike": True,
+            "zIndex": 1,
+        }
+    }
+    output["components"].append(playing_card_box)
+
     for cmp in generate_playing_card():
         if "usage" in cmp["name"] or "title" in cmp["name"]:
             continue

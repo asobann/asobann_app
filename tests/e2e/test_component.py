@@ -154,7 +154,6 @@ class TestHandArea:
         pos_another = [another.component_by_name(c).pos() for c in (c1, c2, c3)]
         assert pos_after == pos_another
 
-
     def test_resizing_hand_area_updates_ownership(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
@@ -196,7 +195,6 @@ class TestHandArea:
         assert not host.component_by_name(C_K).owner()
         assert not another.component_by_name(C_A).owner()
         assert not another.component_by_name(C_K).owner()
-
 
 
 @pytest.mark.usefixtures("server")

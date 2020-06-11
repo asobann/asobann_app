@@ -201,11 +201,14 @@ function generateComponentId() {
     });
 }
 
-function addNewKit(kitName) {
+function addNewKit(kitData) {
+    const kitName = kitData.kit.name;
     const kitId = 'xxxxxxxxxxxx'.replace(/[x]/g, function (c) {
         return (Math.random() * 16 | 0).toString(16);
     });
 
+    const baseZIndex = getNextZIndex();
+    const rect = findEmptySpace(kitData.kit.width, kitData.kit.height);
     (async () => {
         const newComponents = {};
         const componentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitName))).json();
@@ -214,7 +217,13 @@ function addNewKit(kitName) {
             component.kitId = kitId;
             const componentId = generateComponentId();
             component.componentId = componentId;
-            placeNewComponent(component);
+            component.top = parseFloat(component.top) + rect.top;
+            component.left = parseFloat(component.left) + rect.left;
+            if(component.zIndex) {
+                component.zIndex += baseZIndex;
+            } else {
+                component.zIndex = baseZIndex;
+            }
             newComponents[componentId] = component;
         }
         pushNewKit({
@@ -239,12 +248,23 @@ function removeKit(kitId) {
     pushSyncWithMe(table.data);
 }
 
-function placeNewComponent(newComponent) {
+function getNextZIndex() {
+    let nextZIndex = 0;
+    for (const otherId in table.data.components) {
+        const other = table.data.components[otherId];
+        if (nextZIndex < other.zIndex) {
+            nextZIndex = other.zIndex + 1;
+        }
+    }
+    return nextZIndex;
+}
+
+function findEmptySpace(width, height) {
     const rect = {
         top: 64,
         left: 64,
-        width: parseInt(newComponent.width),
-        height: parseInt(newComponent.height),
+        width: width,
+        height: height,
     };
     for (let i = 0; i < 10; i++) {
         let collision = false;
@@ -269,14 +289,19 @@ function placeNewComponent(newComponent) {
         }
         rect.top += 100;
     }
+    return rect;
+}
+
+function placeNewComponent(newComponent, baseZIndex) {
+    const rect = findEmptySpace(parseInt(newComponent.width), parseInt(newComponent.height));
     newComponent.top = rect.top + "px";
     newComponent.left = rect.left + "px";
-    newComponent.zIndex = 0;
-    for(const otherId in table.data.components) {
-        const other = table.data.components[otherId];
-        if(newComponent.zIndex < other.zIndex) {
-            newComponent.zIndex = other.zIndex + 1;
+    if (newComponent.zIndex) {
+        if (baseZIndex) {
+            newComponent.zIndex += baseZIndex;
         }
+    } else {
+        newComponent.zIndex = getNextZIndex();
     }
 
     if (newComponent.onAdd) {
