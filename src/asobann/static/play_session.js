@@ -1,4 +1,4 @@
-import {el, mount, unmount, list, setStyle, setAttr} from "./redom.es.js";
+import {el, mount, unmount, setStyle, setAttr} from "./redom.es.js";
 import {setFeatsContext, feats, event} from "./feat.js";
 import {
     setTableContext,
@@ -26,7 +26,7 @@ class Component {
         }
     }
 
-    update(data, componentId, allData, context) {
+    update(data, componentId /*, allData, context*/) {
         this.componentId = componentId;
         if (data.showImage) {
             if (this.image == null) {
@@ -99,7 +99,10 @@ class Table {
         const notUpdatedComponents = Object.assign({}, this.componentsOnTable);
         setFeatsContext(getPlayerName(), isPlayerObserver(), data);
 
-        this.data = data;
+        this.data = {
+            components: data.components,
+            kits: data.kits,
+        };
 
         for (const componentId in this.data.components) {
             if (!this.data.components.hasOwnProperty(componentId)) {
@@ -218,14 +221,14 @@ const sync_table_connector = {
 const otherPlayersMouse = {};
 
 function generateComponentId() {
-    return 'xxxxxxxxxxxx'.replace(/[x]/g, function (c) {
+    return 'xxxxxxxxxxxx'.replace(/[x]/g, function (/*c*/) {
         return (Math.random() * 16 | 0).toString(16);
     });
 }
 
 function addNewKit(kitData) {
     const kitName = kitData.kit.name;
-    const kitId = 'xxxxxxxxxxxx'.replace(/[x]/g, function (c) {
+    const kitId = 'xxxxxxxxxxxx'.replace(/[x]/g, function (/*c*/) {
         return (Math.random() * 16 | 0).toString(16);
     });
 
@@ -373,11 +376,6 @@ function setPlayerName(playerName) {
 
 function isPlayerHost() {
     return sessionStorage.getItem(SESSION_STORAGE_KEY.isHost) === "true";
-}
-
-function setPlayerIsHost() {
-    sessionStorage.setItem(SESSION_STORAGE_KEY.isHost, "true");
-    menu.update({ isHost: true });
 }
 
 function isPlayerObserver() {
