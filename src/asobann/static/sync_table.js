@@ -82,6 +82,9 @@ setInterval(sendComponentUpdateFromQueue, 75);
 
 function pushComponentUpdate(table, componentId, diff, volatile) {
     console.log("pushComponentUpdate", componentId, diff, volatile);
+    if(!table.data.components[componentId]) {
+        console.log("no such component", componentId, table.data);
+    }
     const oldData = table.data;
     Object.assign(oldData.components[componentId], diff);
     table.update(oldData);

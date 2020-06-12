@@ -322,9 +322,6 @@ const rollability = {
 
 const collidability = {
     add: function (component) {
-        if (!featsContext.collisionComponents) {
-            featsContext.collisionComponents = {};
-        }
         if (!component.currentCollisions) {
             component.currentCollisions = {};
         }
@@ -336,8 +333,8 @@ const collidability = {
 
             function pickCollidedComponents() {
                 const collided = [];
-                for (const componentId in featsContext.collisionComponents) {
-                    const target = featsContext.collisionComponents[componentId];
+                for (const componentId in featsContext.table.componentsOnTable) {
+                    const target = featsContext.table.componentsOnTable[componentId];
                     if (target === component) {
                         continue;
                     }
@@ -388,7 +385,7 @@ const collidability = {
                     delete component.currentCollisions[componentId];
                     component.propagate({ 'currentCollisions': component.currentCollisions });
 
-                    const other = featsContext.collisionComponents[componentId];
+                    const other = featsContext.table.componentsOnTable[componentId];
                     console.log("other", other);
                     if (other) {
                         // there is a chance that other is already removed from table
@@ -407,9 +404,6 @@ const collidability = {
         return true;
     },
     update: function (component, data) {
-        if (!featsContext.collisionComponents[component.componentId]) {
-            featsContext.collisionComponents[component.componentId] = component;
-        }
         if (data.currentCollisions) {
             component.currentCollisions = data.currentCollisions;
         }
@@ -423,7 +417,7 @@ const collidability = {
         component.currentCollisions = [];  // avoid recurse
         for (const componentId in currentCollisions) {
             console.log("other componentId", componentId);
-            const other = featsContext.collisionComponents[componentId];
+            const other = featsContext.table.componentsOnTable[componentId];
             if (other) {
                 console.log("other", other);
                 // there is a chance that other is already removed from table
@@ -433,10 +427,6 @@ const collidability = {
                 featsContext.fireEvent(component, collidability.events.onCollisionEnd, { collider: other });
                 featsContext.fireEvent(other, collidability.events.onCollisionEnd, { collider: component });
             }
-        }
-
-        if (featsContext.collisionComponents[component.componentId]) {
-            delete featsContext.collisionComponents[component.componentId];
         }
     },
 
@@ -541,7 +531,7 @@ const traylike = {
             const dy = e.dy;
             for (const componentId in component.onTray) {
                 console.log("move onTray", componentId);
-                const target = featsContext.collisionComponents[componentId];
+                const target = featsContext.table.componentsOnTable[componentId];
                 target.propagate_volatile({
                     top: parseFloat(target.el.style.top) + dy,
                     left: parseFloat(target.el.style.left) + dx
@@ -555,7 +545,7 @@ const traylike = {
             }
             console.log("traylike onMoveEnd", component.componentId, component.onTray, e);
             for (const componentId in component.onTray) {
-                const target = featsContext.collisionComponents[componentId];
+                const target = featsContext.table.componentsOnTable[componentId];
                 target.propagate({
                     top: target.el.style.top,
                     left: target.el.style.left
@@ -646,9 +636,10 @@ const featsContext = {
     }
 };
 
-function setFeatsContext(playerName, isPlayerObserver) {
+function setFeatsContext(playerName, isPlayerObserver, table) {
     featsContext.playerName = playerName;
     featsContext.isPlayerObserver = isPlayerObserver;
+    featsContext.table = table;
 }
 
 const event = {

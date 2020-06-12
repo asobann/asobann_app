@@ -97,11 +97,12 @@ class Table {
 
     update(data) {
         const notUpdatedComponents = Object.assign({}, this.componentsOnTable);
-        setFeatsContext(getPlayerName(), isPlayerObserver(), data);
+        setFeatsContext(getPlayerName(), isPlayerObserver(), this);
 
         this.data = {
             components: data.components,
             kits: data.kits,
+            players: data.players,
         };
 
         for (const componentId in this.data.components) {
