@@ -14,9 +14,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
-from .helper import compo_pos, Rect, GameHelper
-
-TOP = "https://fast-dusk-61776.herokuapp.com/"
+from .helper import compo_pos, Rect, GameHelper, STAGING_TOP
 
 
 def drag_slowly(player: GameHelper, component, x, y, steps):
@@ -66,7 +64,7 @@ def evaluate_saved_status():
 @pytest.mark.loadtest
 def test_simultaneous_dragging(server, browser_factory):
     host = GameHelper(browser_factory())
-    host.go(TOP)
+    host.go(STAGING_TOP)
 
     host.menu.import_jsonfile(str(Path(__file__).parent / "./test_load_on_heroku.json"))
 

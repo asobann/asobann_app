@@ -100,12 +100,14 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
     });
 }
 
-function pushNewComponent(data) {
+function pushNewComponent(componentData) {
+    console.log("pushNewComponent", componentData);
     socket.emit("add component", {
         tablename: context.tablename,
         originator: context.client_connection_id,
-        component: data,
-    })
+        component: componentData,
+    });
+    console.log("pushNewComponent end");
 }
 
 socket.on("add component", (msg) => {
@@ -117,11 +119,11 @@ socket.on("add component", (msg) => {
 });
 
 
-function pushNewKit(data) {
+function pushNewKit(kitData) {
     socket.emit("add kit", {
         tablename: context.tablename,
         originator: context.client_connection_id,
-        data: data,
+        kitData: kitData,
     })
 }
 

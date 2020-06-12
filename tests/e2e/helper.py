@@ -13,6 +13,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 TOP = "http://localhost:10011/"
 CUSTOMIZATION = TOP + "customize"
+STAGING_TOP = "https://fast-dusk-61776.herokuapp.com/"
 
 
 class GameMenuItem:

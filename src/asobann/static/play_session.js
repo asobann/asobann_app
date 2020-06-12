@@ -254,11 +254,11 @@ function addNewKit(kitData) {
             if (component.onAdd) {
                 Function('"use strict"; return ' + component.onAdd)()(component);
             }
+            pushNewComponent(component);
             table.addComponent(component);
         }
         pushNewKit({
             kit: { name: kitName, kitId: kitId },
-            components: newComponents
         });
     })();
 }

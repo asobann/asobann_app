@@ -12,7 +12,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 from selenium.common.exceptions import NoSuchElementException
 
-from .helper import compo_pos, Rect, GameHelper, TOP
+from .helper import compo_pos, Rect, GameHelper, STAGING_TOP
 
 
 def test_create_empty_table(server, browser: webdriver.Firefox):
@@ -50,6 +50,28 @@ def test_load_and_remove_playing_card_kit(server, browser: webdriver.Firefox):
     host.menu.add_kit_from_list("Playing Card")
     host.menu.remove_kit_from_list("Playing Card")
     host.menu.add_kit_from_list("Playing Card")
+
+    assert host.component_by_name("PlayingCard S_A").pos() == (64, 64)
+    host.drag(host.component_by_name("Playing Card Box"), 200, 100, grab_at=(70, 0))
+    assert host.component_by_name("PlayingCard S_A").pos() == (64 + 200, 64 + 100)
+
+
+@pytest.mark.loadtest
+def test_load_playing_card_kit_on_staging(server, browser: webdriver.Firefox):
+    host = GameHelper(browser)
+    host.go(STAGING_TOP + "/customize")
+    input_element = host.browser.find_element_by_css_selector("input#prepared_table")
+    input_element.clear()
+    input_element.send_keys("0")
+    host.browser.find_element_by_css_selector("input#create").click()
+
+    host.should_have_text("you are host")
+
+    host.menu.add_kit.execute()
+    host.menu.add_kit_from_list("Playing Card")
+
+    time.sleep(1)
+    assert host.count_components() == 52 + 2 + 1
 
     assert host.component_by_name("PlayingCard S_A").pos() == (64, 64)
     host.drag(host.component_by_name("Playing Card Box"), 200, 100, grab_at=(70, 0))

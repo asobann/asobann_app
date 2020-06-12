@@ -124,9 +124,7 @@ def create_app(testing=False):
     @app.socketio.on("add kit")
     def handle_add_kit(json):
         app.logger.debug(f'add kit: {json}')
-        tables.add_kit(json["tablename"], json["data"]["kit"])
-        for component_data in json["data"]["components"].values():
-            tables.add_component(json["tablename"], component_data)
+        tables.add_kit(json["tablename"], json["kitData"]["kit"])
         table = tables.get(json["tablename"])
         emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
