@@ -1,5 +1,5 @@
 import {el, mount, unmount, list, setStyle, setAttr} from "./redom.es.js";
-import {setFeatsContext, feats} from "./feat.js";
+import {setFeatsContext, feats, event} from "./feat.js";
 import {
     setTableContext,
     pushComponentUpdate,
@@ -122,8 +122,17 @@ class Table {
         }
     }
 
+    addComponent(componentData) {
+        // This is called when a component is added ON THIS BROWSER.
+        this.data.components[componentData.componentId] = componentData;
+        this.componentsOnTable[componentData.componentId] = new Component();
+        mount(this.list_el, this.componentsOnTable[componentData.componentId].el);
+        this.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
+        event.fireEvent(this.componentsOnTable[componentData.componentId], event.events.onPositionChanged);
+    }
+
     removeComponent(componentId) {
-        // This is called when a component removed ON THIS BROWSER.
+        // This is called when a component is removed ON THIS BROWSER.
         // Because component removal is not directly synced but propagated as table refresh,
         // table relies on update() to detect unused / non-referenced components
         // to remove Component object and DOM object.
@@ -147,7 +156,7 @@ const sync_table_connector = {
         }
 
         table.update(tableData);
-        menu.update(tableData)
+        menu.update(tableData);
     },
 
     update_single_component: function (componentId, diff) {
@@ -155,6 +164,19 @@ const sync_table_connector = {
         Object.assign(tableData.components[componentId], diff);
         table.update(tableData);
         menu.update(tableData);
+    },
+
+    addComponent: function (componentData) {
+        if (!table.data.components[componentData.componentId]) {
+            table.data.components[componentData.componentId] = componentData;
+        }
+        if (!table.componentsOnTable[componentData.componentId]) {
+            table.componentsOnTable[componentData.componentId] = new Component();
+            mount(table.list_el, table.componentsOnTable[componentData.componentId].el);
+            table.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
+        }
+        table.update(table.data);
+        menu.update(table.data);
     },
 
     update_whole_table: function (data) {
@@ -190,7 +212,7 @@ const sync_table_connector = {
         const className = mouseMovement.mouseButtons === 0 ? "" : "buttons_down";
         setAttr(e, { className: "others_mouse_cursor " + className });
         setStyle(e, { top: top + "px", left: left + "px", zIndex: 999999999 });
-    }
+    },
 };
 
 const otherPlayersMouse = {};
@@ -219,12 +241,16 @@ function addNewKit(kitData) {
             component.componentId = componentId;
             component.top = parseFloat(component.top) + rect.top;
             component.left = parseFloat(component.left) + rect.left;
-            if(component.zIndex) {
+            if (component.zIndex) {
                 component.zIndex += baseZIndex;
             } else {
                 component.zIndex = baseZIndex;
             }
             newComponents[componentId] = component;
+            if (component.onAdd) {
+                Function('"use strict"; return ' + component.onAdd)()(component);
+            }
+            table.addComponent(component);
         }
         pushNewKit({
             kit: { name: kitName, kitId: kitId },
@@ -312,10 +338,9 @@ function placeNewComponent(newComponent, baseZIndex) {
 function addNewComponent(newComponentData) {
     newComponentData.componentId = generateComponentId();
     placeNewComponent(newComponentData);
+    table.addComponent(newComponentData);
     pushNewComponent(newComponentData);
     return false;
-
-
 }
 
 function removeHandArea() {

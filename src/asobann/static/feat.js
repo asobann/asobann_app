@@ -652,8 +652,15 @@ function setFeatsContext(playerName, isPlayerObserver, tableData) {
     featsContext.tableData = tableData;
 }
 
+const event = {
+    events: featsContext.events,
+    fireEvent: function (component, eventName) {
+        featsContext.fireEvent(component, eventName, {});
+    }
+};
+
 const feats = [
     collidability, draggability, flippability, resizability, rollability, traylike, ownership, touchToRaise,
 ];
 
-export {setFeatsContext, feats};
+export {setFeatsContext, feats, event};

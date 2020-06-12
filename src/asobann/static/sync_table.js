@@ -14,6 +14,7 @@ function setTableContext(tablename, connector) {
     context.update_whole_table = connector.update_whole_table;
     context.updatePlayer = connector.updatePlayer;
     context.showOthersMouseMovement = connector.showOthersMouseMovement;
+    context.addComponent = connector.addComponent;
 }
 
 socket.on("load table", (msg) => {
@@ -100,9 +101,18 @@ function pushNewComponent(data) {
     socket.emit("add component", {
         tablename: context.tablename,
         originator: context.client_connection_id,
-        data: data,
+        component: data,
     })
 }
+
+socket.on("add component", (msg) => {
+    console.log("event received: add component", msg);
+    if (msg.tablename !== context.tablename) {
+        return;
+    }
+    context.addComponent(msg.component);
+});
+
 
 function pushNewKit(data) {
     socket.emit("add kit", {

@@ -117,9 +117,9 @@ def create_app(testing=False):
     @app.socketio.on("add component")
     def handle_add_component(json):
         app.logger.debug(f'add component: {json}')
-        tables.add_component(json["tablename"], json["data"])
+        tables.add_component(json["tablename"], json["component"])
         table = tables.get(json["tablename"])
-        emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
+        emit("add component", {"tablename": json["tablename"], "component": json["component"]}, broadcast=True, room=json["tablename"])
 
     @app.socketio.on("add kit")
     def handle_add_kit(json):

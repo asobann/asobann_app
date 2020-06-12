@@ -45,10 +45,10 @@ def update_component(tablename, component_id, diff):
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
 
 
-def add_component(tablename, data):
-    print(f"add_component({tablename}, {data}")
+def add_component(tablename, component_data):
+    print(f"add_component({tablename}, {component_data}")
     table = get(tablename)
-    table["components"][data["componentId"]] = data
+    table["components"][component_data["componentId"]] = component_data
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
 
 
