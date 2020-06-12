@@ -32,3 +32,7 @@ def store_default(data):
     components.bulk_write(
         [operations.UpdateOne({"component.name": c["component"]["name"]}, {"$set": c}, upsert=True)
          for c in data])
+
+
+def purge_all():
+    components.delete_many({})

@@ -26,3 +26,7 @@ def connect(mongo):
 def store_default(data):
     kits.bulk_write(
         [operations.UpdateOne({"kit.name": c["kit"]["name"]}, {"$set": c}, upsert=True) for c in data])
+
+
+def purge_all():
+    kits.delete_many({})
