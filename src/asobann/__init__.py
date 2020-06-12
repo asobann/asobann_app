@@ -109,7 +109,7 @@ def create_app(testing=False):
 
     @app.socketio.on("update single component")
     def handle_update_single_component(json):
-        app.logger.debug(f'update table: {json}')
+        app.logger.debug(f'update single component: {json}')
         if "volatile" not in json or not json["volatile"]:
             tables.update_component(json["tablename"], json["componentId"], json["diff"])
         emit("update single component", json, broadcast=True, room=json["tablename"])

@@ -419,9 +419,9 @@ const collidability = {
     remove: function (component) {
         console.log("collidable.remove", component.componentId);
 
-        const currentCollisiond = component.currentCollisions;
+        const currentCollisions = component.currentCollisions;
         component.currentCollisions = [];  // avoid recurse
-        for (const componentId in currentCollisiond) {
+        for (const componentId in currentCollisions) {
             console.log("other componentId", componentId);
             const other = featsContext.collisionComponents[componentId];
             if (other) {
@@ -646,10 +646,9 @@ const featsContext = {
     }
 };
 
-function setFeatsContext(playerName, isPlayerObserver, tableData) {
+function setFeatsContext(playerName, isPlayerObserver) {
     featsContext.playerName = playerName;
     featsContext.isPlayerObserver = isPlayerObserver;
-    featsContext.tableData = tableData;
 }
 
 const event = {
