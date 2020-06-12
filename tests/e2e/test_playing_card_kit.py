@@ -30,10 +30,26 @@ def test_load_playing_card_kit(server, browser: webdriver.Firefox):
 
     host.should_have_text("you are host")
 
-    host.menu.add_component.execute()
-    host.menu.add_component_from_list("Playing Card")
+    host.menu.add_kit.execute()
+    host.menu.add_kit_from_list("Playing Card")
 
     assert host.count_components() == 52 + 2 + 1
+
+    assert host.component_by_name("PlayingCard S_A").pos() == (64, 64)
+    host.drag(host.component_by_name("Playing Card Box"), 200, 100, grab_at=(70, 0))
+    assert host.component_by_name("PlayingCard S_A").pos() == (64 + 200, 64 + 100)
+
+
+def test_load_and_remove_playing_card_kit(server, browser: webdriver.Firefox):
+    host = GameHelper(browser)
+    host.create_table(0)
+
+    host.should_have_text("you are host")
+
+    host.menu.add_kit.execute()
+    host.menu.add_kit_from_list("Playing Card")
+    host.menu.remove_kit_from_list("Playing Card")
+    host.menu.add_kit_from_list("Playing Card")
 
     assert host.component_by_name("PlayingCard S_A").pos() == (64, 64)
     host.drag(host.component_by_name("Playing Card Box"), 200, 100, grab_at=(70, 0))

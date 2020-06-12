@@ -39,7 +39,7 @@ class GameMenu:
         self.browser = browser
 
     @property
-    def add_component(self):
+    def add_kit(self):
         return GameMenuItem(self.browser,
                             self.browser.find_element_by_css_selector("div.menu div#add_remove_component"))
 
@@ -84,14 +84,14 @@ class GameMenu:
         form.find_element_by_css_selector("input#file").send_keys(filename)
         form.find_element_by_css_selector("input#submit").click()
 
-    def add_component_from_list(self, component_name):
+    def add_kit_from_list(self, component_name):
         css_selector = f"div.kit_selection div.item[data-kit-name='{component_name}'"
         WebDriverWait(self.browser, 5).until(
             expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
         item = self.browser.find_element_by_css_selector(css_selector)
         item.find_element_by_class_name("add_new_component").click()
 
-    def remove_component_from_list(self, component_name):
+    def remove_kit_from_list(self, component_name):
         css_selector = f"div.kit_selection div.item[data-kit-name='{component_name}'"
         WebDriverWait(self.browser, 5).until(
             expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))

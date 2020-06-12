@@ -204,8 +204,8 @@ class TestDice:
         host.go(TOP)
         host.should_have_text("you are host")
 
-        host.menu.add_component.execute()
-        host.menu.add_component_from_list("Dice (Blue)")
+        host.menu.add_kit.execute()
+        host.menu.add_kit_from_list("Dice (Blue)")
 
         assert host.component_by_name("Dice (Blue)")
         assert host.component_by_name("Dice (Blue)").rect().height == 66
@@ -215,12 +215,12 @@ class TestDice:
         host = GameHelper(browser)
         host.go(TOP)
         host.should_have_text("you are host")
-        host.menu.add_component.execute()
+        host.menu.add_kit.execute()
 
-        host.menu.add_component_from_list("Dice (Blue)")
+        host.menu.add_kit_from_list("Dice (Blue)")
         host.should_have_text("1 on the table")
 
-        host.menu.add_component_from_list("Dice (Blue)")
+        host.menu.add_kit_from_list("Dice (Blue)")
         host.should_have_text("2 on the table")
 
     @pytest.mark.skip
@@ -234,8 +234,8 @@ class TestDice:
     def test_remove_dice_from_table(self, browser: webdriver.Firefox):
         host = GameHelper(browser)
         host.go(TOP)
-        host.menu.add_component.execute()
-        host.menu.add_component_from_list("Dice (Blue)")
+        host.menu.add_kit.execute()
+        host.menu.add_kit_from_list("Dice (Blue)")
 
-        host.menu.remove_component_from_list("Dice (Blue)")
+        host.menu.remove_kit_from_list("Dice (Blue)")
         host.should_not_see_component("Dice (Blue)")
