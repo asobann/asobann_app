@@ -126,7 +126,7 @@ def create_app(testing=False):
         app.logger.debug(f'add kit: {json}')
         tables.add_kit(json["tablename"], json["kitData"]["kit"])
         table = tables.get(json["tablename"])
-        emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
+        emit('add kit', {"tablename": json["tablename"], "kit": json["kitData"]["kit"]}, broadcast=True, room=json["tablename"])
 
     @app.socketio.on("remove component")
     def handle_remove_component(json):

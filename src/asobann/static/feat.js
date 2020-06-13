@@ -72,7 +72,7 @@ const draggability = {
 
                     component.propagate(diff);
                     featsContext.fireEvent(component, featsContext.events.onPositionChanged, {});
-                    featsContext.fireEvent(component, featsContext.events.onMoveEnd, {});
+                    featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
                 }
             }
         });

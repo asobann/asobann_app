@@ -183,6 +183,16 @@ const sync_table_connector = {
         menu.update(table.data);
     },
 
+    addKit: function(kitData) {
+        for(const existKit of table.data.kits) {
+            if(existKit.kitId === kitData.kitId) {
+                return;
+            }
+        }
+        table.data.kits.push(kitData);
+        menu.update(table.data);
+    },
+
     update_whole_table: function (data) {
         table.update(data);
         menu.update(data);

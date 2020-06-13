@@ -15,6 +15,7 @@ function setTableContext(tablename, connector) {
     context.updatePlayer = connector.updatePlayer;
     context.showOthersMouseMovement = connector.showOthersMouseMovement;
     context.addComponent = connector.addComponent;
+    context.addKit = connector.addKit;
 }
 
 socket.on("load table", (msg) => {
@@ -82,7 +83,7 @@ setInterval(sendComponentUpdateFromQueue, 75);
 
 function pushComponentUpdate(table, componentId, diff, volatile) {
     console.log("pushComponentUpdate", componentId, diff, volatile);
-    if(!table.data.components[componentId]) {
+    if (!table.data.components[componentId]) {
         console.log("no such component", componentId, table.data);
     }
     const oldData = table.data;
@@ -126,6 +127,14 @@ function pushNewKit(kitData) {
         kitData: kitData,
     })
 }
+
+socket.on("add kit", (msg) => {
+    console.log("event received: add kit", msg);
+    if (msg.tablename !== context.tablename) {
+        return;
+    }
+    context.addKit(msg.kit);
+});
 
 function pushRemoveKit(kitId) {
     socket.emit("remove kit", {
