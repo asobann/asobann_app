@@ -331,8 +331,8 @@ function findEmptySpace(width, height) {
     const rect = {
         top: 64,
         left: 64,
-        width: width,
-        height: height,
+        width: parseFloat(width),
+        height: parseFloat(height),
     };
     for (let i = 0; i < 10; i++) {
         let collision = false;
