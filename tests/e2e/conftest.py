@@ -78,5 +78,5 @@ def in_mem_app():
 @pytest.fixture(autouse=True)
 def tables(in_mem_app):
     # clear all documents in tables collection
-    from asobann import tables
+    from asobann.store import tables
     tables.purge_all()
