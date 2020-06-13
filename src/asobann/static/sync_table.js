@@ -36,6 +36,9 @@ function isInBulkPropagate() {
 
 function emit(eventName, data) {
     if (isInBulkPropagate()) {
+        if(data.volatile) {
+            return;
+        }
         bulkPropagation.events.push({ eventName: eventName, data: data });
     } else {
         socket.emit(eventName, data);
