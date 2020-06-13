@@ -2,10 +2,14 @@ const socket = io();
 console.log(socket);
 
 const context = {
-    client_connection_id: 'xxxxxxxxxxxx'.replace(/[x]/g, function (c) {
+    client_connection_id: 'xxxxxxxxxxxx'.replace(/[x]/g, function (/*c*/) {
         return (Math.random() * 16 | 0).toString(16);
     }),
 };
+
+function emit(eventName, data) {
+    socket.emit(eventName, data);
+}
 
 function setTableContext(tablename, connector) {
     context.tablename = tablename;
@@ -23,7 +27,7 @@ socket.on("load table", (msg) => {
 });
 
 socket.on('connect', () => {
-    socket.emit('come by table', { tablename: context.tablename });
+    emit('come by table', { tablename: context.tablename });
 });
 
 socket.on("update single component", (msg) => {
@@ -64,9 +68,9 @@ function sendComponentUpdateFromQueue() {
     while (componentUpdateQueue.length > 0) {
         const update = componentUpdateQueue.shift();
         let shouldEmit = true;
-        if (update.payload.volatile) {
+        if (update.data.volatile) {
             for (const another of componentUpdateQueue) {
-                if (another.payload.componentId === update.payload.componentId) {
+                if (another.data.componentId === update.data.componentId) {
                     // discard update as another is newer
                     shouldEmit = false;
                     break;
@@ -74,7 +78,7 @@ function sendComponentUpdateFromQueue() {
             }
         }
         if (shouldEmit) {
-            socket.emit(update.message, update.payload);
+            socket.emit(update.eventName, update.data);
         }
     }
 }
@@ -90,8 +94,8 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
     Object.assign(oldData.components[componentId], diff);
     table.update(oldData);
     componentUpdateQueue.push({
-        message: "update single component",
-        payload: {
+        eventName: "update single component",
+        data: {
             tablename: context.tablename,
             originator: context.client_connection_id,
             componentId: componentId,
@@ -103,7 +107,7 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
 
 function pushNewComponent(componentData) {
     console.log("pushNewComponent", componentData);
-    socket.emit("add component", {
+    emit("add component", {
         tablename: context.tablename,
         originator: context.client_connection_id,
         component: componentData,
@@ -121,7 +125,7 @@ socket.on("add component", (msg) => {
 
 
 function pushNewKit(kitData) {
-    socket.emit("add kit", {
+    emit("add kit", {
         tablename: context.tablename,
         originator: context.client_connection_id,
         kitData: kitData,
@@ -137,7 +141,7 @@ socket.on("add kit", (msg) => {
 });
 
 function pushRemoveKit(kitId) {
-    socket.emit("remove kit", {
+    emit("remove kit", {
         tablename: context.tablename,
         originator: context.client_connection_id,
         kitId: kitId,
@@ -147,8 +151,8 @@ function pushRemoveKit(kitId) {
 function pushRemoveComponent(componentId) {
     console.log("pushRemoveComponent", componentId);
     componentUpdateQueue.push({
-        message: "remove component",
-        payload: {
+        eventName: "remove component",
+        data: {
             tablename: context.tablename,
             originator: context.client_connection_id,
             componentId: componentId,
@@ -158,15 +162,15 @@ function pushRemoveComponent(componentId) {
 
 
 function pushSyncWithMe(tableData) {
-    socket.emit("sync with me", {
+    emit("sync with me", {
         tablename: context.tablename,
         originator: context.client_connection_id,
         tableData: tableData,
-    })
+    });
 }
 
 function joinTable(player, isHost) {
-    socket.emit("set player name", {
+    emit("set player name", {
         tablename: context.tablename,
         player: {
             name: player,
@@ -176,7 +180,7 @@ function joinTable(player, isHost) {
 }
 
 function pushCursorMovement(playerName, mouseMovement) {
-    socket.emit("mouse movement", {
+    emit("mouse movement", {
         tablename: context.tablename,
         playerName: playerName,
         mouseMovement: mouseMovement,
