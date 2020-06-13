@@ -22,11 +22,7 @@ function finishBulkPropagateAndEmit() {
         return;
     }
     console.log("finishBulkPropagateAndEmit events", bulkPropagation.events.length);
-    for (const event of bulkPropagation.events) {
-        socket.emit(event.eventName, event.data);
-        console.log("finishBulkPropagateAndEmit emit one");
-    }
-    console.log("finishBulkPropagateAndEmit emitting done");
+    socket.emit('bulk propagate', { tablename: context.tablename, events: bulkPropagation.events });
     bulkPropagation.events = [];
 }
 
@@ -36,7 +32,7 @@ function isInBulkPropagate() {
 
 function emit(eventName, data) {
     if (isInBulkPropagate()) {
-        if(data.volatile) {
+        if (data.volatile) {
             return;
         }
         bulkPropagation.events.push({ eventName: eventName, data: data });

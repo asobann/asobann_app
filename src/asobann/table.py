@@ -24,24 +24,21 @@ def play_table(tablename):
     return render_template('play_session.html')
 
 
-@event_handler('come by table')
-def come_by_table(json, table):
-    if not table:
-        table = tables.create(json["tablename"], None)
-    join_room(json["tablename"])
-
-
-@socketio.on(come_by_table.event_name)
+@socketio.on('come by table')
 def handle_come_by_table(json):
     current_app.logger.info(f'come by table: {json}')
     table = tables.get(json["tablename"])
-    come_by_table(json, table)
+    if not table:
+        table = tables.create(json["tablename"], None)
+    join_room(json["tablename"])
     table = tables.get(json["tablename"])
     emit("load table", table)
 
 
-@event_handler('set player name')
-def set_player(json, table):
+@socketio.on('set player name')
+def handle_set_player(json):
+    current_app.logger.info(f'set player: {json}')
+    table = tables.get(json["tablename"])
     if not table:
         current_app.logger.error(f"table {json['tablename']} on set player")
         raise RuntimeError('table does not exist')
@@ -51,14 +48,7 @@ def set_player(json, table):
         "isHost": json['player']['isHost'],
     }
     tables.store(json["tablename"], table)
-
-
-@socketio.on(set_player.event_name)
-def handle_set_player(json):
-    current_app.logger.info(f'set player: {json}')
-    table = tables.get(json["tablename"])
-    set_player(json, table)
-    emit("confirmed player name", {"player": {"name": json['player']['name']}})
+    emit("confirmed player name", {"player": {"name": player_name}})
 
 
 @event_handler('update single component')
@@ -128,6 +118,18 @@ def handle_remove_kit(json):
 def handle_sync_with_me(json):
     current_app.logger.debug(f'sync with me: {json}')
     tables.store(json['tablename'], json['tableData'])
+    table = tables.get(json["tablename"])
+    emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
+
+
+@socketio.on("bulk propagate")
+def handle_bulk_propagate(json):
+    current_app.logger.debug(f'bulk propagate: {json}')
+    for event in json['events']:
+        event_name = event['eventName']
+        data = event['data']
+        table = tables.get(json["tablename"])
+        event_handlers[event_name](data, table)
     table = tables.get(json["tablename"])
     emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
