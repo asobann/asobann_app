@@ -145,7 +145,16 @@ class Table {
         // TODO: maybe it's economical to sync component removal directly...
         this.componentsOnTable[componentId].disappear();
     }
+
+    startBulkPropagate() {
+        startBulkPropagate();
+    }
+
+    finishBulkPropagateAndEmit() {
+        finishBulkPropagateAndEmit();
+    }
 }
+
 
 const sync_table_connector = {
     initializeTable: function (tableData) {
@@ -172,6 +181,21 @@ const sync_table_connector = {
         menu.update(tableData);
     },
 
+    updateManyComponents: function(updates) {
+        const tableData = table.data;
+        for(const event of updates) {
+            if(event.eventName != 'update single component') {
+                console.error('updateManyComponents cannot handle events other than update single component', event);
+                continue;
+            }
+            const componentId = event.data.componentId;
+            const diff = event.data.diff;
+            Object.assign(tableData.components[componentId], diff);
+        }
+        table.update(tableData);
+        menu.update(tableData);
+    },
+
     addComponent: function (componentData) {
         if (!table.data.components[componentData.componentId]) {
             table.data.components[componentData.componentId] = componentData;
@@ -185,9 +209,9 @@ const sync_table_connector = {
         menu.update(table.data);
     },
 
-    addKit: function(kitData) {
-        for(const existKit of table.data.kits) {
-            if(existKit.kitId === kitData.kitId) {
+    addKit: function (kitData) {
+        for (const existKit of table.data.kits) {
+            if (existKit.kitId === kitData.kitId) {
                 return;
             }
         }

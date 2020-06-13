@@ -57,8 +57,10 @@ const draggability = {
                     component.moving = true;
                     const top = parseFloat(component.el.style.top) + event.dy;
                     const left = parseFloat(component.el.style.left) + event.dx;
+                    featsContext.table.startBulkPropagate();
                     component.propagate_volatile({ top: top + "px", left: left + "px", moving: true });
                     featsContext.fireEvent(component, draggability.events.onMoving, { dx: event.dx, dy: event.dy });
+                    featsContext.table.finishBulkPropagateAndEmit();
                 },
                 end(event) {
                     if (!isDraggingPermitted()) {
@@ -70,9 +72,11 @@ const draggability = {
                     const left = parseFloat(component.el.style.left) + event.dx;
                     const diff = { top: top + "px", left: left + "px", moving: false };
 
+                    featsContext.table.startBulkPropagate();
                     component.propagate(diff);
                     featsContext.fireEvent(component, featsContext.events.onPositionChanged, {});
                     featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
+                    featsContext.table.finishBulkPropagateAndEmit();
                 }
             }
         });

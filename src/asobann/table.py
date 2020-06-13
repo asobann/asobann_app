@@ -131,7 +131,10 @@ def handle_bulk_propagate(json):
         table = tables.get(json["tablename"])
         event_handlers[event_name](data, table)
     table = tables.get(json["tablename"])
-    emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
+    if all([e['eventName'] == upgrade_single_component.event_name for e in json['events']]):
+        emit('update many components', json, broadcast=True, room=json["tablename"])
+    else:
+        emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
 
 @socketio.on("mouse movement")

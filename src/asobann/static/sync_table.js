@@ -22,7 +22,11 @@ function finishBulkPropagateAndEmit() {
         return;
     }
     console.log("finishBulkPropagateAndEmit events", bulkPropagation.events.length);
-    socket.emit('bulk propagate', { tablename: context.tablename, events: bulkPropagation.events });
+    socket.emit('bulk propagate', {
+        tablename: context.tablename,
+        originator: context.client_connection_id,
+        events: bulkPropagation.events,
+    });
     bulkPropagation.events = [];
 }
 
@@ -45,6 +49,7 @@ function setTableContext(tablename, connector) {
     context.tablename = tablename;
     context.initializeTable = connector.initializeTable;
     context.update_single_component = connector.update_single_component;
+    context.updateManyComponents = connector.updateManyComponents;
     context.update_whole_table = connector.update_whole_table;
     context.updatePlayer = connector.updatePlayer;
     context.showOthersMouseMovement = connector.showOthersMouseMovement;
@@ -58,16 +63,6 @@ socket.on("load table", (msg) => {
 
 socket.on('connect', () => {
     emit('come by table', { tablename: context.tablename });
-});
-
-socket.on("update single component", (msg) => {
-    if (msg.tablename !== context.tablename) {
-        return;
-    }
-    if (msg.originator === context.client_connection_id) {
-        return;
-    }
-    context.update_single_component(msg.componentId, msg.diff);
 });
 
 socket.on("refresh table", (msg) => {
@@ -138,6 +133,27 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
         componentUpdateQueue.push({ eventName: eventName, data: data });
     }
 }
+
+socket.on("update single component", (msg) => {
+    if (msg.tablename !== context.tablename) {
+        return;
+    }
+    if (msg.originator === context.client_connection_id) {
+        return;
+    }
+    context.update_single_component(msg.componentId, msg.diff);
+});
+
+
+socket.on('update many components', (msg) => {
+    if (msg.tablename !== context.tablename) {
+        return;
+    }
+    if (msg.originator === context.client_connection_id) {
+        return;
+    }
+    context.updateManyComponents(msg.events);
+});
 
 function pushNewComponent(componentData) {
     console.log("pushNewComponent", componentData);
