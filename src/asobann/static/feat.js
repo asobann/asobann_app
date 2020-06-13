@@ -110,7 +110,7 @@ const flippability = {
                 return;
             }
             let diff = {};
-            if (component.owner && component.owner !== featsContext.playerName) {
+            if (component.owner && component.owner !== featsContext.getPlayerName()) {
                 return;
             }
             if (component.faceup) {
@@ -129,7 +129,7 @@ const flippability = {
         component.owner = data.owner;
         component.faceup = data.faceup;
         if (component.faceup) {
-            if (!component.owner || component.owner === featsContext.playerName) {
+            if (!component.owner || component.owner === featsContext.getPlayerName()) {
                 if (data.showImage) {
                     setAttr(component.image, { src: data.faceupImage });
                 }
@@ -566,7 +566,7 @@ const touchToRaise = {
         }
 
         component.el.addEventListener("mousedown", (ev) => {
-            if (featsContext.isPlayerObserver) {
+            if (featsContext.isPlayerObserver()) {
                 return;
             }
             if (component.handArea || component.traylike) {
@@ -600,8 +600,8 @@ const touchToRaise = {
 
 const featsContext = {
     canOperateOn: function (component) {
-        return ((!component.owner || component.owner === featsContext.playerName)
-            && !featsContext.isPlayerObserver);
+        return ((!component.owner || component.owner === featsContext.getPlayerName())
+            && !featsContext.isPlayerObserver());
     },
     addEventListener: function (component, eventName, handler) {
         if (!featsContext.eventListeners[eventName]) {
@@ -625,8 +625,8 @@ const featsContext = {
     }
 };
 
-function setFeatsContext(playerName, isPlayerObserver, table) {
-    featsContext.playerName = playerName;
+function setFeatsContext(getPlayerName, isPlayerObserver, table) {
+    featsContext.getPlayerName = getPlayerName;
     featsContext.isPlayerObserver = isPlayerObserver;
     featsContext.table = table;
 }
