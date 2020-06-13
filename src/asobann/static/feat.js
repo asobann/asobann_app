@@ -378,19 +378,15 @@ const collidability = {
             }
 
             function processAllEnd(collided) {
-                console.log("processAllEnd", component.componentId);
-
                 for (const componentId in component.currentCollisions) {
                     if (collided.find(e => e.componentId === componentId)) {
                         continue;
                     }
-                    console.log("collision end with", componentId);
 
                     delete component.currentCollisions[componentId];
                     component.propagate({ 'currentCollisions': component.currentCollisions });
 
                     const other = featsContext.table.componentsOnTable[componentId];
-                    console.log("other", other);
                     if (other) {
                         // there is a chance that other is already removed from table
                         delete other.currentCollisions[component.componentId];
@@ -415,15 +411,11 @@ const collidability = {
         component.moving = data.moving;
     },
     remove: function (component) {
-        console.log("collidable.remove", component.componentId);
-
         const currentCollisions = component.currentCollisions;
         component.currentCollisions = [];  // avoid recurse
         for (const componentId in currentCollisions) {
-            console.log("other componentId", componentId);
             const other = featsContext.table.componentsOnTable[componentId];
             if (other) {
-                console.log("other", other);
                 // there is a chance that other is already removed from table
                 delete other.currentCollisions[component.componentId];
 
@@ -448,7 +440,6 @@ const ownership = {
                 const hand = component;
                 const onHand = other;
                 if (!(onHand.owner === hand.owner)) {
-                    console.log("ownership onCollisionStart", component.componentId, "owner", hand.owner);
                     onHand.propagate({ owner: onHand.owner = hand.owner });
                 }
             }
@@ -459,7 +450,6 @@ const ownership = {
                 const hand = component;
                 const onHand = other;
                 if (onHand.owner === hand.owner) {
-                    console.log("ownership onCollisionEnd", component.componentId, "owner", null);
                     onHand.propagate({ owner: onHand.owner = null });
                 }
             }
@@ -515,7 +505,6 @@ const traylike = {
         });
 
         featsContext.addEventListener(component, collidability.events.onCollisionEnd, (e) => {
-            console.log("traylike onCollisionEnd", component.componentId, e.collider.componentId);
             if (!component.traylike) {
                 return;
             }
@@ -530,11 +519,9 @@ const traylike = {
             if (!component.traylike) {
                 return;
             }
-            console.log("traylike onMoving", component.componentId, component.onTray, e);
             const dx = e.dx;
             const dy = e.dy;
             for (const componentId in component.onTray) {
-                console.log("move onTray", componentId);
                 const target = featsContext.table.componentsOnTable[componentId];
                 target.propagate_volatile({
                     top: parseFloat(target.el.style.top) + dy,
@@ -547,7 +534,6 @@ const traylike = {
             if (!component.traylike) {
                 return;
             }
-            console.log("traylike onMoveEnd", component.componentId, component.onTray, e);
             for (const componentId in component.onTray) {
                 const target = featsContext.table.componentsOnTable[componentId];
                 target.propagate({
@@ -587,7 +573,6 @@ const touchToRaise = {
                 return;
             }
             component.zIndex = featsContext.nextZIndex;
-            console.log("touchToRaise", component.componentId, component.zIndex);
             setStyle(component.el, { zIndex: component.zIndex });
             featsContext.nextZIndex += 1;
             component.propagate({ zIndex: component.zIndex });

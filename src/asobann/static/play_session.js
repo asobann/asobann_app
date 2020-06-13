@@ -122,7 +122,6 @@ class Table {
         }
 
         for (const componentIdToRemove in notUpdatedComponents) {
-            console.log("componentIdToRemove", componentIdToRemove);
             delete this.componentsOnTable[componentIdToRemove];
             unmount(this.list_el, notUpdatedComponents[componentIdToRemove].el);
         }
