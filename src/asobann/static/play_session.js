@@ -8,7 +8,9 @@ import {
     pushSyncWithMe,
     pushRemoveComponent,
     joinTable,
-    pushCursorMovement
+    pushCursorMovement,
+    startBulkPropagate,
+    finishBulkPropagateAndEmit,
 } from "./sync_table.js";
 import {Menu} from "./menu.js";
 
@@ -248,6 +250,7 @@ function addNewKit(kitData) {
     (async () => {
         const newComponents = {};
         const componentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitName))).json();
+        startBulkPropagate();
         for (const data of await componentsData) {
             const component = data.component;
             component.kitId = kitId;
@@ -270,6 +273,7 @@ function addNewKit(kitData) {
         pushNewKit({
             kit: { name: kitName, kitId: kitId },
         });
+        finishBulkPropagateAndEmit();
     })();
 }
 

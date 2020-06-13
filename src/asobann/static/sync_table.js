@@ -7,8 +7,39 @@ const context = {
     }),
 };
 
+const bulkPropagation = {
+    nested: 0,
+    events: [],
+};
+
+function startBulkPropagate() {
+    bulkPropagation.nested += 1;
+}
+
+function finishBulkPropagateAndEmit() {
+    bulkPropagation.nested -= 1;
+    if (bulkPropagation.nested > 0) {
+        return;
+    }
+    console.log("finishBulkPropagateAndEmit events", bulkPropagation.events.length);
+    for (const event of bulkPropagation.events) {
+        socket.emit(event.eventName, event.data);
+        console.log("finishBulkPropagateAndEmit emit one");
+    }
+    console.log("finishBulkPropagateAndEmit emitting done");
+    bulkPropagation.events = [];
+}
+
+function isInBulkPropagate() {
+    return bulkPropagation.nested > 0;
+}
+
 function emit(eventName, data) {
-    socket.emit(eventName, data);
+    if (isInBulkPropagate()) {
+        bulkPropagation.events.push({ eventName: eventName, data: data });
+    } else {
+        socket.emit(eventName, data);
+    }
 }
 
 function setTableContext(tablename, connector) {
@@ -93,16 +124,20 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
     const oldData = table.data;
     Object.assign(oldData.components[componentId], diff);
     table.update(oldData);
-    componentUpdateQueue.push({
-        eventName: "update single component",
-        data: {
-            tablename: context.tablename,
-            originator: context.client_connection_id,
-            componentId: componentId,
-            diff: diff,
-            volatile: volatile === true,
-        }
-    });
+
+    const eventName = "update single component";
+    const data = {
+        tablename: context.tablename,
+        originator: context.client_connection_id,
+        componentId: componentId,
+        diff: diff,
+        volatile: volatile === true,
+    };
+    if (isInBulkPropagate()) {
+        bulkPropagation.events.push({ eventName: eventName, data: data });
+    } else {
+        componentUpdateQueue.push({ eventName: eventName, data: data });
+    }
 }
 
 function pushNewComponent(componentData) {
@@ -180,7 +215,8 @@ function joinTable(player, isHost) {
 }
 
 function pushCursorMovement(playerName, mouseMovement) {
-    emit("mouse movement", {
+    // this event will never be in bulk
+    socket.emit("mouse movement", {
         tablename: context.tablename,
         playerName: playerName,
         mouseMovement: mouseMovement,
@@ -196,5 +232,7 @@ export {
     pushRemoveKit,
     pushSyncWithMe,
     joinTable,
-    pushCursorMovement
+    pushCursorMovement,
+    startBulkPropagate,
+    finishBulkPropagateAndEmit,
 };
