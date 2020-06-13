@@ -81,7 +81,7 @@ def create_app(testing=False):
         file = request.files['data']
         table = json.loads(file.read())
         tables.store(tablename, table)
-        return redirect(url_for('.play_table', tablename=tablename))
+        return redirect(url_for('tables.play_table', tablename=tablename))
 
     @app.route('/customize')
     def customize():
