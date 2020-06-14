@@ -52,65 +52,73 @@ def handle_set_player(json):
 
 
 @event_handler('update single component')
-def upgrade_single_component(json, table):
+def update_single_component(json, table):
     if "volatile" not in json or not json["volatile"]:
-        tables.update_component(json["tablename"], json["componentId"], json["diff"])
+        table["components"][json["componentId"]].update(json["diff"])
 
 
-@socketio.on(upgrade_single_component.event_name)
+@socketio.on(update_single_component.event_name)
 def handle_update_single_component(json):
     current_app.logger.debug(f'update single component: {json}')
-    upgrade_single_component(json, None)
+    table = tables.get(json["tablename"])
+    update_single_component(json, table)
+    tables.update_table(json["tablename"], table)
     emit("update single component", json, broadcast=True, room=json["tablename"])
 
 
 @event_handler('add component')
 def add_component(json, table):
-    tables.add_component(json["tablename"], json["component"])
+    table["components"][json["component"]["componentId"]] = json["component"]
 
 
 @socketio.on(add_component.event_name)
 def handle_add_component(json):
     current_app.logger.debug(f'add component: {json}')
-    add_component(json, None)
+    table = tables.get(json["tablename"])
+    add_component(json, table)
+    tables.update_table(json["tablename"], table)
     emit("add component", {"tablename": json["tablename"], "component": json["component"]}, broadcast=True, room=json["tablename"])
 
 
 @event_handler('add kit')
 def add_kit(json, table):
-    tables.add_kit(json["tablename"], json["kitData"]["kit"])
+    table["kits"].append(json["kitData"]["kit"])
 
 
 @socketio.on(add_kit.event_name)
 def handle_add_kit(json):
     current_app.logger.debug(f'add kit: {json}')
-    add_kit(json, None)
+    table = tables.get(json["tablename"])
+    add_kit(json, table)
+    tables.update_table(json["tablename"], table)
     emit('add kit', {"tablename": json["tablename"], "kit": json["kitData"]["kit"]}, broadcast=True, room=json["tablename"])
 
 
 @event_handler('remove component')
 def remove_component(json, table):
-    tables.remove_component(json['tablename'], json['componentId'])
+    del table["components"][json['componentId']]
 
 
 @socketio.on(remove_component.event_name)
 def handle_remove_component(json):
     current_app.logger.debug(f'remove component: {json}')
-    remove_component(json, None)
     table = tables.get(json["tablename"])
+    remove_component(json, table)
+    tables.update_table(json["tablename"], table)
     emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
 
 @event_handler('remove kit')
 def remove_kit(json, table):
-    tables.remove_kit(json['tablename'], json['kitId'])
+    table["kits"] = [e for e in table["kits"] if e["kitId"] != json['kitId']]
 
 
 @socketio.on(remove_kit.event_name)
 def handle_remove_kit(json):
     current_app.logger.debug(f'remove kit: {json}')
-    remove_kit(json, None)
     table = tables.get(json["tablename"])
+    remove_kit(json, table)
+    tables.update_table(json["tablename"], table)
     emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
 
@@ -125,13 +133,13 @@ def handle_sync_with_me(json):
 @socketio.on("bulk propagate")
 def handle_bulk_propagate(json):
     current_app.logger.debug(f'bulk propagate: {json}')
+    table = tables.get(json["tablename"])
     for event in json['events']:
         event_name = event['eventName']
         data = event['data']
-        table = tables.get(json["tablename"])
         event_handlers[event_name](data, table)
-    table = tables.get(json["tablename"])
-    if all([e['eventName'] == upgrade_single_component.event_name for e in json['events']]):
+    tables.update_table(json["tablename"], table)
+    if all([e['eventName'] == update_single_component.event_name for e in json['events']]):
         emit('update many components', json, broadcast=True, room=json["tablename"])
     else:
         emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])

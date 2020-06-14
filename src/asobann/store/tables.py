@@ -39,6 +39,10 @@ def purge_all():
     tables.delete_many({})
 
 
+def update_table(tablename, table):
+    tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
+
+
 def update_component(tablename, component_id, diff):
     table = get(tablename)
     table["components"][component_id].update(diff)
