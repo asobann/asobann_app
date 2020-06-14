@@ -9,8 +9,9 @@ import {
     pushRemoveComponent,
     joinTable,
     pushCursorMovement,
-    startBulkPropagate,
-    finishBulkPropagateAndEmit,
+    startConsolidatedPropagation,
+    finishConsolidatedPropagationAndEmit,
+    consolidatePropagation,
 } from "./sync_table.js";
 import {Menu} from "./menu.js";
 
@@ -145,12 +146,9 @@ class Table {
         this.componentsOnTable[componentId].disappear();
     }
 
-    startBulkPropagate() {
-        startBulkPropagate();
-    }
 
-    finishBulkPropagateAndEmit() {
-        finishBulkPropagateAndEmit();
+    consolidatePropagation(proc) {
+        consolidatePropagation(proc);
     }
 }
 
@@ -180,10 +178,10 @@ const sync_table_connector = {
         menu.update(tableData);
     },
 
-    updateManyComponents: function(updates) {
+    updateManyComponents: function (updates) {
         const tableData = table.data;
-        for(const event of updates) {
-            if(event.eventName != 'update single component') {
+        for (const event of updates) {
+            if (event.eventName != 'update single component') {
                 console.error('updateManyComponents cannot handle events other than update single component', event);
                 continue;
             }
@@ -273,30 +271,31 @@ function addNewKit(kitData) {
     (async () => {
         const newComponents = {};
         const componentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitName))).json();
-        startBulkPropagate();
-        for (const data of await componentsData) {
-            const component = data.component;
-            component.kitId = kitId;
-            const componentId = generateComponentId();
-            component.componentId = componentId;
-            component.top = parseFloat(component.top) + rect.top;
-            component.left = parseFloat(component.left) + rect.left;
-            if (component.zIndex) {
-                component.zIndex += baseZIndex;
-            } else {
-                component.zIndex = baseZIndex;
+        console.log("componentsData", componentsData);
+        consolidatePropagation(() => {
+            for (const data of componentsData) {
+                const component = data.component;
+                component.kitId = kitId;
+                const componentId = generateComponentId();
+                component.componentId = componentId;
+                component.top = parseFloat(component.top) + rect.top;
+                component.left = parseFloat(component.left) + rect.left;
+                if (component.zIndex) {
+                    component.zIndex += baseZIndex;
+                } else {
+                    component.zIndex = baseZIndex;
+                }
+                newComponents[componentId] = component;
+                if (component.onAdd) {
+                    Function('"use strict"; return ' + component.onAdd)()(component);
+                }
+                pushNewComponent(component);
+                table.addComponent(component);
             }
-            newComponents[componentId] = component;
-            if (component.onAdd) {
-                Function('"use strict"; return ' + component.onAdd)()(component);
-            }
-            pushNewComponent(component);
-            table.addComponent(component);
-        }
-        pushNewKit({
-            kit: { name: kitName, kitId: kitId },
+            pushNewKit({
+                kit: { name: kitName, kitId: kitId },
+            });
         });
-        finishBulkPropagateAndEmit();
     })();
 }
 

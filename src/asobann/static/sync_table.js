@@ -12,11 +12,17 @@ const bulkPropagation = {
     events: [],
 };
 
-function startBulkPropagate() {
+function consolidatePropagation(proc) {
+    startConsolidatedPropagation();
+    proc();
+    finishConsolidatedPropagationAndEmit();
+}
+
+function startConsolidatedPropagation() {
     bulkPropagation.nested += 1;
 }
 
-function finishBulkPropagateAndEmit() {
+function finishConsolidatedPropagationAndEmit() {
     bulkPropagation.nested -= 1;
     if (bulkPropagation.nested > 0) {
         return;
@@ -248,6 +254,7 @@ export {
     pushSyncWithMe,
     joinTable,
     pushCursorMovement,
-    startBulkPropagate,
-    finishBulkPropagateAndEmit,
+    startConsolidatedPropagation,
+    finishConsolidatedPropagationAndEmit,
+    consolidatePropagation,
 };

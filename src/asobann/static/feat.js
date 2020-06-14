@@ -1,5 +1,4 @@
 import {el, mount, unmount, setAttr, setStyle} from "./redom.es.js";
-
 // import interact from './interact.js'
 
 function arraysEqual(a, b) {
@@ -57,10 +56,10 @@ const draggability = {
                     component.moving = true;
                     const top = parseFloat(component.el.style.top) + event.dy;
                     const left = parseFloat(component.el.style.left) + event.dx;
-                    featsContext.table.startBulkPropagate();
-                    component.propagate_volatile({ top: top + "px", left: left + "px", moving: true });
-                    featsContext.fireEvent(component, draggability.events.onMoving, { dx: event.dx, dy: event.dy });
-                    featsContext.table.finishBulkPropagateAndEmit();
+                    featsContext.table.consolidatePropagation(() => {
+                        component.propagate_volatile({ top: top + "px", left: left + "px", moving: true });
+                        featsContext.fireEvent(component, draggability.events.onMoving, { dx: event.dx, dy: event.dy });
+                    });
                 },
                 end(event) {
                     if (!isDraggingPermitted()) {
@@ -72,11 +71,11 @@ const draggability = {
                     const left = parseFloat(component.el.style.left) + event.dx;
                     const diff = { top: top + "px", left: left + "px", moving: false };
 
-                    featsContext.table.startBulkPropagate();
-                    component.propagate(diff);
-                    featsContext.fireEvent(component, featsContext.events.onPositionChanged, {});
-                    featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
-                    featsContext.table.finishBulkPropagateAndEmit();
+                    featsContext.table.consolidatePropagation(() => {
+                        component.propagate(diff);
+                        featsContext.fireEvent(component, featsContext.events.onPositionChanged, {});
+                        featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
+                    });
                 }
             }
         });
@@ -459,7 +458,7 @@ const ownership = {
         return true;
     },
     update: function (component, data) {
-        if(component.owner !== data.owner) {
+        if (component.owner !== data.owner) {
             console.log("ownership update change", component.componentId, component.owner, "to", data.owner);
         }
         component.owner = data.owner;
@@ -561,7 +560,7 @@ const traylike = {
 
 const touchToRaise = {
     add(component) {
-        if(!featsContext.nextZIndex) {
+        if (!featsContext.nextZIndex) {
             featsContext.nextZIndex = 1;
         }
 
@@ -583,7 +582,7 @@ const touchToRaise = {
         return true;
     },
 
-    update: function(component, data) {
+    update: function (component, data) {
         if (data.zIndex) {
             component.zIndex = data.zIndex;
             if (featsContext.nextZIndex <= component.zIndex) {
@@ -595,7 +594,8 @@ const touchToRaise = {
         }
     },
 
-    remove: function (component) {}
+    remove: function (component) {
+    }
 };
 
 const featsContext = {
