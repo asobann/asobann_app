@@ -582,10 +582,6 @@ const traylike = {
 
 const touchToRaise = {
     install: function (component) {
-        if (!featsContext.nextZIndex) {
-            featsContext.nextZIndex = 1;
-        }
-
         component.el.addEventListener("mousedown", (ev) => {
             if (featsContext.isPlayerObserver()) {
                 return;
@@ -593,9 +589,8 @@ const touchToRaise = {
             if (component.handArea || component.traylike) {
                 return;
             }
-            component.zIndex = featsContext.nextZIndex;
+            component.zIndex = featsContext.table.getNextZIndex();
             setStyle(component.el, { zIndex: component.zIndex });
-            featsContext.nextZIndex += 1;
             component.propagate({ zIndex: component.zIndex });
         });
     },
@@ -607,12 +602,8 @@ const touchToRaise = {
     onComponentUpdate: function (component, data) {
         if (data.zIndex) {
             component.zIndex = data.zIndex;
-            if (featsContext.nextZIndex <= component.zIndex) {
-                featsContext.nextZIndex = component.zIndex + 1;
-            }
         } else {
-            component.zIndex = featsContext.nextZIndex;
-            featsContext.nextZIndex += 1;
+            component.zIndex = featsContext.table.getNextZIndex();
         }
     },
 
@@ -626,7 +617,11 @@ const cardistry = {
             return;
         }
         component.cardistry = {};
-        setStyle(component.el, { 'justify-content': 'left', 'align-items': 'flex-start' });
+        setStyle(component.el, {
+            'flex-flow': 'column wrap',
+            'justify-content': 'left',
+            'align-items': 'flex-start'
+        });
 
         const spreadOut = {};
         component.cardistry['spread out'] = spreadOut;
@@ -711,6 +706,7 @@ const featsContext = {
             left:
             height:
             width:
+            moving: true if in transition (being dragged)
          */
         onPositionChanged: 'onPositionChanged',
     }

@@ -49,20 +49,39 @@ function doStack(component, featsContext) {
         return;
     }
 
+    let stackComponentsInHand = undefined;
     featsContext.table.consolidatePropagation(() => {
         let top = parseFloat(component.el.style.top);
         let left = parseFloat(component.el.style.left) + 100;
+        let componentCount = 0;
         for (const cmpId in component.componentsInBox) {
+            componentCount += 1;
+        }
+        let lastZIndex = featsContext.table.getNextZIndex() + componentCount;
+        for (const cmpId in component.componentsInBox) {
+            // noinspection JSUnfilteredForInLoop
             const cmp = featsContext.table.componentsOnTable[cmpId];
+            if(cmp.owner) {
+                if(stackComponentsInHand === undefined) {
+                    stackComponentsInHand = window.confirm("Stack even in-hand components?");
+                }
+                if(!stackComponentsInHand) {
+                    continue;
+                }
+            }
             featsContext.fireEvent(cmp, featsContext.events.onPositionChanged,
                 {
                     top: top,
                     left: left,
                     height: parseFloat(cmp.el.style.height),
                     width: parseFloat(cmp.el.style.width),
+                    moving: false,
                 });
+            console.log("lastZIndex", lastZIndex);
+            cmp.propagate({zIndex: lastZIndex});
             top += 1;
             left += 1;
+            lastZIndex -= 1;
         }
     });
 }

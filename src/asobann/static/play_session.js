@@ -188,6 +188,18 @@ class Table {
         }
         return rect;
     }
+
+    getNextZIndex() {
+        let nextZIndex = 0;
+        for (const otherId in this.data.components) {
+            const other = this.data.components[otherId];
+            if (nextZIndex <= other.zIndex) {
+                nextZIndex = other.zIndex + 1;
+            }
+        }
+        return nextZIndex;
+    }
+
 }
 
 
@@ -304,7 +316,7 @@ function addNewKit(kitData) {
         return (Math.random() * 16 | 0).toString(16);
     });
 
-    const baseZIndex = getNextZIndex();
+    const baseZIndex = table.getNextZIndex();
     const rect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
     (async () => {
         const newComponents = {};
@@ -367,17 +379,6 @@ function removeKit(kitId) {
     pushSyncWithMe(table.data);
 }
 
-function getNextZIndex() {
-    let nextZIndex = 0;
-    for (const otherId in table.data.components) {
-        const other = table.data.components[otherId];
-        if (nextZIndex < other.zIndex) {
-            nextZIndex = other.zIndex + 1;
-        }
-    }
-    return nextZIndex;
-}
-
 function placeNewComponent(newComponent, baseZIndex) {
     const rect = table.findEmptySpace(parseInt(newComponent.width), parseInt(newComponent.height));
     newComponent.top = rect.top + "px";
@@ -387,7 +388,7 @@ function placeNewComponent(newComponent, baseZIndex) {
             newComponent.zIndex += baseZIndex;
         }
     } else {
-        newComponent.zIndex = getNextZIndex();
+        newComponent.zIndex = table.getNextZIndex();
     }
 
     if (newComponent.onAdd) {
