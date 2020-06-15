@@ -152,9 +152,41 @@ class Table {
         this.componentsOnTable[componentId].disappear();
     }
 
-
     consolidatePropagation(proc) {
         consolidatePropagation(proc);
+    }
+
+    findEmptySpace(width, height) {
+        const rect = {
+            top: 64,
+            left: 64,
+            width: parseFloat(width),
+            height: parseFloat(height),
+        };
+        for (let i = 0; i < 10; i++) {
+            let collision = false;
+            rect.bottom = rect.top + rect.height;
+            rect.right = rect.left + rect.width;
+            for (const componentId in this.data.components) {
+                const target = this.data.components[componentId];
+                const targetLeft = parseFloat(target.left);
+                const targetTop = parseFloat(target.top);
+                const targetRight = targetLeft + parseFloat(target.width);
+                const targetBottom = targetTop + parseFloat(target.height);
+                if (rect.left <= targetRight &&
+                    targetLeft <= rect.right &&
+                    rect.top <= targetBottom &&
+                    targetTop <= rect.bottom) {
+                    collision = true;
+                    break;
+                }
+            }
+            if (!collision) {
+                break;
+            }
+            rect.top += 100;
+        }
+        return rect;
     }
 }
 
@@ -273,7 +305,7 @@ function addNewKit(kitData) {
     });
 
     const baseZIndex = getNextZIndex();
-    const rect = findEmptySpace(kitData.kit.width, kitData.kit.height);
+    const rect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
     (async () => {
         const newComponents = {};
         const componentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitName))).json();
@@ -331,41 +363,8 @@ function getNextZIndex() {
     return nextZIndex;
 }
 
-function findEmptySpace(width, height) {
-    const rect = {
-        top: 64,
-        left: 64,
-        width: parseFloat(width),
-        height: parseFloat(height),
-    };
-    for (let i = 0; i < 10; i++) {
-        let collision = false;
-        rect.bottom = rect.top + rect.height;
-        rect.right = rect.left + rect.width;
-        for (const componentId in table.data.components) {
-            const target = table.data.components[componentId];
-            const targetLeft = parseFloat(target.left);
-            const targetTop = parseFloat(target.top);
-            const targetRight = targetLeft + parseFloat(target.width);
-            const targetBottom = targetTop + parseFloat(target.height);
-            if (rect.left <= targetRight &&
-                targetLeft <= rect.right &&
-                rect.top <= targetBottom &&
-                targetTop <= rect.bottom) {
-                collision = true;
-                break;
-            }
-        }
-        if (!collision) {
-            break;
-        }
-        rect.top += 100;
-    }
-    return rect;
-}
-
 function placeNewComponent(newComponent, baseZIndex) {
-    const rect = findEmptySpace(parseInt(newComponent.width), parseInt(newComponent.height));
+    const rect = table.findEmptySpace(parseInt(newComponent.width), parseInt(newComponent.height));
     newComponent.top = rect.top + "px";
     newComponent.left = rect.left + "px";
     if (newComponent.zIndex) {
