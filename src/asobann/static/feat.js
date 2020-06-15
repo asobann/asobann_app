@@ -1,5 +1,5 @@
 import {el, mount, unmount, setAttr, setStyle} from "./redom.es.js";
-import {doSpreadOut, doStack} from "./cardistry.js";
+import {allCardistry} from "./cardistry.js";
 
 // import interact from './interact.js'
 
@@ -623,47 +623,36 @@ const cardistry = {
             'align-items': 'flex-start'
         });
 
-        const spreadOut = {};
-        component.cardistry['spread out'] = spreadOut;
-        spreadOut.button = el('button', {
-                onclick: () => {
-                    doSpreadOut(component, featsContext);
+        for(const cardistry of allCardistry) {
+            const button = el('button', {
+                    onclick: () => {
+                        cardistry.execute(component, featsContext);
+                    },
                 },
-            },
-            'Spread Out'
-        );
-        component.el.appendChild(spreadOut.button);
-
-        const stack = {};
-        component.cardistry['stack'] = stack;
-        stack.button = el('button', {
-                onclick: () => {
-                    doStack(component, featsContext);
-                },
-            },
-            'Stack'
-        );
-        component.el.appendChild(stack.button);
+                cardistry.label,
+            );
+            component.el.appendChild(button);
+            const entry = {
+                button: button,
+            };
+            component.cardistry[cardistry.name] = entry;
+        }
     },
     isEnabled: function (component, data) {
         return true;
     },
-    onComponentUpdate: function (component, data) {
-        if (!data.cardistry) {
+    onComponentUpdate: function (component, componentData) {
+        if (!componentData.cardistry) {
             return;
         }
 
-        if (data.cardistry.includes('spread out')) {
-            setAttr(component.cardistry['spread out'].button, { display: null });
-        } else {
-            setAttr(component.cardistry['spread out'].button, { display: 'none' });
-        }
-
-        if (data.cardistry.includes('stack')) {
-            setAttr(component.cardistry['stack'].button, { display: null });
-            component.componentsInBox = data.componentsInBox;
-        } else {
-            setAttr(component.cardistry['stack'].button, { display: 'none' });
+        for(const cardistry of allCardistry) {
+            if (componentData.cardistry.includes(cardistry.name)) {
+                setStyle(component.cardistry[cardistry.name].button, { display: null });
+                cardistry.onComponentUpdate(component, componentData);
+            } else {
+                setStyle(component.cardistry[cardistry.name].button, { display: 'none' });
+            }
         }
     },
     uninstall: function (component) {

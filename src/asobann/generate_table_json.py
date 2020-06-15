@@ -170,7 +170,7 @@ def write_initial_deploy_data_json():
             "ownable": False,
             "traylike": True,
             "boxOfComponents": True,
-            "cardistry": ["spread out", "stack"],
+            "cardistry": ["spread out", "collect"],
             "zIndex": 1,
         }
     }
