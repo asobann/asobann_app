@@ -17,6 +17,7 @@
         "rollable": false,
         "ownable": false,
         "traylike": true,
+        "boxOfComponents": true,
         "cardistry": [
           "spread out"
         ],

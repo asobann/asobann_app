@@ -169,6 +169,7 @@ def write_initial_deploy_data_json():
             "rollable": False,
             "ownable": False,
             "traylike": True,
+            "boxOfComponents": True,
             "cardistry": ["spread out"],
             "zIndex": 1,
         }

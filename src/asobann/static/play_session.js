@@ -309,31 +309,46 @@ function addNewKit(kitData) {
     (async () => {
         const newComponents = {};
         const componentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitName))).json();
-        console.log("componentsData", componentsData);
+
         consolidatePropagation(() => {
+            const componentsInBox = {};
+
             for (const data of componentsData) {
-                const component = data.component;
-                component.kitId = kitId;
+                const componentData = data.component;
+                componentData.kitId = kitId;
                 const componentId = generateComponentId();
-                component.componentId = componentId;
-                component.top = parseFloat(component.top) + rect.top;
-                component.left = parseFloat(component.left) + rect.left;
-                if (component.zIndex) {
-                    component.zIndex += baseZIndex;
+                componentData.componentId = componentId;
+                componentData.top = parseFloat(componentData.top) + rect.top;
+                componentData.left = parseFloat(componentData.left) + rect.left;
+                if (componentData.zIndex) {
+                    componentData.zIndex += baseZIndex;
                 } else {
-                    component.zIndex = baseZIndex;
+                    componentData.zIndex = baseZIndex;
                 }
-                newComponents[componentId] = component;
-                if (component.onAdd) {
-                    Function('"use strict"; return ' + component.onAdd)()(component);
+                prepareComponentsInBox(componentData, componentsInBox);
+                newComponents[componentId] = componentData;
+                if (componentData.onAdd) {
+                    Function('"use strict"; return ' + componentData.onAdd)()(componentData);
                 }
-                pushNewComponent(component);
-                table.addComponent(component);
+            }
+
+            for (const componentId in newComponents) {
+                const componentData = newComponents[componentId];
+                pushNewComponent(componentData);
+                table.addComponent(componentData);
             }
             pushNewKit({
                 kit: { name: kitName, kitId: kitId },
             });
         });
+
+        function prepareComponentsInBox(componentData, componentsInBox) {
+            if (componentData.boxOfComponents) {
+                componentData.componentsInBox = componentsInBox;
+            } else {
+                componentsInBox[componentData.componentId] = true;
+            }
+        }
     })();
 }
 

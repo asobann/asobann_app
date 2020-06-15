@@ -1,5 +1,5 @@
 import {el, mount, unmount, setAttr, setStyle} from "./redom.es.js";
-import {doSpreadOut} from "./cardistry;"
+import {doSpreadOut} from "./cardistry.js";
 
 // import interact from './interact.js'
 
@@ -630,10 +630,12 @@ const cardistry = {
         const spreadOut = {};
         component.cardistry['spread out'] = spreadOut;
         spreadOut.button = el('button', {
-            onclick: () => {
-                doSpreadOut(component, featsContext);
+                onclick: () => {
+                    doSpreadOut(component, featsContext);
+                },
             },
-            'Spread Out');
+            'Spread Out'
+        );
         setStyle(component.el, { 'justify-content': 'left', 'align-items': 'flex-start' });
         component.el.appendChild(spreadOut.button);
     },
