@@ -53,12 +53,11 @@ const spreadOut = {
 const collect = {
     name: 'collect',
     label: 'Collect Components',
-    execute: function (component, featsContext) {
+    execute: function (component, featsContext, collectComponentsInHand) {
         if (!component.componentsInBox) {
             return;
         }
 
-        let collectComponentsInHand = undefined;
         featsContext.table.consolidatePropagation(() => {
             let top = parseFloat(component.el.style.top);
             let left = parseFloat(component.el.style.left) + 100;
@@ -98,6 +97,31 @@ const collect = {
     },
 };
 
+const shuffle = {
+    name: 'shuffle',
+    label: 'Shuffle',
+    execute: function (component, featsContext) {
+        if (!component.onTray || !component.componentsInBox) {
+            return;
+        }
+        spreadOut.execute(component, featsContext);
 
-const allCardistry = [spreadOut, collect];
+        const componentsInBox = [];
+        for(const componentId in component.componentsInBox) {
+            componentsInBox.push(componentId);
+        }
+        component.componentsInBox = {};
+        while(componentsInBox.length > 0) {
+            const idx = Math.floor(Math.random() * componentsInBox.length);
+            component.componentsInBox[componentsInBox.splice(idx, 1)[0]] = true;
+        }
+
+        collect.execute(component, featsContext, false);
+
+    },
+    onComponentUpdate: function () {
+    },
+};
+
+const allCardistry = [spreadOut, collect, shuffle];
 export {allCardistry};

@@ -20,7 +20,8 @@
         "boxOfComponents": true,
         "cardistry": [
           "spread out",
-          "collect"
+          "collect",
+          "shuffle"
         ],
         "zIndex": 1
       }
