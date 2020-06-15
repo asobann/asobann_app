@@ -19,7 +19,8 @@
         "traylike": true,
         "boxOfComponents": true,
         "cardistry": [
-          "spread out"
+          "spread out",
+          "stack"
         ],
         "zIndex": 1
       }

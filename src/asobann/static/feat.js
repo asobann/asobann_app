@@ -1,5 +1,5 @@
 import {el, mount, unmount, setAttr, setStyle} from "./redom.es.js";
-import {doSpreadOut} from "./cardistry.js";
+import {doSpreadOut, doStack} from "./cardistry.js";
 
 // import interact from './interact.js'
 
@@ -32,15 +32,6 @@ function toRect(c) {
         }
     }
     throw 'Cannot detect rect';
-}
-
-function isOverlapped(c1, c2) {
-    const rect1 = toRect(c1);
-    const rect2 = toRect(c2);
-    return (rect1.left <= rect2.left + rect2.width &&
-        rect2.left <= rect1.left + rect1.width &&
-        rect1.top <= rect2.top + rect2.height &&
-        rect2.top <= rect1.top + rect1.height);
 }
 
 const draggability = {
@@ -366,7 +357,7 @@ const collidability = {
                     if (!areTheyCollidable(component, target)) {
                         continue;
                     }
-                    if (isOverlapped(component, target)) {
+                    if (isOverlapped({ top: e.top, left: e.left, height: e.height, width: e.width }, target)) {
                         collided.push(target);
                     }
                 }
@@ -381,6 +372,15 @@ const collidability = {
                     return true;
                 }
                 return false;
+            }
+
+            function isOverlapped(c1, c2) {
+                const rect1 = toRect(c1);
+                const rect2 = toRect(c2);
+                return (rect1.left <= rect2.left + rect2.width &&
+                    rect2.left <= rect1.left + rect1.width &&
+                    rect1.top <= rect2.top + rect2.height &&
+                    rect2.top <= rect1.top + rect1.height);
             }
 
             function processAllStart(collided) {
@@ -626,6 +626,7 @@ const cardistry = {
             return;
         }
         component.cardistry = {};
+        setStyle(component.el, { 'justify-content': 'left', 'align-items': 'flex-start' });
 
         const spreadOut = {};
         component.cardistry['spread out'] = spreadOut;
@@ -636,8 +637,18 @@ const cardistry = {
             },
             'Spread Out'
         );
-        setStyle(component.el, { 'justify-content': 'left', 'align-items': 'flex-start' });
         component.el.appendChild(spreadOut.button);
+
+        const stack = {};
+        component.cardistry['stack'] = stack;
+        stack.button = el('button', {
+                onclick: () => {
+                    doStack(component, featsContext);
+                },
+            },
+            'Stack'
+        );
+        component.el.appendChild(stack.button);
     },
     isEnabled: function (component, data) {
         return true;
@@ -651,6 +662,13 @@ const cardistry = {
             setAttr(component.cardistry['spread out'].button, { display: null });
         } else {
             setAttr(component.cardistry['spread out'].button, { display: 'none' });
+        }
+
+        if (data.cardistry.includes('stack')) {
+            setAttr(component.cardistry['stack'].button, { display: null });
+            component.componentsInBox = data.componentsInBox;
+        } else {
+            setAttr(component.cardistry['stack'].button, { display: 'none' });
         }
     },
     uninstall: function (component) {

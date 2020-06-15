@@ -44,4 +44,27 @@ function doSpreadOut(component, featsContext) {
     });
 }
 
-export {doSpreadOut};
+function doStack(component, featsContext) {
+    if (!component.componentsInBox) {
+        return;
+    }
+
+    featsContext.table.consolidatePropagation(() => {
+        let top = parseFloat(component.el.style.top);
+        let left = parseFloat(component.el.style.left) + 100;
+        for (const cmpId in component.componentsInBox) {
+            const cmp = featsContext.table.componentsOnTable[cmpId];
+            featsContext.fireEvent(cmp, featsContext.events.onPositionChanged,
+                {
+                    top: top,
+                    left: left,
+                    height: parseFloat(cmp.el.style.height),
+                    width: parseFloat(cmp.el.style.width),
+                });
+            top += 1;
+            left += 1;
+        }
+    });
+}
+
+export {doSpreadOut, doStack};
