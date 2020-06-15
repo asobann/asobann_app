@@ -108,7 +108,7 @@ def generate_playing_card():
             card = {
                 "name": f"PlayingCard {prefix}_{rank}",
                 "top": f"{offset}px",
-                "left": f"{offset}px",
+                "left": f"{offset + 100}px",
                 "textColor": color,
                 "faceupText": f"{suit}{rank}",
                 "zIndex": z_index,
@@ -122,7 +122,7 @@ def generate_playing_card():
         card = {
             "name": f"JOKER{i + 1}",
             "top": f"{offset}px",
-            "left": f"{offset}px",
+            "left": f"{offset + 100}px",
             "textColor": "black",
             "faceupText": "JOKER",
             "zIndex": z_index,
@@ -146,7 +146,7 @@ def write_default_table_json():
     for i, cmp in enumerate(generate_playing_card()):
         table["components"][f"C{i:04}"] = cmp
 
-    with open("default_table.json", "w", encoding="utf-8") as f:
+    with open("store/default_table.json", "w", encoding="utf-8") as f:
         json.dump(table, f, indent=2)
 
 
@@ -159,8 +159,8 @@ def write_initial_deploy_data_json():
             "handArea": False,
             "top": "0px",
             "left": "0px",
-            "height": "150px",
-            "width": "150px",
+            "height": "200px",
+            "width": "250px",
             "color": "blue",
             "showImage": False,
             "draggable": True,
@@ -169,6 +169,7 @@ def write_initial_deploy_data_json():
             "rollable": False,
             "ownable": False,
             "traylike": True,
+            "cardistry": ["spread out"],
             "zIndex": 1,
         }
     }

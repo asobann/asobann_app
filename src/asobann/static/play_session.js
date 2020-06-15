@@ -20,12 +20,12 @@ function baseUrl() {
 }
 
 class Component {
-    constructor() {
+    constructor(data) {
         this.el = el(".component");
         this.image = null;
 
         for (const ability of feats) {
-            ability.install(this);
+            ability.install(this, data);
         }
     }
 
@@ -114,7 +114,7 @@ class Table {
             }
             const componentData = this.data.components[componentId];
             if (!this.componentsOnTable[componentId]) {
-                this.componentsOnTable[componentId] = new Component();
+                this.componentsOnTable[componentId] = new Component(componentData);
                 mount(this.list_el, this.componentsOnTable[componentId].el);
             }
             this.componentsOnTable[componentId].update(componentData, componentId, this.data.components);
@@ -131,7 +131,7 @@ class Table {
     addComponent(componentData) {
         // This is called when a component is added ON THIS BROWSER.
         this.data.components[componentData.componentId] = componentData;
-        this.componentsOnTable[componentData.componentId] = new Component();
+        this.componentsOnTable[componentData.componentId] = new Component(componentData);
         mount(this.list_el, this.componentsOnTable[componentData.componentId].el);
         this.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
         event.fireEvent(this.componentsOnTable[componentData.componentId], event.events.onPositionChanged);
@@ -198,7 +198,7 @@ const sync_table_connector = {
             table.data.components[componentData.componentId] = componentData;
         }
         if (!table.componentsOnTable[componentData.componentId]) {
-            table.componentsOnTable[componentData.componentId] = new Component();
+            table.componentsOnTable[componentData.componentId] = new Component(componentData);
             mount(table.list_el, table.componentsOnTable[componentData.componentId].el);
             table.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
         }

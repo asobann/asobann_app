@@ -1,4 +1,5 @@
 import {el, mount, unmount, setAttr, setStyle} from "./redom.es.js";
+
 // import interact from './interact.js'
 
 function arraysEqual(a, b) {
@@ -559,7 +560,7 @@ const traylike = {
 };
 
 const touchToRaise = {
-    install: function(component) {
+    install: function (component) {
         if (!featsContext.nextZIndex) {
             featsContext.nextZIndex = 1;
         }
@@ -594,6 +595,32 @@ const touchToRaise = {
         }
     },
 
+    uninstall: function (component) {
+    }
+};
+
+const cardistry = {
+    install: function (component, data) {
+        if (!data.cardistry) {
+            return;
+        }
+        component.cardistry = {};
+
+        const spreadOut = {};
+        component.cardistry['spread out'] = spreadOut;
+        spreadOut.button = el('button', { onclick: doSpreadOut }, 'Spread Out');
+        setStyle(component.el, {'justify-content': 'left', 'align-items': 'flex-start'});
+        component.el.appendChild(spreadOut.button);
+
+        function doSpreadOut(ev) {
+            console.log('spread out!');
+        }
+    },
+    isEnabled: function (component, data) {
+        return true;
+    },
+    onComponentUpdate: function (component, data) {
+    },
     uninstall: function (component) {
     }
 };
@@ -639,7 +666,15 @@ const event = {
 };
 
 const feats = [
-    collidability, draggability, flippability, resizability, rollability, traylike, ownership, touchToRaise,
+    collidability,
+    draggability,
+    flippability,
+    resizability,
+    rollability,
+    traylike,
+    ownership,
+    touchToRaise,
+    cardistry
 ];
 
 export {setFeatsContext, feats, event};
