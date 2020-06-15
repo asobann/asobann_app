@@ -35,9 +35,9 @@ def test_load_playing_card_kit(server, browser: webdriver.Firefox):
 
     assert host.count_components() == 52 + 2 + 1
 
-    assert host.component_by_name("PlayingCard S_A").pos() == (64, 64)
-    host.drag(host.component_by_name("Playing Card Box"), 200, 100, grab_at=(70, 0))
-    assert host.component_by_name("PlayingCard S_A").pos() == (64 + 200, 64 + 100)
+    assert host.component_by_name("PlayingCard S_A").pos() == (64, 164)
+    host.drag(host.component_by_name("Playing Card Box"), 200, 100, grab_at=(-70, 0))
+    assert host.component_by_name("PlayingCard S_A").pos() == (64 + 100, 164 + 200)
 
 
 def test_load_and_remove_playing_card_kit(server, browser: webdriver.Firefox):
@@ -51,9 +51,9 @@ def test_load_and_remove_playing_card_kit(server, browser: webdriver.Firefox):
     host.menu.remove_kit_from_list("Playing Card")
     host.menu.add_kit_from_list("Playing Card")
 
-    assert host.component_by_name("PlayingCard S_A").pos() == (64, 64)
-    host.drag(host.component_by_name("Playing Card Box"), 200, 100, grab_at=(70, 0))
-    assert host.component_by_name("PlayingCard S_A").pos() == (64 + 200, 64 + 100)
+    assert host.component_by_name("PlayingCard S_A").pos() == (64, 164)
+    host.drag(host.component_by_name("Playing Card Box"), 200, 100, grab_at=(-70, 0))
+    assert host.component_by_name("PlayingCard S_A").pos() == (64 + 100, 164 + 200)
 
 
 @pytest.mark.loadtest
@@ -73,9 +73,9 @@ def test_load_playing_card_kit_on_staging(server, browser: webdriver.Firefox):
     time.sleep(1)
     assert host.count_components() == 52 + 2 + 1
 
-    assert host.component_by_name("PlayingCard S_A").pos() == (64, 64)
+    assert host.component_by_name("PlayingCard S_A").pos() == (64, 164)
     host.drag(host.component_by_name("Playing Card Box"), 200, 100, grab_at=(70, 0))
-    assert host.component_by_name("PlayingCard S_A").pos() == (64 + 200, 64 + 100)
+    assert host.component_by_name("PlayingCard S_A").pos() == (64 + 200, 164 + 100)
 
 
 @pytest.mark.skip

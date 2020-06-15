@@ -285,7 +285,7 @@ class Rect:
                     and self.bottom == other.bottom and self.right == other.right
                     and self.height == other.height and self.width == other.width)
         if type(other) == tuple and len(other) == 2:
-            return self.top == other[1] and self.left == other[0]
+            return self.top == other[0] and self.left == other[1]
         return False
 
 
