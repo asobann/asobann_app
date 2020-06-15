@@ -134,7 +134,13 @@ class Table {
         this.componentsOnTable[componentData.componentId] = new Component(componentData);
         mount(this.list_el, this.componentsOnTable[componentData.componentId].el);
         this.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
-        event.fireEvent(this.componentsOnTable[componentData.componentId], event.events.onPositionChanged);
+        event.fireEvent(this.componentsOnTable[componentData.componentId], event.events.onPositionChanged,
+            {
+                top: parseFloat(componentData.top),
+                left: parseFloat(componentData.left),
+                height: parseFloat(componentData.height),
+                width: parseFloat(componentData.width),
+            });
     }
 
     removeComponent(componentId) {

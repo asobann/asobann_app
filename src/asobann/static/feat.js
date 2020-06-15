@@ -54,12 +54,14 @@ const draggability = {
                     if (!isDraggingPermitted()) {
                         return;
                     }
-                    component.moving = true;
-                    const top = parseFloat(component.el.style.top) + event.dy;
-                    const left = parseFloat(component.el.style.left) + event.dx;
                     featsContext.table.consolidatePropagation(() => {
-                        component.propagate_volatile({ top: top + "px", left: left + "px", moving: true });
-                        featsContext.fireEvent(component, draggability.events.onMoving, { dx: event.dx, dy: event.dy });
+                        featsContext.fireEvent(component, draggability.events.onMoving,
+                            {
+                                top: parseFloat(component.el.style.top) + event.dy,
+                                left: parseFloat(component.el.style.left) + event.dx,
+                                dx: event.dx,
+                                dy: event.dy,
+                            });
                     });
                 },
                 end(event) {
@@ -67,21 +69,34 @@ const draggability = {
                         return;
                     }
                     console.log("draggable end", component.componentId);
-                    component.moving = false;
-                    const top = parseFloat(component.el.style.top) + event.dy;
-                    const left = parseFloat(component.el.style.left) + event.dx;
-                    const diff = { top: top + "px", left: left + "px", moving: false };
-
                     featsContext.table.consolidatePropagation(() => {
-                        component.propagate(diff);
-                        featsContext.fireEvent(component, featsContext.events.onPositionChanged, {});
+                        featsContext.fireEvent(component, featsContext.events.onPositionChanged,
+                            {
+                                top: parseFloat(component.el.style.top) + event.dy,
+                                left: parseFloat(component.el.style.left) + event.dx,
+                                height: parseFloat(component.el.style.height),
+                                width: parseFloat(component.el.style.width),
+                            });
                         featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
                     });
                 }
             }
         });
 
+        featsContext.addEventListener(component, draggability.events.onMoving, (e) => {
+            component.propagate_volatile({ top: e.top + "px", left: e.left + "px", moving: true });
+        });
 
+        featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
+            component.propagate({
+                top: parseFloat(e.top) + "px",
+                left: parseFloat(e.left) + "px",
+                height: parseFloat(e.height) + "px",
+                width: parseFloat(e.width) + "px",
+                moving: false,
+            });
+
+        });
     },
     isEnabled: function (component, data) {
         return data.draggable === true;
@@ -201,8 +216,13 @@ const resizability = {
                 let left = parseFloat(component.el.style.left);
                 let width = parseFloat(component.el.style.width);
                 let height = parseFloat(component.el.style.height);
-                component.propagate({ top: top, left: left, width: width, height: height });
-                featsContext.fireEvent(component, featsContext.events.onPositionChanged, {});
+                featsContext.fireEvent(component, featsContext.events.onPositionChanged,
+                    {
+                        top: top,
+                        left: left,
+                        height: height,
+                        width: width,
+                    });
             },
         })
     },
@@ -631,12 +651,18 @@ const featsContext = {
             && !featsContext.isPlayerObserver());
     },
     addEventListener: function (component, eventName, handler) {
+        if(!eventName) {
+            throw `addEventListener: eventName must be specified but was ${eventName}`
+        }
         if (!featsContext.eventListeners[eventName]) {
             featsContext.eventListeners[eventName] = [];
         }
         featsContext.eventListeners[eventName].push({ component: component, handler: handler });
     },
     fireEvent: function (component, eventName, event) {
+        if(!eventName) {
+            throw `fireEvent: eventName must be specified but was ${eventName}`
+        }
         if (!featsContext.eventListeners[eventName]) {
             return;
         }
@@ -648,6 +674,14 @@ const featsContext = {
     },
     eventListeners: {},
     events: {
+        /*
+        This event is fired when position or size of component is changed.
+        Event must have these parameters.
+            top:
+            left:
+            height:
+            width:
+         */
         onPositionChanged: 'onPositionChanged',
     }
 };
@@ -660,8 +694,8 @@ function setFeatsContext(getPlayerName, isPlayerObserver, table) {
 
 const event = {
     events: featsContext.events,
-    fireEvent: function (component, eventName) {
-        featsContext.fireEvent(component, eventName, {});
+    fireEvent: function (component, eventName, event) {
+        featsContext.fireEvent(component, eventName, event);
     }
 };
 
