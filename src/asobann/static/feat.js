@@ -42,7 +42,7 @@ function isOverlapped(c1, c2) {
 }
 
 const draggability = {
-    add: function (component) {
+    install: function (component) {
         function isDraggingPermitted() {
             return component.draggable && featsContext.canOperateOn(component);
         }
@@ -85,11 +85,11 @@ const draggability = {
     isEnabled: function (component, data) {
         return data.draggable === true;
     },
-    update: function (component, data) {
+    onComponentUpdate: function (component, data) {
         component.draggable = data.draggable;
         component.ownable = data.ownable;  // TODO: good chance ownable will not be used
     },
-    remove: function (component) {
+    uninstall: function (component) {
         interact(component.el).draggable(false);
     },
     events: {
@@ -99,7 +99,7 @@ const draggability = {
 };
 
 const flippability = {
-    add: function (component) {
+    install: function (component) {
         function isFlippingPermitted() {
             return component.flippable && featsContext.canOperateOn(component);
         }
@@ -123,7 +123,7 @@ const flippability = {
     isEnabled: function (component, data) {
         return data.flippable === true;
     },
-    update: function (component, data) {
+    onComponentUpdate: function (component, data) {
         component.flippable = data.flippable;
         component.owner = data.owner;
         component.faceup = data.faceup;
@@ -160,14 +160,14 @@ const flippability = {
         component.faceup = data.faceup;
 
     },
-    remove: function (component) {
+    uninstall: function (component) {
     },
 
 };
 
 
 const resizability = {
-    add: function (component) {
+    install: function (component) {
         function isResizingPermitted() {
             return component.resizable && featsContext.canOperateOn(component);
         }
@@ -208,16 +208,16 @@ const resizability = {
     isEnabled: function (component, data) {
         return data.resizable === true;
     },
-    update: function (component, data) {
+    onComponentUpdate: function (component, data) {
         component.resizable = data.resizable;
     },
-    remove: function (component) {
+    uninstall: function (component) {
         interact(component.el).resizable(false);
     },
 };
 
 const rollability = {
-    add: function (component) {
+    install: function (component) {
         function isRollingPermitted() {
             return component.rollable && featsContext.canOperateOn(component);
         }
@@ -241,7 +241,7 @@ const rollability = {
     isEnabled: function (component, data) {
         return data.rollable === true;
     },
-    update: function (component, data) {
+    onComponentUpdate: function (component, data) {
         component.rollable = data.rollable;
 
         if (data.startRoll) {
@@ -275,7 +275,7 @@ const rollability = {
             component.rollCurrentValue = data.rollFinalValue;
         }
     },
-    remove: function (component) {
+    uninstall: function (component) {
     },
     roll: function (component, duration, finalValue) {
         const ANIMATION_INTERVAL = 200;
@@ -324,7 +324,7 @@ const rollability = {
 
 
 const collidability = {
-    add: function (component) {
+    install: function (component) {
         if (!component.currentCollisions) {
             component.currentCollisions = {};
         }
@@ -402,14 +402,14 @@ const collidability = {
     isEnabled: function (component, data) {
         return true;
     },
-    update: function (component, data) {
+    onComponentUpdate: function (component, data) {
         if (data.currentCollisions) {
             component.currentCollisions = data.currentCollisions;
         }
 
         component.moving = data.moving;
     },
-    remove: function (component) {
+    uninstall: function (component) {
         const currentCollisions = component.currentCollisions;
         component.currentCollisions = [];  // avoid recurse
         for (const componentId in currentCollisions) {
@@ -432,7 +432,7 @@ const collidability = {
 };
 
 const ownership = {
-    add: function (component) {
+    install: function (component) {
         featsContext.addEventListener(component, collidability.events.onCollisionStart, (e) => {
             const other = e.collider;
             if (component.handArea && !other.handArea) {
@@ -457,7 +457,7 @@ const ownership = {
     isEnabled: function (component, data) {
         return true;
     },
-    update: function (component, data) {
+    onComponentUpdate: function (component, data) {
         if (component.owner !== data.owner) {
             console.log("ownership update change", component.componentId, component.owner, "to", data.owner);
         }
@@ -478,7 +478,7 @@ const ownership = {
             }
         }
     },
-    remove: function (component) {
+    uninstall: function (component) {
 
     }
 };
@@ -489,7 +489,7 @@ const traylike = {
     // Objects on a tray moves with the tray.
     // Hand Area is a tray-like object.  A box is another example of tray-like object.
     // Currently everything not tray-like can be put on tray-like.  Tray-like does not be put on another tray-like.
-    add: function (component) {
+    install: function (component) {
         component.onTray = {};
 
         featsContext.addEventListener(component, collidability.events.onCollisionStart, (e) => {
@@ -545,7 +545,7 @@ const traylike = {
     isEnabled: function (component, data) {
         return data.traylike === true;
     },
-    update: function (component, data) {
+    onComponentUpdate: function (component, data) {
         // On or off of a tray decision is handled in tray-like object's update.
         // This is chiefly to reduce computation.  And also for simplicity.
         component.traylike = data.traylike;
@@ -553,13 +553,13 @@ const traylike = {
             component.onTray = data.onTray;
         }
     },
-    remove: function (component) {
+    uninstall: function (component) {
 
     }
 };
 
 const touchToRaise = {
-    add(component) {
+    install: function(component) {
         if (!featsContext.nextZIndex) {
             featsContext.nextZIndex = 1;
         }
@@ -582,7 +582,7 @@ const touchToRaise = {
         return true;
     },
 
-    update: function (component, data) {
+    onComponentUpdate: function (component, data) {
         if (data.zIndex) {
             component.zIndex = data.zIndex;
             if (featsContext.nextZIndex <= component.zIndex) {
@@ -594,7 +594,7 @@ const touchToRaise = {
         }
     },
 
-    remove: function (component) {
+    uninstall: function (component) {
     }
 };
 

@@ -25,7 +25,7 @@ class Component {
         this.image = null;
 
         for (const ability of feats) {
-            ability.add(this);
+            ability.install(this);
         }
     }
 
@@ -54,7 +54,7 @@ class Component {
 
         for (const ability of feats) {
             if (ability.isEnabled(this, data)) {
-                ability.update(this, data);
+                ability.onComponentUpdate(this, data);
             }
         }
 
@@ -74,7 +74,7 @@ class Component {
 
     disappear() {
         for (const ability of feats) {
-            ability.remove(this);
+            ability.uninstall(this);
         }
     }
 
