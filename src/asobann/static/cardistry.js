@@ -1,3 +1,13 @@
+function countProperties(obj) {
+    let count = 0;
+    for (const prop in obj) {
+        if (obj.hasOwnProperty(prop)) {
+            count += 1;
+        }
+    }
+    return count;
+}
+
 const spreadOut = {
     name: 'spread out',
     label: 'Spread Out',
@@ -48,6 +58,9 @@ const spreadOut = {
     },
     onComponentUpdate: function () {
     },
+    isEnabled: function (component, featsContext) {
+        return component.onTray && countProperties(component.onTray) > 0;
+    }
 };
 
 const collect = {
@@ -95,6 +108,11 @@ const collect = {
     onComponentUpdate: function (component, componentData) {
         component.componentsInBox = componentData.componentsInBox;
     },
+    isEnabled: function (component, featsContext) {
+        return component.onTray && component.componentsInBox &&
+            countProperties(component.onTray) != countProperties(component.componentsInBox);
+    }
+
 };
 
 const shuffle = {
@@ -107,11 +125,11 @@ const shuffle = {
         spreadOut.execute(component, featsContext);
 
         const componentsInBox = [];
-        for(const componentId in component.componentsInBox) {
+        for (const componentId in component.componentsInBox) {
             componentsInBox.push(componentId);
         }
         component.componentsInBox = {};
-        while(componentsInBox.length > 0) {
+        while (componentsInBox.length > 0) {
             const idx = Math.floor(Math.random() * componentsInBox.length);
             component.componentsInBox[componentsInBox.splice(idx, 1)[0]] = true;
         }
@@ -121,6 +139,9 @@ const shuffle = {
     },
     onComponentUpdate: function () {
     },
+    isEnabled: function (component, featsContext) {
+        return component.onTray && countProperties(component.onTray) > 0;
+    }
 };
 
 const allCardistry = [spreadOut, collect, shuffle];

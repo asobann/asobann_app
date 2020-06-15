@@ -623,7 +623,7 @@ const cardistry = {
             'align-items': 'flex-start'
         });
 
-        for(const cardistry of allCardistry) {
+        for (const cardistry of allCardistry) {
             const button = el('button', {
                     onclick: () => {
                         cardistry.execute(component, featsContext);
@@ -646,9 +646,14 @@ const cardistry = {
             return;
         }
 
-        for(const cardistry of allCardistry) {
+        for (const cardistry of allCardistry) {
             if (componentData.cardistry.includes(cardistry.name)) {
                 setStyle(component.cardistry[cardistry.name].button, { display: null });
+                if (cardistry.isEnabled(component, featsContext)) {
+                    setAttr(component.cardistry[cardistry.name].button, 'disabled', null);
+                } else {
+                    setAttr(component.cardistry[cardistry.name].button, 'disabled', true);
+                }
                 cardistry.onComponentUpdate(component, componentData);
             } else {
                 setStyle(component.cardistry[cardistry.name].button, { display: 'none' });
