@@ -20,6 +20,9 @@ const spreadOut = {
         let left = 0;
         let maxHeight = 0;
         for (const cmpId in component.onTray) {
+            if(!component.onTray.hasOwnProperty(cmpId)) {
+                continue;
+            }
             const cmp = featsContext.table.componentsOnTable[cmpId];
             spread.push({ left: left, component: cmp });
             left += parseFloat(cmp.el.style.width) + 16;
@@ -110,7 +113,7 @@ const collect = {
     },
     isEnabled: function (component, featsContext) {
         return component.onTray && component.componentsInBox &&
-            countProperties(component.onTray) != countProperties(component.componentsInBox);
+            countProperties(component.onTray) !== countProperties(component.componentsInBox);
     }
 
 };
@@ -144,5 +147,58 @@ const shuffle = {
     }
 };
 
-const allCardistry = [spreadOut, collect, shuffle];
+const flipAll = {
+    name: 'flip all',
+    label: 'face up / down',
+    execute: function (component, featsContext) {
+        if (!component.onTray) {
+            return;
+        }
+        let allFaceDown = true;
+
+        for (const cmpId in component.onTray) {
+            if(!component.onTray.hasOwnProperty(cmpId)) {
+                continue;
+            }
+            const cmp = featsContext.table.componentsOnTable[cmpId];
+            if(cmp.flippable && cmp.faceup) {
+                allFaceDown = false;
+                break;
+            }
+        }
+
+        featsContext.table.consolidatePropagation(() => {
+            for (const cmpId in component.onTray) {
+                if (!component.onTray.hasOwnProperty(cmpId)) {
+                    continue;
+                }
+                const cmp = featsContext.table.componentsOnTable[cmpId];
+                if(allFaceDown) {
+                    // make all face up
+                    if (!cmp.flippable) {
+                        continue;
+                    }
+                    if(!cmp.faceup) {
+                        cmp.propagate({faceup: true});
+                    }
+                } else {
+                    // make all face down
+                    if (!cmp.flippable) {
+                        continue;
+                    }
+                    if(cmp.faceup) {
+                        cmp.propagate({faceup: false});
+                    }
+                }
+            }
+        });
+    },
+    onComponentUpdate: function () {
+    },
+    isEnabled: function (component, featsContext) {
+        return component.onTray && countProperties(component.onTray) > 0;
+    }
+};
+
+const allCardistry = [spreadOut, collect, shuffle, flipAll];
 export {allCardistry};

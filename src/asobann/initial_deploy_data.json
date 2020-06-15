@@ -21,7 +21,8 @@
         "cardistry": [
           "spread out",
           "collect",
-          "shuffle"
+          "shuffle",
+          "flip all"
         ],
         "zIndex": 1
       }
