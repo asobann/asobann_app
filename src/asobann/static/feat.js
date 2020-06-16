@@ -506,6 +506,26 @@ const ownership = {
 };
 
 
+const handArea = {
+    install: function (component, componentData) {
+        if (componentData.handArea) {
+            component.handArea = componentData.handArea;
+            const className = component.el.getAttribute('class');
+            if(!className.includes('hand_area')) {
+                setAttr(component.el, 'class', className + ' hand_area');
+            }
+        }
+    },
+    isEnabled: function (component, data) {
+        return data.handArea === true;
+    },
+    onComponentUpdate: function () {
+    },
+    uninstall: function () {
+
+    }
+};
+
 const traylike = {
     // This feat is for tray-like object.  Non tray-like object can be put on tray-like objects.
     // Objects on a tray moves with the tray.
@@ -726,6 +746,7 @@ const feats = [
     resizability,
     rollability,
     traylike,
+    handArea,
     ownership,
     touchToRaise,
     cardistry
