@@ -1,0 +1,5 @@
+hand.png	https://freesvg.org/opened-hand-palm
+left-hand.png	hand.png
+right-hand.png	hand.png
+mouse_cursor.png	https://icooon-mono.com/15974-cat-hand-icon-1/?lang=en
+mouse_cursor_buttons_down.png	https://icooon-mono.com/15976-cat-hand-icon-3/?lang=en
