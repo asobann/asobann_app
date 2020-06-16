@@ -20,6 +20,7 @@ const dictionary = {
         "Remove": "消す",
         ' on the table': 'つテーブルにあります',
         "Done": "戻る",
+        "you are ": "you are",
     },
     en: {
         'Spread Out': 'Spread Out',
@@ -42,6 +43,7 @@ const dictionary = {
         "Remove": "Remove",
         ' on the table': ' on the table',
         "Done": "Done",
+        "you are ": "you are",
     },
 };
 

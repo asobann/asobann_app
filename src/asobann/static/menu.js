@@ -39,7 +39,7 @@ class Menu {
         this.el = el("div.menu",
             [
                 el("div.title", "asobann 遊盤"),
-                el("div", ["you are ", this.playerStatusEl]),
+                el("div", [_("you are "), this.playerStatusEl]),
                 this.joinItem = el("div.menuitem", [
                     _("enter name and join"),
                     this.playerNameInput = el("input#player_name", { value: getPlaceholderName() }),
