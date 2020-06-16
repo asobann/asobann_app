@@ -1,5 +1,6 @@
 import {el, mount, unmount, setAttr, setStyle} from "./redom.es.js";
 import {allCardistry} from "./cardistry.js";
+import {_} from "./i18n.js";
 
 // import interact from './interact.js'
 
@@ -529,7 +530,7 @@ const within = {
 
                     area.propagate({ 'thingsWithinMe': area.thingsWithinMe });
                     visitor.propagate({ 'iAmWithin': visitor.iAmWithin });
-                    featsContext.fireEvent(area, within.events.onWithin, { collider: visitor });
+                    featsContext.fireEvent(area, within.events.onWithin, { visitor: visitor });
                 }
             }
 
@@ -537,7 +538,7 @@ const within = {
                 console.log("processAllEnd start");
 
                 for (const visitorId in component.thingsWithinMe) {
-                    if (withinCheckResult.thingsWithinMe.find(e=>e.componentId === visitorId)) {
+                    if (withinCheckResult.thingsWithinMe.find(e => e.componentId === visitorId)) {
                         continue;
                     }
 
@@ -550,12 +551,12 @@ const within = {
                         delete other.iAmWithin[component.componentId];
 
                         other.propagate({ 'iAmWithin': other.iAmWithin });
-                        featsContext.fireEvent(component, within.events.onWithinEnd, { collider: other });
+                        featsContext.fireEvent(component, within.events.onWithinEnd, { visitor: other });
                     }
                 }
 
                 for (const otherId in component.iAmWithin) {
-                    if (withinCheckResult.iAmWithin.find(e=>e.componentId === otherId)) {
+                    if (withinCheckResult.iAmWithin.find(e => e.componentId === otherId)) {
                         continue;
                     }
 
@@ -568,7 +569,7 @@ const within = {
                         delete other.thingsWithinMe[component.componentId];
 
                         other.propagate({ 'thingsWithinMe': other.thingsWithinMe });
-                        featsContext.fireEvent(other, within.events.onWithinEnd, { collider: component });
+                        featsContext.fireEvent(other, within.events.onWithinEnd, { visitor: component });
                     }
                 }
                 console.log("processAllEnd end");
@@ -602,7 +603,7 @@ const within = {
                 delete other.iAmWithin[component.componentId];
 
                 other.propagate({ 'iAmWithin': other.iAmWithin });
-                featsContext.fireEvent(component, within.events.onWithinEnd, { collider: other });
+                featsContext.fireEvent(component, within.events.onWithinEnd, { visitor: other });
             }
         }
         for (const otherId in iAmWithin) {
@@ -612,7 +613,7 @@ const within = {
                 delete other.thingsWithinMe[component.componentId];
 
                 other.propagate({ 'thingsWithinMe': other.thingsWithinMe });
-                featsContext.fireEvent(other, within.events.onWithinEnd, { collider: component });
+                featsContext.fireEvent(other, within.events.onWithinEnd, { visitor: component });
             }
         }
     },
@@ -626,7 +627,7 @@ const within = {
 const ownership = {
     install: function (component) {
         featsContext.addEventListener(component, within.events.onWithin, (e) => {
-            const other = e.collider;
+            const other = e.visitor;
             if (component.handArea && !other.handArea) {
                 const hand = component;
                 const onHand = other;
@@ -636,7 +637,7 @@ const ownership = {
             }
         });
         featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
-            const other = e.collider;
+            const other = e.visitor;
             if (component.handArea && !other.handArea) {
                 const hand = component;
                 const onHand = other;
@@ -708,21 +709,24 @@ const traylike = {
             if (!component.traylike) {
                 return;
             }
-            if (e.collider.traylike) {
+            if (e.visitor.traylike) {
                 return;
             }
-            component.onTray[e.collider.componentId] = true;
+            component.onTray[e.visitor.componentId] = true;
             component.propagate({ onTray: component.onTray });
+            if (e.visitor.zIndex < component.zIndex) {
+                e.visitor.propagate({ zIndex: featsContext.table.getNextZIndex() });
+            }
         });
 
         featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
             if (!component.traylike) {
                 return;
             }
-            if (e.collider.traylike) {
+            if (e.visitor.traylike) {
                 return;
             }
-            delete component.onTray[e.collider.componentId];
+            delete component.onTray[e.visitor.componentId];
             component.propagate({ onTray: component.onTray });
         });
 

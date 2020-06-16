@@ -1,6 +1,7 @@
 import {el, list, mount, setAttr, setStyle, unmount} from "./redom.es.js";
 import {joinTable} from "./sync_table.js";
 import {names} from "./names.js";
+import {_} from "./i18n.js";
 
 function baseUrl() {
     return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
@@ -40,11 +41,11 @@ class Menu {
                 el("div.title", "asobann 遊盤"),
                 el("div", ["you are ", this.playerStatusEl]),
                 this.joinItem = el("div.menuitem", [
-                    "enter name and join",
+                    _("enter name and join"),
                     this.playerNameInput = el("input#player_name", { value: getPlaceholderName() }),
                     el("button#join_button", {
                         onclick: () => joinTable(this.playerNameInput.value, false)
-                    }, "Join!"),
+                    }, _("Join!")),
                     el("div", {
                         style: {
                             position: 'absolute',
@@ -55,16 +56,16 @@ class Menu {
                             fontSize: '200%',
                             color: 'lightgreen',
                         }
-                    }, "You are observing.  Join to play!  On the left side, enter name and click Join!"),
+                    }, _("You are observing.  Join to play!  On the left side, enter name and click Join!")),
                 ], { style: { display: 'none' } }),
                 this.addRemoveComponentItem = el("div.menuitem#add_remove_component",
-                    el("a", { href: "", onclick: showAddRemoveKitsMenu }, "Add / Remove Kits")),
+                    el("a", { href: "", onclick: showAddRemoveKitsMenu }, _("Add / Remove Kits"))),
                 this.addHandAreaItem = el("div.menuitem#add_hand_area",
-                    el("a", { href: "", onclick: addHandArea }, "Add Hand Area")),
+                    el("a", { href: "", onclick: addHandArea }, _("Add Hand Area"))),
                 this.removeHandAreaItem = el("div.menuitem#remove_hand_area",
-                    el("a", { href: "", onclick: this.connector.removeHandArea }, "Remove Hand Area")),
+                    el("a", { href: "", onclick: this.connector.removeHandArea }, _("Remove Hand Area"))),
                 el("div.menuitem", [
-                    "Share URL for invitation",
+                    _("Share URL for invitation"),
                     el("input#invitation_url", {
                         value: location.href,
                         readonly: true,
@@ -78,19 +79,19 @@ class Menu {
                             document.execCommand('copy');
                             return false;
                         }
-                    }, "copy"),
+                    }, _("copy")),
                 ]),
                 el("div.menuitem",
-                    el("a", { href: "/export?tablename=" + this.connector.tablename }, "Export Table")),
+                    el("a", { href: "/export?tablename=" + this.connector.tablename }, _("Export Table"))),
                 el("div.menuitem#import_table",
-                    el("a", { href: "", onclick: showImport }, "Import Table")),
+                    el("a", { href: "", onclick: showImport }, _("Import Table"))),
             ],
         );
 
         function addHandArea() {
             const newComponent = {
-                name: self.connector.getPlayerName() + "'s hand",
-                text: self.connector.getPlayerName() + "'s hand",
+                name: self.connector.getPlayerName() + _("'s hand"),
+                text: self.connector.getPlayerName() + _("'s hand"),
                 handArea: true,
                 owner: self.connector.getPlayerName(),
                 top: "0px",
@@ -115,7 +116,7 @@ class Menu {
                         el("input", { type: "hidden", value: self.connector.tablename, name: "tablename" }),
                         el("input#file", { type: "file", name: "data" }),
                         el("input#submit", { type: "submit" }),
-                        el("button", { onclick: hideImport }, "Cancel"),
+                        el("button", { onclick: hideImport }, _("Cancel")),
                     ]
                 )
             );
@@ -173,10 +174,10 @@ function createAddRemoveKitsMenu(parent, connector) {
                 this.countEl = el("div"),
                 this.addEl = el("a.add_new_component", {
                     href: '',
-                }, "Add"),
+                }, _("Add")),
                 this.removeEl = el("a.remove_component", {
                     href: '',
-                }, "Remove"),
+                }, _("Remove")),
             ]);
         }
 
@@ -217,7 +218,7 @@ function createAddRemoveKitsMenu(parent, connector) {
                     }
                 }
                 if (numberOnTable > 0) {
-                    self.countEl.innerText = `${numberOnTable} on the table`;
+                    self.countEl.innerText = numberOnTable + _(' on the table');
                     self.removeEl.style.display = null;
                 } else {
                     self.countEl.innerText = '';
@@ -235,9 +236,9 @@ function createAddRemoveKitsMenu(parent, connector) {
             this.el = el("div.kit_selection_container", { style: { zIndex: REASONABLY_BIG_ZINDEX_VALUE } },
                 [
                     el("div.kit_selection", [
-                        el("button", { onclick: hideAddRemoveKitsMenu }, "Done"),
+                        el("button", { onclick: hideAddRemoveKitsMenu }, _("Done")),
                         this.kitsMenuItemList.el,
-                        el("button", { onclick: hideAddRemoveKitsMenu }, "Done"),
+                        el("button", { onclick: hideAddRemoveKitsMenu }, _("Done")),
                     ])
                 ]
             );

@@ -1,3 +1,5 @@
+import {_} from "./i18n.js";
+
 function countProperties(obj) {
     let count = 0;
     for (const prop in obj) {
@@ -10,7 +12,7 @@ function countProperties(obj) {
 
 const spreadOut = {
     name: 'spread out',
-    label: 'Spread Out',
+    label: _('Spread Out'),
     execute: function (component, featsContext) {
         if (!component.onTray) {
             return;
@@ -68,7 +70,7 @@ const spreadOut = {
 
 const collect = {
     name: 'collect',
-    label: 'Collect Components',
+    label: _('Collect Components'),
     execute: function (component, featsContext, collectComponentsInHand) {
         if (!component.componentsInBox) {
             return;
@@ -120,7 +122,7 @@ const collect = {
 
 const shuffle = {
     name: 'shuffle',
-    label: 'Shuffle',
+    label: _('Shuffle'),
     execute: function (component, featsContext) {
         if (!component.onTray || !component.componentsInBox) {
             return;
@@ -149,7 +151,7 @@ const shuffle = {
 
 const flipAll = {
     name: 'flip all',
-    label: 'face up / down',
+    label: _('face up / down'),
     execute: function (component, featsContext) {
         if (!component.onTray) {
             return;
