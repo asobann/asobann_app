@@ -335,7 +335,8 @@ const rollability = {
     }
 };
 
-
+/* not used for the time being */
+/*
 const collidability = {
     install: function (component) {
         if (!component.currentCollisions) {
@@ -452,10 +453,179 @@ const collidability = {
         onCollisionEnd: 'collidability.onCollisionEnd',
     },
 };
+*/
+
+const within = {
+    install: function (component) {
+        if (!component.thingsWithinMe) {
+            component.thingsWithinMe = {};
+            component.iAmWithin = {};
+        }
+
+        featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
+            const withinCheckResult = pickCollidedComponents();
+            processAllStart(withinCheckResult);
+            processAllEnd(withinCheckResult);
+
+            function pickCollidedComponents() {
+                const thingsWithinMe = [];
+                const iAmWithin = [];
+                for (const componentId in featsContext.table.componentsOnTable) {
+                    // noinspection JSUnfilteredForInLoop
+                    const target = featsContext.table.componentsOnTable[componentId];
+                    if (target === component) {
+                        continue;
+                    }
+                    if (canThisEverWithin(component, target)) {
+                        if (isWithin({ top: e.top, left: e.left, height: e.height, width: e.width }, target)) {
+                            thingsWithinMe.push(target);
+                        }
+                    }
+                    if (canThisEverWithin(target, component)) {
+                        if (isWithin(target, { top: e.top, left: e.left, height: e.height, width: e.width })) {
+                            iAmWithin.push(target);
+                        }
+                    }
+
+                }
+                return { thingsWithinMe: thingsWithinMe, iAmWithin: iAmWithin };
+            }
+
+            function canThisEverWithin(area, visitor) {
+                if (area.traylike && !visitor.traylike) {
+                    return true;
+                }
+                return false;
+            }
+
+            function isWithin(area, visitor) {
+                const areaRect = toRect(area);
+                const visitorRect = toRect(visitor);
+                return (areaRect.left <= visitorRect.left &&
+                    visitorRect.left + visitorRect.width <= areaRect.left + areaRect.width &&
+                    areaRect.top <= visitorRect.top &&
+                    visitorRect.top + visitorRect.height <= areaRect.top + areaRect.height);
+            }
+
+            function processAllStart(withinCheckResult) {
+                console.log("processAllStart start");
+                const thingsWithinMe = withinCheckResult.thingsWithinMe;
+                const iAmWithin = withinCheckResult.iAmWithin;
+                for (const other of thingsWithinMe) {
+                    processStartWithin(component, other);
+                }
+
+                for (const other of iAmWithin) {
+                    processStartWithin(other, component);
+                }
+                console.log("processAllStart end");
+
+                function processStartWithin(area, visitor) {
+                    if (area.thingsWithinMe[visitor.componentId]) {
+                        return;
+                    }
+                    area.thingsWithinMe[visitor.componentId] = true;
+                    visitor.iAmWithin[area.componentId] = true;
+
+                    area.propagate({ 'thingsWithinMe': area.thingsWithinMe });
+                    visitor.propagate({ 'iAmWithin': visitor.iAmWithin });
+                    featsContext.fireEvent(area, within.events.onWithin, { collider: visitor });
+                }
+            }
+
+            function processAllEnd(withinCheckResult) {
+                console.log("processAllEnd start");
+
+                for (const visitorId in component.thingsWithinMe) {
+                    if (withinCheckResult.thingsWithinMe.find(e=>e.componentId === visitorId)) {
+                        continue;
+                    }
+
+                    delete component.thingsWithinMe[visitorId];
+                    component.propagate({ 'thingsWithinMe': component.thingsWithinMe });
+
+                    const other = featsContext.table.componentsOnTable[visitorId];
+                    if (other) {
+                        // there is a chance that other is already removed from table
+                        delete other.iAmWithin[component.componentId];
+
+                        other.propagate({ 'iAmWithin': other.iAmWithin });
+                        featsContext.fireEvent(component, within.events.onWithinEnd, { collider: other });
+                    }
+                }
+
+                for (const otherId in component.iAmWithin) {
+                    if (withinCheckResult.iAmWithin.find(e=>e.componentId === otherId)) {
+                        continue;
+                    }
+
+                    delete component.iAmWithin[otherId];
+                    component.propagate({ 'iAmWithin': component.iAmWithin });
+
+                    const other = featsContext.table.componentsOnTable[otherId];
+                    if (other) {
+                        // there is a chance that other is already removed from table
+                        delete other.thingsWithinMe[component.componentId];
+
+                        other.propagate({ 'thingsWithinMe': other.thingsWithinMe });
+                        featsContext.fireEvent(other, within.events.onWithinEnd, { collider: component });
+                    }
+                }
+                console.log("processAllEnd end");
+
+            }
+
+        });
+    },
+    isEnabled: function (component, data) {
+        return true;
+    },
+    onComponentUpdate: function (component, data) {
+        if (data.thingsWithinMe) {
+            component.thingsWithinMe = data.thingsWithinMe;
+        }
+        if (data.iAmWithin) {
+            component.iAmWithin = data.iAmWithin;
+        }
+
+        component.moving = data.moving;
+    },
+    uninstall: function (component) {
+        const thingsWithinMe = component.thingsWithinMe;
+        const iAmWithin = component.iAmWithin;
+        component.thingsWithinMe = [];  // avoid recurse
+        component.iAmWithin = [];  // avoid recurse
+        for (const componentId in thingsWithinMe) {
+            const other = featsContext.table.componentsOnTable[componentId];
+            if (other) {
+                // there is a chance that other is already removed from table
+                delete other.iAmWithin[component.componentId];
+
+                other.propagate({ 'iAmWithin': other.iAmWithin });
+                featsContext.fireEvent(component, within.events.onWithinEnd, { collider: other });
+            }
+        }
+        for (const otherId in iAmWithin) {
+            const other = featsContext.table.componentsOnTable[otherId];
+            if (other) {
+                // there is a chance that other is already removed from table
+                delete other.thingsWithinMe[component.componentId];
+
+                other.propagate({ 'thingsWithinMe': other.thingsWithinMe });
+                featsContext.fireEvent(other, within.events.onWithinEnd, { collider: component });
+            }
+        }
+    },
+
+    events: {
+        onWithin: 'within.onCollisionStart',
+        onWithinEnd: 'within.onCollisionEnd',
+    },
+};
 
 const ownership = {
     install: function (component) {
-        featsContext.addEventListener(component, collidability.events.onCollisionStart, (e) => {
+        featsContext.addEventListener(component, within.events.onWithin, (e) => {
             const other = e.collider;
             if (component.handArea && !other.handArea) {
                 const hand = component;
@@ -465,7 +635,7 @@ const ownership = {
                 }
             }
         });
-        featsContext.addEventListener(component, collidability.events.onCollisionEnd, (e) => {
+        featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
             const other = e.collider;
             if (component.handArea && !other.handArea) {
                 const hand = component;
@@ -511,7 +681,7 @@ const handArea = {
         if (componentData.handArea) {
             component.handArea = componentData.handArea;
             const className = component.el.getAttribute('class');
-            if(!className.includes('hand_area')) {
+            if (!className.includes('hand_area')) {
                 setAttr(component.el, 'class', className + ' hand_area');
             }
         }
@@ -534,7 +704,7 @@ const traylike = {
     install: function (component) {
         component.onTray = {};
 
-        featsContext.addEventListener(component, collidability.events.onCollisionStart, (e) => {
+        featsContext.addEventListener(component, within.events.onWithin, (e) => {
             if (!component.traylike) {
                 return;
             }
@@ -545,7 +715,7 @@ const traylike = {
             component.propagate({ onTray: component.onTray });
         });
 
-        featsContext.addEventListener(component, collidability.events.onCollisionEnd, (e) => {
+        featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
             if (!component.traylike) {
                 return;
             }
@@ -740,7 +910,7 @@ const event = {
 };
 
 const feats = [
-    collidability,
+    within,
     draggability,
     flippability,
     resizability,
