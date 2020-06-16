@@ -164,7 +164,7 @@ class TestHandArea:
         host.move_card_to_hand_area(host.component_by_name(C_Q), 'host', (0, -100))  # just outside
 
         hand_area = host.hand_area(owner="host")
-        host.drag(hand_area, 0, -100, 'top')
+        host.drag(hand_area, 0, -100, 'top left')
         host.drag(hand_area, 0, -100, 'bottom')
 
         # host_card is no longer owned by host
@@ -208,8 +208,8 @@ class TestDice:
         host.menu.add_kit_from_list("Dice (Blue)")
 
         assert host.component_by_name("Dice (Blue)")
-        assert host.component_by_name("Dice (Blue)").rect().height == 66
-        assert host.component_by_name("Dice (Blue)").rect().width == 66
+        assert host.component_by_name("Dice (Blue)").rect().height == 64
+        assert host.component_by_name("Dice (Blue)").rect().width == 64
 
     def test_show_number_of_dices_on_the_table(self, browser: webdriver.Firefox):
         host = GameHelper(browser)

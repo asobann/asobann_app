@@ -96,7 +96,7 @@ class Menu {
                 top: "0px",
                 left: "0px",
                 width: "320px",
-                height: "60px",
+                height: "180px",
                 draggable: true,
                 flippable: false,
                 resizable: true,

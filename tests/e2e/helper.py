@@ -172,6 +172,8 @@ class GameHelper:
             xoffset, yoffset = (component.element.size["width"] / 2 - 1, component.element.size["height"] / 2 - 1)
         elif grab_at == 'top':
             xoffset, yoffset = (0, -(component.element.size["height"] / 2 - 1))
+        elif grab_at == 'top left':
+            xoffset, yoffset = (-(component.element.size["width"] / 2 - 1), -(component.element.size["height"] / 2 - 1))
         elif grab_at == 'bottom':
             xoffset, yoffset = (0, component.element.size["height"] / 2 - 1)
         elif type(grab_at) == tuple and len(grab_at) == 2:
