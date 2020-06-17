@@ -55,38 +55,6 @@ def generate_playing_card():
     def add_component(c):
         playing_card.append(in_order(c))
 
-    add_component({
-        "name": "title",
-        "top": "20px",
-        "left": "20px",
-        "width": "300px",
-        "height": "40px",
-        "text": "トランプのテーブルへようこそ！",
-        "color": "blue",
-        "draggable": True,
-        "flippable": False,
-        "ownable": False,
-        "resizable": True,
-        "showImage": False,
-        "zIndex": 1,
-    })
-    add_component({
-        "name": "usage",
-        "top": "20px",
-        "left": "340px",
-        "height": "200px",
-        "width": "400px",
-        "color": "darkgoldenrod",
-        "showImage": False,
-        "faceupText": " - ドラッグで移動\n - ダブルクリックで裏返す\n - テーブルをドラッグしてスクロール\n - URLをシェアすれば招待できる\n - Add Hand Area(左のメニュー)で手札エリアを作る\n - 手札エリアに置いたカードは自分のものになり表にしても見えない\n - まだバグがいっぱいあります！",
-        "facedownText": "使い方 (ダブルクリックしてね)",
-        "draggable": True,
-        "flippable": True,
-        "ownable": False,
-        "resizable": True,
-        "zIndex": 2,
-    })
-
     template = {
         "kitName": "Playing Card",
         "height": "100px",
@@ -132,7 +100,45 @@ def generate_playing_card():
         z_index -= 1
         offset += 1
 
+    add_component({
+        "name": "Playing Card Box",
+        "kitName": "Playing Card",
+        "handArea": False,
+        "top": "0px",
+        "left": "0px",
+        "height": "200px",
+        "width": "250px",
+        "color": "blue",
+        "showImage": False,
+        "draggable": True,
+        "flippable": False,
+        "resizable": False,
+        "rollable": False,
+        "ownable": False,
+        "traylike": True,
+        "boxOfComponents": True,
+        "cardistry": ["spread out", "collect", "shuffle", 'flip all'],
+        "zIndex": 1,
+    })
     return playing_card
+
+
+def generate_coin():
+    return {
+        "name": "Coin - Tetradrachm of Athens",
+        "kitName": "Coin - Tetradrachm of Athens",
+        "top": "0px",
+        "left": "0px",
+        "height": "200px",
+        "width": "200px",
+        "faceupImage": "/static/images/coin_TetradrachmOfAthens_head.png",
+        "facedownImage": "/static/images/coin_TetradrachmOfAthens_tail.png",
+        "showImage": True,
+        "draggable": True,
+        "flippable": True,
+        "ownable": False,
+        "resizable": True,
+    }
 
 
 def write_default_table_json():
@@ -143,8 +149,38 @@ def write_default_table_json():
         tablename="dummy"
     )
 
-    for i, cmp in enumerate(generate_playing_card()):
-        table["components"][f"C{i:04}"] = cmp
+    table["components"]["title"] = {
+        "name": "title",
+        "top": "20px",
+        "left": "20px",
+        "width": "300px",
+        "height": "40px",
+        "text": "トランプのテーブルへようこそ！",
+        "color": "blue",
+        "draggable": True,
+        "flippable": False,
+        "ownable": False,
+        "resizable": True,
+        "showImage": False,
+        "zIndex": 1,
+    }
+
+    table["components"]["usage"] = {
+        "name": "usage",
+        "top": "20px",
+        "left": "340px",
+        "height": "200px",
+        "width": "400px",
+        "color": "darkgoldenrod",
+        "showImage": False,
+        "faceupText": " - ドラッグで移動\n - ダブルクリックで裏返す\n - テーブルをドラッグしてスクロール\n - URLをシェアすれば招待できる\n - Add Hand Area(左のメニュー)で手札エリアを作る\n - 手札エリアに置いたカードは自分のものになり表にしても見えない\n - まだバグがいっぱいあります！",
+        "facedownText": "使い方 (ダブルクリックしてね)",
+        "draggable": True,
+        "flippable": True,
+        "ownable": False,
+        "resizable": True,
+        "zIndex": 2,
+    }
 
     with open("store/default_table.json", "w", encoding="utf-8") as f:
         json.dump(table, f, indent=2)
@@ -204,6 +240,7 @@ def write_initial_deploy_data_json():
         }
     }
     output["components"].append(dice)
+    output["components"].append({"component": generate_coin()})
 
     for kit in [
         {
@@ -215,6 +252,12 @@ def write_initial_deploy_data_json():
             "name": "Playing Card",
             "width": "150px",
             "height": "150px"
+        },
+        {
+            "name": "Coin - Tetradrachm of Athens",
+            "width": "200px",
+            "height": "200px"
+
         }
     ]:
         output["kits"].append({"kit": kit})
@@ -223,6 +266,6 @@ def write_initial_deploy_data_json():
         json.dump(output, f, indent=2)
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     write_default_table_json()
     write_initial_deploy_data_json()

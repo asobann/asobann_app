@@ -1232,6 +1232,23 @@
         "ownable": false,
         "onAdd": "function(component) { \n  component.rollFinalValue = Math.floor(Math.random() * 6) + 1;\n  component.rollDuration = 500;\n  component.startRoll = true;\n}"
       }
+    },
+    {
+      "component": {
+        "name": "Coin - Tetradrachm of Athens",
+        "kitName": "Coin - Tetradrachm of Athens",
+        "top": "0px",
+        "left": "0px",
+        "height": "200px",
+        "width": "200px",
+        "faceupImage": "/static/images/coin_TetradrachmOfAthens_head.png",
+        "facedownImage": "/static/images/coin_TetradrachmOfAthens_tail.png",
+        "showImage": true,
+        "draggable": true,
+        "flippable": true,
+        "ownable": false,
+        "resizable": true
+      }
     }
   ],
   "kits": [
@@ -1247,6 +1264,13 @@
         "name": "Playing Card",
         "width": "150px",
         "height": "150px"
+      }
+    },
+    {
+      "kit": {
+        "name": "Coin - Tetradrachm of Athens",
+        "width": "200px",
+        "height": "200px"
       }
     }
   ]
