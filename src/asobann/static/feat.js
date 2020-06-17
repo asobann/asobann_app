@@ -1,6 +1,6 @@
 import {el, mount, unmount, setAttr, setStyle} from "./redom.es.js";
 import {allCardistry} from "./cardistry.js";
-import {_} from "./i18n.js";
+import {_, language} from "./i18n.js";
 
 // import interact from './interact.js'
 
@@ -142,7 +142,11 @@ const flippability = {
                     setAttr(component.image, { src: data.faceupImage });
                 }
                 if (data.faceupText) {
-                    component.textEl.innerText = data.faceupText;
+                    if (data["faceupText_" + language]) {
+                        component.textEl.innerText = data["faceupText_" + language];
+                    } else {
+                        component.textEl.innerText = data.faceupText;
+                    }
                 } else {
                     component.textEl.innerText = '';
                 }
@@ -151,7 +155,11 @@ const flippability = {
                     setAttr(component.image, { src: data.facedownImage });
                 }
                 if (data.facedownText) {
-                    component.textEl.innerText = data.facedownText;
+                    if (data["facedownText_" + language]) {
+                        component.textEl.innerText = data["facedownText_" + language];
+                    } else {
+                        component.textEl.innerText = data.facedownText;
+                    }
                 } else {
                     component.textEl.innerText = '';
                 }
@@ -160,8 +168,12 @@ const flippability = {
             if (data.showImage) {
                 setAttr(component.image, { src: data.facedownImage });
             }
-            if (data.faceupText) {
-                component.textEl.innerText = data.facedownText;
+            if (data.facedownText) {
+                if (data["facedownText_" + language]) {
+                    component.textEl.innerText = data["facedownText_" + language];
+                } else {
+                    component.textEl.innerText = data.facedownText;
+                }
             } else {
                 component.textEl.innerText = '';
             }
