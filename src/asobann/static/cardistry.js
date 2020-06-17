@@ -89,7 +89,7 @@ const collect = {
                 const cmp = featsContext.table.componentsOnTable[cmpId];
                 if (cmp.owner) {
                     if (collectComponentsInHand === undefined) {
-                        collectComponentsInHand = window.confirm("Stack even in-hand components?");
+                        collectComponentsInHand = window.confirm(_("Do you want to collect even in-hand components?"));
                     }
                     if (!collectComponentsInHand) {
                         continue;

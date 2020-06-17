@@ -22,6 +22,7 @@ const dictionary = {
         "Done": "戻る",
         "you are ": "プレイヤー: ",
         "observing": "見学中",
+        "Do you want to collect even in-hand components?": "Do you want to collect even in-hand components?",
     },
     en: {
         'Spread Out': 'Spread Out',
@@ -46,6 +47,7 @@ const dictionary = {
         "Done": "Done",
         "you are ": "you are",
         "observing": "observing",
+        "Do you want to collect even in-hand components?": "Do you want to collect even in-hand components?",
     },
 };
 
