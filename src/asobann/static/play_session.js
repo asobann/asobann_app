@@ -14,6 +14,7 @@ import {
     consolidatePropagation,
 } from "./sync_table.js";
 import {Menu} from "./menu.js";
+import {language} from "./i18n.js"
 
 function baseUrl() {
     return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
@@ -46,7 +47,11 @@ class Component {
             mount(this.el, this.textEl);
         }
         if (data.text) {
-            this.textEl.innerText = data.text;
+            if (data["text_" + language]) {
+                this.textEl.innerText = data["text_" + language];
+            } else {
+                this.textEl.innerText = data.text;
+            }
         }
         if (data.textColor) {
             setStyle(this.textEl, { color: data.textColor });

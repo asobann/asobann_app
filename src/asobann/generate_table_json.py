@@ -14,10 +14,13 @@ ATTRS_IN_ORDER = [
     "textColor",
     "showImage",
     "text",
+    "text_ja",
     "faceupImage",
     "faceupText",
+    "faceupText_ja",
     "facedownImage",
     "facedownText",
+    "facedownText_ja",
 
     # behavior
     "handArea",
@@ -79,7 +82,7 @@ def generate_playing_card():
         "width": "400px",
         "color": "darkgoldenrod",
         "showImage": False,
-        "faceupText": "- Use Add / Remove Kits (to the left) have components on the table\n - Drag to move\n - Double click to flip\n - Drag the table to scroll\n - Share URL to invite people\n - Add Hand Area (to the left) to have your own cards (hand)\n - Cards in your hand won't be seen by others\n - Enjoy! but you might encounter some issues... Please let me know when you find one",
+        "faceupText": "- Use Add / Remove Kits (to the left) have components on the table\n - Drag to move\n - Double click to flip\n - Drag the table to scroll\n - Share URL to invite people\n - Add Hand Area (to the left) to have your own cards (hand)\n - Cards in your hand won't be seen by others\n - Enjoy! but you might encounter some issues... Please let us know when you see one",
         "faceupText_ja": " - 左の「テーブルに出す」からトランプなどを取り出す\n - ドラッグで移動\n - ダブルクリックで裏返す\n - テーブルをドラッグしてスクロール\n - URLをシェアすれば招待できる\n - 左の「手札エリアを作る」で自分の手札エリアを作る\n - 手札エリアに置いたカードは自分のものになり 表にしても見えない\n - まだ不具合があります。見つけたらお知らせください",
         "facedownText": "How to use (double click to read)",
         "facedownText_ja": "使い方 (ダブルクリックしてね)",
