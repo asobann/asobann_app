@@ -90,7 +90,7 @@ class Menu {
 
         function addHandArea() {
             const newComponent = {
-                name: self.connector.getPlayerName() + _("'s hand"),
+                name: self.connector.getPlayerName() + "'s hand",
                 text: self.connector.getPlayerName() + _("'s hand"),
                 handArea: true,
                 owner: self.connector.getPlayerName(),
@@ -140,7 +140,7 @@ class Menu {
     update(tableData) {
         if (this.connector.isPlayerObserver()) {
             setStyle(this.joinItem, { display: null });
-            this.playerStatusEl.innerText = "observing";
+            this.playerStatusEl.innerText = _("observing");
             setStyle(this.addHandAreaItem, { display: 'none' });
             setStyle(this.removeHandAreaItem, { display: 'none' });
             return;
