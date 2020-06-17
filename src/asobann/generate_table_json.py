@@ -251,18 +251,24 @@ def write_initial_deploy_data_json():
     for kit in [
         {
             "name": "Dice (Blue)",
+            "label":  "Dice (Blue)",
+            "label_ja":  "Dice (Blue)",
             "width": "64px",
             "height": "64px"
         },
         {
             "name": "Playing Card",
-            "width": "150px",
+            "label":  "Playing Card",
+            "label_ja":  "トランプ",
+            "width": "250px",
             "height": "150px"
         },
         {
             "name": "Coin - Tetradrachm of Athens",
-            "width": "200px",
-            "height": "200px"
+            "label":  "Coin",
+            "label_ja":  "Coin",
+            "width": "100px",
+            "height": "100px"
 
         }
     ]:
