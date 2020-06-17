@@ -1282,6 +1282,8 @@
     {
       "kit": {
         "name": "Dice (Blue)",
+        "label": "Dice (Blue)",
+        "label_ja": "Dice (Blue)",
         "width": "64px",
         "height": "64px"
       }
@@ -1289,15 +1291,19 @@
     {
       "kit": {
         "name": "Playing Card",
-        "width": "150px",
+        "label": "Playing Card",
+        "label_ja": "\u30c8\u30e9\u30f3\u30d7",
+        "width": "250px",
         "height": "150px"
       }
     },
     {
       "kit": {
         "name": "Coin - Tetradrachm of Athens",
-        "width": "200px",
-        "height": "200px"
+        "label": "Coin",
+        "label_ja": "Coin",
+        "width": "100px",
+        "height": "100px"
       }
     }
   ]
