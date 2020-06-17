@@ -1217,6 +1217,33 @@
     },
     {
       "component": {
+        "name": "Playing Card Box",
+        "kitName": "Playing Card",
+        "top": "0px",
+        "left": "0px",
+        "height": "200px",
+        "width": "250px",
+        "color": "blue",
+        "showImage": false,
+        "handArea": false,
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false,
+        "rollable": false,
+        "traylike": true,
+        "boxOfComponents": true,
+        "cardistry": [
+          "spread out",
+          "collect",
+          "shuffle",
+          "flip all"
+        ],
+        "zIndex": 1
+      }
+    },
+    {
+      "component": {
         "name": "Dice (Blue)",
         "kitName": "Dice (Blue)",
         "handArea": false,
@@ -1239,8 +1266,8 @@
         "kitName": "Coin - Tetradrachm of Athens",
         "top": "0px",
         "left": "0px",
-        "height": "200px",
-        "width": "200px",
+        "height": "80px",
+        "width": "80px",
         "faceupImage": "/static/images/coin_TetradrachmOfAthens_head.png",
         "facedownImage": "/static/images/coin_TetradrachmOfAthens_tail.png",
         "showImage": true,

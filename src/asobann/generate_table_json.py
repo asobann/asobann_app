@@ -28,6 +28,8 @@ ATTRS_IN_ORDER = [
     "rollable",
     "traylike",
     "onAdd",
+    'boxOfComponents',
+    'cardistry',
 
     # current status
     "owner",
@@ -129,8 +131,8 @@ def generate_coin():
         "kitName": "Coin - Tetradrachm of Athens",
         "top": "0px",
         "left": "0px",
-        "height": "200px",
-        "width": "200px",
+        "height": "80px",
+        "width": "80px",
         "faceupImage": "/static/images/coin_TetradrachmOfAthens_head.png",
         "facedownImage": "/static/images/coin_TetradrachmOfAthens_tail.png",
         "showImage": True,
