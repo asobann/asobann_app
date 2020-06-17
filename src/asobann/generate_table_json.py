@@ -58,41 +58,6 @@ def generate_playing_card():
     def add_component(c):
         playing_card.append(in_order(c))
 
-    add_component({
-        "name": "title",
-        "top": "20px",
-        "left": "20px",
-        "width": "300px",
-        "height": "40px",
-        "text": "Welcome to a new table!",
-        "text_ja": "新しいテーブルへようこそ！",
-        "color": "blue",
-        "draggable": True,
-        "flippable": False,
-        "ownable": False,
-        "resizable": True,
-        "showImage": False,
-        "zIndex": 1,
-    })
-    add_component({
-        "name": "usage",
-        "top": "20px",
-        "left": "340px",
-        "height": "250px",
-        "width": "400px",
-        "color": "darkgoldenrod",
-        "showImage": False,
-        "faceupText": "- Use Add / Remove Kits (to the left) have components on the table\n - Drag to move\n - Double click to flip\n - Drag the table to scroll\n - Share URL to invite people\n - Add Hand Area (to the left) to have your own cards (hand)\n - Cards in your hand won't be seen by others\n - Enjoy! but you might encounter some issues... Please let us know when you see one",
-        "faceupText_ja": " - 左の「テーブルに出す」からトランプなどを取り出す\n - ドラッグで移動\n - ダブルクリックで裏返す\n - テーブルをドラッグしてスクロール\n - URLをシェアすれば招待できる\n - 左の「手札エリアを作る」で自分の手札エリアを作る\n - 手札エリアに置いたカードは自分のものになり 表にしても見えない\n - まだ不具合があります。見つけたらお知らせください",
-        "facedownText": "How to use (double click to read)",
-        "facedownText_ja": "使い方 (ダブルクリックしてね)",
-        "draggable": True,
-        "flippable": True,
-        "ownable": False,
-        "resizable": True,
-        "zIndex": 2,
-    })
-
     template = {
         "kitName": "Playing Card",
         "height": "100px",
@@ -149,8 +114,40 @@ def write_default_table_json():
         tablename="dummy"
     )
 
-    for i, cmp in enumerate(generate_playing_card()):
-        table["components"][f"C{i:04}"] = cmp
+    table["components"]["title"] = {
+        "name": "title",
+        "top": "20px",
+        "left": "20px",
+        "width": "300px",
+        "height": "40px",
+        "text": "Welcome to a new table!",
+        "text_ja": "新しいテーブルへようこそ！",
+        "color": "blue",
+        "draggable": True,
+        "flippable": False,
+        "ownable": False,
+        "resizable": True,
+        "showImage": False,
+        "zIndex": 1,
+    }
+    table["components"]["usage"] = {
+        "name": "usage",
+        "top": "20px",
+        "left": "340px",
+        "height": "250px",
+        "width": "400px",
+        "color": "darkgoldenrod",
+        "showImage": False,
+        "faceupText": "- Use Add / Remove Kits (to the left) have components on the table\n - Drag to move\n - Double click to flip\n - Drag the table to scroll\n - Share URL to invite people\n - Add Hand Area (to the left) to have your own cards (hand)\n - Cards in your hand won't be seen by others\n - Enjoy! but you might encounter some issues... Please let us know when you see one",
+        "faceupText_ja": " - 左の「テーブルに出す」からトランプなどを取り出す\n - ドラッグで移動\n - ダブルクリックで裏返す\n - テーブルをドラッグしてスクロール\n - URLをシェアすれば招待できる\n - 左の「手札エリアを作る」で自分の手札エリアを作る\n - 手札エリアに置いたカードは自分のものになり 表にしても見えない\n - まだ不具合があります。見つけたらお知らせください",
+        "facedownText": "How to use (double click to read)",
+        "facedownText_ja": "使い方 (ダブルクリックしてね)",
+        "draggable": True,
+        "flippable": True,
+        "ownable": False,
+        "resizable": True,
+        "zIndex": 2,
+    }
 
     with open("store/default_table.json", "w", encoding="utf-8") as f:
         json.dump(table, f, indent=2)
@@ -183,8 +180,6 @@ def write_initial_deploy_data_json():
     output["components"].append(playing_card_box)
 
     for cmp in generate_playing_card():
-        if "usage" in cmp["name"] or "title" in cmp["name"]:
-            continue
         output["components"].append({"component": cmp})
 
     dice = {
