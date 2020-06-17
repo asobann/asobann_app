@@ -1,7 +1,7 @@
 import {el, list, mount, setAttr, setStyle, unmount} from "./redom.es.js";
 import {joinTable} from "./sync_table.js";
 import {names} from "./names.js";
-import {_} from "./i18n.js";
+import {_, language} from "./i18n.js";
 
 function baseUrl() {
     return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
@@ -172,10 +172,10 @@ function createAddRemoveKitsMenu(parent, connector) {
             this.el = el("div.item", [
                 this.nameEl = el("div"),
                 this.countEl = el("div"),
-                this.addEl = el("a.add_new_component", {
+                this.addEl = el("button.add_new_component", {
                     href: '',
                 }, _("Add")),
-                this.removeEl = el("a.remove_component", {
+                this.removeEl = el("button.remove_component", {
                     href: '',
                 }, _("Remove")),
             ]);
@@ -184,7 +184,11 @@ function createAddRemoveKitsMenu(parent, connector) {
         update(kitData, index, items, context) {
             const self = this;
             setAttr(self.el, { 'data-kit-name': kitData.kit.name });
-            self.nameEl.innerText = kitData.kit.name;
+            if(kitData.kit["label_" + language]) {
+                self.nameEl.innerText = kitData.kit["label_" + language];
+            } else {
+                self.nameEl.innerText = kitData.kit.label;
+            }
             updateNumberOnTable();
             self.component = kitData.component;
             self.addEl.onclick = () => {

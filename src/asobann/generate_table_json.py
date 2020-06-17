@@ -180,7 +180,7 @@ def write_default_table_json():
         "color": "darkgoldenrod",
         "showImage": False,
         "faceupText": "- Use Add / Remove Kits (to the left) have components on the table\n - Drag to move\n - Double click to flip\n - Drag the table to scroll\n - Share URL to invite people\n - Add Hand Area (to the left) to have your own cards (hand)\n - Cards in your hand won't be seen by others\n - Enjoy! but you might encounter some issues... Please let us know when you see one",
-        "faceupText_ja": " - 左の「テーブルに出す」からトランプなどを取り出す\n - ドラッグで移動\n - ダブルクリックで裏返す\n - テーブルをドラッグしてスクロール\n - URLをシェアすれば招待できる\n - 左の「手札エリアを作る」で自分の手札エリアを作る\n - 手札エリアに置いたカードは自分のものになり 表にしても見えない\n - まだ不具合があります。見つけたらお知らせください",
+        "faceupText_ja": " - 左の「テーブルに出す」からトランプなどを取り出す\n - ドラッグで移動\n - ダブルクリックで裏返す\n - テーブルをドラッグしてスクロール\n - URLをシェアすれば招待できる\n - 左の「手札エリアを作る」で自分の手札エリアを作る\n - 手札エリアに置いたカードは自分のものになり 表にしても見えない\n - まだ不具合や未実装の部分があります。気になる点はお知らせください",
         "facedownText": "How to use (double click to read)",
         "facedownText_ja": "使い方 (ダブルクリックしてね)",
         "draggable": True,
@@ -252,7 +252,7 @@ def write_initial_deploy_data_json():
         {
             "name": "Dice (Blue)",
             "label":  "Dice (Blue)",
-            "label_ja":  "Dice (Blue)",
+            "label_ja":  "サイコロ（青）",
             "width": "64px",
             "height": "64px"
         },
@@ -266,7 +266,7 @@ def write_initial_deploy_data_json():
         {
             "name": "Coin - Tetradrachm of Athens",
             "label":  "Coin",
-            "label_ja":  "Coin",
+            "label_ja":  "コイン",
             "width": "100px",
             "height": "100px"
 

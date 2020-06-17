@@ -136,9 +136,10 @@ div.kit_selection_container .kit_selection {
     /*left: 25%;*/
 }
 
-div.kitt_selection_container .item {
+div.kit_selection_container .item {
     display: block;
-    width: 100%;
+    margin: 8px;
+    background-color: aquamarine;
 }
 
 @keyframes dice_rolling {
