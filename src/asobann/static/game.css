@@ -74,8 +74,9 @@ body {
     position: absolute;
     color: white;
     display: flex;
-    align-items: center;
+    align-items: safe center;
     justify-content: center;
+    overflow: hidden;
 
     /*disable selecting text by double click*/
     -moz-user-select: none;
@@ -105,6 +106,7 @@ body {
 .component span {
     text-align: center;
     position: absolute;
+    text-overflow: ellipsis;
 }
 
 div.others_mouse_cursor {
