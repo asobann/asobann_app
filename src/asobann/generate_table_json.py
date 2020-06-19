@@ -30,10 +30,10 @@ ATTRS_IN_ORDER = [
     "resizable",
     "rollable",
     "traylike",
-    "onAdd",
     'boxOfComponents',
     'cardistry',
     'stowage',
+    "onAdd",
 
     # current status
     "owner",
