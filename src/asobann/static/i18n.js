@@ -62,7 +62,7 @@ const language = (() => {
 
 function _(text) {
     try {
-        return dictionary[language][text];
+        return dictionary[language][text] ?? text;
     } catch (e) {
         return text;
     }
