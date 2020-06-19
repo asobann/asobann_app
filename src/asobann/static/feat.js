@@ -879,25 +879,27 @@ const featsContext = {
         if (!eventName) {
             throw `addEventListener: eventName must be specified but was ${eventName}`
         }
-        if (!featsContext.eventListeners[eventName]) {
-            featsContext.eventListeners[eventName] = [];
+        if(!component.featEventListeners) {
+            component.featEventListeners = {};
         }
-        featsContext.eventListeners[eventName].push({ component: component, handler: handler });
+        if (!component.featEventListeners[eventName]) {
+            component.featEventListeners[eventName] = [];
+        }
+        component.featEventListeners[eventName].push({ component: component, handler: handler });
     },
     fireEvent: function (component, eventName, event) {
         if (!eventName) {
             throw `fireEvent: eventName must be specified but was ${eventName}`
         }
-        if (!featsContext.eventListeners[eventName]) {
+        if (!component.featEventListeners[eventName]) {
             return;
         }
-        for (const entry of featsContext.eventListeners[eventName]) {
+        for (const entry of component.featEventListeners[eventName]) {
             if (entry.component === component) {
                 entry.handler(event);
             }
         }
     },
-    eventListeners: {},
     events: {
         /*
         This event is fired when position or size of component is changed.
