@@ -18,15 +18,23 @@ const spreadOut = {
             return;
         }
 
-        const spread = [];
-        let left = 0;
-        let maxHeight = 0;
+        const spreading = [];
         for (const cmpId in component.onTray) {
-            if(!component.onTray.hasOwnProperty(cmpId)) {
+            if (!component.onTray.hasOwnProperty(cmpId)) {
                 continue;
             }
+            spreading.push(cmpId);
+        }
+        spreading.sort((id1, id2) => {
+            return featsContext.table.componentsOnTable[id2].zIndex - featsContext.table.componentsOnTable[id1].zIndex;
+        });
+
+        const newPositions = [];
+        let left = 0;
+        let maxHeight = 0;
+        for (const cmpId of spreading) {
             const cmp = featsContext.table.componentsOnTable[cmpId];
-            spread.push({ left: left, component: cmp });
+            newPositions.push({ left: left, component: cmp });
             left += parseFloat(cmp.el.style.width) + 16;
             if (maxHeight < parseFloat(cmp.el.style.height)) {
                 maxHeight = parseFloat(cmp.el.style.height);
@@ -36,7 +44,7 @@ const spreadOut = {
         let top = 0;
         left = 0;
         let localMaxHeight = 0;
-        for (const pos of spread) {
+        for (const pos of newPositions) {
             if (pos.left - left > maxWidth) {
                 top += localMaxHeight + 16;
                 left = pos.left;
@@ -50,7 +58,7 @@ const spreadOut = {
         }
         const rect = featsContext.table.findEmptySpace(maxWidth, top + localMaxHeight);
         featsContext.table.consolidatePropagation(() => {
-            for (const pos of spread) {
+            for (const pos of newPositions) {
                 featsContext.fireEvent(pos.component, featsContext.events.onPositionChanged,
                     {
                         top: pos.top + rect.top,
@@ -84,10 +92,27 @@ const collect = {
                 componentCount += 1;
             }
             let lastZIndex = featsContext.table.getNextZIndex() + componentCount;
+
+            const collecting = [];
             for (const cmpId in component.componentsInBox) {
+                collecting.push(cmpId);
+            }
+            collecting.sort((id1, id2) => {
+                const left1 = parseFloat(featsContext.table.componentsOnTable[id1].el.style.left);
+                const top1 = parseFloat(featsContext.table.componentsOnTable[id1].el.style.top);
+                const left2 = parseFloat(featsContext.table.componentsOnTable[id2].el.style.left);
+                const top2 = parseFloat(featsContext.table.componentsOnTable[id2].el.style.top);
+                if (top1 < top2 || (top1 === top2 && left1 < left2)) {
+                    return -1;
+                } else if (top2 < top1 || top1 === top2 && left2 < left1) {
+                    return 1;
+                }
+                return 0;
+            });
+            for (const cmpId of collecting) {
                 // noinspection JSUnfilteredForInLoop
                 const cmp = featsContext.table.componentsOnTable[cmpId];
-                if(cmp.isStowed) {
+                if (cmp.isStowed) {
                     continue;
                 }
                 if (cmp.owner) {
@@ -130,20 +155,34 @@ const shuffle = {
         if (!component.onTray || !component.componentsInBox) {
             return;
         }
-        spreadOut.execute(component, featsContext);
 
-        const componentsInBox = [];
-        for (const componentId in component.componentsInBox) {
-            componentsInBox.push(componentId);
-        }
-        component.componentsInBox = {};
-        while (componentsInBox.length > 0) {
-            const idx = Math.floor(Math.random() * componentsInBox.length);
-            component.componentsInBox[componentsInBox.splice(idx, 1)[0]] = true;
+        const shuffling = [];
+        for (const componentId in component.onTray) {
+            shuffling.push(componentId);
         }
 
-        collect.execute(component, featsContext, false);
+        let top = parseFloat(component.el.style.top);
+        let left = parseFloat(component.el.style.left) + 100;
+        let lastZIndex = featsContext.table.getNextZIndex() + shuffling.length;
 
+        while (shuffling.length > 0) {
+            const idx = Math.floor(Math.random() * shuffling.length);
+            const nextComponentId = shuffling.splice(idx, 1)[0];
+            const cmp = featsContext.table.componentsOnTable[nextComponentId];
+
+            featsContext.fireEvent(cmp, featsContext.events.onPositionChanged,
+                {
+                    top: top,
+                    left: left,
+                    height: parseFloat(cmp.el.style.height),
+                    width: parseFloat(cmp.el.style.width),
+                    moving: false,
+                });
+            cmp.propagate({ zIndex: lastZIndex });
+            top += 1;
+            left += 1;
+            lastZIndex -= 1;
+        }
     },
     onComponentUpdate: function () {
     },
@@ -162,11 +201,11 @@ const flipAll = {
         let allFaceDown = true;
 
         for (const cmpId in component.onTray) {
-            if(!component.onTray.hasOwnProperty(cmpId)) {
+            if (!component.onTray.hasOwnProperty(cmpId)) {
                 continue;
             }
             const cmp = featsContext.table.componentsOnTable[cmpId];
-            if(cmp.flippable && cmp.faceup) {
+            if (cmp.flippable && cmp.faceup) {
                 allFaceDown = false;
                 break;
             }
@@ -178,21 +217,21 @@ const flipAll = {
                     continue;
                 }
                 const cmp = featsContext.table.componentsOnTable[cmpId];
-                if(allFaceDown) {
+                if (allFaceDown) {
                     // make all face up
                     if (!cmp.flippable) {
                         continue;
                     }
-                    if(!cmp.faceup) {
-                        cmp.propagate({faceup: true});
+                    if (!cmp.faceup) {
+                        cmp.propagate({ faceup: true });
                     }
                 } else {
                     // make all face down
                     if (!cmp.flippable) {
                         continue;
                     }
-                    if(cmp.faceup) {
-                        cmp.propagate({faceup: false});
+                    if (cmp.faceup) {
+                        cmp.propagate({ faceup: false });
                     }
                 }
             }
