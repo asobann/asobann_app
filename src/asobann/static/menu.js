@@ -249,9 +249,9 @@ function createAddRemoveKitsMenu(parent, connector) {
             this.el = el("div.kit_selection_container", { style: { zIndex: REASONABLY_BIG_ZINDEX_VALUE } },
                 [
                     el("div.kit_selection", [
-                        el("button", { onclick: hideAddRemoveKitsMenu }, _("Done")),
+                        el("button.done", { onclick: hideAddRemoveKitsMenu }, _("Done")),
                         this.kitsMenuItemList.el,
-                        el("button", { onclick: hideAddRemoveKitsMenu }, _("Done")),
+                        el("button.done", { onclick: hideAddRemoveKitsMenu }, _("Done")),
                     ])
                 ]
             );

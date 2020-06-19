@@ -39,6 +39,9 @@ def test_reload_retain_player(server, browser: webdriver.Firefox, another_browse
 def test_late_comer_shall_see_the_same_table(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
     host = GameHelper(browser)
     host.go(TOP)
+    host.menu.add_kit.execute()
+    host.menu.add_kit_from_list("Playing Card")
+    host.menu.add_kit_done()
 
     host.should_have_text("you are host")
 
@@ -58,8 +61,11 @@ def test_late_comer_shall_see_the_same_table(server, browser: webdriver.Firefox,
     # new player is invited
     player = GameHelper(another_browser)
     player.go(invitation_url)
+    player.should_have_text("you are observing")
 
-    for i in [1, 2, 3, 4]:
+    assert host.count_components() == player.count_components() == 58
+
+    for i in range(1, 59):
         assert host.component(i).pos() == player.component(i).pos()
         assert host.component(i).size() == player.component(i).size()
         assert host.component(i).face() == player.component(i).face()

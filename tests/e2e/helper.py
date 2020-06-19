@@ -99,6 +99,11 @@ class GameMenu:
         item = self.browser.find_element_by_css_selector(css_selector)
         item.find_element_by_class_name("remove_component").click()
 
+    def add_kit_done(self):
+        css_selector = f"div.kit_selection button.done"
+        self.browser.find_element_by_css_selector(css_selector).click()
+
+
 
 class GameHelper:
 

@@ -25,6 +25,9 @@ class TestHandArea:
     def put_one_card_each_on_2_hand_areas(self, host, another):
         host.go(TOP)
         host.should_have_text("you are host")
+        host.menu.add_kit.execute()
+        host.menu.add_kit_from_list("Playing Card")
+        host.menu.add_kit_done()
 
         host.menu.add_my_hand_area.click()
         host.move_card_to_hand_area(host.component_by_name(C_A), 'host', (-100, 0))
@@ -133,6 +136,10 @@ class TestHandArea:
 
         host.go(TOP)
         host.should_have_text("you are host")
+        host.menu.add_kit.execute()
+        host.menu.add_kit_from_list("Playing Card")
+        host.menu.add_kit_done()
+
         another.go(host.current_url)
         another.menu.join("Player 2")
         another.should_have_text("you are Player 2")
