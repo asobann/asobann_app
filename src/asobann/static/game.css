@@ -23,7 +23,7 @@ body {
 .menu {
     text-align: center;
     border: brown 2px solid;
-    color: white;
+    color: black;
     grid-row: 1 / 2;
     grid-column: 1 / 2;
     background-color: cadetblue;
