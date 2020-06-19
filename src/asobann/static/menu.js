@@ -85,6 +85,10 @@ class Menu {
                     el("a", { href: "/export?tablename=" + this.connector.tablename }, _("Export Table"))),
                 el("div.menuitem#import_table",
                     el("a", { href: "", onclick: showImport }, _("Import Table"))),
+                el("div", { style: { 'background-color': '#rgba(255, 255, 255, 0.5)' } }, [
+                    el("a", { class: 'about', href: 'https://games.yattom.jp/asobann', target: '_blank' }, _("About asobann")),
+                    el("div", { class: 'copyright' }, _("Copyright (C) 2020 Yattom")),
+                ])
             ],
         );
 
@@ -184,7 +188,7 @@ function createAddRemoveKitsMenu(parent, connector) {
         update(kitData, index, items, context) {
             const self = this;
             setAttr(self.el, { 'data-kit-name': kitData.kit.name });
-            if(kitData.kit["label_" + language]) {
+            if (kitData.kit["label_" + language]) {
                 self.nameEl.innerText = kitData.kit["label_" + language];
             } else {
                 self.nameEl.innerText = kitData.kit.label;
