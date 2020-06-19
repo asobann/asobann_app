@@ -850,6 +850,11 @@ const stowage = {
         }
         component.isStowed = data.isStowed;
 
+        if(component.isStowed) {
+            setStyle(component.el, {opacity: 0.4});
+        } else {
+            setStyle(component.el, {opacity: null});
+        }
     },
     uninstall: function (component) {
     }
