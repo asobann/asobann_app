@@ -374,9 +374,9 @@ function removeKit(kitId) {
     for (const componentId in table.data.components) {
         const cmp = table.data.components[componentId];
         if (cmp.kitId === kitId) {
-            table.removeComponent(cmp.componentId);
+            table.removeComponent(componentId);
         } else {
-            after[cmp.componentId] = cmp;
+            after[componentId] = cmp;
         }
     }
     table.data.components = after;
