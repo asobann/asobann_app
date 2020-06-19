@@ -18,6 +18,9 @@ const spreadOut = {
             return;
         }
 
+        // Spread cards in rows and columns in the order of current zIndex
+        // Cards go left to right and then top to bottom
+        // Collecting does the reverse
         const spreading = [];
         for (const cmpId in component.onTray) {
             if (!component.onTray.hasOwnProperty(cmpId)) {
@@ -83,6 +86,10 @@ const collect = {
         if (!component.componentsInBox) {
             return;
         }
+
+        // Collect cards left to right then top to bottom
+        // and then stack up with modifying zIndex
+        // Spreading out does the reverse
 
         featsContext.table.consolidatePropagation(() => {
             let top = parseFloat(component.el.style.top);
@@ -164,25 +171,26 @@ const shuffle = {
         let top = parseFloat(component.el.style.top);
         let left = parseFloat(component.el.style.left) + 100;
         let lastZIndex = featsContext.table.getNextZIndex() + shuffling.length;
+        featsContext.table.consolidatePropagation(() => {
+            while (shuffling.length > 0) {
+                const idx = Math.floor(Math.random() * shuffling.length);
+                const nextComponentId = shuffling.splice(idx, 1)[0];
+                const cmp = featsContext.table.componentsOnTable[nextComponentId];
 
-        while (shuffling.length > 0) {
-            const idx = Math.floor(Math.random() * shuffling.length);
-            const nextComponentId = shuffling.splice(idx, 1)[0];
-            const cmp = featsContext.table.componentsOnTable[nextComponentId];
-
-            featsContext.fireEvent(cmp, featsContext.events.onPositionChanged,
-                {
-                    top: top,
-                    left: left,
-                    height: parseFloat(cmp.el.style.height),
-                    width: parseFloat(cmp.el.style.width),
-                    moving: false,
-                });
-            cmp.propagate({ zIndex: lastZIndex });
-            top += 1;
-            left += 1;
-            lastZIndex -= 1;
-        }
+                featsContext.fireEvent(cmp, featsContext.events.onPositionChanged,
+                    {
+                        top: top,
+                        left: left,
+                        height: parseFloat(cmp.el.style.height),
+                        width: parseFloat(cmp.el.style.width),
+                        moving: false,
+                    });
+                cmp.propagate({ zIndex: lastZIndex });
+                top += 1;
+                left += 1;
+                lastZIndex -= 1;
+            }
+        });
     },
     onComponentUpdate: function () {
     },
