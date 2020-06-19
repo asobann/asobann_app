@@ -47,7 +47,7 @@ const dictionary = {
         "Remove": "Remove",
         ' on the table': ' on the table',
         "Done": "Done",
-        "you are ": "you are",
+        "you are ": "you are ",
         "observing": "observing",
         "Do you want to collect even in-hand components?": "Do you want to collect even in-hand components?",
         "About asobann": "About asobann",
