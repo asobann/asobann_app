@@ -10,7 +10,7 @@ body {
 
 
 .title {
-    color: plum;
+    color: lightgray;
 }
 
 .container {
@@ -36,6 +36,16 @@ body {
     background-image: url("./images/menuitem_bg.png");
     background-size: 100% 100%;
     padding: 5% 6px 5% 6px;
+}
+
+.menuitem.menuheader {
+    margin: 0;
+    color: white;
+    background-image: url("./images/menuheader_bg.png");
+}
+
+.menuitem.about {
+    background-image: url("./images/menuabout_bg.png");
 }
 
 .menuitem a {
@@ -150,11 +160,6 @@ div.kit_selection_container .item {
     to {
         background-size: 100% 100%, 0% 100%;
     }
-}
-
-.about {
-    padding: 0.2em;
-    background-color: rgba(208, 208, 255, 0.7);
 }
 
 .copyright {

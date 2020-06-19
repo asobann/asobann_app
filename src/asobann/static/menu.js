@@ -38,8 +38,9 @@ class Menu {
 
         this.el = el("div.menu",
             [
-                el("div.title", "asobann 遊盤"),
-                el("div", [_("you are "), this.playerStatusEl]),
+                el("div.menuitem.menuheader", [
+                    el("div.title", "asobann 遊盤"),
+                    el("div", [_("you are "), this.playerStatusEl]),]),
                 this.joinItem = el("div.menuitem", [
                     _("enter name and join"),
                     this.playerNameInput = el("input#player_name", { value: getPlaceholderName() }),
@@ -85,8 +86,12 @@ class Menu {
                     el("a", { href: "/export?tablename=" + this.connector.tablename }, _("Export Table"))),
                 el("div.menuitem#import_table",
                     el("a", { href: "", onclick: showImport }, _("Import Table"))),
-                el("div", { style: { 'background-color': '#rgba(255, 255, 255, 0.5)' } }, [
-                    el("a", { class: 'about', href: 'https://games.yattom.jp/asobann', target: '_blank' }, _("About asobann")),
+                el("div.menuitem.about",  [
+                    el("a", {
+                        class: 'about',
+                        href: 'https://games.yattom.jp/asobann',
+                        target: '_blank'
+                    }, _("About asobann")),
                     el("div", { class: 'copyright' }, _("Copyright (C) 2020 Yattom")),
                 ])
             ],
