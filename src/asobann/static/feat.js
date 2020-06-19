@@ -817,6 +817,44 @@ const touchToRaise = {
     }
 };
 
+const stowage = {
+    install: function (component, componentData) {
+        if (!componentData.stowage) {
+            return;
+        }
+        featsContext.addEventListener(component, within.events.onWithin, (e) => {
+            if (e.visitor.traylike) {
+                return;
+            }
+            e.visitor.propagate({ isStowed: true });
+        });
+
+        featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
+            if (!component.traylike) {
+                return;
+            }
+            if (e.visitor.traylike) {
+                return;
+            }
+            e.visitor.propagate({ isStowed: false });
+        });
+    },
+    isEnabled: function (/*component, data*/) {
+        // stowage feat works for both stowage traylike and stowed components
+        return true;
+    },
+
+    onComponentUpdate: function (component, data) {
+        if(data.isStowed === undefined) {
+            return;
+        }
+        component.isStowed = data.isStowed;
+
+    },
+    uninstall: function (component) {
+    }
+};
+
 const cardistry = {
     install: function (component, data) {
         if (!data.cardistry) {
@@ -937,6 +975,7 @@ const feats = [
     handArea,
     ownership,
     touchToRaise,
+    stowage,
     cardistry
 ];
 

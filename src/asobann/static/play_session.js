@@ -363,6 +363,9 @@ function addNewKit(kitData) {
             if (componentData.boxOfComponents) {
                 componentData.componentsInBox = componentsInBox;
             } else {
+                if (componentData.traylike) {
+                    return;
+                }
                 componentsInBox[componentData.componentId] = true;
             }
         }

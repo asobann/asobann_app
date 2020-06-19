@@ -33,6 +33,7 @@ ATTRS_IN_ORDER = [
     "onAdd",
     'boxOfComponents',
     'cardistry',
+    'stowage',
 
     # current status
     "owner",
@@ -123,6 +124,28 @@ def generate_playing_card():
         "traylike": True,
         "boxOfComponents": True,
         "cardistry": ["spread out", "collect", "shuffle", 'flip all'],
+        "zIndex": 1,
+    })
+    add_component({
+        "name": "Stowage for Unused Cards",
+        "kitName": "Playing Card",
+        "handArea": False,
+        "top": "0px",
+        "left": "300px",
+        "height": "150px",
+        "width": "150px",
+        "text": "Place cards you don't need now in here",
+        "text_ja": "不要なカード置き場",
+        "color": "darkgrey",
+        "showImage": False,
+        "draggable": True,
+        "flippable": False,
+        "resizable": True,
+        "rollable": False,
+        "ownable": False,
+        "traylike": True,
+        "stowage": True,
+        "boxOfComponents": False,
         "zIndex": 1,
     })
     return playing_card
@@ -260,7 +283,7 @@ def write_initial_deploy_data_json():
             "name": "Playing Card",
             "label":  "Playing Card",
             "label_ja":  "トランプ",
-            "width": "250px",
+            "width": "400px",
             "height": "150px"
         },
         {
