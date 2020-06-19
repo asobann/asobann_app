@@ -2,33 +2,6 @@
   "components": [
     {
       "component": {
-        "name": "Playing Card Box",
-        "kitName": "Playing Card",
-        "handArea": false,
-        "top": "0px",
-        "left": "0px",
-        "height": "200px",
-        "width": "250px",
-        "color": "blue",
-        "showImage": false,
-        "draggable": true,
-        "flippable": false,
-        "resizable": false,
-        "rollable": false,
-        "ownable": false,
-        "traylike": true,
-        "boxOfComponents": true,
-        "cardistry": [
-          "spread out",
-          "collect",
-          "shuffle",
-          "flip all"
-        ],
-        "zIndex": 1
-      }
-    },
-    {
-      "component": {
         "name": "PlayingCard S_A",
         "kitName": "Playing Card",
         "top": "0px",
