@@ -1244,6 +1244,30 @@
     },
     {
       "component": {
+        "name": "Stowage for Unused Cards",
+        "kitName": "Playing Card",
+        "top": "0px",
+        "left": "300px",
+        "height": "150px",
+        "width": "150px",
+        "color": "darkgrey",
+        "showImage": false,
+        "text": "Place cards you don't need now in here",
+        "text_ja": "\u4e0d\u8981\u306a\u30ab\u30fc\u30c9\u7f6e\u304d\u5834",
+        "handArea": false,
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": true,
+        "rollable": false,
+        "traylike": true,
+        "boxOfComponents": false,
+        "stowage": true,
+        "zIndex": 1
+      }
+    },
+    {
+      "component": {
         "name": "Dice (Blue)",
         "kitName": "Dice (Blue)",
         "handArea": false,
@@ -1293,7 +1317,7 @@
         "name": "Playing Card",
         "label": "Playing Card",
         "label_ja": "\u30c8\u30e9\u30f3\u30d7",
-        "width": "250px",
+        "width": "400px",
         "height": "150px"
       }
     },
