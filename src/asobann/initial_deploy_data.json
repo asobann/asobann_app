@@ -3,7 +3,6 @@
     {
       "component": {
         "name": "PlayingCard S_A",
-        "kitName": "Playing Card",
         "top": "0px",
         "left": "100px",
         "height": "100px",
@@ -25,7 +24,6 @@
     {
       "component": {
         "name": "PlayingCard S_K",
-        "kitName": "Playing Card",
         "top": "1px",
         "left": "101px",
         "height": "100px",
@@ -47,7 +45,6 @@
     {
       "component": {
         "name": "PlayingCard S_Q",
-        "kitName": "Playing Card",
         "top": "2px",
         "left": "102px",
         "height": "100px",
@@ -69,7 +66,6 @@
     {
       "component": {
         "name": "PlayingCard S_J",
-        "kitName": "Playing Card",
         "top": "3px",
         "left": "103px",
         "height": "100px",
@@ -91,7 +87,6 @@
     {
       "component": {
         "name": "PlayingCard S_10",
-        "kitName": "Playing Card",
         "top": "4px",
         "left": "104px",
         "height": "100px",
@@ -113,7 +108,6 @@
     {
       "component": {
         "name": "PlayingCard S_9",
-        "kitName": "Playing Card",
         "top": "5px",
         "left": "105px",
         "height": "100px",
@@ -135,7 +129,6 @@
     {
       "component": {
         "name": "PlayingCard S_8",
-        "kitName": "Playing Card",
         "top": "6px",
         "left": "106px",
         "height": "100px",
@@ -157,7 +150,6 @@
     {
       "component": {
         "name": "PlayingCard S_7",
-        "kitName": "Playing Card",
         "top": "7px",
         "left": "107px",
         "height": "100px",
@@ -179,7 +171,6 @@
     {
       "component": {
         "name": "PlayingCard S_6",
-        "kitName": "Playing Card",
         "top": "8px",
         "left": "108px",
         "height": "100px",
@@ -201,7 +192,6 @@
     {
       "component": {
         "name": "PlayingCard S_5",
-        "kitName": "Playing Card",
         "top": "9px",
         "left": "109px",
         "height": "100px",
@@ -223,7 +213,6 @@
     {
       "component": {
         "name": "PlayingCard S_4",
-        "kitName": "Playing Card",
         "top": "10px",
         "left": "110px",
         "height": "100px",
@@ -245,7 +234,6 @@
     {
       "component": {
         "name": "PlayingCard S_3",
-        "kitName": "Playing Card",
         "top": "11px",
         "left": "111px",
         "height": "100px",
@@ -267,7 +255,6 @@
     {
       "component": {
         "name": "PlayingCard S_2",
-        "kitName": "Playing Card",
         "top": "12px",
         "left": "112px",
         "height": "100px",
@@ -289,7 +276,6 @@
     {
       "component": {
         "name": "PlayingCard H_A",
-        "kitName": "Playing Card",
         "top": "13px",
         "left": "113px",
         "height": "100px",
@@ -311,7 +297,6 @@
     {
       "component": {
         "name": "PlayingCard H_K",
-        "kitName": "Playing Card",
         "top": "14px",
         "left": "114px",
         "height": "100px",
@@ -333,7 +318,6 @@
     {
       "component": {
         "name": "PlayingCard H_Q",
-        "kitName": "Playing Card",
         "top": "15px",
         "left": "115px",
         "height": "100px",
@@ -355,7 +339,6 @@
     {
       "component": {
         "name": "PlayingCard H_J",
-        "kitName": "Playing Card",
         "top": "16px",
         "left": "116px",
         "height": "100px",
@@ -377,7 +360,6 @@
     {
       "component": {
         "name": "PlayingCard H_10",
-        "kitName": "Playing Card",
         "top": "17px",
         "left": "117px",
         "height": "100px",
@@ -399,7 +381,6 @@
     {
       "component": {
         "name": "PlayingCard H_9",
-        "kitName": "Playing Card",
         "top": "18px",
         "left": "118px",
         "height": "100px",
@@ -421,7 +402,6 @@
     {
       "component": {
         "name": "PlayingCard H_8",
-        "kitName": "Playing Card",
         "top": "19px",
         "left": "119px",
         "height": "100px",
@@ -443,7 +423,6 @@
     {
       "component": {
         "name": "PlayingCard H_7",
-        "kitName": "Playing Card",
         "top": "20px",
         "left": "120px",
         "height": "100px",
@@ -465,7 +444,6 @@
     {
       "component": {
         "name": "PlayingCard H_6",
-        "kitName": "Playing Card",
         "top": "21px",
         "left": "121px",
         "height": "100px",
@@ -487,7 +465,6 @@
     {
       "component": {
         "name": "PlayingCard H_5",
-        "kitName": "Playing Card",
         "top": "22px",
         "left": "122px",
         "height": "100px",
@@ -509,7 +486,6 @@
     {
       "component": {
         "name": "PlayingCard H_4",
-        "kitName": "Playing Card",
         "top": "23px",
         "left": "123px",
         "height": "100px",
@@ -531,7 +507,6 @@
     {
       "component": {
         "name": "PlayingCard H_3",
-        "kitName": "Playing Card",
         "top": "24px",
         "left": "124px",
         "height": "100px",
@@ -553,7 +528,6 @@
     {
       "component": {
         "name": "PlayingCard H_2",
-        "kitName": "Playing Card",
         "top": "25px",
         "left": "125px",
         "height": "100px",
@@ -575,7 +549,6 @@
     {
       "component": {
         "name": "PlayingCard D_A",
-        "kitName": "Playing Card",
         "top": "26px",
         "left": "126px",
         "height": "100px",
@@ -597,7 +570,6 @@
     {
       "component": {
         "name": "PlayingCard D_K",
-        "kitName": "Playing Card",
         "top": "27px",
         "left": "127px",
         "height": "100px",
@@ -619,7 +591,6 @@
     {
       "component": {
         "name": "PlayingCard D_Q",
-        "kitName": "Playing Card",
         "top": "28px",
         "left": "128px",
         "height": "100px",
@@ -641,7 +612,6 @@
     {
       "component": {
         "name": "PlayingCard D_J",
-        "kitName": "Playing Card",
         "top": "29px",
         "left": "129px",
         "height": "100px",
@@ -663,7 +633,6 @@
     {
       "component": {
         "name": "PlayingCard D_10",
-        "kitName": "Playing Card",
         "top": "30px",
         "left": "130px",
         "height": "100px",
@@ -685,7 +654,6 @@
     {
       "component": {
         "name": "PlayingCard D_9",
-        "kitName": "Playing Card",
         "top": "31px",
         "left": "131px",
         "height": "100px",
@@ -707,7 +675,6 @@
     {
       "component": {
         "name": "PlayingCard D_8",
-        "kitName": "Playing Card",
         "top": "32px",
         "left": "132px",
         "height": "100px",
@@ -729,7 +696,6 @@
     {
       "component": {
         "name": "PlayingCard D_7",
-        "kitName": "Playing Card",
         "top": "33px",
         "left": "133px",
         "height": "100px",
@@ -751,7 +717,6 @@
     {
       "component": {
         "name": "PlayingCard D_6",
-        "kitName": "Playing Card",
         "top": "34px",
         "left": "134px",
         "height": "100px",
@@ -773,7 +738,6 @@
     {
       "component": {
         "name": "PlayingCard D_5",
-        "kitName": "Playing Card",
         "top": "35px",
         "left": "135px",
         "height": "100px",
@@ -795,7 +759,6 @@
     {
       "component": {
         "name": "PlayingCard D_4",
-        "kitName": "Playing Card",
         "top": "36px",
         "left": "136px",
         "height": "100px",
@@ -817,7 +780,6 @@
     {
       "component": {
         "name": "PlayingCard D_3",
-        "kitName": "Playing Card",
         "top": "37px",
         "left": "137px",
         "height": "100px",
@@ -839,7 +801,6 @@
     {
       "component": {
         "name": "PlayingCard D_2",
-        "kitName": "Playing Card",
         "top": "38px",
         "left": "138px",
         "height": "100px",
@@ -861,7 +822,6 @@
     {
       "component": {
         "name": "PlayingCard C_A",
-        "kitName": "Playing Card",
         "top": "39px",
         "left": "139px",
         "height": "100px",
@@ -883,7 +843,6 @@
     {
       "component": {
         "name": "PlayingCard C_K",
-        "kitName": "Playing Card",
         "top": "40px",
         "left": "140px",
         "height": "100px",
@@ -905,7 +864,6 @@
     {
       "component": {
         "name": "PlayingCard C_Q",
-        "kitName": "Playing Card",
         "top": "41px",
         "left": "141px",
         "height": "100px",
@@ -927,7 +885,6 @@
     {
       "component": {
         "name": "PlayingCard C_J",
-        "kitName": "Playing Card",
         "top": "42px",
         "left": "142px",
         "height": "100px",
@@ -949,7 +906,6 @@
     {
       "component": {
         "name": "PlayingCard C_10",
-        "kitName": "Playing Card",
         "top": "43px",
         "left": "143px",
         "height": "100px",
@@ -971,7 +927,6 @@
     {
       "component": {
         "name": "PlayingCard C_9",
-        "kitName": "Playing Card",
         "top": "44px",
         "left": "144px",
         "height": "100px",
@@ -993,7 +948,6 @@
     {
       "component": {
         "name": "PlayingCard C_8",
-        "kitName": "Playing Card",
         "top": "45px",
         "left": "145px",
         "height": "100px",
@@ -1015,7 +969,6 @@
     {
       "component": {
         "name": "PlayingCard C_7",
-        "kitName": "Playing Card",
         "top": "46px",
         "left": "146px",
         "height": "100px",
@@ -1037,7 +990,6 @@
     {
       "component": {
         "name": "PlayingCard C_6",
-        "kitName": "Playing Card",
         "top": "47px",
         "left": "147px",
         "height": "100px",
@@ -1059,7 +1011,6 @@
     {
       "component": {
         "name": "PlayingCard C_5",
-        "kitName": "Playing Card",
         "top": "48px",
         "left": "148px",
         "height": "100px",
@@ -1081,7 +1032,6 @@
     {
       "component": {
         "name": "PlayingCard C_4",
-        "kitName": "Playing Card",
         "top": "49px",
         "left": "149px",
         "height": "100px",
@@ -1103,7 +1053,6 @@
     {
       "component": {
         "name": "PlayingCard C_3",
-        "kitName": "Playing Card",
         "top": "50px",
         "left": "150px",
         "height": "100px",
@@ -1125,7 +1074,6 @@
     {
       "component": {
         "name": "PlayingCard C_2",
-        "kitName": "Playing Card",
         "top": "51px",
         "left": "151px",
         "height": "100px",
@@ -1147,7 +1095,6 @@
     {
       "component": {
         "name": "JOKER1",
-        "kitName": "Playing Card",
         "top": "52px",
         "left": "152px",
         "height": "100px",
@@ -1169,7 +1116,6 @@
     {
       "component": {
         "name": "JOKER2",
-        "kitName": "Playing Card",
         "top": "53px",
         "left": "153px",
         "height": "100px",
@@ -1191,7 +1137,6 @@
     {
       "component": {
         "name": "Playing Card Box",
-        "kitName": "Playing Card",
         "top": "0px",
         "left": "0px",
         "height": "200px",
@@ -1218,15 +1163,14 @@
     {
       "component": {
         "name": "Stowage for Unused Cards",
-        "kitName": "Playing Card",
         "top": "0px",
         "left": "300px",
         "height": "150px",
         "width": "150px",
         "color": "darkgrey",
         "showImage": false,
-        "text": "Place cards you don't need now in here",
-        "text_ja": "\u4e0d\u8981\u306a\u30ab\u30fc\u30c9\u7f6e\u304d\u5834",
+        "text": "Place cards you don't need now here",
+        "text_ja": "\u4f7f\u308f\u306a\u3044\u30ab\u30fc\u30c9\u7f6e\u304d\u5834",
         "handArea": false,
         "draggable": true,
         "flippable": false,
@@ -1242,7 +1186,6 @@
     {
       "component": {
         "name": "Dice (Blue)",
-        "kitName": "Dice (Blue)",
         "handArea": false,
         "top": "0px",
         "left": "0px",
@@ -1260,7 +1203,6 @@
     {
       "component": {
         "name": "Coin - Tetradrachm of Athens",
-        "kitName": "Coin - Tetradrachm of Athens",
         "top": "0px",
         "left": "0px",
         "height": "80px",

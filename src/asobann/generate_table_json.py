@@ -62,7 +62,6 @@ def generate_playing_card():
         playing_card.append(in_order(c))
 
     template = {
-        "kitName": "Playing Card",
         "height": "100px",
         "width": "75px",
         "showImage": True,
@@ -108,7 +107,6 @@ def generate_playing_card():
 
     add_component({
         "name": "Playing Card Box",
-        "kitName": "Playing Card",
         "handArea": False,
         "top": "0px",
         "left": "0px",
@@ -128,7 +126,6 @@ def generate_playing_card():
     })
     add_component({
         "name": "Stowage for Unused Cards",
-        "kitName": "Playing Card",
         "handArea": False,
         "top": "0px",
         "left": "300px",
@@ -154,7 +151,6 @@ def generate_playing_card():
 def generate_coin():
     return {
         "name": "Coin - Tetradrachm of Athens",
-        "kitName": "Coin - Tetradrachm of Athens",
         "top": "0px",
         "left": "0px",
         "height": "80px",
@@ -226,7 +222,6 @@ def write_initial_deploy_data_json():
     dice = {
         "component": {
             "name": "Dice (Blue)",
-            "kitName": "Dice (Blue)",
             "handArea": False,
             "top": "0px",
             "left": "0px",
