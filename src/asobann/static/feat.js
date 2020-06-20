@@ -1,6 +1,6 @@
-import {el, mount, unmount, setAttr, setStyle} from "./redom.es.js";
+import {el, mount, setAttr, setStyle, unmount} from "./redom.es.js";
 import {allCardistry} from "./cardistry.js";
-import {_, language} from "./i18n.js";
+import {language} from "./i18n.js";
 
 // import interact from './interact.js'
 
@@ -212,7 +212,7 @@ const resizability = {
                 let height = parseFloat(component.el.style.height) + event.deltaRect.height;
                 component.propagate_volatile({ top: top, left: left, width: width, height: height });
             },
-            onend: (event) => {
+            onend: (/*event*/) => {
                 if (!isResizingPermitted()) {
                     return;
                 }
@@ -250,7 +250,7 @@ const rollability = {
 
         component.el.addEventListener("dblclick", startRoll);
 
-        function startRoll(event) {
+        function startRoll(/*event*/) {
             if (!isRollingPermitted()) {
                 return;
             }
@@ -505,10 +505,7 @@ const within = {
             }
 
             function canThisEverWithin(area, visitor) {
-                if (area.traylike && !visitor.traylike) {
-                    return true;
-                }
-                return false;
+                return area.traylike && !visitor.traylike;
             }
 
             function isWithin(area, visitor) {
@@ -590,7 +587,7 @@ const within = {
 
         });
     },
-    isEnabled: function (component, data) {
+    isEnabled: function (/*component, data*/) {
         return true;
     },
     onComponentUpdate: function (component, data) {
@@ -609,6 +606,7 @@ const within = {
         component.thingsWithinMe = [];  // avoid recurse
         component.iAmWithin = [];  // avoid recurse
         for (const componentId in thingsWithinMe) {
+            // noinspection JSUnfilteredForInLoop
             const other = featsContext.table.componentsOnTable[componentId];
             if (other) {
                 // there is a chance that other is already removed from table
@@ -619,6 +617,7 @@ const within = {
             }
         }
         for (const otherId in iAmWithin) {
+            // noinspection JSUnfilteredForInLoop
             const other = featsContext.table.componentsOnTable[otherId];
             if (other) {
                 // there is a chance that other is already removed from table
@@ -659,7 +658,7 @@ const ownership = {
             }
         });
     },
-    isEnabled: function (component, data) {
+    isEnabled: function (/*component, data*/) {
         return true;
     },
     onComponentUpdate: function (component, data) {
@@ -757,7 +756,7 @@ const traylike = {
             }
         });
 
-        featsContext.addEventListener(component, draggability.events.onMoveEnd, (e) => {
+        featsContext.addEventListener(component, draggability.events.onMoveEnd, (/*e*/) => {
             if (!component.traylike) {
                 return;
             }
@@ -788,7 +787,7 @@ const traylike = {
 
 const touchToRaise = {
     install: function (component) {
-        component.el.addEventListener("mousedown", (ev) => {
+        component.el.addEventListener("mousedown", (/*event*/) => {
             if (featsContext.isPlayerObserver()) {
                 return;
             }
@@ -801,7 +800,7 @@ const touchToRaise = {
         });
     },
 
-    isEnabled: function (component, data) {
+    isEnabled: function (/*component, data*/) {
         return true;
     },
 
@@ -882,13 +881,12 @@ const cardistry = {
                 cardistry.label,
             );
             component.el.appendChild(button);
-            const entry = {
+            component.cardistry[cardistry.name] = {
                 button: button,
             };
-            component.cardistry[cardistry.name] = entry;
         }
     },
-    isEnabled: function (component, data) {
+    isEnabled: function (/*component, data*/) {
         return true;
     },
     onComponentUpdate: function (component, componentData) {

@@ -177,7 +177,7 @@ class Menu {
 
 function createAddRemoveKitsMenu(parent, connector) {
     class KitsMenuItem {
-        constructor(props) {
+        constructor(/*props*/) {
             this.el = el("div.item", [
                 this.nameEl = el("div"),
                 this.countEl = el("div"),
@@ -190,7 +190,7 @@ function createAddRemoveKitsMenu(parent, connector) {
             ]);
         }
 
-        update(kitData, index, items, context) {
+        update(kitData, /*index, items, context*/) {
             const self = this;
             setAttr(self.el, { 'data-kit-name': kitData.kit.name });
             if (kitData.kit["label_" + language]) {
@@ -242,7 +242,7 @@ function createAddRemoveKitsMenu(parent, connector) {
     }
 
     class KitsMenu {
-        constructor(props) {
+        constructor(/*props*/) {
             const REASONABLY_BIG_ZINDEX_VALUE = 99999999;
             const self = this;
             this.kitsMenuItemList = list("div", KitsMenuItem);
@@ -270,7 +270,7 @@ function createAddRemoveKitsMenu(parent, connector) {
             }
         }
 
-        update(tableData, context) {
+        update(tableData, /*context*/) {
             this.kitsMenuItemList.update(this.kitsList, tableData);
         }
     }

@@ -236,7 +236,7 @@ const sync_table_connector = {
     updateManyComponents: function (updates) {
         const tableData = table.data;
         for (const event of updates) {
-            if (event.eventName != 'update single component') {
+            if (event.eventName !== 'update single component') {
                 console.error('updateManyComponents cannot handle events other than update single component', event);
                 continue;
             }

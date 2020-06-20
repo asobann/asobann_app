@@ -23,9 +23,7 @@ const spreadOut = {
         // Collecting does the reverse
         const spreading = [];
         for (const cmpId in component.onTray) {
-            if (!component.onTray.hasOwnProperty(cmpId)) {
-                continue;
-            }
+            // noinspection JSUnfilteredForInLoop
             spreading.push(cmpId);
         }
         spreading.sort((id1, id2) => {
@@ -74,7 +72,7 @@ const spreadOut = {
     },
     onComponentUpdate: function () {
     },
-    isEnabled: function (component, featsContext) {
+    isEnabled: function (component, /*featsContext*/) {
         return component.onTray && countProperties(component.onTray) > 0;
     }
 };
@@ -102,6 +100,7 @@ const collect = {
 
             const collecting = [];
             for (const cmpId in component.componentsInBox) {
+                // noinspection JSUnfilteredForInLoop
                 collecting.push(cmpId);
             }
             collecting.sort((id1, id2) => {
@@ -148,7 +147,7 @@ const collect = {
     onComponentUpdate: function (component, componentData) {
         component.componentsInBox = componentData.componentsInBox;
     },
-    isEnabled: function (component, featsContext) {
+    isEnabled: function (component, /*featsContext*/) {
         return component.onTray && component.componentsInBox &&
             countProperties(component.onTray) !== countProperties(component.componentsInBox);
     }
@@ -165,6 +164,7 @@ const shuffle = {
 
         const shuffling = [];
         for (const componentId in component.onTray) {
+            // noinspection JSUnfilteredForInLoop
             shuffling.push(componentId);
         }
 
@@ -194,7 +194,7 @@ const shuffle = {
     },
     onComponentUpdate: function () {
     },
-    isEnabled: function (component, featsContext) {
+    isEnabled: function (component, /*featsContext*/) {
         return component.onTray && countProperties(component.onTray) > 0;
     }
 };
@@ -209,9 +209,7 @@ const flipAll = {
         let allFaceDown = true;
 
         for (const cmpId in component.onTray) {
-            if (!component.onTray.hasOwnProperty(cmpId)) {
-                continue;
-            }
+            // noinspection JSUnfilteredForInLoop
             const cmp = featsContext.table.componentsOnTable[cmpId];
             if (cmp.flippable && cmp.faceup) {
                 allFaceDown = false;
@@ -221,9 +219,7 @@ const flipAll = {
 
         featsContext.table.consolidatePropagation(() => {
             for (const cmpId in component.onTray) {
-                if (!component.onTray.hasOwnProperty(cmpId)) {
-                    continue;
-                }
+                // noinspection JSUnfilteredForInLoop
                 const cmp = featsContext.table.componentsOnTable[cmpId];
                 if (allFaceDown) {
                     // make all face up
@@ -247,7 +243,7 @@ const flipAll = {
     },
     onComponentUpdate: function () {
     },
-    isEnabled: function (component, featsContext) {
+    isEnabled: function (component, /*featsContext*/) {
         return component.onTray && countProperties(component.onTray) > 0;
     }
 };
