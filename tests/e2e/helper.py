@@ -92,6 +92,14 @@ class BoxComponent(Component):
     def shuffle(self):
         return self.element.find_element_by_css_selector('button[data-button-name="shuffle"]')
 
+    @property
+    def spreadOut(self):
+        return self.element.find_element_by_css_selector('button[data-button-name="spread out"]')
+
+    @property
+    def collect(self):
+        return self.element.find_element_by_css_selector('button[data-button-name="collect"]')
+
 
 class GameMenuItem:
     def __init__(self, browser: WebDriver, element: WebElement):
@@ -336,6 +344,19 @@ class Rect:
             return self.top == other[0] and self.left == other[1]
         return False
 
+    def touch(self, other):
+        if any([v is None for v in (self.top, self.left, self.bottom, self.right)]) or \
+           any([v is None for v in (other.top, other.left, other.bottom, other.right)]):
+            return True
+        return not (self.bottom < other.top or other.bottom < self.top
+                    or self.right < other.left or other.right < self.left)
+
+    def within(self, area):
+        if any([v is None for v in (self.top, self.left, self.bottom, self.right)]) or \
+           any([v is None for v in (area.top, area.left, area.bottom, area.right)]):
+            return True
+        return (self.top < area.bottom and area.top < self.bottom
+                and self.left < area.right and area.left < self.right)
 
 def compo_pos(browser, element) -> Rect:
     """
