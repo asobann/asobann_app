@@ -171,3 +171,39 @@ class TestSpreadOutAndCollect:
 
         after = card.rect()
         assert before == after
+
+
+@pytest.mark.usefixtures("server")
+class TestFlipAll:
+    def test_to_face_up(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        add_playing_card_kit(host)
+
+        host.box_by_name('Playing Card Box').flipAll.click()
+        assert all(('card_up' in c.face() for c in playing_cards(host)))
+
+    def test_to_face_down(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        add_playing_card_kit(host)
+
+        host.box_by_name('Playing Card Box').flipAll.click()
+        host.box_by_name('Playing Card Box').flipAll.click()
+        assert all(('card_back' in c.face() for c in playing_cards(host)))
+
+    def test_to_face_down_if_any_are_face_up(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        add_playing_card_kit(host)
+
+        host.double_click(host.component_by_name('PlayingCard S_A'))
+        host.box_by_name('Playing Card Box').flipAll.click()
+        assert all(('card_back' in c.face() for c in playing_cards(host)))
+
+    def test_only_cards_in_box(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        add_playing_card_kit(host)
+
+        host.drag(host.component_by_name('PlayingCard S_A'), 0, 150)
+        host.box_by_name('Playing Card Box').flipAll.click()
+        assert 'card_back' in host.component_by_name('PlayingCard S_A').face()
+        assert 'card_up' in host.component_by_name('PlayingCard S_K').face()
+

@@ -100,6 +100,10 @@ class BoxComponent(Component):
     def collect(self):
         return self.element.find_element_by_css_selector('button[data-button-name="collect"]')
 
+    @property
+    def flipAll(self):
+        return self.element.find_element_by_css_selector('button[data-button-name="flip all"]')
+
 
 class GameMenuItem:
     def __init__(self, browser: WebDriver, element: WebElement):
