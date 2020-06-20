@@ -16,6 +16,83 @@ CUSTOMIZATION = TOP + "customize"
 STAGING_TOP = "https://fast-dusk-61776.herokuapp.com/"
 
 
+class Component:
+    def __init__(self, helper: 'GameHelper', element: WebElement):
+        self.helper = helper
+        self.element = element
+
+    def pos(self):
+        """
+        return position of the component relative to table
+        :return: Rect(top, left)
+        """
+        table = self.helper.browser.find_element_by_css_selector("div.table")
+        table_loc = table.location
+        comp_loc = self.element.location
+        return Rect(left=comp_loc["x"] - table_loc["x"], top=comp_loc["y"] - table_loc["y"])
+
+    def size(self):
+        """
+        return size of the component
+        :return: Rect(height, width)
+        """
+        comp_size = self.element.size
+        return Rect(height=comp_size["height"], width=comp_size["width"])
+
+    def rect(self):
+        """
+        return rect of the component
+        :return: Rect(left, top, right, bottom, height, width)
+        """
+        pos = self.pos()
+        size = self.size()
+        return Rect(left=pos.left, top=pos.top,
+                    right=pos.left + size.width, bottom=pos.top + size.height,
+                    width=size.width, height=size.height)
+
+    def face(self):
+        result = []
+        try:
+            image_url = self.element.find_element_by_tag_name('img').get_attribute('src')
+            result.append(f"image_url : {image_url}")
+        except NoSuchElementException:
+            pass
+        if self.element.text:
+            result.append(f"text : {self.element.text}")
+
+        return ",".join(result) or "not implemented"
+
+    def owner(self):
+        return 'box-shadow' in self.element.get_attribute('style')
+
+    def style(self):
+        style = {}
+        for entry in self.element.get_attribute('style').split(';'):
+            try:
+                key, value = entry.split(':', 1)
+                style[key.strip()] = value.strip()
+            except ValueError:
+                continue
+        return style
+
+    @property
+    def name(self):
+        return self.element.get_attribute('data-component-name')
+
+    @property
+    def z_index(self):
+        return int(self.style().get('z-index', 0))
+
+
+class BoxComponent(Component):
+    def __init__(self, helper: 'GameHelper', element: WebElement):
+        super().__init__(helper, element)
+
+    @property
+    def shuffle(self):
+        return self.element.find_element_by_css_selector('button[data-button-name="shuffle"]')
+
+
 class GameMenuItem:
     def __init__(self, browser: WebDriver, element: WebElement):
         self.browser = browser
@@ -104,7 +181,6 @@ class GameMenu:
         self.browser.find_element_by_css_selector(css_selector).click()
 
 
-
 class GameHelper:
 
     def __init__(self, browser: WebDriver):
@@ -152,6 +228,13 @@ class GameHelper:
         except TimeoutException:
             return
 
+    def all_components(self, wait=True):
+        locator = f".component"
+        if wait:
+            WebDriverWait(self.browser, 5).until(
+                expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, locator)))
+        return [Component(helper=self, element=e) for e in self.browser.find_elements_by_css_selector(locator)]
+
     def component(self, nth, wait=True) -> "Component":
         locator = f".component:nth-of-type({nth})"
         if wait:
@@ -159,12 +242,15 @@ class GameHelper:
                 expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, locator)))
         return Component(helper=self, element=self.browser.find_element_by_css_selector(locator))
 
-    def component_by_name(self, name, wait=True) -> "Component":
+    def component_by_name(self, name, wait=True, factory=Component) -> "Component":
         selector = f'.component[data-component-name="{name}"]'
         if wait:
             WebDriverWait(self.browser, 5).until(
                 expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, selector)))
-        return Component(helper=self, element=self.browser.find_element_by_css_selector(selector))
+        return factory(helper=self, element=self.browser.find_element_by_css_selector(selector))
+
+    def box_by_name(self, name, wait=True):
+        return self.component_by_name(name=name, wait=wait, factory=BoxComponent)
 
     def count_components(self):
         selector = f'.component'
@@ -212,56 +298,6 @@ class GameHelper:
             if e.text == f"{owner}'s hand":
                 return Component(self, e)
         raise NoSuchElementException(msg=f"cannot locate {owner}'s hand area")
-
-
-class Component:
-    def __init__(self, helper: GameHelper, element: WebElement):
-        self.helper = helper
-        self.element = element
-
-    def pos(self):
-        """
-        return position of the component relative to table
-        :return: Rect(top, left)
-        """
-        table = self.helper.browser.find_element_by_css_selector("div.table")
-        table_loc = table.location
-        comp_loc = self.element.location
-        return Rect(left=comp_loc["x"] - table_loc["x"], top=comp_loc["y"] - table_loc["y"])
-
-    def size(self):
-        """
-        return size of the component
-        :return: Rect(height, width)
-        """
-        comp_size = self.element.size
-        return Rect(height=comp_size["height"], width=comp_size["width"])
-
-    def rect(self):
-        """
-        return rect of the component
-        :return: Rect(left, top, right, bottom, height, width)
-        """
-        pos = self.pos()
-        size = self.size()
-        return Rect(left=pos.left, top=pos.top,
-                    right=pos.left + size.width, bottom=pos.top + size.height,
-                    width=size.width, height=size.height)
-
-    def face(self):
-        result = []
-        try:
-            image_url = self.element.find_element_by_tag_name('img').get_attribute('src')
-            result.append(f"image_url : {image_url}")
-        except NoSuchElementException:
-            pass
-        if self.element.text:
-            result.append(f"text : {self.element.text}")
-
-        return ",".join(result) or "not implemented"
-
-    def owner(self):
-        return 'box-shadow' in self.element.get_attribute('style')
 
 
 class Rect:

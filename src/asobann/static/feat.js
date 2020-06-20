@@ -874,6 +874,7 @@ const cardistry = {
 
         for (const cardistry of allCardistry) {
             const button = el('button', {
+                    'data-button-name': cardistry.name,
                     onclick: () => {
                         cardistry.execute(component, featsContext);
                     },

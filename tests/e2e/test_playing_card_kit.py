@@ -76,8 +76,3 @@ def test_load_playing_card_kit_on_staging(server, browser: webdriver.Firefox):
     assert host.component_by_name("PlayingCard S_A").pos() == (64, 164)
     host.drag(host.component_by_name("Playing Card Box"), 200, 100, grab_at=(70, 0))
     assert host.component_by_name("PlayingCard S_A").pos() == (64 + 200, 164 + 100)
-
-
-@pytest.mark.skip
-def test_shuffle_playing_card():
-    pass
