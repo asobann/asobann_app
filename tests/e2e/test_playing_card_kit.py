@@ -33,7 +33,7 @@ def test_load_playing_card_kit(server, browser: webdriver.Firefox):
     host.menu.add_kit.execute()
     host.menu.add_kit_from_list("Playing Card")
 
-    assert host.count_components() == 52 + 2 + 1
+    assert host.count_components() == 52 + 2 + 2
 
     assert host.component_by_name("PlayingCard S_A").pos() == (64, 164)
     host.drag(host.component_by_name("Playing Card Box"), 200, 100, grab_at=(-70, 0))
