@@ -2,6 +2,7 @@ import random
 import json
 from pathlib import Path
 from pymongo import operations
+from . import kits
 
 components = None
 
@@ -14,7 +15,8 @@ def get(name):
 
 
 def get_for_kit(kit_name):
-    data = components.find({"component.kitName": kit_name})
+    kit = kits.get(kit_name)
+    data = components.find({"component.name": {"$in": kit["componentNames"]}})
     return [{"component": d["component"]} for d in data]
 
 

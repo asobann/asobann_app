@@ -7,7 +7,7 @@ kits = None
 
 
 def get(name):
-    data = kits.find_one({"name": name})
+    data = kits.find_one({"kit.name": name})
     if not data:
         return None
     return data["kit"]

@@ -248,6 +248,7 @@ def write_initial_deploy_data_json():
             "name": "Dice (Blue)",
             "label":  "Dice (Blue)",
             "label_ja":  "サイコロ（青）",
+            "componentNames": ["Dice (Blue)"],
             "width": "64px",
             "height": "64px"
         },

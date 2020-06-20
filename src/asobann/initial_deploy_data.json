@@ -1223,6 +1223,9 @@
         "name": "Dice (Blue)",
         "label": "Dice (Blue)",
         "label_ja": "\u30b5\u30a4\u30b3\u30ed\uff08\u9752\uff09",
+        "componentNames": [
+          "Dice (Blue)"
+        ],
         "width": "64px",
         "height": "64px"
       }
