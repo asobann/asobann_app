@@ -280,10 +280,15 @@ class GameHelper:
             perform()
 
     def move_card_to_hand_area(self, card: 'Component', player_name: str, offset=(0, 0)):
-        hand_area_rect = self.hand_area(player_name).rect()
+        self.move_card_to_center_of_rect(card, self.hand_area(player_name).rect(), offset)
+
+    def move_card_to_traylike(self, card: 'Component', traylike: 'Component', offset=(0, 0)):
+        self.move_card_to_center_of_rect(card, traylike.rect(), offset)
+
+    def move_card_to_center_of_rect(self, card: 'Component', rect: 'Rect', offset=(0, 0)):
         card_rect = card.rect()
-        dx = (hand_area_rect.left + hand_area_rect.width / 2) - (card_rect.left + card_rect.width / 2) + offset[0]
-        dy = (hand_area_rect.top + hand_area_rect.height / 2) - (card_rect.top + card_rect.height / 2) + offset[1]
+        dx = (rect.left + rect.width / 2) - (card_rect.left + card_rect.width / 2) + offset[0]
+        dy = (rect.top + rect.height / 2) - (card_rect.top + card_rect.height / 2) + offset[1]
         ActionChains(self.browser).move_to_element(card.element).click_and_hold().move_by_offset(dx, dy) \
             .release().perform()
 

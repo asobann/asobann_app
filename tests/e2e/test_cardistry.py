@@ -52,3 +52,26 @@ class TestShuffle:
 
                 # somehow there were cases where two cards separate 2 px but looks ok
                 assert abs(pos1.left - pos2.left) < 3 and abs(pos1.top - pos2.top) < 3
+
+    def test_shuffle_only_the_cards_on_the_box(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        self.add_playing_card_kit(host)
+
+        # move into stowage
+        card1 = host.component_by_name('PlayingCard S_A')
+        host.move_card_to_traylike(card1, host.component_by_name('Stowage for Unused Cards'))
+
+        # move into hand area
+        host.menu.add_my_hand_area.click()
+        card2 = host.component_by_name('PlayingCard S_K')
+        host.move_card_to_hand_area(card2, 'host')
+
+        # move to nowhere
+        card3 = host.component_by_name('PlayingCard S_Q')
+        host.drag(card3, 0, -200)
+
+        before = [(c.rect(), c.z_index) for c in [card1, card2, card3]]
+        host.box_by_name('Playing Card Box').shuffle.click()
+        after = [(c.rect(), c.z_index) for c in [card1, card2, card3]]
+
+        assert before == after
