@@ -177,6 +177,7 @@ class TestHandArea:
         host.drag(hand_area, 0, -100, 'bottom')
 
         # host_card is no longer owned by host
+        time.sleep(0.1)
         assert '♠A' in another.component_by_name(C_A).face()
 
         # PlayingCard S_3 is owned by host
