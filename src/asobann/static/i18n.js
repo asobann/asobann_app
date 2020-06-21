@@ -22,7 +22,7 @@ const dictionary = {
         "Done": "戻る",
         "you are ": "プレイヤー: ",
         "observing": "見学中",
-        "Do you want to collect even in-hand components?": "Do you want to collect even in-hand components?",
+        "Do you want to collect even in-hand components?": "手札エリアにあるものまで集めますか？",
         "About asobann": "asobannについて",
         "Copyright (C) 2020 Yattom": "Copyright © 2020 合同会社やっとむ屋, やっとむ"
     },
