@@ -216,8 +216,9 @@ def write_default_table_json():
 def write_initial_deploy_data_json():
     output = dict(components=[], kits=[])
 
-    for cmp in generate_playing_card():
-        output["components"].append({"component": cmp})
+    playing_cards = [{"component": c} for c in generate_playing_card()]
+    for cmp in playing_cards:
+        output["components"].append(cmp)
 
     dice = {
         "component": {
@@ -241,14 +242,16 @@ def write_initial_deploy_data_json():
         }
     }
     output["components"].append(dice)
-    output["components"].append({"component": generate_coin()})
+
+    coin = {"component": generate_coin()}
+    output["components"].append(coin)
 
     for kit in [
         {
             "name": "Dice (Blue)",
             "label":  "Dice (Blue)",
             "label_ja":  "サイコロ（青）",
-            "componentNames": ["Dice (Blue)"],
+            "componentNames": [dice["component"]["name"]],
             "width": "64px",
             "height": "64px"
         },
@@ -256,6 +259,7 @@ def write_initial_deploy_data_json():
             "name": "Playing Card",
             "label":  "Playing Card",
             "label_ja":  "トランプ",
+            "componentNames": [c["component"]["name"] for c in playing_cards],
             "width": "400px",
             "height": "150px"
         },
@@ -263,6 +267,7 @@ def write_initial_deploy_data_json():
             "name": "Coin - Tetradrachm of Athens",
             "label":  "Coin",
             "label_ja":  "コイン",
+            "componentNames": [coin["component"]["name"]],
             "width": "100px",
             "height": "100px"
 
