@@ -46,7 +46,7 @@ class Component {
         }
 
         if (this.textEl == null) {
-            this.textEl = el("span");
+            this.textEl = el("span.component_text");
             mount(this.el, this.textEl);
         }
         if (data.text) {
@@ -58,6 +58,24 @@ class Component {
         }
         if (data.textColor) {
             setStyle(this.textEl, { color: data.textColor });
+        }
+        if (data.textAlign) {
+            switch (data.textAlign.trim()) {
+                case 'center':
+                    setStyle(this.textEl, {
+                        "text-align": "center",
+                        "vertical-align": "center",
+                    });
+                    break;
+                case 'center bottom':
+                    setStyle(this.textEl, {
+                        "text-align": "center",
+                        "bottom": 0,
+                    });
+                    break;
+                default:
+                    console.warn(`unsupported textAlign "${data.textAlign}"`);
+            }
         }
 
         for (const ability of feats) {
@@ -332,19 +350,19 @@ function addNewKit(kitData) {
 
         consolidatePropagation(() => {
             const componentDataMap = {};
-            for(const cmp of componentsData) {
+            for (const cmp of componentsData) {
                 componentDataMap[cmp['component']['name']] = cmp;
             }
 
-            for(const name in kitData.kit.boxAndComponents) {
+            for (const name in kitData.kit.boxAndComponents) {
                 const boxOrComponentData = createComponent(name);
                 const contents = kitData.kit.boxAndComponents[name];
-                if(!contents) {
+                if (!contents) {
                     continue;
                 }
 
                 boxOrComponentData.componentsInBox = {};
-                for(const name of contents) {
+                for (const name of contents) {
                     const componentId = createComponent(name).componentId;
                     boxOrComponentData.componentsInBox[componentId] = true;
                 }

@@ -109,6 +109,10 @@ body {
     text-overflow: ellipsis;
 }
 
+.component .component_text {
+    width: 100%;
+}
+
 div.others_mouse_cursor {
     position: absolute;
 }
