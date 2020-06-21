@@ -40,6 +40,9 @@ class Component {
                 };
                 mount(this.el, this.image);
             }
+            if (data.image) {
+                setAttr(this.image, { src: data.image });
+            }
         }
 
         if (this.textEl == null) {
@@ -329,6 +332,7 @@ function addNewKit(kitData) {
 
         consolidatePropagation(() => {
             const componentsInBox = {};
+            const componentNameToId = {};  // cache for quick access within this function
 
             for (const data of componentsData) {
                 const componentData = data.component;
@@ -342,10 +346,24 @@ function addNewKit(kitData) {
                 } else {
                     componentData.zIndex = baseZIndex;
                 }
-                prepareComponentsInBox(componentData, componentsInBox);
+                // prepareComponentsInBox(componentData, componentsInBox);
                 newComponents[componentId] = componentData;
                 if (componentData.onAdd) {
                     Function('"use strict"; return ' + componentData.onAdd)()(componentData);
+                }
+
+                componentNameToId[componentData.name] = componentId;
+            }
+
+            if (kitData.kit.boxAndComponents) {
+                for (const boxName in kitData.kit.boxAndComponents) {
+                    // noinspection JSUnfilteredForInLoop
+                    const boxData = newComponents[componentNameToId[boxName]];
+                    boxData.componentsInBox = {};
+                    // noinspection JSUnfilteredForInLoop
+                    for (const componentName of kitData.kit.boxAndComponents[boxName]) {
+                        boxData.componentsInBox[componentNameToId[componentName]] = true;
+                    }
                 }
             }
 

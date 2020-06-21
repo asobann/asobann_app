@@ -1215,6 +1215,988 @@
         "ownable": false,
         "resizable": true
       }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V01",
+        "top": "0px",
+        "left": "480px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v01.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 100
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V02",
+        "top": "1px",
+        "left": "481px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v02.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 99
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V03",
+        "top": "2px",
+        "left": "482px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v03.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 98
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V04",
+        "top": "3px",
+        "left": "483px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v04.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 97
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V05",
+        "top": "4px",
+        "left": "484px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v05.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 96
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V06",
+        "top": "5px",
+        "left": "485px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v06.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 95
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V07",
+        "top": "6px",
+        "left": "486px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v07.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 94
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V08",
+        "top": "7px",
+        "left": "487px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v08.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 93
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V09",
+        "top": "8px",
+        "left": "488px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v09.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 92
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V10",
+        "top": "9px",
+        "left": "489px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v10.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 91
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V11",
+        "top": "10px",
+        "left": "490px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v11.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 90
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V12",
+        "top": "11px",
+        "left": "491px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v12.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 89
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V13",
+        "top": "12px",
+        "left": "492px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v13.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 88
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V14",
+        "top": "13px",
+        "left": "493px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v14.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 87
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V15",
+        "top": "14px",
+        "left": "494px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v15.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 86
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V16",
+        "top": "15px",
+        "left": "495px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v16.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 85
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V17",
+        "top": "16px",
+        "left": "496px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v17.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 84
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V18",
+        "top": "17px",
+        "left": "497px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v18.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 83
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V19",
+        "top": "18px",
+        "left": "498px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v19.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 82
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V20",
+        "top": "19px",
+        "left": "499px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v20.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 81
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V21",
+        "top": "20px",
+        "left": "500px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v21.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 80
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V22",
+        "top": "21px",
+        "left": "501px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v22.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 79
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V23",
+        "top": "22px",
+        "left": "502px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v23.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 78
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V24",
+        "top": "23px",
+        "left": "503px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v24.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 77
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V25",
+        "top": "24px",
+        "left": "504px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v25.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 76
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V26",
+        "top": "25px",
+        "left": "505px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v26.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 75
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V27",
+        "top": "26px",
+        "left": "506px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v27.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 74
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V28",
+        "top": "27px",
+        "left": "507px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v28.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 73
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V29",
+        "top": "28px",
+        "left": "508px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v29.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 72
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V30",
+        "top": "29px",
+        "left": "509px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v30.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 71
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V31",
+        "top": "30px",
+        "left": "510px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v31.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 70
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V32",
+        "top": "31px",
+        "left": "511px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v32.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 69
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V33",
+        "top": "32px",
+        "left": "512px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v33.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 68
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V34",
+        "top": "33px",
+        "left": "513px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v34.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 67
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety V35",
+        "top": "34px",
+        "left": "514px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_v35.jpg",
+        "facedownImage": "/static/images/psychological_safety_voice_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 66
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S01",
+        "top": "220px",
+        "left": "480px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s01.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 65
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S02",
+        "top": "221px",
+        "left": "481px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s02.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 64
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S03",
+        "top": "222px",
+        "left": "482px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s03.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 63
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S04",
+        "top": "223px",
+        "left": "483px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s04.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 62
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S05",
+        "top": "224px",
+        "left": "484px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s05.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 61
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S06",
+        "top": "225px",
+        "left": "485px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s06.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 60
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S07",
+        "top": "226px",
+        "left": "486px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s07.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 59
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S08",
+        "top": "227px",
+        "left": "487px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s08.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 58
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S09",
+        "top": "228px",
+        "left": "488px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s09.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 57
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S10",
+        "top": "229px",
+        "left": "489px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s10.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 56
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S11",
+        "top": "230px",
+        "left": "490px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s11.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 55
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S12",
+        "top": "231px",
+        "left": "491px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s12.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 54
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S13",
+        "top": "232px",
+        "left": "492px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s13.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 53
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety S14",
+        "top": "233px",
+        "left": "493px",
+        "height": "120px",
+        "width": "83px",
+        "showImage": true,
+        "faceupImage": "/static/images/psychological_safety_s14.jpg",
+        "facedownImage": "/static/images/psychological_safety_situation_back.png",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 52
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety Board",
+        "top": "0",
+        "left": "0",
+        "height": "500px",
+        "width": "354px",
+        "showImage": true,
+        "image": "/static/images/psychological_safety_board.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": true,
+        "traylike": true,
+        "zIndex": 51
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety Box for Voice",
+        "top": "0px",
+        "left": "380px",
+        "height": "200px",
+        "width": "350px",
+        "color": "yellow",
+        "showImage": false,
+        "text": "Situation Cards",
+        "text_ja": "\u767a\u8a00\uff06\u30aa\u30d7\u30b7\u30e7\u30f3\u30ab\u30fc\u30c9",
+        "handArea": false,
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false,
+        "rollable": false,
+        "traylike": true,
+        "boxOfComponents": true,
+        "cardistry": [
+          "spread out",
+          "collect",
+          "shuffle",
+          "flip all"
+        ],
+        "zIndex": 50
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety Box for Situation",
+        "top": "220px",
+        "left": "380",
+        "height": "150px",
+        "width": "350px",
+        "color": "green",
+        "showImage": false,
+        "text": "Situation Cards",
+        "text_ja": "\u72b6\u6cc1\u30ab\u30fc\u30c9",
+        "handArea": false,
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false,
+        "rollable": false,
+        "traylike": true,
+        "boxOfComponents": true,
+        "cardistry": [
+          "spread out",
+          "collect",
+          "shuffle",
+          "flip all"
+        ],
+        "zIndex": 49
+      }
+    },
+    {
+      "component": {
+        "name": "PsychologicalSafety Box for Stones",
+        "top": "390px",
+        "left": "380px",
+        "height": "150px",
+        "width": "250px",
+        "color": "black",
+        "showImage": false,
+        "text": "Stones",
+        "text_ja": "\u77f3\u306e\u7f6e\u304d\u5834",
+        "handArea": false,
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false,
+        "rollable": false,
+        "traylike": true,
+        "boxOfComponents": true,
+        "cardistry": [
+          "spread out",
+          "collect",
+          "flip all"
+        ],
+        "zIndex": 48
+      }
     }
   ],
   "kits": [
@@ -1307,6 +2289,126 @@
         ],
         "width": "100px",
         "height": "100px"
+      }
+    },
+    {
+      "kit": {
+        "name": "Psychological Safety Game",
+        "label": "Psychological Safety Game",
+        "label_ja": "\u5fc3\u7406\u7684\u5b89\u5168\u6027\u30b2\u30fc\u30e0",
+        "componentNames": [
+          "PsychologicalSafety V01",
+          "PsychologicalSafety V02",
+          "PsychologicalSafety V03",
+          "PsychologicalSafety V04",
+          "PsychologicalSafety V05",
+          "PsychologicalSafety V06",
+          "PsychologicalSafety V07",
+          "PsychologicalSafety V08",
+          "PsychologicalSafety V09",
+          "PsychologicalSafety V10",
+          "PsychologicalSafety V11",
+          "PsychologicalSafety V12",
+          "PsychologicalSafety V13",
+          "PsychologicalSafety V14",
+          "PsychologicalSafety V15",
+          "PsychologicalSafety V16",
+          "PsychologicalSafety V17",
+          "PsychologicalSafety V18",
+          "PsychologicalSafety V19",
+          "PsychologicalSafety V20",
+          "PsychologicalSafety V21",
+          "PsychologicalSafety V22",
+          "PsychologicalSafety V23",
+          "PsychologicalSafety V24",
+          "PsychologicalSafety V25",
+          "PsychologicalSafety V26",
+          "PsychologicalSafety V27",
+          "PsychologicalSafety V28",
+          "PsychologicalSafety V29",
+          "PsychologicalSafety V30",
+          "PsychologicalSafety V31",
+          "PsychologicalSafety V32",
+          "PsychologicalSafety V33",
+          "PsychologicalSafety V34",
+          "PsychologicalSafety V35",
+          "PsychologicalSafety S01",
+          "PsychologicalSafety S02",
+          "PsychologicalSafety S03",
+          "PsychologicalSafety S04",
+          "PsychologicalSafety S05",
+          "PsychologicalSafety S06",
+          "PsychologicalSafety S07",
+          "PsychologicalSafety S08",
+          "PsychologicalSafety S09",
+          "PsychologicalSafety S10",
+          "PsychologicalSafety S11",
+          "PsychologicalSafety S12",
+          "PsychologicalSafety S13",
+          "PsychologicalSafety S14",
+          "PsychologicalSafety Board",
+          "PsychologicalSafety Box for Voice",
+          "PsychologicalSafety Box for Situation",
+          "PsychologicalSafety Box for Stones"
+        ],
+        "boxAndComponents": {
+          "PsychologicalSafety Box for Situation": [
+            "PsychologicalSafety S01",
+            "PsychologicalSafety S02",
+            "PsychologicalSafety S03",
+            "PsychologicalSafety S04",
+            "PsychologicalSafety S05",
+            "PsychologicalSafety S06",
+            "PsychologicalSafety S07",
+            "PsychologicalSafety S08",
+            "PsychologicalSafety S09",
+            "PsychologicalSafety S10",
+            "PsychologicalSafety S11",
+            "PsychologicalSafety S12",
+            "PsychologicalSafety S13",
+            "PsychologicalSafety S14"
+          ],
+          "PsychologicalSafety Box for Voice": [
+            "PsychologicalSafety V01",
+            "PsychologicalSafety V02",
+            "PsychologicalSafety V03",
+            "PsychologicalSafety V04",
+            "PsychologicalSafety V05",
+            "PsychologicalSafety V06",
+            "PsychologicalSafety V07",
+            "PsychologicalSafety V08",
+            "PsychologicalSafety V09",
+            "PsychologicalSafety V10",
+            "PsychologicalSafety V11",
+            "PsychologicalSafety V12",
+            "PsychologicalSafety V13",
+            "PsychologicalSafety V14",
+            "PsychologicalSafety V15",
+            "PsychologicalSafety V16",
+            "PsychologicalSafety V17",
+            "PsychologicalSafety V18",
+            "PsychologicalSafety V19",
+            "PsychologicalSafety V20",
+            "PsychologicalSafety V21",
+            "PsychologicalSafety V22",
+            "PsychologicalSafety V23",
+            "PsychologicalSafety V24",
+            "PsychologicalSafety V25",
+            "PsychologicalSafety V26",
+            "PsychologicalSafety V27",
+            "PsychologicalSafety V28",
+            "PsychologicalSafety V29",
+            "PsychologicalSafety V30",
+            "PsychologicalSafety V31",
+            "PsychologicalSafety V32",
+            "PsychologicalSafety V33",
+            "PsychologicalSafety V34",
+            "PsychologicalSafety V35"
+          ],
+          "PsychologicalSafety Box for Stones": []
+        },
+        "width": "1200px",
+        "height": "1200px"
       }
     }
   ]
