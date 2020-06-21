@@ -2197,6 +2197,70 @@
         ],
         "zIndex": 48
       }
+    },
+    {
+      "component": {
+        "name": "Transparent Stone 01",
+        "top": "0px",
+        "left": "100px",
+        "height": "40px",
+        "width": "40px",
+        "showImage": true,
+        "image": "/static/images/transparent_stone_01.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false
+      }
+    },
+    {
+      "component": {
+        "name": "Transparent Stone 02",
+        "top": "1px",
+        "left": "101px",
+        "height": "40px",
+        "width": "40px",
+        "showImage": true,
+        "image": "/static/images/transparent_stone_02.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false
+      }
+    },
+    {
+      "component": {
+        "name": "Transparent Stone 03",
+        "top": "2px",
+        "left": "102px",
+        "height": "40px",
+        "width": "40px",
+        "showImage": true,
+        "image": "/static/images/transparent_stone_03.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false
+      }
+    },
+    {
+      "component": {
+        "name": "Transparent Stone 04",
+        "top": "3px",
+        "left": "103px",
+        "height": "40px",
+        "width": "40px",
+        "showImage": true,
+        "image": "/static/images/transparent_stone_04.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false
+      }
     }
   ],
   "kits": [
@@ -2409,6 +2473,22 @@
         },
         "width": "1200px",
         "height": "1200px"
+      }
+    },
+    {
+      "kit": {
+        "name": "Transparent Stones",
+        "label": "Transparent Stones",
+        "label_ja": "\u5b9d\u77f3(\u30bb\u30c3\u30c8)",
+        "componentNames": [
+          "Transparent Stone 01",
+          "Transparent Stone 02",
+          "Transparent Stone 03",
+          "Transparent Stone 04"
+        ],
+        "boxAndComponents": {},
+        "width": "200px",
+        "height": "200px"
       }
     }
   ]

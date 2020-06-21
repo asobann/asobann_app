@@ -354,6 +354,38 @@ def write_default_table_json():
         json.dump(table, f, indent=2)
 
 
+def generate_stones():
+    stones = []
+
+    def add_component(c):
+        stones.append(in_order(c))
+
+    template = {
+        "height": "40px",
+        "width": "40px",
+        "showImage": True,
+        "faceup": False,
+        "draggable": True,
+        "flippable": False,
+        "ownable": True,
+        "resizable": False,
+    }
+
+    offset = 0
+    for stone in range(4):
+        s = {
+            "name": f"Transparent Stone {stone + 1:02}",
+            "top": f"{offset}px",
+            "left": f"{offset + 100}px",
+            "image": f"/static/images/transparent_stone_{stone + 1:02}.png",
+        }
+        s.update(template)
+        add_component(s)
+        offset += 1
+
+    return stones
+
+
 def write_initial_deploy_data_json():
     output = dict(components=[], kits=[])
 
@@ -391,6 +423,10 @@ def write_initial_deploy_data_json():
     for cmp in psychological_safety_game[0]:
         output["components"].append({"component": cmp})
 
+    stones = generate_stones()
+    for cmp in stones:
+        output["components"].append({"component": cmp})
+
     for kit in [
         {
             "name": "Dice (Blue)",
@@ -424,6 +460,15 @@ def write_initial_deploy_data_json():
             "boxAndComponents": psychological_safety_game[1],
             "width": "1200px",
             "height": "1200px"
+        },
+        {
+            "name": "Transparent Stones",
+            "label": "Transparent Stones",
+            "label_ja": "宝石(セット)",
+            "componentNames": [c["name"] for c in stones],
+            "boxAndComponents": {},
+            "width": "200px",
+            "height": "200px"
         },
     ]:
         output["kits"].append({"kit": kit})
