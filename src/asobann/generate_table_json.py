@@ -1,3 +1,4 @@
+from typing import List, Dict
 from collections import OrderedDict
 import json
 
@@ -53,6 +54,107 @@ def in_order(component):
     if len(keys) > 0:
         raise ValueError(f"component contains unknown keys: {keys}")
     return result
+
+
+class Box:
+    def __init__(self, kit: 'Kit', box_component: Dict = None):
+        self.kit: 'Kit' = kit
+        self.box_component: Dict = box_component
+        self.content_names: List[str] = []
+
+    def add_component(self, data, template=None):
+        self.kit.registry.add_component(data, template=template)
+        self.content_names.append(data['name'])
+
+    @property
+    def box_component(self):
+        return self._box_component
+
+    @box_component.setter
+    def box_component(self, box_component):
+        self._box_component = box_component
+        if box_component:
+            self.kit.registry.add_component(box_component)
+
+    def use_components(self, components):
+        for c in components:
+            if type(c) == str:
+                self.content_names.append(c)
+            else:
+                raise ValueError()
+
+
+class Kit:
+    def __init__(self, registry: 'ComponentRegistry'):
+        self.registry: 'ComponentRegistry' = registry
+        self._description: Dict = {}
+        self.direct_component_names: List[str] = []
+        self.boxes: List[Box] = []
+
+    def box(self, box_component=None) -> Box:
+        box = Box(self, box_component)
+        self.boxes.append(box)
+        return box
+
+    def add_component(self, data, template=None):
+        self.registry.add_component(data, template=template)
+        self.direct_component_names.append(data['name'])
+
+    @property
+    def description(self):
+        return self._description
+
+    @description.setter
+    def description(self, value):
+        self._description = value
+
+
+class ComponentRegistry:
+    def __init__(self):
+        self.components: List = []
+        self.kits: List[Kit] = []
+
+    def add_component(self, data, template=None):
+        copied = data.copy()
+        if template:
+            copied.update(template)
+        for c in self.components:
+            if c['name'] == copied['name']:
+                assert c == copied
+                break
+        else:
+            self.components.append(in_order(copied))
+
+    def kit(self) -> Kit:
+        kit = Kit(self)
+        self.kits.append(kit)
+        return kit
+
+    def build_data_for_deploy(self):
+        data_for_deploy = {}
+        data_for_deploy['components'] = [{'component': c} for c in self.components]
+        data_for_deploy['kits'] = []
+        for kit in self.kits:
+            kit_data = kit.description.copy()
+            used_component_names = set()
+            used_component_names.update(kit.direct_component_names)
+
+            kit_data['boxAndComponents'] = {}
+            for direct_component_name in kit.direct_component_names:
+                assert direct_component_name not in kit_data['boxAndComponents']
+                kit_data['boxAndComponents'][direct_component_name] = None
+
+            for box in kit.boxes:
+                box_name = box.box_component['name']
+                assert box_name not in kit_data['boxAndComponents'], f"kit_data {kit_data}"
+                kit_data['boxAndComponents'][box_name] = box.content_names
+                used_component_names.update([box_name] + box.content_names)
+
+            data_for_deploy['kits'].append({'kit': kit_data})
+
+            kit_data['usedComponentNames'] = sorted(list(used_component_names))  # sort for stabilize test
+
+        return data_for_deploy
 
 
 def generate_playing_card():
@@ -279,14 +381,147 @@ def generate_psychological_safety_game():
     })
     z_index -= 1
 
-    box_and_components = {
+    box_and_contents = {
         "PsychologicalSafety Box for Situation":
             [c["name"] for c in components if "PsychologicalSafety S" in c["name"]],
         "PsychologicalSafety Box for Voice":
             [c["name"] for c in components if "PsychologicalSafety V" in c["name"]],
         "PsychologicalSafety Box for Stones": [],
     }
-    return components, box_and_components
+    return components, box_and_contents
+
+
+def generate_psychological_safety_game2(reg: ComponentRegistry):
+    kit = reg.kit()
+
+    template = {
+        "height": "120px",
+        "width": "83px",
+        "showImage": True,
+        "faceup": False,
+        "draggable": True,
+        "flippable": True,
+        "ownable": True,
+        "resizable": False,
+    }
+    z_index = 100
+
+    offset = 0
+    voice_card_box = kit.box()
+    for voice in range(35):
+        card = {
+            "name": f"PsychologicalSafety V{voice + 1:02}",
+            "top": f"{offset}px",
+            "left": f"{offset + 380 + 100}px",
+            "faceupImage": f"/static/images/psychological_safety_v{voice + 1:02}.jpg",
+            "facedownImage": "/static/images/psychological_safety_voice_back.png",
+            "zIndex": z_index,
+        }
+        voice_card_box.add_component(card, template=template)
+        z_index -= 1
+        offset += 1
+
+    offset = 0
+    situation_card_box = kit.box()
+    for situation in range(14):
+        card = {
+            "name": f"PsychologicalSafety S{situation + 1:02}",
+            "top": f"{offset + 220}px",
+            "left": f"{offset + 380 + 100}px",
+            "faceupImage": f"/static/images/psychological_safety_s{situation + 1:02}.jpg",
+            "facedownImage": "/static/images/psychological_safety_situation_back.png",
+            "zIndex": z_index,
+        }
+        situation_card_box.add_component(card, template=template)
+        z_index -= 1
+        offset += 1
+
+    kit.add_component({
+        "name": "PsychologicalSafety Board",
+        "top": "0",
+        "left": "0",
+        "height": "500px",
+        "width": "354px",
+        "showImage": True,
+        "image": "/static/images/psychological_safety_board.png",
+        "draggable": True,
+        "flippable": False,
+        "ownable": False,
+        "resizable": True,
+        "traylike": True,
+        "zIndex": z_index,
+    })
+    z_index -= 1
+    voice_card_box.box_component = {
+        "name": "PsychologicalSafety Box for Voice",
+        "handArea": False,
+        "top": "0px",
+        "left": "380px",
+        "height": "200px",
+        "width": "350px",
+        "color": "yellow",
+        "text": "Situation Cards",
+        "text_ja": "発言＆オプションカード",
+        "showImage": False,
+        "draggable": True,
+        "flippable": False,
+        "resizable": False,
+        "rollable": False,
+        "ownable": False,
+        "traylike": True,
+        "boxOfComponents": True,
+        "cardistry": ['spread out', 'collect', 'shuffle', 'flip all'],
+        "zIndex": z_index,
+    }
+    z_index -= 1
+
+    situation_card_box.box_component = {
+        "name": "PsychologicalSafety Box for Situation",
+        "handArea": False,
+        "top": "220px",
+        "left": "380",
+        "height": "150px",
+        "width": "350px",
+        "color": "green",
+        "text": "Situation Cards",
+        "text_ja": "状況カード",
+        "showImage": False,
+        "draggable": True,
+        "flippable": False,
+        "resizable": False,
+        "rollable": False,
+        "ownable": False,
+        "traylike": True,
+        "boxOfComponents": True,
+        "cardistry": ['spread out', 'collect', 'shuffle', 'flip all'],
+        "zIndex": z_index,
+    }
+    z_index -= 1
+
+    kit.box({
+        "name": "PsychologicalSafety Box for Stones",
+        "handArea": False,
+        "top": "390px",
+        "left": "380px",
+        "height": "150px",
+        "width": "250px",
+        "color": "black",
+        "text": "Stones",
+        "text_ja": "石の置き場",
+        "showImage": False,
+        "draggable": True,
+        "flippable": False,
+        "resizable": False,
+        "rollable": False,
+        "ownable": False,
+        "traylike": True,
+        "boxOfComponents": True,
+        "cardistry": ['spread out', 'collect', 'flip all'],
+        "zIndex": z_index,
+    }).use_components(
+        [f"Transparent Stone {stone + 1:02}" for stone in range(4)] * 8
+    )
+    z_index -= 1
 
 
 def generate_coin():
