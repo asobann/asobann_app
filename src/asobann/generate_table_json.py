@@ -157,11 +157,68 @@ class ComponentRegistry:
         return data_for_deploy
 
 
-def generate_playing_card():
-    playing_card = []
+def generate_dice(reg: ComponentRegistry):
+    kit = reg.kit()
 
-    def add_component(c):
-        playing_card.append(in_order(c))
+    kit.description = {
+        "name": "Dice (Blue)",
+        "label": "Dice (Blue)",
+        "label_ja": "サイコロ（青）",
+        "width": "64px",
+        "height": "64px"
+    }
+
+    kit.add_component({
+        "name": "Dice (Blue)",
+        "handArea": False,
+        "top": "0px",
+        "left": "0px",
+        "height": "64px",
+        "width": "64px",
+        "showImage": False,
+        "draggable": True,
+        "flippable": False,
+        "resizable": False,
+        "rollable": True,
+        "ownable": False,
+        "onAdd": "function(component) { \n"
+                 "  component.rollFinalValue = Math.floor(Math.random() * 6) + 1;\n"
+                 "  component.rollDuration = 500;\n"
+                 "  component.startRoll = true;\n"
+                 "}"
+    })
+
+
+def generate_playing_card(reg: ComponentRegistry):
+    kit = reg.kit()
+
+    kit.description = {
+        "name": "Playing Card",
+        "label": "Playing Card",
+        "label_ja": "トランプ",
+        "width": "400px",
+        "height": "150px"
+    }
+
+    box = kit.box({
+        "name": "Playing Card Box",
+        "handArea": False,
+        "top": "0px",
+        "left": "0px",
+        "height": "200px",
+        "width": "250px",
+        "color": "blue",
+        "showImage": False,
+        "draggable": True,
+        "flippable": False,
+        "resizable": False,
+        "rollable": False,
+        "ownable": False,
+        "traylike": True,
+        "boxOfComponents": True,
+        "cardistry": ["spread out", "collect", "shuffle", 'flip all'],
+        "zIndex": 1,
+    })
 
     template = {
         "height": "100px",
@@ -188,8 +245,7 @@ def generate_playing_card():
                 "faceupText": f"{suit}{rank}",
                 "zIndex": z_index,
             }
-            card.update(template)
-            add_component(card)
+            box.add_component(card, template=template)
             z_index -= 1
             offset += 1
 
@@ -203,30 +259,11 @@ def generate_playing_card():
             "zIndex": z_index,
         }
         card.update(template)
-        add_component(card)
+        box.add_component(card, template=template)
         z_index -= 1
         offset += 1
 
-    add_component({
-        "name": "Playing Card Box",
-        "handArea": False,
-        "top": "0px",
-        "left": "0px",
-        "height": "200px",
-        "width": "250px",
-        "color": "blue",
-        "showImage": False,
-        "draggable": True,
-        "flippable": False,
-        "resizable": False,
-        "rollable": False,
-        "ownable": False,
-        "traylike": True,
-        "boxOfComponents": True,
-        "cardistry": ["spread out", "collect", "shuffle", 'flip all'],
-        "zIndex": 1,
-    })
-    add_component({
+    kit.add_component({
         "name": "Stowage for Unused Cards",
         "handArea": False,
         "top": "0px",
@@ -247,7 +284,6 @@ def generate_playing_card():
         "boxOfComponents": False,
         "zIndex": 1,
     })
-    return playing_card
 
 
 def generate_psychological_safety_game(reg: ComponentRegistry):
@@ -501,103 +537,14 @@ def write_default_table_json():
 
 def write_initial_deploy_data_json():
     registry = ComponentRegistry()
+    generate_dice(registry)
+    generate_playing_card(registry)
     generate_psychological_safety_game(registry)
     generate_coin(registry)
     generate_stones(registry)
 
     with open("initial_deploy_data.json", "w", encoding="utf-8") as f:
         json.dump(registry.build_data_for_deploy(), f, indent=2)
-
-    return
-
-    output = dict(components=[], kits=[])
-
-    playing_cards = [{"component": c} for c in generate_playing_card()]
-    for cmp in playing_cards:
-        output["components"].append(cmp)
-
-    dice = {
-        "component": {
-            "name": "Dice (Blue)",
-            "handArea": False,
-            "top": "0px",
-            "left": "0px",
-            "height": "64px",
-            "width": "64px",
-            "showImage": False,
-            "draggable": True,
-            "flippable": False,
-            "resizable": False,
-            "rollable": True,
-            "ownable": False,
-            "onAdd": "function(component) { \n"
-                     "  component.rollFinalValue = Math.floor(Math.random() * 6) + 1;\n"
-                     "  component.rollDuration = 500;\n"
-                     "  component.startRoll = true;\n"
-                     "}"
-        }
-    }
-    output["components"].append(dice)
-
-    coin = {"component": generate_coin()}
-    output["components"].append(coin)
-
-    psychological_safety_game = generate_psychological_safety_game()
-    for cmp in psychological_safety_game[0]:
-        output["components"].append({"component": cmp})
-
-    stones = generate_stones()
-    for cmp in stones:
-        output["components"].append({"component": cmp})
-
-    for kit in [
-        {
-            "name": "Dice (Blue)",
-            "label": "Dice (Blue)",
-            "label_ja": "サイコロ（青）",
-            "componentNames": [dice["component"]["name"]],
-            "width": "64px",
-            "height": "64px"
-        },
-        {
-            "name": "Playing Card",
-            "label": "Playing Card",
-            "label_ja": "トランプ",
-            "componentNames": [c["component"]["name"] for c in playing_cards],
-            "width": "400px",
-            "height": "150px"
-        },
-        {
-            "name": "Coin - Tetradrachm of Athens",
-            "label": "Coin",
-            "label_ja": "コイン",
-            "componentNames": [c["component"]["name"] for c in [coin]],
-            "width": "100px",
-            "height": "100px"
-        },
-        {
-            "name": "Psychological Safety Game",
-            "label": "Psychological Safety Game",
-            "label_ja": "心理的安全性ゲーム",
-            "componentNames": [c["name"] for c in psychological_safety_game[0]],
-            "boxAndComponents": psychological_safety_game[1],
-            "width": "1200px",
-            "height": "1200px"
-        },
-        {
-            "name": "Transparent Stones",
-            "label": "Transparent Stones",
-            "label_ja": "宝石(セット)",
-            "componentNames": [c["name"] for c in stones],
-            "boxAndComponents": {},
-            "width": "200px",
-            "height": "200px"
-        },
-    ]:
-        output["kits"].append({"kit": kit})
-
-    with open("initial_deploy_data.json", "w", encoding="utf-8") as f:
-        json.dump(output, f, indent=2)
 
 
 if __name__ == "__main__":
