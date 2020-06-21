@@ -331,39 +331,22 @@ function addNewKit(kitData) {
         const componentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitName))).json();
 
         consolidatePropagation(() => {
-            const componentsInBox = {};
-            const componentNameToId = {};  // cache for quick access within this function
-
-            for (const data of componentsData) {
-                const componentData = data.component;
-                componentData.kitId = kitId;
-                const componentId = generateComponentId();
-                componentData.componentId = componentId;
-                componentData.top = parseFloat(componentData.top) + rect.top;
-                componentData.left = parseFloat(componentData.left) + rect.left;
-                if (componentData.zIndex) {
-                    componentData.zIndex += baseZIndex;
-                } else {
-                    componentData.zIndex = baseZIndex;
-                }
-                // prepareComponentsInBox(componentData, componentsInBox);
-                newComponents[componentId] = componentData;
-                if (componentData.onAdd) {
-                    Function('"use strict"; return ' + componentData.onAdd)()(componentData);
-                }
-
-                componentNameToId[componentData.name] = componentId;
+            const componentDataMap = {};
+            for(const cmp of componentsData) {
+                componentDataMap[cmp['component']['name']] = cmp;
             }
 
-            if (kitData.kit.boxAndComponents) {
-                for (const boxName in kitData.kit.boxAndComponents) {
-                    // noinspection JSUnfilteredForInLoop
-                    const boxData = newComponents[componentNameToId[boxName]];
-                    boxData.componentsInBox = {};
-                    // noinspection JSUnfilteredForInLoop
-                    for (const componentName of kitData.kit.boxAndComponents[boxName]) {
-                        boxData.componentsInBox[componentNameToId[componentName]] = true;
-                    }
+            for(const name in kitData.kit.boxAndComponents) {
+                const boxOrComponentData = createComponent(name);
+                const contents = kitData.kit.boxAndComponents[name];
+                if(!contents) {
+                    continue;
+                }
+
+                boxOrComponentData.componentsInBox = {};
+                for(const name of contents) {
+                    const componentId = createComponent(name).componentId;
+                    boxOrComponentData.componentsInBox[componentId] = true;
                 }
             }
 
@@ -375,6 +358,25 @@ function addNewKit(kitData) {
             pushNewKit({
                 kit: { name: kitName, kitId: kitId },
             });
+
+            function createComponent(name) {
+                const componentData = Object.assign({}, componentDataMap[name].component);
+                componentData.kitId = kitId;
+                const componentId = generateComponentId();
+                componentData.componentId = componentId;
+                componentData.top = parseFloat(componentData.top) + rect.top;
+                componentData.left = parseFloat(componentData.left) + rect.left;
+                if (componentData.zIndex) {
+                    componentData.zIndex += baseZIndex;
+                } else {
+                    componentData.zIndex = baseZIndex;
+                }
+                newComponents[componentId] = componentData;
+                if (componentData.onAdd) {
+                    Function('"use strict"; return ' + componentData.onAdd)()(componentData);
+                }
+                return componentData;
+            }
         });
 
         function prepareComponentsInBox(componentData, componentsInBox) {

@@ -250,149 +250,16 @@ def generate_playing_card():
     return playing_card
 
 
-def generate_psychological_safety_game():
-    components = []
-
-    def add_component(c):
-        components.append(in_order(c))
-
-    template = {
-        "height": "120px",
-        "width": "83px",
-        "showImage": True,
-        "faceup": False,
-        "draggable": True,
-        "flippable": True,
-        "ownable": True,
-        "resizable": False,
-    }
-    z_index = 100
-
-    offset = 0
-    for voice in range(35):
-        card = {
-            "name": f"PsychologicalSafety V{voice + 1:02}",
-            "top": f"{offset}px",
-            "left": f"{offset + 380 + 100}px",
-            "faceupImage": f"/static/images/psychological_safety_v{voice + 1:02}.jpg",
-            "facedownImage": "/static/images/psychological_safety_voice_back.png",
-            "zIndex": z_index,
-        }
-        card.update(template)
-        add_component(card)
-        z_index -= 1
-        offset += 1
-
-    offset = 0
-    for situation in range(14):
-        card = {
-            "name": f"PsychologicalSafety S{situation + 1:02}",
-            "top": f"{offset + 220}px",
-            "left": f"{offset + 380 + 100}px",
-            "faceupImage": f"/static/images/psychological_safety_s{situation + 1:02}.jpg",
-            "facedownImage": "/static/images/psychological_safety_situation_back.png",
-            "zIndex": z_index,
-        }
-        card.update(template)
-        add_component(card)
-        z_index -= 1
-        offset += 1
-
-    add_component({
-        "name": "PsychologicalSafety Board",
-        "top": "0",
-        "left": "0",
-        "height": "500px",
-        "width": "354px",
-        "showImage": True,
-        "image": "/static/images/psychological_safety_board.png",
-        "draggable": True,
-        "flippable": False,
-        "ownable": False,
-        "resizable": True,
-        "traylike": True,
-        "zIndex": z_index,
-    })
-    z_index -= 1
-    add_component({
-        "name": "PsychologicalSafety Box for Voice",
-        "handArea": False,
-        "top": "0px",
-        "left": "380px",
-        "height": "200px",
-        "width": "350px",
-        "color": "yellow",
-        "text": "Situation Cards",
-        "text_ja": "発言＆オプションカード",
-        "showImage": False,
-        "draggable": True,
-        "flippable": False,
-        "resizable": False,
-        "rollable": False,
-        "ownable": False,
-        "traylike": True,
-        "boxOfComponents": True,
-        "cardistry": ['spread out', 'collect', 'shuffle', 'flip all'],
-        "zIndex": z_index,
-    })
-    z_index -= 1
-    add_component({
-        "name": "PsychologicalSafety Box for Situation",
-        "handArea": False,
-        "top": "220px",
-        "left": "380",
-        "height": "150px",
-        "width": "350px",
-        "color": "green",
-        "text": "Situation Cards",
-        "text_ja": "状況カード",
-        "showImage": False,
-        "draggable": True,
-        "flippable": False,
-        "resizable": False,
-        "rollable": False,
-        "ownable": False,
-        "traylike": True,
-        "boxOfComponents": True,
-        "cardistry": ['spread out', 'collect', 'shuffle', 'flip all'],
-        "zIndex": z_index,
-    })
-    z_index -= 1
-    add_component({
-        "name": "PsychologicalSafety Box for Stones",
-        "handArea": False,
-        "top": "390px",
-        "left": "380px",
-        "height": "150px",
-        "width": "250px",
-        "color": "black",
-        "text": "Stones",
-        "text_ja": "石の置き場",
-        "showImage": False,
-        "draggable": True,
-        "flippable": False,
-        "resizable": False,
-        "rollable": False,
-        "ownable": False,
-        "traylike": True,
-        "boxOfComponents": True,
-        "cardistry": ['spread out', 'collect', 'flip all'],
-        "zIndex": z_index,
-    })
-    z_index -= 1
-
-    box_and_contents = {
-        "PsychologicalSafety Box for Situation":
-            [c["name"] for c in components if "PsychologicalSafety S" in c["name"]],
-        "PsychologicalSafety Box for Voice":
-            [c["name"] for c in components if "PsychologicalSafety V" in c["name"]],
-        "PsychologicalSafety Box for Stones": [],
-    }
-    return components, box_and_contents
-
-
-def generate_psychological_safety_game2(reg: ComponentRegistry):
+def generate_psychological_safety_game(reg: ComponentRegistry):
     kit = reg.kit()
+
+    kit.description = {
+        "name": "Psychological Safety Game",
+        "label": "Psychological Safety Game",
+        "label_ja": "心理的安全性ゲーム",
+        "width": "1200px",
+        "height": "1200px"
+    }
 
     template = {
         "height": "120px",
@@ -524,8 +391,18 @@ def generate_psychological_safety_game2(reg: ComponentRegistry):
     z_index -= 1
 
 
-def generate_coin():
-    return {
+def generate_coin(reg: ComponentRegistry):
+    kit = reg.kit()
+
+    kit.description = {
+        "name": "Coin - Tetradrachm of Athens",
+        "label": "Coin",
+        "label_ja": "コイン",
+        "width": "100px",
+        "height": "100px"
+    }
+
+    kit.add_component({
         "name": "Coin - Tetradrachm of Athens",
         "top": "0px",
         "left": "0px",
@@ -538,7 +415,40 @@ def generate_coin():
         "flippable": True,
         "ownable": False,
         "resizable": True,
+    })
+
+
+def generate_stones(reg: ComponentRegistry):
+    template = {
+        "height": "25px",
+        "width": "25px",
+        "showImage": True,
+        "faceup": False,
+        "draggable": True,
+        "flippable": False,
+        "ownable": True,
+        "resizable": False,
     }
+
+    kit = reg.kit()
+    kit.description = {
+        "name": "Transparent Stones",
+        "label": "Transparent Stones",
+        "label_ja": "宝石(セット)",
+        "width": "200px",
+        "height": "200px"
+    }
+
+    offset = 0
+    for stone in range(4):
+        s = {
+            "name": f"Transparent Stone {stone + 1:02}",
+            "top": f"{offset}px",
+            "left": f"{offset + 100}px",
+            "image": f"/static/images/transparent_stone_{stone + 1:02}.png",
+        }
+        kit.add_component(s, template)
+        offset += 1
 
 
 def write_default_table_json():
@@ -589,39 +499,17 @@ def write_default_table_json():
         json.dump(table, f, indent=2)
 
 
-def generate_stones():
-    stones = []
-
-    def add_component(c):
-        stones.append(in_order(c))
-
-    template = {
-        "height": "25px",
-        "width": "25px",
-        "showImage": True,
-        "faceup": False,
-        "draggable": True,
-        "flippable": False,
-        "ownable": True,
-        "resizable": False,
-    }
-
-    offset = 0
-    for stone in range(4):
-        s = {
-            "name": f"Transparent Stone {stone + 1:02}",
-            "top": f"{offset}px",
-            "left": f"{offset + 100}px",
-            "image": f"/static/images/transparent_stone_{stone + 1:02}.png",
-        }
-        s.update(template)
-        add_component(s)
-        offset += 1
-
-    return stones
-
-
 def write_initial_deploy_data_json():
+    registry = ComponentRegistry()
+    generate_psychological_safety_game(registry)
+    generate_coin(registry)
+    generate_stones(registry)
+
+    with open("initial_deploy_data.json", "w", encoding="utf-8") as f:
+        json.dump(registry.build_data_for_deploy(), f, indent=2)
+
+    return
+
     output = dict(components=[], kits=[])
 
     playing_cards = [{"component": c} for c in generate_playing_card()]

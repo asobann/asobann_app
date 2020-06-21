@@ -16,7 +16,7 @@ def get(name):
 
 def get_for_kit(kit_name):
     kit = kits.get(kit_name)
-    data = components.find({"component.name": {"$in": kit["componentNames"]}})
+    data = components.find({"component.name": {"$in": kit["usedComponentNames"]}})
     return [{"component": d["component"]} for d in data]
 
 
