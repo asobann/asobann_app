@@ -188,9 +188,14 @@ const flippability = {
 
 
 const resizability = {
-    install: function (component) {
+    install: function (component, componentData) {
         function isResizingPermitted() {
             return component.resizable && featsContext.canOperateOn(component);
+        }
+
+        if(!componentData.resizable) {
+            // do not install resizability
+            return;
         }
 
         interact(component.el).resizable({

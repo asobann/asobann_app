@@ -361,8 +361,8 @@ def generate_stones():
         stones.append(in_order(c))
 
     template = {
-        "height": "40px",
-        "width": "40px",
+        "height": "25px",
+        "width": "25px",
         "showImage": True,
         "faceup": False,
         "draggable": True,
