@@ -2891,6 +2891,7 @@
         "name": "Planning Poker",
         "label": "Planning Poker",
         "label_ja": "\u30d7\u30e9\u30f3\u30cb\u30f3\u30b0\u30dd\u30fc\u30ab\u30fc",
+        "positionOfKitContents": "on all hand areas",
         "width": "400px",
         "height": "150px",
         "boxAndComponents": {

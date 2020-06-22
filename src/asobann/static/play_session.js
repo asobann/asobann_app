@@ -226,6 +226,16 @@ class Table {
         return nextZIndex;
     }
 
+    getAllHandAreas() {
+        const handAreasData = [];
+        for (const cmpId in this.data.components) {
+            const cmp = this.data.components[cmpId];
+            if (cmp.handArea) {
+                handAreasData.push(cmp);
+            }
+        }
+        return handAreasData;
+    }
 }
 
 
@@ -353,8 +363,7 @@ function addNewKit(kitData) {
         }
 
         consolidatePropagation(() => {
-            const rect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
-            layouter(usedComponentsData, rect);
+            layouter();
 
             for (const componentId in newComponents) {
                 const newComponentData = newComponents[componentId];
@@ -405,6 +414,12 @@ function addNewKit(kitData) {
                 (Math.random() * (parseFloat(baseRect.height) - parseFloat(newComponentData.height))));
             newComponentData.left = Math.floor(parseFloat(baseRect.left) +
                 (Math.random() * (parseFloat(baseRect.width) - parseFloat(newComponentData.width))));
+            if (newComponentData.zIndex) {
+                newComponentData.zIndex += baseZIndex;
+            } else {
+                newComponentData.zIndex = baseZIndex;
+            }
+
         }
 
         function layoutRelativelyAsDefined(newComponentData, baseRect) {
@@ -420,12 +435,52 @@ function addNewKit(kitData) {
             }
         }
 
+        function layoutInHandArea(componentsInHandArea, handAreaData) {
+            const verticalStart = parseFloat(handAreaData.top) + 1;
+            const height = parseFloat(handAreaData.height) - 2;
+            const horizontalStart = parseFloat(handAreaData.left) + 1;
+            const width = parseFloat(handAreaData.width) - 2;
+
+            const count = componentsInHandArea.length;
+            componentsInHandArea.sort((a, b) => b.zIndex - a.zIndex);
+            let index = 0;
+            for (const cmp of componentsInHandArea) {
+                cmp.top = verticalStart + ((height - parseFloat(cmp.height)) / count) * index;
+                cmp.left = horizontalStart + ((width - parseFloat(cmp.width)) / count) * index;
+                index += 1;
+            }
+
+        }
+
         function kitLayouter(name) {
             switch (name) {
                 case "on all hand areas":
-                    return null;
+                    return function () {
+                        const handAreasData = table.getAllHandAreas();
+                        for (const handAreaData of handAreasData) {
+                            let componentsCount = 0;
+                            const componentsInHandArea = [];
+                            for (const name in kitData.kit.boxAndComponents) {
+                                const boxOrComponentData = createComponent(name);
+                                if (boxOrComponentData.zIndex) {
+                                    boxOrComponentData.zIndex += baseZIndex;
+                                } else {
+                                    boxOrComponentData.zIndex = baseZIndex;
+                                }
+                                componentsInHandArea.push(boxOrComponentData);
+                            }
+                            layoutInHandArea(componentsInHandArea, handAreaData);
+
+                            const contents = kitData.kit.boxAndComponents[name];
+                            if (contents) {
+                                createContentsOfBox(boxOrComponentData, contents);
+                            }
+                        }
+                    };
                 case "random":
-                    return function (usedComponentsData, emptySpaceRect) {
+                    return function () {
+                        const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
+
                         for (const name in kitData.kit.boxAndComponents) {
                             const boxOrComponentData = createComponent(name);
                             layoutRandomly(boxOrComponentData, emptySpaceRect);
@@ -438,7 +493,9 @@ function addNewKit(kitData) {
                     };
 
                 default:
-                    return function (usedComponentsData, emptySpaceRect) {
+                    return function () {
+                        const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
+
                         for (const name in kitData.kit.boxAndComponents) {
                             const boxOrComponentData = createComponent(name);
                             layoutRelativelyAsDefined(boxOrComponentData, emptySpaceRect);

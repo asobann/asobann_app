@@ -504,7 +504,7 @@ def generage_planning_poker(reg: ComponentRegistry):
         "name": "Planning Poker",
         "label": "Planning Poker",
         "label_ja": "プランニングポーカー",
-        # "positionOfKitContents": "on all hand areas",  # FIXME
+        "positionOfKitContents": "on all hand areas",
         "width": "400px",
         "height": "150px"
     }
