@@ -373,6 +373,19 @@ function addNewKit(kitData) {
             return newComponentData;
         }
 
+        function layoutAsDefined(newComponentData, baseRect) {
+            newComponentData.top = parseFloat(newComponentData.top) + baseRect.top;
+            newComponentData.left = parseFloat(newComponentData.left) + baseRect.left;
+            if (newComponentData.zIndex) {
+                newComponentData.zIndex += baseZIndex;
+            } else {
+                newComponentData.zIndex = baseZIndex;
+            }
+            if (newComponentData.onAdd) {
+                Function('"use strict"; return ' + newComponentData.onAdd)()(newComponentData);
+            }
+        }
+
         function kitLayouter(name) {
             switch (name) {
                 case "on all hand areas":
@@ -386,16 +399,17 @@ function addNewKit(kitData) {
                         for (const name in kitData.kit.boxAndComponents) {
                             const boxOrComponentData = createComponent(name);
 
-                            boxOrComponentData.top = parseFloat(boxOrComponentData.top) + emptySpaceRect.top;
-                            boxOrComponentData.left = parseFloat(boxOrComponentData.left) + emptySpaceRect.left;
-                            if (boxOrComponentData.zIndex) {
-                                boxOrComponentData.zIndex += baseZIndex;
-                            } else {
-                                boxOrComponentData.zIndex = baseZIndex;
-                            }
-                            if (boxOrComponentData.onAdd) {
-                                Function('"use strict"; return ' + boxOrComponentData.onAdd)()(boxOrComponentData);
-                            }
+                            layoutAsDefined(boxOrComponentData, emptySpaceRect);
+                            // boxOrComponentData.top = parseFloat(boxOrComponentData.top) + emptySpaceRect.top;
+                            // boxOrComponentData.left = parseFloat(boxOrComponentData.left) + emptySpaceRect.left;
+                            // if (boxOrComponentData.zIndex) {
+                            //     boxOrComponentData.zIndex += baseZIndex;
+                            // } else {
+                            //     boxOrComponentData.zIndex = baseZIndex;
+                            // }
+                            // if (boxOrComponentData.onAdd) {
+                            //     Function('"use strict"; return ' + boxOrComponentData.onAdd)()(boxOrComponentData);
+                            // }
                             const contents = kitData.kit.boxAndComponents[name];
                             if (!contents) {
                                 continue;
@@ -432,16 +446,17 @@ function addNewKit(kitData) {
                                 default:
                                     for (const contentId in boxData.componentsInBox) {
                                         const contentData = newComponents[contentId];
-                                        contentData.top = parseFloat(contentData.top) + emptySpaceRect.top;
-                                        contentData.left = parseFloat(contentData.left) + emptySpaceRect.left;
-                                        if (contentData.zIndex) {
-                                            contentData.zIndex += baseZIndex;
-                                        } else {
-                                            contentData.zIndex = baseZIndex;
-                                        }
-                                        if (contentData.onAdd) {
-                                            Function('"use strict"; return ' + contentData.onAdd)()(contentData);
-                                        }
+                                        layoutAsDefined(contentData, boxData);
+                                        // contentData.top = parseFloat(contentData.top) + emptySpaceRect.top;
+                                        // contentData.left = parseFloat(contentData.left) + emptySpaceRect.left;
+                                        // if (contentData.zIndex) {
+                                        //     contentData.zIndex += baseZIndex;
+                                        // } else {
+                                        //     contentData.zIndex = baseZIndex;
+                                        // }
+                                        // if (contentData.onAdd) {
+                                        //     Function('"use strict"; return ' + contentData.onAdd)()(contentData);
+                                        // }
                                     }
                             }
                         }

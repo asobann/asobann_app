@@ -317,7 +317,7 @@ def generate_psychological_safety_game(reg: ComponentRegistry):
         card = {
             "name": f"PsychologicalSafety V{voice + 1:02}",
             "top": f"{offset}px",
-            "left": f"{offset + 380 + 100}px",
+            "left": f"{offset + 100}px",
             "faceupImage": f"/static/images/psychological_safety_v{voice + 1:02}.jpg",
             "facedownImage": "/static/images/psychological_safety_voice_back.png",
             "zIndex": z_index,
@@ -331,8 +331,8 @@ def generate_psychological_safety_game(reg: ComponentRegistry):
     for situation in range(14):
         card = {
             "name": f"PsychologicalSafety S{situation + 1:02}",
-            "top": f"{offset + 220}px",
-            "left": f"{offset + 380 + 100}px",
+            "top": f"{offset}px",
+            "left": f"{offset + 100}px",
             "faceupImage": f"/static/images/psychological_safety_s{situation + 1:02}.jpg",
             "facedownImage": "/static/images/psychological_safety_situation_back.png",
             "zIndex": z_index,
@@ -503,7 +503,7 @@ def generage_planning_poker(reg: ComponentRegistry):
         "name": "Planning Poker",
         "label": "Planning Poker",
         "label_ja": "プランニングポーカー",
-        "positionOfKitContents": "on all hand areas",
+        # "positionOfKitContents": "on all hand areas",  # FIXME
         "width": "400px",
         "height": "150px"
     }
