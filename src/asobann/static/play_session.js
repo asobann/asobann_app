@@ -348,6 +348,9 @@ function addNewKit(kitData) {
         const usedComponentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitName))).json();
         const layouter = kitLayouter(kitData.kit.positionOfKitContents);
         const componentDataMap = {};
+        for (const cmp of usedComponentsData) {
+            componentDataMap[cmp['component']['name']] = cmp;
+        }
 
         consolidatePropagation(() => {
             const rect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
@@ -423,9 +426,6 @@ function addNewKit(kitData) {
                     return null;
                 default:
                     return function (usedComponentsData, emptySpaceRect) {
-                        for (const cmp of usedComponentsData) {
-                            componentDataMap[cmp['component']['name']] = cmp;
-                        }
 
                         for (const name in kitData.kit.boxAndComponents) {
                             const boxOrComponentData = createComponent(name);
