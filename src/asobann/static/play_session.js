@@ -457,23 +457,37 @@ function addNewKit(kitData) {
                 case "on all hand areas":
                     return function () {
                         const handAreasData = table.getAllHandAreas();
-                        for (const handAreaData of handAreasData) {
-                            let componentsCount = 0;
-                            const componentsInHandArea = [];
+                        if (handAreasData.length > 0) {
+                            for (const handAreaData of handAreasData) {
+                                let componentsCount = 0;
+                                const componentsInHandArea = [];
+                                for (const name in kitData.kit.boxAndComponents) {
+                                    const boxOrComponentData = createComponent(name);
+                                    if (boxOrComponentData.zIndex) {
+                                        boxOrComponentData.zIndex += baseZIndex;
+                                    } else {
+                                        boxOrComponentData.zIndex = baseZIndex;
+                                    }
+                                    componentsInHandArea.push(boxOrComponentData);
+                                }
+                                layoutInHandArea(componentsInHandArea, handAreaData);
+
+                                const contents = kitData.kit.boxAndComponents[name];
+                                if (contents) {
+                                    createContentsOfBox(boxOrComponentData, contents);
+                                }
+                            }
+                        } else {
+                            const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
+
                             for (const name in kitData.kit.boxAndComponents) {
                                 const boxOrComponentData = createComponent(name);
-                                if (boxOrComponentData.zIndex) {
-                                    boxOrComponentData.zIndex += baseZIndex;
-                                } else {
-                                    boxOrComponentData.zIndex = baseZIndex;
-                                }
-                                componentsInHandArea.push(boxOrComponentData);
-                            }
-                            layoutInHandArea(componentsInHandArea, handAreaData);
+                                layoutRelativelyAsDefined(boxOrComponentData, emptySpaceRect);
 
-                            const contents = kitData.kit.boxAndComponents[name];
-                            if (contents) {
-                                createContentsOfBox(boxOrComponentData, contents);
+                                const contents = kitData.kit.boxAndComponents[name];
+                                if (contents) {
+                                    createContentsOfBox(boxOrComponentData, contents);
+                                }
                             }
                         }
                     };
