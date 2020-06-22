@@ -497,7 +497,7 @@ def generate_stones(reg: ComponentRegistry):
         offset += 1
 
 
-def generage_planning_poker(reg: ComponentRegistry):
+def generate_planning_poker(reg: ComponentRegistry):
     kit = reg.kit()
 
     kit.description = {
@@ -592,7 +592,7 @@ def write_initial_deploy_data_json():
     generate_psychological_safety_game(registry)
     generate_coin(registry)
     generate_stones(registry)
-    generage_planning_poker(registry)
+    generate_planning_poker(registry)
 
     with open("initial_deploy_data.json", "w", encoding="utf-8") as f:
         json.dump(registry.build_data_for_deploy(), f, indent=2)
