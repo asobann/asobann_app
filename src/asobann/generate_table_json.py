@@ -426,7 +426,7 @@ def generate_psychological_safety_game(reg: ComponentRegistry):
         "ownable": False,
         "traylike": True,
         "boxOfComponents": True,
-        "cardistry": ['spread out', 'collect', 'flip all'],
+        "cardistry": ['spread out', 'collect in mess'],
         "zIndex": z_index,
     }).use_components(
         [f"Transparent Stone {stone + 1:02}" for stone in range(4)] * 8

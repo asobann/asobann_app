@@ -88,7 +88,6 @@ const collect = {
         // Collect cards left to right then top to bottom
         // and then stack up with modifying zIndex
         // Spreading out does the reverse
-
         featsContext.table.consolidatePropagation(() => {
             let top = parseFloat(component.el.style.top);
             let left = parseFloat(component.el.style.left) + 100;
@@ -151,7 +150,6 @@ const collect = {
         return component.onTray && component.componentsInBox &&
             countProperties(component.onTray) !== countProperties(component.componentsInBox);
     }
-
 };
 
 const shuffle = {
@@ -248,5 +246,60 @@ const flipAll = {
     }
 };
 
-const allCardistry = [spreadOut, collect, shuffle, flipAll];
+const collectInMess = {
+    name: 'collect in mess',
+    label: _('Collect Components'),
+    execute: function (component, featsContext) {
+        if (!component.componentsInBox) {
+            return;
+        }
+
+        // Collect components into this box
+        // Position randomly
+        featsContext.table.consolidatePropagation(() => {
+            let collectComponentsInHand = undefined;
+
+            let placementAreaTop = parseFloat(component.el.style.top);
+            let placementAreaLeft = parseFloat(component.el.style.left);
+            let placementAreaHeight = parseFloat(component.el.style.height);
+            let placementAreaWidth = parseFloat(component.el.style.width);
+
+            for (const cmpId in component.componentsInBox) {
+                // noinspection JSUnfilteredForInLoop
+                const cmp = featsContext.table.componentsOnTable[cmpId];
+                if (cmp.isStowed) {
+                    continue;
+                }
+                if (cmp.owner) {
+                    if (collectComponentsInHand === undefined) {
+                        collectComponentsInHand = window.confirm(_("Do you want to collect even in-hand components?"));
+                    }
+                    if (!collectComponentsInHand) {
+                        continue;
+                    }
+                }
+                featsContext.fireEvent(cmp, featsContext.events.onPositionChanged,
+                    {
+                        top: Math.floor(
+                            placementAreaTop +
+                            Math.random() * (placementAreaHeight - parseFloat(cmp.el.style.height) - 1)),
+                        left: Math.floor(
+                            placementAreaLeft +
+                            Math.random() * (placementAreaWidth - parseFloat(cmp.el.style.width) - 1)),
+                        height: parseFloat(cmp.el.style.height),
+                        width: parseFloat(cmp.el.style.width),
+                        moving: false,
+                    });
+            }
+        });
+    },
+    onComponentUpdate: function (component, componentData) {
+        component.componentsInBox = componentData.componentsInBox;
+    },
+    isEnabled: function (component, /*featsContext*/) {
+        return component.onTray && component.componentsInBox &&
+            countProperties(component.onTray) !== countProperties(component.componentsInBox);
+    }
+};
+const allCardistry = [spreadOut, collect, shuffle, flipAll, collectInMess];
 export {allCardistry};
