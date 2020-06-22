@@ -2184,7 +2184,7 @@
           "spread out",
           "collect in mess"
         ],
-        "positionOfContents": "random",
+        "positionOfBoxContents": "random",
         "zIndex": 48
       }
     },
@@ -2266,6 +2266,266 @@
         "ownable": true,
         "resizable": false,
         "faceup": false
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker 0",
+        "top": "0px",
+        "left": "100px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "0",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 100
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker 1/2",
+        "top": "1px",
+        "left": "101px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "1/2",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 99
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker 1",
+        "top": "2px",
+        "left": "102px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "1",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 98
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker 3",
+        "top": "3px",
+        "left": "103px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "3",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 97
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker 5",
+        "top": "4px",
+        "left": "104px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "5",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 96
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker 8",
+        "top": "5px",
+        "left": "105px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "8",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 95
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker 13",
+        "top": "6px",
+        "left": "106px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "13",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 94
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker 20",
+        "top": "7px",
+        "left": "107px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "20",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 93
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker 40",
+        "top": "8px",
+        "left": "108px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "40",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 92
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker 100",
+        "top": "9px",
+        "left": "109px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "100",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 91
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker \u221e",
+        "top": "10px",
+        "left": "110px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "\u221e",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 90
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker ?",
+        "top": "11px",
+        "left": "111px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "?",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 89
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker \u2615",
+        "top": "12px",
+        "left": "112px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "\u2615",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 88
       }
     }
   ],
@@ -2602,6 +2862,45 @@
           "Transparent Stone 02",
           "Transparent Stone 03",
           "Transparent Stone 04"
+        ]
+      }
+    },
+    {
+      "kit": {
+        "name": "Planning Poker",
+        "label": "Planning Poker",
+        "label_ja": "\u30d7\u30e9\u30f3\u30cb\u30f3\u30b0\u30dd\u30fc\u30ab\u30fc",
+        "width": "400px",
+        "height": "150px",
+        "boxAndComponents": {
+          "PlanningPoker 0": null,
+          "PlanningPoker 1/2": null,
+          "PlanningPoker 1": null,
+          "PlanningPoker 3": null,
+          "PlanningPoker 5": null,
+          "PlanningPoker 8": null,
+          "PlanningPoker 13": null,
+          "PlanningPoker 20": null,
+          "PlanningPoker 40": null,
+          "PlanningPoker 100": null,
+          "PlanningPoker \u221e": null,
+          "PlanningPoker ?": null,
+          "PlanningPoker \u2615": null
+        },
+        "usedComponentNames": [
+          "PlanningPoker 0",
+          "PlanningPoker 1",
+          "PlanningPoker 1/2",
+          "PlanningPoker 100",
+          "PlanningPoker 13",
+          "PlanningPoker 20",
+          "PlanningPoker 3",
+          "PlanningPoker 40",
+          "PlanningPoker 5",
+          "PlanningPoker 8",
+          "PlanningPoker ?",
+          "PlanningPoker \u221e",
+          "PlanningPoker \u2615"
         ]
       }
     }

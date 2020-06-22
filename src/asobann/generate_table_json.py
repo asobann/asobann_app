@@ -496,6 +496,46 @@ def generate_stones(reg: ComponentRegistry):
         offset += 1
 
 
+def generage_planning_poker(reg: ComponentRegistry):
+    kit = reg.kit()
+
+    kit.description = {
+        "name": "Planning Poker",
+        "label": "Planning Poker",
+        "label_ja": "プランニングポーカー",
+        "width": "400px",
+        "height": "150px"
+    }
+
+    template = {
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": False,
+        "facedownText": "Planning Poker",
+        "faceup": True,
+        "draggable": True,
+        "flippable": True,
+        "ownable": True,
+        "resizable": False,
+    }
+    z_index = 100
+    offset = 0
+    for point in ["0", "1/2", "1", "3", "5", "8", "13", "20", "40", "100", "∞", "?", "\u2615"]:
+            card = {
+                "name": f"PlanningPoker {point}",
+                "top": f"{offset}px",
+                "left": f"{offset + 100}px",
+                "faceupText": f"{point}",
+                "zIndex": z_index,
+            }
+            kit.add_component(card, template=template)
+            z_index -= 1
+            offset += 1
+
+
+
 def write_default_table_json():
     table = OrderedDict(
         components=OrderedDict(),
@@ -551,6 +591,7 @@ def write_initial_deploy_data_json():
     generate_psychological_safety_game(registry)
     generate_coin(registry)
     generate_stones(registry)
+    generage_planning_poker(registry)
 
     with open("initial_deploy_data.json", "w", encoding="utf-8") as f:
         json.dump(registry.build_data_for_deploy(), f, indent=2)
