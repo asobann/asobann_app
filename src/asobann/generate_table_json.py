@@ -510,8 +510,8 @@ def generage_planning_poker(reg: ComponentRegistry):
     }
 
     template = {
-        "height": "100px",
-        "width": "75px",
+        "height": "40x",
+        "width": "30px",
         "color": "bisque",
         "textColor": "black",
         "showImage": False,
