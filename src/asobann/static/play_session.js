@@ -424,23 +424,31 @@ function addNewKit(kitData) {
             switch (name) {
                 case "on all hand areas":
                     return null;
-                default:
+                case "random":
                     return function (usedComponentsData, emptySpaceRect) {
-
                         for (const name in kitData.kit.boxAndComponents) {
                             const boxOrComponentData = createComponent(name);
+                            layoutRandomly(boxOrComponentData, emptySpaceRect);
 
-                            layoutRelativelyAsDefined(boxOrComponentData, emptySpaceRect);
                             const contents = kitData.kit.boxAndComponents[name];
-                            if (!contents) {
-                                continue;
+                            if (contents) {
+                                createContentsOfBox(boxOrComponentData, contents);
                             }
-
-                            createContentsOfBox(boxOrComponentData, contents);
                         }
+                    };
 
+                default:
+                    return function (usedComponentsData, emptySpaceRect) {
+                        for (const name in kitData.kit.boxAndComponents) {
+                            const boxOrComponentData = createComponent(name);
+                            layoutRelativelyAsDefined(boxOrComponentData, emptySpaceRect);
 
-                    }
+                            const contents = kitData.kit.boxAndComponents[name];
+                            if (contents) {
+                                createContentsOfBox(boxOrComponentData, contents);
+                            }
+                        }
+                    };
             }
         }
     })();

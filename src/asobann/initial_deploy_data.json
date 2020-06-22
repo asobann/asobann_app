@@ -2869,6 +2869,7 @@
         "name": "Transparent Stones",
         "label": "Transparent Stones",
         "label_ja": "\u5b9d\u77f3(\u30bb\u30c3\u30c8)",
+        "positionOfKitContents": "random",
         "width": "100px",
         "height": "100px",
         "boxAndComponents": {
