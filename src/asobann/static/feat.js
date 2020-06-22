@@ -16,7 +16,7 @@ function arraysEqual(a, b) {
 }
 
 function toRect(c) {
-    if (c.top && c.left && c.width && c.height) {
+    if (c.top != undefined && c.left != undefined  && c.width != undefined  && c.height != undefined ) {
         return {
             top: parseFloat(c.top),
             left: parseFloat(c.left),

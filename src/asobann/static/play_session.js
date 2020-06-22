@@ -343,14 +343,15 @@ function addNewKit(kitData) {
     });
 
     const baseZIndex = table.getNextZIndex();
-    const rect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
     (async () => {
         const newComponents = {};
         const usedComponentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitName))).json();
         const layouter = kitLayouter(kitData.kit.positionOfKitContents);
+        const componentDataMap = {};
 
         consolidatePropagation(() => {
-            layouter(usedComponentsData);
+            const rect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
+            layouter(usedComponentsData, rect);
 
             for (const componentId in newComponents) {
                 const newComponentData = newComponents[componentId];
@@ -362,19 +363,39 @@ function addNewKit(kitData) {
             });
         });
 
+        function createComponent(name) {
+            const newComponentData = Object.assign({}, componentDataMap[name].component);
+            newComponentData.kitId = kitId;
+            const componentId = generateComponentId();
+            newComponentData.componentId = componentId;
+            newComponents[componentId] = newComponentData;
+
+            return newComponentData;
+        }
+
         function kitLayouter(name) {
             switch (name) {
                 case "on all hand areas":
                     return null;
                 default:
-                    return function () {
-                        const componentDataMap = {};
+                    return function (usedComponentsData, emptySpaceRect) {
                         for (const cmp of usedComponentsData) {
                             componentDataMap[cmp['component']['name']] = cmp;
                         }
 
                         for (const name in kitData.kit.boxAndComponents) {
                             const boxOrComponentData = createComponent(name);
+
+                            boxOrComponentData.top = parseFloat(boxOrComponentData.top) + emptySpaceRect.top;
+                            boxOrComponentData.left = parseFloat(boxOrComponentData.left) + emptySpaceRect.left;
+                            if (boxOrComponentData.zIndex) {
+                                boxOrComponentData.zIndex += baseZIndex;
+                            } else {
+                                boxOrComponentData.zIndex = baseZIndex;
+                            }
+                            if (boxOrComponentData.onAdd) {
+                                Function('"use strict"; return ' + boxOrComponentData.onAdd)()(boxOrComponentData);
+                            }
                             const contents = kitData.kit.boxAndComponents[name];
                             if (!contents) {
                                 continue;
@@ -384,48 +405,44 @@ function addNewKit(kitData) {
                         }
 
 
-
-                        function createComponent(name) {
-                            const componentData = Object.assign({}, componentDataMap[name].component);
-                            componentData.kitId = kitId;
-                            const componentId = generateComponentId();
-                            componentData.componentId = componentId;
-                            componentData.top = parseFloat(componentData.top) + rect.top;
-                            componentData.left = parseFloat(componentData.left) + rect.left;
-                            if (componentData.zIndex) {
-                                componentData.zIndex += baseZIndex;
-                            } else {
-                                componentData.zIndex = baseZIndex;
-                            }
-                            newComponents[componentId] = componentData;
-                            if (componentData.onAdd) {
-                                Function('"use strict"; return ' + componentData.onAdd)()(componentData);
-                            }
-                            return componentData;
-                        }
-
                         function createContentsOfBox(boxData, contentNames) {
                             boxData.componentsInBox = {};
                             for (const name of contentNames) {
-                                const componentId = createComponent(name).componentId;
+                                const boxOrComponentData = createComponent(name);
+                                const componentId = boxOrComponentData.componentId;
+
+
                                 boxData.componentsInBox[componentId] = true;
                             }
-                            if (boxData.positionOfBoxContents) {
-                                switch (boxData.positionOfBoxContents) {
-                                    case "random":
-                                        const areaTop = boxData.top;
-                                        const areaLeft = boxData.left;
-                                        const areaWidth = parseFloat(boxData.width);
-                                        const areaHeight = parseFloat(boxData.height);
-                                        for (const contentId in boxData.componentsInBox) {
-                                            const contentData = newComponents[contentId];
-                                            contentData.top = Math.floor(areaTop +
-                                                (Math.random() * (areaHeight - parseFloat(contentData.height))));
-                                            contentData.left = Math.floor(areaLeft +
-                                                (Math.random() * (areaWidth - parseFloat(contentData.width))));
+
+                            switch (boxData.positionOfBoxContents) {
+                                case "random":
+                                    const areaTop = boxData.top;
+                                    const areaLeft = boxData.left;
+                                    const areaWidth = parseFloat(boxData.width);
+                                    const areaHeight = parseFloat(boxData.height);
+                                    for (const contentId in boxData.componentsInBox) {
+                                        const contentData = newComponents[contentId];
+                                        contentData.top = Math.floor(areaTop +
+                                            (Math.random() * (areaHeight - parseFloat(contentData.height))));
+                                        contentData.left = Math.floor(areaLeft +
+                                            (Math.random() * (areaWidth - parseFloat(contentData.width))));
+                                    }
+                                    break;
+                                default:
+                                    for (const contentId in boxData.componentsInBox) {
+                                        const contentData = newComponents[contentId];
+                                        contentData.top = parseFloat(contentData.top) + emptySpaceRect.top;
+                                        contentData.left = parseFloat(contentData.left) + emptySpaceRect.left;
+                                        if (contentData.zIndex) {
+                                            contentData.zIndex += baseZIndex;
+                                        } else {
+                                            contentData.zIndex = baseZIndex;
                                         }
-                                        break;
-                                }
+                                        if (contentData.onAdd) {
+                                            Function('"use strict"; return ' + contentData.onAdd)()(contentData);
+                                        }
+                                    }
                             }
                         }
 
