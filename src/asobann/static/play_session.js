@@ -361,11 +361,7 @@ function addNewKit(kitData) {
                     continue;
                 }
 
-                boxOrComponentData.componentsInBox = {};
-                for (const name of contents) {
-                    const componentId = createComponent(name).componentId;
-                    boxOrComponentData.componentsInBox[componentId] = true;
-                }
+                createContentsOfBox(boxOrComponentData, contents);
             }
 
             for (const componentId in newComponents) {
@@ -394,6 +390,31 @@ function addNewKit(kitData) {
                     Function('"use strict"; return ' + componentData.onAdd)()(componentData);
                 }
                 return componentData;
+            }
+
+            function createContentsOfBox(boxData, contentNames) {
+                boxData.componentsInBox = {};
+                for (const name of contentNames) {
+                    const componentId = createComponent(name).componentId;
+                    boxData.componentsInBox[componentId] = true;
+                }
+                if (boxData.positionOfBoxContents) {
+                    switch (boxData.positionOfBoxContents) {
+                        case "random":
+                            const areaTop = boxData.top;
+                            const areaLeft = boxData.left;
+                            const areaWidth = parseFloat(boxData.width);
+                            const areaHeight = parseFloat(boxData.height);
+                            for (const contentId in boxData.componentsInBox) {
+                                const contentData = newComponents[contentId];
+                                contentData.top = Math.floor(areaTop +
+                                    (Math.random() * (areaHeight - parseFloat(contentData.height))));
+                                contentData.left = Math.floor(areaLeft +
+                                    (Math.random() * (areaWidth - parseFloat(contentData.width))));
+                            }
+                            break;
+                    }
+                }
             }
         });
 

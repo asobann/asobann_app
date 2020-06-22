@@ -34,6 +34,7 @@ ATTRS_IN_ORDER = [
     "traylike",
     'boxOfComponents',
     'cardistry',
+    'positionOfBoxContents',
     'stowage',
     "onAdd",
 
@@ -427,6 +428,7 @@ def generate_psychological_safety_game(reg: ComponentRegistry):
         "traylike": True,
         "boxOfComponents": True,
         "cardistry": ['spread out', 'collect in mess'],
+        "positionOfBoxContents": "random",
         "zIndex": z_index,
     }).use_components(
         [f"Transparent Stone {stone + 1:02}" for stone in range(4)] * 8
