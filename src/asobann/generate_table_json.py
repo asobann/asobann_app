@@ -295,8 +295,8 @@ def generate_psychological_safety_game(reg: ComponentRegistry):
         "name": "Psychological Safety Game",
         "label": "Psychological Safety Game",
         "label_ja": "心理的安全性ゲーム",
-        "width": "1200px",
-        "height": "1200px"
+        "width": "550px",
+        "height": "750px"
     }
 
     template = {
