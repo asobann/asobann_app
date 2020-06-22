@@ -2330,9 +2330,29 @@
     },
     {
       "component": {
-        "name": "PlanningPoker 3",
+        "name": "PlanningPoker 2",
         "top": "3px",
         "left": "103px",
+        "height": "100px",
+        "width": "75px",
+        "color": "bisque",
+        "textColor": "black",
+        "showImage": false,
+        "faceupText": "2",
+        "facedownText": "Planning Poker",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": true,
+        "zIndex": 97
+      }
+    },
+    {
+      "component": {
+        "name": "PlanningPoker 3",
+        "top": "4px",
+        "left": "104px",
         "height": "100px",
         "width": "75px",
         "color": "bisque",
@@ -2345,14 +2365,14 @@
         "ownable": true,
         "resizable": false,
         "faceup": true,
-        "zIndex": 97
+        "zIndex": 96
       }
     },
     {
       "component": {
         "name": "PlanningPoker 5",
-        "top": "4px",
-        "left": "104px",
+        "top": "5px",
+        "left": "105px",
         "height": "100px",
         "width": "75px",
         "color": "bisque",
@@ -2365,14 +2385,14 @@
         "ownable": true,
         "resizable": false,
         "faceup": true,
-        "zIndex": 96
+        "zIndex": 95
       }
     },
     {
       "component": {
         "name": "PlanningPoker 8",
-        "top": "5px",
-        "left": "105px",
+        "top": "6px",
+        "left": "106px",
         "height": "100px",
         "width": "75px",
         "color": "bisque",
@@ -2385,14 +2405,14 @@
         "ownable": true,
         "resizable": false,
         "faceup": true,
-        "zIndex": 95
+        "zIndex": 94
       }
     },
     {
       "component": {
         "name": "PlanningPoker 13",
-        "top": "6px",
-        "left": "106px",
+        "top": "7px",
+        "left": "107px",
         "height": "100px",
         "width": "75px",
         "color": "bisque",
@@ -2405,14 +2425,14 @@
         "ownable": true,
         "resizable": false,
         "faceup": true,
-        "zIndex": 94
+        "zIndex": 93
       }
     },
     {
       "component": {
         "name": "PlanningPoker 20",
-        "top": "7px",
-        "left": "107px",
+        "top": "8px",
+        "left": "108px",
         "height": "100px",
         "width": "75px",
         "color": "bisque",
@@ -2425,14 +2445,14 @@
         "ownable": true,
         "resizable": false,
         "faceup": true,
-        "zIndex": 93
+        "zIndex": 92
       }
     },
     {
       "component": {
         "name": "PlanningPoker 40",
-        "top": "8px",
-        "left": "108px",
+        "top": "9px",
+        "left": "109px",
         "height": "100px",
         "width": "75px",
         "color": "bisque",
@@ -2445,14 +2465,14 @@
         "ownable": true,
         "resizable": false,
         "faceup": true,
-        "zIndex": 92
+        "zIndex": 91
       }
     },
     {
       "component": {
         "name": "PlanningPoker 100",
-        "top": "9px",
-        "left": "109px",
+        "top": "10px",
+        "left": "110px",
         "height": "100px",
         "width": "75px",
         "color": "bisque",
@@ -2465,14 +2485,14 @@
         "ownable": true,
         "resizable": false,
         "faceup": true,
-        "zIndex": 91
+        "zIndex": 90
       }
     },
     {
       "component": {
         "name": "PlanningPoker \u221e",
-        "top": "10px",
-        "left": "110px",
+        "top": "11px",
+        "left": "111px",
         "height": "100px",
         "width": "75px",
         "color": "bisque",
@@ -2485,14 +2505,14 @@
         "ownable": true,
         "resizable": false,
         "faceup": true,
-        "zIndex": 90
+        "zIndex": 89
       }
     },
     {
       "component": {
         "name": "PlanningPoker ?",
-        "top": "11px",
-        "left": "111px",
+        "top": "12px",
+        "left": "112px",
         "height": "100px",
         "width": "75px",
         "color": "bisque",
@@ -2505,14 +2525,14 @@
         "ownable": true,
         "resizable": false,
         "faceup": true,
-        "zIndex": 89
+        "zIndex": 88
       }
     },
     {
       "component": {
         "name": "PlanningPoker \u2615",
-        "top": "12px",
-        "left": "112px",
+        "top": "13px",
+        "left": "113px",
         "height": "100px",
         "width": "75px",
         "color": "bisque",
@@ -2525,7 +2545,7 @@
         "ownable": true,
         "resizable": false,
         "faceup": true,
-        "zIndex": 88
+        "zIndex": 87
       }
     }
   ],
@@ -2676,8 +2696,8 @@
         "name": "Psychological Safety Game",
         "label": "Psychological Safety Game",
         "label_ja": "\u5fc3\u7406\u7684\u5b89\u5168\u6027\u30b2\u30fc\u30e0",
-        "width": "1200px",
-        "height": "1200px",
+        "width": "550px",
+        "height": "750px",
         "boxAndComponents": {
           "PsychologicalSafety Board": null,
           "PsychologicalSafety Box for Voice": [
@@ -2876,6 +2896,7 @@
           "PlanningPoker 0": null,
           "PlanningPoker 1/2": null,
           "PlanningPoker 1": null,
+          "PlanningPoker 2": null,
           "PlanningPoker 3": null,
           "PlanningPoker 5": null,
           "PlanningPoker 8": null,
@@ -2893,6 +2914,7 @@
           "PlanningPoker 1/2",
           "PlanningPoker 100",
           "PlanningPoker 13",
+          "PlanningPoker 2",
           "PlanningPoker 20",
           "PlanningPoker 3",
           "PlanningPoker 40",

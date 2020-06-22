@@ -522,7 +522,7 @@ def generage_planning_poker(reg: ComponentRegistry):
     }
     z_index = 100
     offset = 0
-    for point in ["0", "1/2", "1", "3", "5", "8", "13", "20", "40", "100", "∞", "?", "\u2615"]:
+    for point in ["0", "1/2", "1", "2", "3", "5", "8", "13", "20", "40", "100", "∞", "?", "\u2615"]:
             card = {
                 "name": f"PlanningPoker {point}",
                 "top": f"{offset}px",
