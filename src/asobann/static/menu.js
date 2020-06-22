@@ -86,12 +86,18 @@ class Menu {
                     el("a", { href: "/export?tablename=" + this.connector.tablename }, _("Export Table"))),
                 el("div.menuitem#import_table",
                     el("a", { href: "", onclick: showImport }, _("Import Table"))),
-                el("div.menuitem.about",  [
+                el("div.menuitem.about", [
                     el("a", {
                         class: 'about',
                         href: 'https://games.yattom.jp/asobann',
                         target: '_blank'
                     }, _("About asobann")),
+                    el("br"),
+                    el("a", {
+                        class: 'about',
+                        href: '#',
+                        onclick: showReleaseNote,
+                    }, _("release notes")),
                     el("div", { class: 'copyright' }, _("Copyright (C) 2020 Yattom")),
                 ])
             ],
@@ -142,6 +148,32 @@ class Menu {
             self.componentMenu = createAddRemoveKitsMenu(self.addRemoveComponentItem, self.connector);
             mount(self.addRemoveComponentItem, self.componentMenu.el);
             connector.fireMenuUpdate();
+            return false;
+        }
+
+        function showReleaseNote(ev) {
+            const noteEl = el("div.release_note",
+                [
+                    el('div.text',
+                        [
+                            'リリースノート\n', el('br'),
+                            '\n', el('br'),
+                            '2020.6.22\n', el('br'),
+                            '・心理的安全性ゲームを追加\n', el('br'),
+                            '・プランニングポーカーを追加\n', el('br'),
+                            '\n', el('br'),
+                            '2020.6.21', el('br'),
+                            '・リリースと最初のアナウンス\n', el('br'),
+                        ],
+                    ),
+                    el('button.close', { onclick: hide }, _("Close")),
+                ]);
+            mount(self.el, noteEl);
+
+            function hide() {
+                unmount(self.el, noteEl);
+            }
+
             return false;
         }
     }
