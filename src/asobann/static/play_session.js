@@ -432,17 +432,19 @@ function addNewKit(kitData) {
 }
 
 function removeKit(kitId) {
-    const after = {};
-    for (const componentId in table.data.components) {
-        const cmp = table.data.components[componentId];
-        if (cmp.kitId === kitId) {
-            table.removeComponent(componentId);
-        } else {
-            after[componentId] = cmp;
+    table.consolidatePropagation(() => {
+        const after = {};
+        for (const componentId in table.data.components) {
+            const cmp = table.data.components[componentId];
+            if (cmp.kitId === kitId) {
+                table.removeComponent(componentId);
+            } else {
+                after[componentId] = cmp;
+            }
         }
-    }
-    table.data.components = after;
-    table.data.kits.splice(table.data.kits.findIndex((e) => e.kitId === kitId), 1);
+        table.data.components = after;
+        table.data.kits.splice(table.data.kits.findIndex((e) => e.kitId === kitId), 1);
+    });
     pushSyncWithMe(table.data);
 }
 

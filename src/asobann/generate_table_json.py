@@ -535,7 +535,6 @@ def generage_planning_poker(reg: ComponentRegistry):
             offset += 1
 
 
-
 def write_default_table_json():
     table = OrderedDict(
         components=OrderedDict(),
