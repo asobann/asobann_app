@@ -373,9 +373,40 @@ function addNewKit(kitData) {
             return newComponentData;
         }
 
-        function layoutAsDefined(newComponentData, baseRect) {
-            newComponentData.top = parseFloat(newComponentData.top) + baseRect.top;
-            newComponentData.left = parseFloat(newComponentData.left) + baseRect.left;
+        function createContentsOfBox(boxData, contentNames) {
+            boxData.componentsInBox = {};
+            for (const name of contentNames) {
+                const boxOrComponentData = createComponent(name);
+                const componentId = boxOrComponentData.componentId;
+
+                boxData.componentsInBox[componentId] = true;
+            }
+
+            switch (boxData.positionOfBoxContents) {
+                case "random":
+                    for (const contentId in boxData.componentsInBox) {
+                        const contentData = newComponents[contentId];
+                        layoutRandomly(contentData, boxData);
+                    }
+                    break;
+                default:
+                    for (const contentId in boxData.componentsInBox) {
+                        const contentData = newComponents[contentId];
+                        layoutRelativelyAsDefined(contentData, boxData);
+                    }
+            }
+        }
+
+        function layoutRandomly(newComponentData, baseRect) {
+            newComponentData.top = Math.floor(parseFloat(baseRect.top) +
+                (Math.random() * (parseFloat(baseRect.height) - parseFloat(newComponentData.height))));
+            newComponentData.left = Math.floor(parseFloat(baseRect.left) +
+                (Math.random() * (parseFloat(baseRect.width) - parseFloat(newComponentData.width))));
+        }
+
+        function layoutRelativelyAsDefined(newComponentData, baseRect) {
+            newComponentData.top = parseFloat(newComponentData.top) + parseFloat(baseRect.top);
+            newComponentData.left = parseFloat(newComponentData.left) + parseFloat(baseRect.left);
             if (newComponentData.zIndex) {
                 newComponentData.zIndex += baseZIndex;
             } else {
@@ -399,17 +430,7 @@ function addNewKit(kitData) {
                         for (const name in kitData.kit.boxAndComponents) {
                             const boxOrComponentData = createComponent(name);
 
-                            layoutAsDefined(boxOrComponentData, emptySpaceRect);
-                            // boxOrComponentData.top = parseFloat(boxOrComponentData.top) + emptySpaceRect.top;
-                            // boxOrComponentData.left = parseFloat(boxOrComponentData.left) + emptySpaceRect.left;
-                            // if (boxOrComponentData.zIndex) {
-                            //     boxOrComponentData.zIndex += baseZIndex;
-                            // } else {
-                            //     boxOrComponentData.zIndex = baseZIndex;
-                            // }
-                            // if (boxOrComponentData.onAdd) {
-                            //     Function('"use strict"; return ' + boxOrComponentData.onAdd)()(boxOrComponentData);
-                            // }
+                            layoutRelativelyAsDefined(boxOrComponentData, emptySpaceRect);
                             const contents = kitData.kit.boxAndComponents[name];
                             if (!contents) {
                                 continue;
@@ -418,48 +439,6 @@ function addNewKit(kitData) {
                             createContentsOfBox(boxOrComponentData, contents);
                         }
 
-
-                        function createContentsOfBox(boxData, contentNames) {
-                            boxData.componentsInBox = {};
-                            for (const name of contentNames) {
-                                const boxOrComponentData = createComponent(name);
-                                const componentId = boxOrComponentData.componentId;
-
-
-                                boxData.componentsInBox[componentId] = true;
-                            }
-
-                            switch (boxData.positionOfBoxContents) {
-                                case "random":
-                                    const areaTop = boxData.top;
-                                    const areaLeft = boxData.left;
-                                    const areaWidth = parseFloat(boxData.width);
-                                    const areaHeight = parseFloat(boxData.height);
-                                    for (const contentId in boxData.componentsInBox) {
-                                        const contentData = newComponents[contentId];
-                                        contentData.top = Math.floor(areaTop +
-                                            (Math.random() * (areaHeight - parseFloat(contentData.height))));
-                                        contentData.left = Math.floor(areaLeft +
-                                            (Math.random() * (areaWidth - parseFloat(contentData.width))));
-                                    }
-                                    break;
-                                default:
-                                    for (const contentId in boxData.componentsInBox) {
-                                        const contentData = newComponents[contentId];
-                                        layoutAsDefined(contentData, boxData);
-                                        // contentData.top = parseFloat(contentData.top) + emptySpaceRect.top;
-                                        // contentData.left = parseFloat(contentData.left) + emptySpaceRect.left;
-                                        // if (contentData.zIndex) {
-                                        //     contentData.zIndex += baseZIndex;
-                                        // } else {
-                                        //     contentData.zIndex = baseZIndex;
-                                        // }
-                                        // if (contentData.onAdd) {
-                                        //     Function('"use strict"; return ' + contentData.onAdd)()(contentData);
-                                        // }
-                                    }
-                            }
-                        }
 
                     }
             }

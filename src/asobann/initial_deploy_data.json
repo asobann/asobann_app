@@ -2869,8 +2869,8 @@
         "name": "Transparent Stones",
         "label": "Transparent Stones",
         "label_ja": "\u5b9d\u77f3(\u30bb\u30c3\u30c8)",
-        "width": "200px",
-        "height": "200px",
+        "width": "100px",
+        "height": "100px",
         "boxAndComponents": {
           "Transparent Stone 01": null,
           "Transparent Stone 02": null,

@@ -480,8 +480,9 @@ def generate_stones(reg: ComponentRegistry):
         "name": "Transparent Stones",
         "label": "Transparent Stones",
         "label_ja": "宝石(セット)",
-        "width": "200px",
-        "height": "200px"
+        "positionOfKitContents": "random",
+        "width": "100px",
+        "height": "100px"
     }
 
     offset = 0
