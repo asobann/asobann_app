@@ -157,6 +157,7 @@ div.kit_selection_container .kit_selection {
     height: 100%;
     top: 25%;
     /*left: 25%;*/
+    overflow: scroll;
 }
 
 div.kit_selection_container .item {
