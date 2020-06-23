@@ -560,7 +560,7 @@ def generate_diamong_game(reg: ComponentRegistry):
         "width": "553px",
         "showImage": True,
         "image": "/static/images/diamond_game_board.png",
-        "draggable": True,
+        "draggable": False,
         "flippable": False,
         "resizable": False,
         "rollable": False,
