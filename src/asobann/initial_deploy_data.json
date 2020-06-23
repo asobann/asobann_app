@@ -2547,6 +2547,700 @@
         "faceup": true,
         "zIndex": 87
       }
+    },
+    {
+      "component": {
+        "name": "Diamond Game Board",
+        "top": "0",
+        "left": "0",
+        "height": "638px",
+        "width": "553px",
+        "showImage": true,
+        "image": "/static/images/diamond_game_board.png",
+        "handArea": false,
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false,
+        "rollable": false,
+        "traylike": true,
+        "boxOfComponents": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red king",
+        "top": "151.0px",
+        "left": "22.0px",
+        "height": "52px",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red0-1",
+        "top": "151.0px",
+        "left": "62.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red0-2",
+        "top": "151.0px",
+        "left": "102.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red0-3",
+        "top": "151.0px",
+        "left": "142.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red0-4",
+        "top": "151.0px",
+        "left": "182.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red1-0",
+        "top": "185.64101615137753px",
+        "left": "42.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red1-1",
+        "top": "185.64101615137753px",
+        "left": "82.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red1-2",
+        "top": "185.64101615137753px",
+        "left": "122.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red1-3",
+        "top": "185.64101615137753px",
+        "left": "162.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red2-0",
+        "top": "220.28203230275508px",
+        "left": "62.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red2-1",
+        "top": "220.28203230275508px",
+        "left": "102.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red2-2",
+        "top": "220.28203230275508px",
+        "left": "142.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red3-0",
+        "top": "254.92304845413264px",
+        "left": "82.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red3-1",
+        "top": "254.92304845413264px",
+        "left": "122.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece red4-0",
+        "top": "289.56406460551017px",
+        "left": "102.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow0-0",
+        "top": "151.0px",
+        "left": "342.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow0-1",
+        "top": "151.0px",
+        "left": "382.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow0-2",
+        "top": "151.0px",
+        "left": "422.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow0-3",
+        "top": "151.0px",
+        "left": "462.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow king",
+        "top": "151.0px",
+        "left": "502.0px",
+        "height": "52px",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow1-0",
+        "top": "185.64101615137753px",
+        "left": "362.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow1-1",
+        "top": "185.64101615137753px",
+        "left": "402.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow1-2",
+        "top": "185.64101615137753px",
+        "left": "442.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow1-3",
+        "top": "185.64101615137753px",
+        "left": "482.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow2-0",
+        "top": "220.28203230275508px",
+        "left": "382.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow2-1",
+        "top": "220.28203230275508px",
+        "left": "422.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow2-2",
+        "top": "220.28203230275508px",
+        "left": "462.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow3-0",
+        "top": "254.92304845413264px",
+        "left": "402.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow3-1",
+        "top": "254.92304845413264px",
+        "left": "442.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece yellow4-0",
+        "top": "289.56406460551017px",
+        "left": "422.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_yellow.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green0-0",
+        "top": "433.0px",
+        "left": "181.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green0-1",
+        "top": "433.0px",
+        "left": "221.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green0-2",
+        "top": "433.0px",
+        "left": "261.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green0-3",
+        "top": "433.0px",
+        "left": "301.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green0-4",
+        "top": "433.0px",
+        "left": "341.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green1-0",
+        "top": "467.6410161513775px",
+        "left": "201.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green1-1",
+        "top": "467.6410161513775px",
+        "left": "241.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green1-2",
+        "top": "467.6410161513775px",
+        "left": "281.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green1-3",
+        "top": "467.6410161513775px",
+        "left": "321.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green2-0",
+        "top": "502.28203230275506px",
+        "left": "221.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green2-1",
+        "top": "502.28203230275506px",
+        "left": "261.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green2-2",
+        "top": "502.28203230275506px",
+        "left": "301.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green3-0",
+        "top": "536.9230484541326px",
+        "left": "241.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green3-1",
+        "top": "536.9230484541326px",
+        "left": "281.0px",
+        "height": "38x",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
+    },
+    {
+      "component": {
+        "name": "piece green king",
+        "top": "571.5640646055101px",
+        "left": "261.0px",
+        "height": "52px",
+        "width": "27px",
+        "showImage": true,
+        "image": "/static/images/piece_A_green.png",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": false
+      }
     }
   ],
   "kits": [
@@ -2925,6 +3619,111 @@
           "PlanningPoker ?",
           "PlanningPoker \u221e",
           "PlanningPoker \u2615"
+        ]
+      }
+    },
+    {
+      "kit": {
+        "name": "Diamond Game",
+        "label": "Chinese Checker",
+        "label_ja": "\u30c0\u30a4\u30e4\u30e2\u30f3\u30c9\u30b2\u30fc\u30e0",
+        "width": "638px",
+        "height": "553px",
+        "boxAndComponents": {
+          "Diamond Game Board": null,
+          "piece red king": null,
+          "piece red0-1": null,
+          "piece red0-2": null,
+          "piece red0-3": null,
+          "piece red0-4": null,
+          "piece red1-0": null,
+          "piece red1-1": null,
+          "piece red1-2": null,
+          "piece red1-3": null,
+          "piece red2-0": null,
+          "piece red2-1": null,
+          "piece red2-2": null,
+          "piece red3-0": null,
+          "piece red3-1": null,
+          "piece red4-0": null,
+          "piece yellow0-0": null,
+          "piece yellow0-1": null,
+          "piece yellow0-2": null,
+          "piece yellow0-3": null,
+          "piece yellow king": null,
+          "piece yellow1-0": null,
+          "piece yellow1-1": null,
+          "piece yellow1-2": null,
+          "piece yellow1-3": null,
+          "piece yellow2-0": null,
+          "piece yellow2-1": null,
+          "piece yellow2-2": null,
+          "piece yellow3-0": null,
+          "piece yellow3-1": null,
+          "piece yellow4-0": null,
+          "piece green0-0": null,
+          "piece green0-1": null,
+          "piece green0-2": null,
+          "piece green0-3": null,
+          "piece green0-4": null,
+          "piece green1-0": null,
+          "piece green1-1": null,
+          "piece green1-2": null,
+          "piece green1-3": null,
+          "piece green2-0": null,
+          "piece green2-1": null,
+          "piece green2-2": null,
+          "piece green3-0": null,
+          "piece green3-1": null,
+          "piece green king": null
+        },
+        "usedComponentNames": [
+          "Diamond Game Board",
+          "piece green king",
+          "piece green0-0",
+          "piece green0-1",
+          "piece green0-2",
+          "piece green0-3",
+          "piece green0-4",
+          "piece green1-0",
+          "piece green1-1",
+          "piece green1-2",
+          "piece green1-3",
+          "piece green2-0",
+          "piece green2-1",
+          "piece green2-2",
+          "piece green3-0",
+          "piece green3-1",
+          "piece red king",
+          "piece red0-1",
+          "piece red0-2",
+          "piece red0-3",
+          "piece red0-4",
+          "piece red1-0",
+          "piece red1-1",
+          "piece red1-2",
+          "piece red1-3",
+          "piece red2-0",
+          "piece red2-1",
+          "piece red2-2",
+          "piece red3-0",
+          "piece red3-1",
+          "piece red4-0",
+          "piece yellow king",
+          "piece yellow0-0",
+          "piece yellow0-1",
+          "piece yellow0-2",
+          "piece yellow0-3",
+          "piece yellow1-0",
+          "piece yellow1-1",
+          "piece yellow1-2",
+          "piece yellow1-3",
+          "piece yellow2-0",
+          "piece yellow2-1",
+          "piece yellow2-2",
+          "piece yellow3-0",
+          "piece yellow3-1",
+          "piece yellow4-0"
         ]
       }
     }

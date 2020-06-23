@@ -1,4 +1,5 @@
 from typing import List, Dict
+import math
 from collections import OrderedDict
 import json
 
@@ -117,15 +118,17 @@ class ComponentRegistry:
         self.kits: List[Kit] = []
 
     def add_component(self, data, template=None):
-        copied = data.copy()
         if template:
-            copied.update(template)
+            completeData = template.copy()
+            completeData.update(data)
+        else:
+            completeData = data.copy()
         for c in self.components:
-            if c['name'] == copied['name']:
-                assert c == copied
+            if c['name'] == completeData['name']:
+                assert c == completeData
                 break
         else:
-            self.components.append(in_order(copied))
+            self.components.append(in_order(completeData))
 
     def kit(self) -> Kit:
         kit = Kit(self)
@@ -537,6 +540,94 @@ def generate_planning_poker(reg: ComponentRegistry):
             offset += 1
 
 
+def generate_diamong_game(reg: ComponentRegistry):
+    kit = reg.kit()
+
+    kit.description = {
+        "name": "Diamond Game",
+        "label": "Chinese Checker",
+        "label_ja": "ダイヤモンドゲーム",
+        "width": "638px",
+        "height": "553px"
+    }
+
+    kit.add_component({
+        "name": "Diamond Game Board",
+        "handArea": False,
+        "top": "0",
+        "left": "0",
+        "height": "638px",
+        "width": "553px",
+        "showImage": True,
+        "image": "/static/images/diamond_game_board.png",
+        "draggable": True,
+        "flippable": False,
+        "resizable": False,
+        "rollable": False,
+        "ownable": False,
+        "traylike": True,
+        "boxOfComponents": False,
+    })
+
+    template = {
+        "height": "38x",
+        "width": "27px",
+        "showImage": True,
+        "image": "/static/images/piece_A_red.png",
+        "draggable": True,
+        "flippable": False,
+        "ownable": False,
+        "resizable": False,
+    }
+
+    INTERVAL_W = 40
+    INTERVAL_H = math.sqrt(3) * (INTERVAL_W / 2)
+    for i in range(5):
+        for j in range(5 - i):
+            piece = {
+                "name": f"piece red{i}-{j}",
+                "top": f"{151 + i * INTERVAL_H}px",
+                "left": f"{22 + j * INTERVAL_W + (i * INTERVAL_W) / 2}px",
+            }
+            if i == j == 0:
+                piece["name"] = "piece red king"
+                piece["height"] = "52px"
+
+            kit.add_component(piece, template)
+
+    template.update({
+        "image": "/static/images/piece_A_yellow.png",
+    })
+
+    for i in range(5):
+        for j in range(5 - i):
+            piece = {
+                "name": f"piece yellow{i}-{j}",
+                "top": f"{151 + i * INTERVAL_H}px",
+                "left": f"{342 + j * INTERVAL_W + (i * INTERVAL_W) / 2}px",
+            }
+            if i == 0 and j == 4:
+                piece["name"] = "piece yellow king"
+                piece["height"] = "52px"
+            kit.add_component(piece, template)
+
+    template.update({
+        "image": "/static/images/piece_A_green.png",
+    })
+
+    for i in range(5):
+        for j in range(5 - i):
+            piece = {
+                "name": f"piece green{i}-{j}",
+                "top": f"{433 + i * INTERVAL_H}px",
+                "left": f"{181 + j * INTERVAL_W + (i * INTERVAL_W) / 2}px",
+            }
+            if i == 4:
+                piece["name"] = "piece green king"
+                piece["height"] = "52px"
+            kit.add_component(piece, template)
+
+
 def write_default_table_json():
     table = OrderedDict(
         components=OrderedDict(),
@@ -593,6 +684,7 @@ def write_initial_deploy_data_json():
     generate_coin(registry)
     generate_stones(registry)
     generate_planning_poker(registry)
+    generate_diamong_game(registry)
 
     with open("initial_deploy_data.json", "w", encoding="utf-8") as f:
         json.dump(registry.build_data_for_deploy(), f, indent=2)
