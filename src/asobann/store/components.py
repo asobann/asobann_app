@@ -2,9 +2,10 @@ import random
 import json
 from pathlib import Path
 from pymongo import operations
+import pymongo.database
 from . import kits
 
-components = None
+components: pymongo.database.Database = None
 
 
 def get(name):

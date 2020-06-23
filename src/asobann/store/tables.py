@@ -1,8 +1,9 @@
 import random
 import json
 from pathlib import Path
+import pymongo.database
 
-tables = None
+tables: pymongo.database.Database = None
 
 
 def generate_new_tablename():
@@ -77,4 +78,3 @@ def remove_kit(tablename, kit_id):
 def connect(mongo):
     global tables
     tables = mongo.db.tables
-
