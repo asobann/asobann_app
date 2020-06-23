@@ -2558,7 +2558,7 @@
         "showImage": true,
         "image": "/static/images/diamond_game_board.png",
         "handArea": false,
-        "draggable": true,
+        "draggable": false,
         "flippable": false,
         "ownable": false,
         "resizable": false,
