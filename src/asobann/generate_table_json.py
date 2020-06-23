@@ -591,6 +591,7 @@ def generate_diamong_game(reg: ComponentRegistry):
             }
             if i == j == 0:
                 piece["name"] = "piece red king"
+                piece["image"] = "/static/images/piece_A_red_king.png",
                 piece["height"] = "52px"
 
             kit.add_component(piece, template)
@@ -608,6 +609,7 @@ def generate_diamong_game(reg: ComponentRegistry):
             }
             if i == 0 and j == 4:
                 piece["name"] = "piece yellow king"
+                piece["image"] = "/static/images/piece_A_yellow_king.png",
                 piece["height"] = "52px"
             kit.add_component(piece, template)
 
@@ -624,6 +626,7 @@ def generate_diamong_game(reg: ComponentRegistry):
             }
             if i == 4:
                 piece["name"] = "piece green king"
+                piece["image"] = "/static/images/piece_A_green_king.png",
                 piece["height"] = "52px"
             kit.add_component(piece, template)
 

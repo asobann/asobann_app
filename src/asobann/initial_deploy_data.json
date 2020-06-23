@@ -2575,7 +2575,9 @@
         "height": "52px",
         "width": "27px",
         "showImage": true,
-        "image": "/static/images/piece_A_red.png",
+        "image": [
+          "/static/images/piece_A_red_king.png"
+        ],
         "draggable": true,
         "flippable": false,
         "ownable": false,
@@ -2860,7 +2862,9 @@
         "height": "52px",
         "width": "27px",
         "showImage": true,
-        "image": "/static/images/piece_A_yellow.png",
+        "image": [
+          "/static/images/piece_A_yellow_king.png"
+        ],
         "draggable": true,
         "flippable": false,
         "ownable": false,
@@ -3235,7 +3239,9 @@
         "height": "52px",
         "width": "27px",
         "showImage": true,
-        "image": "/static/images/piece_A_green.png",
+        "image": [
+          "/static/images/piece_A_green_king.png"
+        ],
         "draggable": true,
         "flippable": false,
         "ownable": false,
