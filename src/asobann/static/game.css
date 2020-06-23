@@ -154,9 +154,8 @@ div.kit_selection_container .kit_selection {
     color: black;
     position: fixed;
     width: 150px;
-    height: 100%;
     top: 25%;
-    /*left: 25%;*/
+    bottom: 0;
     overflow: scroll;
 }
 
