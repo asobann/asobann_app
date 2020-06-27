@@ -1,3 +1,4 @@
+# encoding: utf-8
 from typing import List, Dict
 import math
 from collections import OrderedDict
