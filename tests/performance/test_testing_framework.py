@@ -100,10 +100,8 @@ CMD python3 run.py controller
     assert output.strip() == 'Hello, container!\nHello, container!\nHello, container!'
 
 
-@pytest.fixture
-def ecr():
-    # create ECR
-    proc = subprocess.run('aws ecr create-repository --repository-name asobann-repository',
+def get_ecr(name):
+    proc = subprocess.run(f'aws ecr create-repository --repository-name {name}',
                            shell=True,
                            stdout=subprocess.PIPE,
                            stderr=subprocess.STDOUT,
@@ -114,7 +112,7 @@ def ecr():
         registryId = result['repository']['registryId']
         repositoryUri = result['repository']['repositoryUri']
     else:
-        proc = subprocess.run('aws ecr describe-repositories --repository-names asobann-repository',
+        proc = subprocess.run(f'aws ecr describe-repositories --repository-names {name}',
                               shell=True,
                               stdout=subprocess.PIPE,
                               encoding='utf8')
@@ -124,17 +122,32 @@ def ecr():
         repositoryUri = result['repositories'][0]['repositoryUri']
     region = re.match('^[^.]*.dkr.ecr.([^.]*).amazonaws.com/.*$', repositoryUri).group(1)
 
-    yield (registryId, repositoryUri, region)
+    return (registryId, repositoryUri, region)
 
-    # delete ECR to reduce cost
-    proc = subprocess.run('aws ecr delete-repository --repository-name asobann-repository --force',
+
+def delete_ecr(name):
+    proc = subprocess.run(f'aws ecr delete-repository --repository-name {name} --force',
                            shell=True,
                            encoding='utf8')
     assert proc.returncode == 0
 
 
-def test_run_multiprocess_in_aws(tmp_path, ecr):
-    registryId, repositoryUri, region = ecr
+@pytest.fixture
+def worker_ecr():
+    ecr = get_ecr('test_run_multiprocess_in_container_worker')
+    yield ecr
+    delete_ecr('test_run_multiprocess_in_container_worker')
+
+
+@pytest.fixture
+def controller_ecr():
+    ecr = get_ecr('test_run_multiprocess_in_container_controller')
+    yield ecr
+    delete_ecr('test_run_multiprocess_in_container_controller')
+
+
+def test_run_multiprocess_in_aws(tmp_path, worker_ecr, controller_ecr):
+    registryId, repositoryUri, region = worker_ecr
 
     # build docker image for worker
     d = Path(tmp_path)
@@ -154,13 +167,14 @@ CMD python3 run.py worker $PORT
     proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
                           shell=True, cwd=tmp_path, encoding='utf8')
     assert proc.returncode == 0
-    proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_worker {repositoryUri}', shell=True, encoding='utf-8')
+    proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_worker:latest {repositoryUri}', shell=True, encoding='utf-8')
     assert proc.returncode == 0
     proc = subprocess.run(f'aws ecr get-login-password | docker login --username AWS --password-stdin {registryId}.dkr.ecr.{region}.amazonaws.com', shell=True, encoding='utf-8')
     assert proc.returncode == 0
     proc = subprocess.run(f'docker push {repositoryUri}', shell=True, encoding='utf-8')
 
     # build docker image for controller
+    registryId, repositoryUri, region = controller_ecr
     with open(d / 'Dockerfile_controller', 'w') as f:
         f.write("""
 FROM ubuntu:18.04
@@ -172,7 +186,7 @@ CMD python3 run.py controller
     proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_controller",
                           shell=True, cwd=tmp_path, encoding='utf8')
     assert proc.returncode == 0
-    proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_controller {repositoryUri}', shell=True, encoding='utf-8')
+    proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_controller:latest {repositoryUri}', shell=True, encoding='utf-8')
     assert proc.returncode == 0
     proc = subprocess.run(f'docker push {repositoryUri}', shell=True, encoding='utf-8')
 
