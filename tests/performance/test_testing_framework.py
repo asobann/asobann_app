@@ -5,6 +5,7 @@ import os
 import subprocess
 import inspect
 import pytest
+from pprint import pprint
 
 from ..e2e import helper
 
@@ -100,6 +101,52 @@ def build_task_definition_worker(execution_role_arn, image_uri, region):
     }
 
 
+def build_service_worker(cluster, task_def_arn, desired_count, subnet, security_group):
+    return {
+    "cluster": cluster,
+    "serviceName": "test_run_multiprocess_in_container_worker",
+    "taskDefinition": task_def_arn,
+    "loadBalancers": [ ],
+    "serviceRegistries": [ ],
+    "desiredCount": desired_count,
+    # "clientToken": "",
+    "launchType": "FARGATE",
+    "capacityProviderStrategy": [ ],
+    "platformVersion": "LATEST",
+    # "role": "",
+    "deploymentConfiguration": {
+        "maximumPercent": 200,
+        "minimumHealthyPercent": 100
+    },
+    "placementConstraints": [ ],
+    "placementStrategy": [ ],
+    "networkConfiguration": {
+        "awsvpcConfiguration": {
+            "subnets": [
+                subnet
+            ],
+            "securityGroups": [
+                security_group
+            ],
+            "assignPublicIp": "ENABLED"
+        }
+    },
+    # "healthCheckGracePeriodSeconds": 0,
+    "schedulingStrategy": "REPLICA",
+    # "deploymentController": {
+    #     "type": "CODE_DEPLOY"
+    # },
+    "tags": [
+        {
+            "key": "Yattom:ProductName",
+            "value": "asobann"
+        }
+    ],
+    "enableECSManagedTags": false,
+    "propagateTags": "NONE"
+}
+
+
 def test_run_in_container(tmp_path):
     d = Path(tmp_path)
     (d / 'runner').mkdir()
@@ -192,6 +239,8 @@ CMD python3 run.py controller
 
 
 class Aws:
+    class NonZeroExitError(RuntimeError):
+        pass
     @staticmethod
     def get_ecr(name):
         proc = subprocess.run(f'aws ecr create-repository --repository-name {name}',
@@ -220,7 +269,8 @@ class Aws:
     @staticmethod
     def run(cmd):
         proc = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf8')
-        assert proc.returncode == 0, proc.stdout
+        if not proc.returncode == 0:
+            raise Aws.NonZeroExitError(f'aws command exit with code {proc.returncode}', proc.stdout)
         return proc.stdout
 
 
@@ -241,6 +291,21 @@ class TestRunInMultiprocessOnAws:
         yield ecr
         # TODO
         # delete_ecr('test_run_multiprocess_in_container_controller')
+
+    @staticmethod
+    @pytest.fixture
+    def cluster():
+        try:
+            output = Aws.run('aws ecs create-cluster --cluster-name test-run-multiprocess-in-container --tags key=Yattom:ProductName,value=asobann')
+            created = json.loads(output)
+        except Aws.NonZeroExitError as e:
+            if 'inconsistent with arguments' in str(e):
+                output = Aws.run('aws ecs describe-clusters --clusters test-run-multiprocess-in-container')
+                created = json.loads(output)['clusters'][0]
+            else:
+                raise
+        yield created
+        Aws.run('aws ecs delete-cluster --cluster test-run-multiprocess-in-container')
 
     @staticmethod
     def delete_ecr(name):
@@ -283,8 +348,27 @@ CMD python3 run.py worker $PORT
         task_def_file = tmp_path / 'taskdef_worker.json'
         with open(task_def_file, 'w') as f:
             json.dump(task_def, f)
-        Aws.run(f'aws ecs register-task-definition --cli-input-json file://{task_def_file}')
+        registered = Aws.run(f'aws ecs register-task-definition --cli-input-json file://{task_def_file}')
+        return json.loads(registered)
 
+    @staticmethod
+    def prepare_worker_service(tmp_path, cluster, task_def):
+        service_def_worker = self.build_service_worker(cluster['clusterArn'], task_def['taskDefinitionArn'], "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3")
+        service_def_file = tmp_path / 'servicedef_worker.json'
+        with open(service_def_file, 'w') as f:
+            json.dump(service_def_worker, f)
+        created = Aws.run(f'aws ecs create-service --cli-input-json file://{service_def_file}')
+
+    @staticmethod
+    def run_worker(cluster, subnet, security_group, count=1):
+        task = Aws.run(f'aws ecs run-task --task-definition test_run_multiprocess_in_container_worker --cluster {cluster["clusterArn"]} --network-configuration "awsvpcConfiguration={{subnets=[{subnet}],securityGroups=[{security_group}],assignPublicIp=ENABLED}}" --launch-type FARGATE --count {count}')
+        return json.loads(task)
+
+    @staticmethod
+    def get_tasks(task, cluster):
+        task_arns = [t['taskArn'] for t in task['tasks']]
+        latest = Aws.run(f'aws ecs describe-tasks --tasks {" ".join(task_arns)} --cluster {cluster["clusterArn"]}')
+        return json.loads(latest)
 
     @staticmethod
     def prepare_controller(tmp_path, controller_ecr):
@@ -313,12 +397,26 @@ CMD python3 run.py controller
         Aws.run(f'aws ecs register-task-definition --cli-input-json file://{task_def_file}')
 
 
-    def test_run_multiprocess_in_aws(self, tmp_path, worker_ecr, controller_ecr):
+    def test_run_multiprocess_in_aws(self, tmp_path, cluster, worker_ecr, controller_ecr):
         d = Path(tmp_path)
         (d / 'runner').mkdir()
         self.prepare_docker_contents(d)
-        self.prepare_worker(d, worker_ecr)
+        worker_task_def = self.prepare_worker(d, worker_ecr)
         self.prepare_controller(d, controller_ecr)
+
+        worker_tasks = self.run_worker(cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3", count=5)
+        pprint(worker_tasks)
+        while True:
+            import time
+            time.sleep(5)
+            statuses = [t['lastStatus'] for t in self.get_tasks(worker_tasks, cluster)['tasks']]
+            print(statuses)
+            if all([s == 'RUNNING' for s in statuses]):
+                break
+            if any([s == 'STOPPED' for s in statuses]):
+                assert False
+
+        # self.prepare_worker_service(tmp_path, cluster, worker_task_def)
 
         assert False, 'stop here'
 
