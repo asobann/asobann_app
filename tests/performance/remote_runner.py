@@ -13,12 +13,14 @@ def worker_server(port):
     class MyManager(BaseManager):
         pass
 
+    print('running worker_server')
     MyManager.register('command_que', callable=lambda: command_queue)
     MyManager.register('result_que', callable=lambda: result_queue)
     mgr = MyManager(address=('', port), authkey=AUTHKEY)
     mgr.start()
 
     while True:
+        print('receiving cmd...')
         cmd = command_queue.get()
         if cmd == 'run':
             result_queue.put('Hello, container!')
@@ -33,6 +35,7 @@ def controller_client(workers):
     class MyManager(BaseManager):
         pass
 
+    print('running controller_client')
     MyManager.register('command_que')
     MyManager.register('result_que')
     command_queues = []
@@ -43,12 +46,15 @@ def controller_client(workers):
         command_queues.append(mgr.command_que())
         result_queues.append(mgr.result_que())
 
+    print('sending cmd...')
     for queue in command_queues:
         queue.put('run')
 
+    print('receiving result...')
     for queue in result_queues:
         print(queue.get())
 
+    print('sending shutdown...')
     for queue in command_queues:
         queue.put('shutdown')
 
@@ -58,7 +64,9 @@ if __name__ == '__main__':
 
     if sys.argv[1] == 'worker':
         port = int(sys.argv[2])
+        print(f'start worker port {port}')
         worker_server(port)
     if sys.argv[1] == 'controller':
         workers = [p.split(':') for p in sys.argv[2].split(',')]
+        print(f'start controller workers {workers}')
         controller_client(workers)

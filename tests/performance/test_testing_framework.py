@@ -136,14 +136,14 @@ def delete_ecr(name):
 def worker_ecr():
     ecr = get_ecr('test_run_multiprocess_in_container_worker')
     yield ecr
-    delete_ecr('test_run_multiprocess_in_container_worker')
+    # delete_ecr('test_run_multiprocess_in_container_worker')
 
 
 @pytest.fixture
 def controller_ecr():
     ecr = get_ecr('test_run_multiprocess_in_container_controller')
     yield ecr
-    delete_ecr('test_run_multiprocess_in_container_controller')
+    # delete_ecr('test_run_multiprocess_in_container_controller')
 
 
 def test_run_multiprocess_in_aws(tmp_path, worker_ecr, controller_ecr):
