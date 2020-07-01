@@ -36,6 +36,8 @@ def controller_client(workers):
         pass
 
     print('running controller_client')
+    import sys
+    sys.stdout.flush()
     MyManager.register('command_que')
     MyManager.register('result_que')
     command_queues = []
@@ -45,18 +47,39 @@ def controller_client(workers):
         mgr.connect()
         command_queues.append(mgr.command_que())
         result_queues.append(mgr.result_que())
+    print('connected to workers')
 
-    print('sending cmd...')
-    for queue in command_queues:
-        queue.put('run')
+    import http.server
+    class ControllerHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            length = self.headers.get('content-length')
+            nbytes = int(length)
+            command = self.rfile.read(nbytes).decode('utf8')
+            print(f'received cmd "{command}"')
+            sys.stdout.flush()
 
-    print('receiving result...')
-    for queue in result_queues:
-        print(queue.get())
+            print('sending cmd...')
+            for queue in command_queues:
+                queue.put(command)
 
-    print('sending shutdown...')
-    for queue in command_queues:
-        queue.put('shutdown')
+            if command == 'shutdown':
+                exit()
+
+            print('receiving result...')
+            result = ''
+            for queue in result_queues:
+                result += queue.get()
+
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(result.encode('utf8'))
+            print('response sent')
+
+    print('starting http server')
+    sys.stdout.flush()
+    addr = ('', 8888)
+    httpd = http.server.HTTPServer(addr, ControllerHTTPRequestHandler)
+    httpd.serve_forever()
 
 
 if __name__ == '__main__':
