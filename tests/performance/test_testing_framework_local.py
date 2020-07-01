@@ -106,7 +106,8 @@ CMD python3 run.py controller
     print('read response')
     result = res.read().decode('utf-8')
     print('send shutdown command')
-    res = urllib.request.Request('http://localhost:8888', data=b'shutdown')
+    req = urllib.request.Request('http://localhost:8888', data=b'shutdown')
+    res = urllib.request.urlopen(req)
 
     assert result == 'Hello, container!\nHello, container!\nHello, container!'
 
