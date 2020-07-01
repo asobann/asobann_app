@@ -5,6 +5,7 @@ import os
 import subprocess
 import inspect
 import pytest
+import time
 from pprint import pprint
 
 from ..e2e import helper
@@ -297,7 +298,7 @@ class TestRunInMultiprocessOnAws:
     def cluster():
         try:
             output = Aws.run('aws ecs create-cluster --cluster-name test-run-multiprocess-in-container --tags key=Yattom:ProductName,value=asobann')
-            created = json.loads(output)
+            created = json.loads(output)['cluster']
         except Aws.NonZeroExitError as e:
             if 'inconsistent with arguments' in str(e):
                 output = Aws.run('aws ecs describe-clusters --clusters test-run-multiprocess-in-container')
@@ -321,7 +322,7 @@ class TestRunInMultiprocessOnAws:
             f.write(inspect.getsource(remote_runner))
 
     @staticmethod
-    def prepare_worker(tmp_path, worker_ecr):
+    def prepare_worker_task_def(tmp_path, worker_ecr):
         registryId, repositoryUri, region = worker_ecr
 
         # build docker image for worker
@@ -334,16 +335,15 @@ RUN apt-get install -y python3
 COPY runner/ .
 CMD python3 run.py worker $PORT
     """)
-        # TODO
-        # proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
-        #                       shell=True, cwd=tmp_path, encoding='utf8')
-        # assert proc.returncode == 0
-        # proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_worker:latest {repositoryUri}', shell=True, encoding='utf-8')
-        # assert proc.returncode == 0
-        # proc = subprocess.run(f'aws ecr get-login-password | docker login --username AWS --password-stdin {registryId}.dkr.ecr.{region}.amazonaws.com', shell=True, encoding='utf-8')
-        # assert proc.returncode == 0
-        # proc = subprocess.run(f'docker push {repositoryUri}', shell=True, encoding='utf-8')
-        # assert proc.returncode == 0
+        proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
+                              shell=True, cwd=tmp_path, encoding='utf8')
+        assert proc.returncode == 0
+        proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_worker:latest {repositoryUri}', shell=True, encoding='utf-8')
+        assert proc.returncode == 0
+        proc = subprocess.run(f'aws ecr get-login-password | docker login --username AWS --password-stdin {registryId}.dkr.ecr.{region}.amazonaws.com', shell=True, encoding='utf-8')
+        assert proc.returncode == 0
+        proc = subprocess.run(f'docker push {repositoryUri}', shell=True, encoding='utf-8')
+        assert proc.returncode == 0
         task_def = build_task_definition_worker(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole', repositoryUri, region)
         task_def_file = tmp_path / 'taskdef_worker.json'
         with open(task_def_file, 'w') as f:
@@ -365,13 +365,18 @@ CMD python3 run.py worker $PORT
         return json.loads(task)
 
     @staticmethod
+    def run_controller(cluster, subnet, security_group):
+        task = Aws.run(f'aws ecs run-task --task-definition test_run_multiprocess_in_container_controller --cluster {cluster["clusterArn"]} --network-configuration "awsvpcConfiguration={{subnets=[{subnet}],securityGroups=[{security_group}],assignPublicIp=ENABLED}}" --launch-type FARGATE')
+        return json.loads(task)
+
+    @staticmethod
     def get_tasks(task, cluster):
         task_arns = [t['taskArn'] for t in task['tasks']]
         latest = Aws.run(f'aws ecs describe-tasks --tasks {" ".join(task_arns)} --cluster {cluster["clusterArn"]}')
         return json.loads(latest)
 
     @staticmethod
-    def prepare_controller(tmp_path, controller_ecr):
+    def prepare_controller_task_def(tmp_path, controller_ecr, arg_worker):
         # build docker image for controller
         registryId, repositoryUri, region = controller_ecr
         with open(tmp_path / 'Dockerfile_controller', 'w') as f:
@@ -382,32 +387,30 @@ RUN apt-get install -y python3
 COPY runner/ .
 CMD python3 run.py controller
     """)
-        # TODO
-        # proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_controller",
-        #                       shell=True, cwd=tmp_path, encoding='utf8')
-        # assert proc.returncode == 0
-        # proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_controller:latest {repositoryUri}', shell=True, encoding='utf-8')
-        # assert proc.returncode == 0
-        # proc = subprocess.run(f'docker push {repositoryUri}', shell=True, encoding='utf-8')
-        # assert proc.returncode == 0
-        task_def = build_task_definition_controller(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole', repositoryUri, region, 'host:50000')
+        proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_controller",
+                              shell=True, cwd=tmp_path, encoding='utf8')
+        assert proc.returncode == 0
+        proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_controller:latest {repositoryUri}', shell=True, encoding='utf-8')
+        assert proc.returncode == 0
+        proc = subprocess.run(f'docker push {repositoryUri}', shell=True, encoding='utf-8')
+        assert proc.returncode == 0
+        task_def = build_task_definition_controller(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole', repositoryUri, region, arg_worker)
         task_def_file = tmp_path / 'taskdef_controller.json'
         with open(task_def_file, 'w') as f:
             json.dump(task_def, f)
-        Aws.run(f'aws ecs register-task-definition --cli-input-json file://{task_def_file}')
+        registered = Aws.run(f'aws ecs register-task-definition --cli-input-json file://{task_def_file}')
+        return json.loads(registered)
 
 
     def test_run_multiprocess_in_aws(self, tmp_path, cluster, worker_ecr, controller_ecr):
         d = Path(tmp_path)
         (d / 'runner').mkdir()
         self.prepare_docker_contents(d)
-        worker_task_def = self.prepare_worker(d, worker_ecr)
-        self.prepare_controller(d, controller_ecr)
+        worker_task_def = self.prepare_worker_task_def(d, worker_ecr)
 
         worker_tasks = self.run_worker(cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3", count=5)
-        pprint(worker_tasks)
+        print('starting workers ...')
         while True:
-            import time
             time.sleep(5)
             statuses = [t['lastStatus'] for t in self.get_tasks(worker_tasks, cluster)['tasks']]
             print(statuses)
@@ -416,41 +419,24 @@ CMD python3 run.py controller
             if any([s == 'STOPPED' for s in statuses]):
                 assert False
 
-        # self.prepare_worker_service(tmp_path, cluster, worker_task_def)
+        worker_ips = []
+        for t in self.get_tasks(worker_tasks, cluster)['tasks']:
+            containers = t['containers']
+            ip = containers[0]['networkInterfaces'][0]['privateIpv4Address']
+            worker_ips.append(ip)
+
+        arg_worker = ','.join([f'{ip}:50000' for ip in worker_ips])
+        print(arg_worker)
+        self.prepare_controller_task_def(d, controller_ecr, arg_worker)
+        controller_task = self.run_controller(cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3")
+
+        print('starting controller ...')
+        while True:
+            time.sleep(5)
+            statuses = [t['lastStatus'] for t in self.get_tasks(controller_task, cluster)['tasks']]
+            print(statuses)
+            if all([s == 'STOPPED' for s in statuses]):
+                break
 
         assert False, 'stop here'
 
-        ports = [50000, 50001, 50002]
-        procs = []
-        for port in ports:
-            print(f'start worker container port {port}')
-            procs.append(
-                subprocess.run(f"docker run -d -p {port}:{port} -e PORT={port} test_run_multiprocess_in_container_worker",
-                               shell=True,
-                               stdout=subprocess.PIPE,
-                               cwd=tmp_path,
-                               encoding='utf8'))
-
-        if os.name == 'posix':
-            # see https://docs.docker.com/engine/reference/commandline/run/#add-entries-to-container-hosts-file-add-host
-            proc = subprocess.run(
-                "ip -4 addr show scope global dev docker0 | grep inet | awk '{print $2}' | cut -d / -f 1 | sed -n 1p",
-                shell=True,
-                stdout=subprocess.PIPE,
-                cwd=tmp_path,
-                encoding='utf8')
-            host_access =  f"--add-host=host.docker.internal:{proc.stdout.strip()}"
-        elif os.name == 'nt':
-            # see https://docs.docker.com/docker-for-windows/networking/#per-container-ip-addressing-is-not-possible
-            host_access = ''
-        print(f'start controller container ports {ports}')
-        proc = subprocess.run(f"docker run {host_access} test_run_multiprocess_in_container_controller "
-                              f"python3 run.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}",
-                              shell=True,
-                              stdout=subprocess.PIPE,
-                              cwd=tmp_path,
-                              encoding='utf8')
-        assert proc.returncode == 0
-
-        output = proc.stdout
-        assert output.strip() == 'Hello, container!\nHello, container!\nHello, container!'
