@@ -51,6 +51,10 @@ def controller_client(workers):
 
     import http.server
     class ControllerHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
+        def do_HEAD(self):
+            self.send_response(200)
+            self.end_headers()
+
         def do_POST(self):
             length = self.headers.get('content-length')
             nbytes = int(length)
@@ -63,6 +67,9 @@ def controller_client(workers):
                 queue.put(command)
 
             if command == 'shutdown':
+                self.send_response(200)
+                self.end_headers()
+                self.flush_headers()
                 exit()
 
             print('receiving result...')

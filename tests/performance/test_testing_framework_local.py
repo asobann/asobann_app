@@ -100,19 +100,26 @@ CMD python3 run.py controller
     assert proc.returncode == 0
 
     import urllib.request
+    while True:
+        try:
+            req = urllib.request.Request('http://localhost:8888', method='HEAD')
+            res = urllib.request.urlopen(req)
+            if res.getcode() == 200:
+                break
+        except ConnectionError:
+            time.sleep(1)
+
     print('send run command')
-    req = urllib.request.Request('http://localhost:8888', data=b'run')
-    res = urllib.request.urlopen(req)
+    res = urllib.request.urlopen('http://localhost:8888', data=b'run')
     print('read response')
     result = res.read().decode('utf-8')
     print('send shutdown command')
-    req = urllib.request.Request('http://localhost:8888', data=b'shutdown')
-    res = urllib.request.urlopen(req)
+    res = urllib.request.urlopen('http://localhost:8888', data=b'shutdown')
 
-    assert result == 'Hello, container!\nHello, container!\nHello, container!'
+    assert result == 'Hello, container!Hello, container!Hello, container!'
 
     time.sleep(1)
     proc = subprocess.run("docker ps",
             stdout=subprocess.PIPE, shell=True, cwd=tmp_path, encoding='utf8')
     assert proc.returncode == 0
-    assert len(proc.stdout.split('\n')) == 1, 'no process remains'
+    assert len(proc.stdout.strip().split('\n')) == 1, 'no process remains'
