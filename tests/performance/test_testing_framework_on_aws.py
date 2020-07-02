@@ -6,6 +6,7 @@ import subprocess
 import inspect
 import pytest
 import time
+import urllib.request
 from pprint import pprint
 
 
@@ -16,7 +17,13 @@ def build_task_definition_controller(execution_role_arn, image_uri, region, work
                 "name": "test_run_multiprocess_in_container_controller",
                 "image": image_uri,
                 "cpu": 0,
-                "portMappings": [],
+                "portMappings": [
+                    {
+                        "containerPort": 8888,
+                        "hostPort": 8888,
+                        "protocol": "tcp"
+                    },
+                ],
                 "essential": True,
                 "command": [
                     "/usr/bin/python3",
@@ -99,99 +106,6 @@ def build_task_definition_worker(execution_role_arn, image_uri, region):
         "cpu": "256",
         "memory": "512"
     }
-
-
-def test_run_in_container(tmp_path):
-    d = Path(tmp_path)
-    (d / 'runner').mkdir()
-    with open(d / 'runner' / 'run.py', 'w') as f:
-        f.write(
-            """
-print('Hello, container!')\n
-""")
-    with open(d / 'Dockerfile', 'w') as f:
-        f.write("""
-FROM ubuntu:18.04
-RUN apt-get -y update
-RUN apt-get install -y python3
-COPY runner/ .
-CMD python3 run.py
-""")
-    proc = subprocess.run("docker build . -t test_run_in_container", shell=True, cwd=tmp_path, encoding='utf8')
-    assert proc.returncode == 0
-    proc = subprocess.run("docker run test_run_in_container", shell=True, stdout=subprocess.PIPE, cwd=tmp_path,
-                          encoding='utf8')
-    assert proc.returncode == 0
-    output = proc.stdout
-    assert output.strip() == 'Hello, container!'
-
-
-def test_run_multiprocess_in_local_containers(tmp_path):
-    d = Path(tmp_path)
-    (d / 'runner').mkdir()
-    with open(d / 'runner' / 'run.py', 'w') as f:
-        from . import remote_runner
-        f.write(inspect.getsource(remote_runner))
-    with open(d / 'Dockerfile_worker', 'w') as f:
-        f.write("""
-FROM ubuntu:18.04
-EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
-RUN apt-get -y update
-RUN apt-get install -y python3
-COPY runner/ .
-CMD python3 run.py worker $PORT
-""")
-    with open(d / 'Dockerfile_controller', 'w') as f:
-        f.write("""
-FROM ubuntu:18.04
-RUN apt-get -y update
-RUN apt-get install -y python3
-COPY runner/ .
-CMD python3 run.py controller
-""")
-    proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
-                          shell=True, cwd=tmp_path, encoding='utf8')
-    assert proc.returncode == 0
-    proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_controller",
-                          shell=True, cwd=tmp_path, encoding='utf8')
-    assert proc.returncode == 0
-
-    ports = [50000, 50001, 50002]
-    procs = []
-    for port in ports:
-        print(f'start worker container port {port}')
-        procs.append(
-            subprocess.run(f"docker run -d -p {port}:{port} -e PORT={port} test_run_multiprocess_in_container_worker",
-                           shell=True,
-                           stdout=subprocess.PIPE,
-                           cwd=tmp_path,
-                           encoding='utf8'))
-
-    if os.name == 'posix':
-        # see https://docs.docker.com/engine/reference/commandline/run/#add-entries-to-container-hosts-file-add-host
-        proc = subprocess.run(
-            "ip -4 addr show scope global dev docker0 | grep inet | awk '{print $2}' | cut -d / -f 1 | sed -n 1p",
-            shell=True,
-            stdout=subprocess.PIPE,
-            cwd=tmp_path,
-            encoding='utf8')
-        host_access = f"--add-host=host.docker.internal:{proc.stdout.strip()}"
-    elif os.name == 'nt':
-        # see https://docs.docker.com/docker-for-windows/networking/#per-container-ip-addressing-is-not-possible
-        host_access = ''
-    else:
-        raise RuntimeError()
-    print(f'start controller container ports {ports}')
-    proc = subprocess.run(f"docker run {host_access} test_run_multiprocess_in_container_controller "
-                          f"python3 run.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}",
-                          shell=True,
-                          stdout=subprocess.PIPE,
-                          cwd=tmp_path,
-                          encoding='utf8')
-    assert proc.returncode == 0
-
-    output = proc.stdout
-    assert output.strip() == 'Hello, container!\nHello, container!\nHello, container!'
 
 
 class Aws:
@@ -314,13 +228,18 @@ CMD python3 run.py worker $PORT
     @staticmethod
     def run_worker(cluster, subnet, security_group, count=1):
         task = Aws.run(
-            f'aws ecs run-task --task-definition test_run_multiprocess_in_container_worker --cluster {cluster["clusterArn"]} --network-configuration "awsvpcConfiguration={{subnets=[{subnet}],securityGroups=[{security_group}],assignPublicIp=ENABLED}}" --launch-type FARGATE --count {count}')
+            f'aws ecs run-task --task-definition test_run_multiprocess_in_container_worker'
+            f' --cluster {cluster["clusterArn"]}'
+            f' --network-configuration "awsvpcConfiguration={{subnets=[{subnet}],securityGroups=[{security_group}],assignPublicIp=ENABLED}}"'
+            f' --launch-type FARGATE --count {count}')
         return json.loads(task)
 
     @staticmethod
     def run_controller(cluster, subnet, security_group):
         task = Aws.run(
-            f'aws ecs run-task --task-definition test_run_multiprocess_in_container_controller --cluster {cluster["clusterArn"]} --network-configuration "awsvpcConfiguration={{subnets=[{subnet}],securityGroups=[{security_group}],assignPublicIp=ENABLED}}" --launch-type FARGATE')
+            f'aws ecs run-task --task-definition test_run_multiprocess_in_container_controller'
+            f' --cluster {cluster["clusterArn"]} --network-configuration "awsvpcConfiguration={{subnets=[{subnet}],securityGroups=[{security_group}],assignPublicIp=ENABLED}}"'
+            f' --launch-type FARGATE')
         return json.loads(task)
 
     @staticmethod
@@ -336,12 +255,13 @@ CMD python3 run.py worker $PORT
         with open(tmp_path / 'Dockerfile_controller', 'w') as f:
             f.write("""
 FROM ubuntu:18.04
+EXPOSE 8888
 RUN apt-get -y update
 RUN apt-get install -y python3
 COPY runner/ .
 CMD python3 run.py controller
     """)
-        proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_controller",
+        proc = subprocess.run("docker build . -f Dockerfile_controller -t test_run_multiprocess_in_container_controller",
                               shell=True, cwd=tmp_path, encoding='utf8')
         assert proc.returncode == 0
         proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_controller:latest {repositoryUri}',
@@ -358,12 +278,13 @@ CMD python3 run.py controller
         return json.loads(registered)
 
     def test_run_multiprocess_in_aws(self, tmp_path, cluster, worker_ecr, controller_ecr):
+        worker_count = 5
         d = Path(tmp_path)
         (d / 'runner').mkdir()
         self.prepare_docker_contents(d)
         worker_task_def = self.prepare_worker_task_def(d, worker_ecr)
 
-        worker_tasks = self.run_worker(cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3", count=5)
+        worker_tasks = self.run_worker(cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3", count=worker_count)
         print('starting workers ...')
         while True:
             time.sleep(5)
@@ -390,7 +311,30 @@ CMD python3 run.py controller
             time.sleep(5)
             statuses = [t['lastStatus'] for t in self.get_tasks(controller_task, cluster)['tasks']]
             print(statuses)
+            if all([s == 'RUNNING' for s in statuses]):
+                break
+
+        eni_id = [d['value'] for d in self.get_tasks(controller_task, cluster)['tasks'][0]['attachments'][0]['details']
+                  if d['name'] == 'networkInterfaceId'][0]
+        eni = Aws.run(f'aws ec2 describe-network-interfaces --network-interface-ids {eni_id}')
+        controller_ip = json.loads(eni)['NetworkInterfaces'][0]['Association']['PublicIp']
+        print('send run command to ' + controller_ip)
+        res = urllib.request.urlopen(f'http://{controller_ip}:8888', data=b'run')
+        print('read response')
+        result = res.read().decode('utf-8')
+        print('send shutdown command')
+        res = urllib.request.urlopen(f'http://{controller_ip}:8888', data=b'shutdown')
+
+        assert result == 'Hello, container!' * worker_count
+
+        while True:
+            time.sleep(5)
+            statuses = [t['lastStatus'] for t in self.get_tasks(worker_tasks, cluster)['tasks']]
+            if all([s == 'STOPPED' for s in statuses]):
+                break
+        while True:
+            time.sleep(5)
+            statuses = [t['lastStatus'] for t in self.get_tasks(controller_task, cluster)['tasks']]
             if all([s == 'STOPPED' for s in statuses]):
                 break
 
-        assert False, 'stop here'
