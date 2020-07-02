@@ -8,7 +8,6 @@ import pytest
 import time
 from pprint import pprint
 
-from ..e2e import helper
 
 def build_task_definition_controller(execution_role_arn, image_uri, region, workers):
     return {
@@ -102,52 +101,6 @@ def build_task_definition_worker(execution_role_arn, image_uri, region):
     }
 
 
-def build_service_worker(cluster, task_def_arn, desired_count, subnet, security_group):
-    return {
-    "cluster": cluster,
-    "serviceName": "test_run_multiprocess_in_container_worker",
-    "taskDefinition": task_def_arn,
-    "loadBalancers": [ ],
-    "serviceRegistries": [ ],
-    "desiredCount": desired_count,
-    # "clientToken": "",
-    "launchType": "FARGATE",
-    "capacityProviderStrategy": [ ],
-    "platformVersion": "LATEST",
-    # "role": "",
-    "deploymentConfiguration": {
-        "maximumPercent": 200,
-        "minimumHealthyPercent": 100
-    },
-    "placementConstraints": [ ],
-    "placementStrategy": [ ],
-    "networkConfiguration": {
-        "awsvpcConfiguration": {
-            "subnets": [
-                subnet
-            ],
-            "securityGroups": [
-                security_group
-            ],
-            "assignPublicIp": "ENABLED"
-        }
-    },
-    # "healthCheckGracePeriodSeconds": 0,
-    "schedulingStrategy": "REPLICA",
-    # "deploymentController": {
-    #     "type": "CODE_DEPLOY"
-    # },
-    "tags": [
-        {
-            "key": "Yattom:ProductName",
-            "value": "asobann"
-        }
-    ],
-    "enableECSManagedTags": false,
-    "propagateTags": "NONE"
-}
-
-
 def test_run_in_container(tmp_path):
     d = Path(tmp_path)
     (d / 'runner').mkdir()
@@ -222,10 +175,12 @@ CMD python3 run.py controller
             stdout=subprocess.PIPE,
             cwd=tmp_path,
             encoding='utf8')
-        host_access =  f"--add-host=host.docker.internal:{proc.stdout.strip()}"
+        host_access = f"--add-host=host.docker.internal:{proc.stdout.strip()}"
     elif os.name == 'nt':
         # see https://docs.docker.com/docker-for-windows/networking/#per-container-ip-addressing-is-not-possible
         host_access = ''
+    else:
+        raise RuntimeError()
     print(f'start controller container ports {ports}')
     proc = subprocess.run(f"docker run {host_access} test_run_multiprocess_in_container_controller "
                           f"python3 run.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}",
@@ -242,13 +197,14 @@ CMD python3 run.py controller
 class Aws:
     class NonZeroExitError(RuntimeError):
         pass
+
     @staticmethod
     def get_ecr(name):
         proc = subprocess.run(f'aws ecr create-repository --repository-name {name}',
-                               shell=True,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT,
-                               encoding='utf8')
+                              shell=True,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT,
+                              encoding='utf8')
         assert proc.returncode == 0 or 'already exists' in proc.stdout
         if proc.returncode == 0:
             result = json.loads(proc.stdout)
@@ -284,7 +240,6 @@ class TestRunInMultiprocessOnAws:
         # TODO
         # delete_ecr('test_run_multiprocess_in_container_worker')
 
-
     @staticmethod
     @pytest.fixture
     def controller_ecr():
@@ -297,7 +252,8 @@ class TestRunInMultiprocessOnAws:
     @pytest.fixture
     def cluster():
         try:
-            output = Aws.run('aws ecs create-cluster --cluster-name test-run-multiprocess-in-container --tags key=Yattom:ProductName,value=asobann')
+            output = Aws.run(
+                'aws ecs create-cluster --cluster-name test-run-multiprocess-in-container --tags key=Yattom:ProductName,value=asobann')
             created = json.loads(output)['cluster']
         except Aws.NonZeroExitError as e:
             if 'inconsistent with arguments' in str(e):
@@ -311,8 +267,8 @@ class TestRunInMultiprocessOnAws:
     @staticmethod
     def delete_ecr(name):
         proc = subprocess.run(f'aws ecr delete-repository --repository-name {name} --force',
-                               shell=True,
-                               encoding='utf8')
+                              shell=True,
+                              encoding='utf8')
         assert proc.returncode == 0
 
     @staticmethod
@@ -338,13 +294,17 @@ CMD python3 run.py worker $PORT
         proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
                               shell=True, cwd=tmp_path, encoding='utf8')
         assert proc.returncode == 0
-        proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_worker:latest {repositoryUri}', shell=True, encoding='utf-8')
+        proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_worker:latest {repositoryUri}',
+                              shell=True, encoding='utf-8')
         assert proc.returncode == 0
-        proc = subprocess.run(f'aws ecr get-login-password | docker login --username AWS --password-stdin {registryId}.dkr.ecr.{region}.amazonaws.com', shell=True, encoding='utf-8')
+        proc = subprocess.run(
+            f'aws ecr get-login-password | docker login --username AWS --password-stdin {registryId}.dkr.ecr.{region}.amazonaws.com',
+            shell=True, encoding='utf-8')
         assert proc.returncode == 0
         proc = subprocess.run(f'docker push {repositoryUri}', shell=True, encoding='utf-8')
         assert proc.returncode == 0
-        task_def = build_task_definition_worker(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole', repositoryUri, region)
+        task_def = build_task_definition_worker(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole', repositoryUri,
+                                                region)
         task_def_file = tmp_path / 'taskdef_worker.json'
         with open(task_def_file, 'w') as f:
             json.dump(task_def, f)
@@ -352,21 +312,15 @@ CMD python3 run.py worker $PORT
         return json.loads(registered)
 
     @staticmethod
-    def prepare_worker_service(tmp_path, cluster, task_def):
-        service_def_worker = self.build_service_worker(cluster['clusterArn'], task_def['taskDefinitionArn'], "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3")
-        service_def_file = tmp_path / 'servicedef_worker.json'
-        with open(service_def_file, 'w') as f:
-            json.dump(service_def_worker, f)
-        created = Aws.run(f'aws ecs create-service --cli-input-json file://{service_def_file}')
-
-    @staticmethod
     def run_worker(cluster, subnet, security_group, count=1):
-        task = Aws.run(f'aws ecs run-task --task-definition test_run_multiprocess_in_container_worker --cluster {cluster["clusterArn"]} --network-configuration "awsvpcConfiguration={{subnets=[{subnet}],securityGroups=[{security_group}],assignPublicIp=ENABLED}}" --launch-type FARGATE --count {count}')
+        task = Aws.run(
+            f'aws ecs run-task --task-definition test_run_multiprocess_in_container_worker --cluster {cluster["clusterArn"]} --network-configuration "awsvpcConfiguration={{subnets=[{subnet}],securityGroups=[{security_group}],assignPublicIp=ENABLED}}" --launch-type FARGATE --count {count}')
         return json.loads(task)
 
     @staticmethod
     def run_controller(cluster, subnet, security_group):
-        task = Aws.run(f'aws ecs run-task --task-definition test_run_multiprocess_in_container_controller --cluster {cluster["clusterArn"]} --network-configuration "awsvpcConfiguration={{subnets=[{subnet}],securityGroups=[{security_group}],assignPublicIp=ENABLED}}" --launch-type FARGATE')
+        task = Aws.run(
+            f'aws ecs run-task --task-definition test_run_multiprocess_in_container_controller --cluster {cluster["clusterArn"]} --network-configuration "awsvpcConfiguration={{subnets=[{subnet}],securityGroups=[{security_group}],assignPublicIp=ENABLED}}" --launch-type FARGATE')
         return json.loads(task)
 
     @staticmethod
@@ -390,17 +344,18 @@ CMD python3 run.py controller
         proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_controller",
                               shell=True, cwd=tmp_path, encoding='utf8')
         assert proc.returncode == 0
-        proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_controller:latest {repositoryUri}', shell=True, encoding='utf-8')
+        proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_controller:latest {repositoryUri}',
+                              shell=True, encoding='utf-8')
         assert proc.returncode == 0
         proc = subprocess.run(f'docker push {repositoryUri}', shell=True, encoding='utf-8')
         assert proc.returncode == 0
-        task_def = build_task_definition_controller(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole', repositoryUri, region, arg_worker)
+        task_def = build_task_definition_controller(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole',
+                                                    repositoryUri, region, arg_worker)
         task_def_file = tmp_path / 'taskdef_controller.json'
         with open(task_def_file, 'w') as f:
             json.dump(task_def, f)
         registered = Aws.run(f'aws ecs register-task-definition --cli-input-json file://{task_def_file}')
         return json.loads(registered)
-
 
     def test_run_multiprocess_in_aws(self, tmp_path, cluster, worker_ecr, controller_ecr):
         d = Path(tmp_path)
@@ -439,4 +394,3 @@ CMD python3 run.py controller
                 break
 
         assert False, 'stop here'
-

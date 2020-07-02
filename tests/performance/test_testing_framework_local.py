@@ -86,7 +86,7 @@ CMD python3 run.py controller
             stdout=subprocess.PIPE,
             cwd=tmp_path,
             encoding='utf8')
-        host_access =  f"--add-host=host.docker.internal:{proc.stdout.strip()}"
+        host_access = f"--add-host=host.docker.internal:{proc.stdout.strip()}"
     elif os.name == 'nt':
         # see https://docs.docker.com/docker-for-windows/networking/#per-container-ip-addressing-is-not-possible
         host_access = ''
@@ -120,6 +120,6 @@ CMD python3 run.py controller
 
     time.sleep(1)
     proc = subprocess.run("docker ps",
-            stdout=subprocess.PIPE, shell=True, cwd=tmp_path, encoding='utf8')
+                          stdout=subprocess.PIPE, shell=True, cwd=tmp_path, encoding='utf8')
     assert proc.returncode == 0
     assert len(proc.stdout.strip().split('\n')) == 1, 'no process remains'
