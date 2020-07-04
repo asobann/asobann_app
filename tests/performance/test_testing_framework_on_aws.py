@@ -138,6 +138,14 @@ class Aws:
         return (registryId, repositoryUri, region)
 
     @staticmethod
+    def delete_ecr(name):
+        proc = subprocess.run(f'aws ecr delete-repository --repository-name {name} --force',
+                              shell=True,
+                              stdout=subprocess.DEVNULL,
+                              encoding='utf8')
+        assert proc.returncode == 0
+
+    @staticmethod
     def run(cmd):
         proc = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf8')
         if not proc.returncode == 0:
@@ -151,16 +159,14 @@ class TestRunInMultiprocessOnAws:
     def worker_ecr():
         ecr = Aws.get_ecr('test_run_multiprocess_in_container_worker')
         yield ecr
-        # TODO
-        # delete_ecr('test_run_multiprocess_in_container_worker')
+        Aws.delete_ecr('test_run_multiprocess_in_container_worker')
 
     @staticmethod
     @pytest.fixture
     def controller_ecr():
         ecr = Aws.get_ecr('test_run_multiprocess_in_container_controller')
         yield ecr
-        # TODO
-        # delete_ecr('test_run_multiprocess_in_container_controller')
+        Aws.delete_ecr('test_run_multiprocess_in_container_controller')
 
     @staticmethod
     @pytest.fixture
@@ -178,12 +184,6 @@ class TestRunInMultiprocessOnAws:
         yield created
         Aws.run('aws ecs delete-cluster --cluster test-run-multiprocess-in-container')
 
-    @staticmethod
-    def delete_ecr(name):
-        proc = subprocess.run(f'aws ecr delete-repository --repository-name {name} --force',
-                              shell=True,
-                              encoding='utf8')
-        assert proc.returncode == 0
 
     @staticmethod
     def prepare_docker_contents(tmp_path):
