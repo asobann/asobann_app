@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 import urllib.request
 import time
+import shutil
 
 import typer
 
@@ -29,27 +30,25 @@ class LocalContainers:
     @staticmethod
     def build_docker_images(tmp_path):
         d = Path(tmp_path)
-        (d / 'runner').mkdir()
-        with open(d / 'runner' / 'run.py', 'w') as f:
-            from . import remote_runner
-            f.write(inspect.getsource(remote_runner))
+        shutil.copytree(Path('./tests'), d / 'runner')
         with open(d / 'Dockerfile_worker', 'w') as f:
             f.write("""
-    FROM ubuntu:18.04
-    EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
-    RUN apt-get -y update
-    RUN apt-get install -y python3
-    COPY runner/ .
-    CMD python3 run.py worker $PORT
+FROM ubuntu:18.04
+EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
+RUN apt-get -y update
+RUN apt-get install -y python3
+WORKDIR /runner
+COPY runner/ .
+CMD python3 performance/remote_runner.py worker $PORT
     """)
         with open(d / 'Dockerfile_controller', 'w') as f:
             f.write("""
-    FROM ubuntu:18.04
-    EXPOSE 8888
-    RUN apt-get -y update
-    RUN apt-get install -y python3
-    COPY runner/ .
-    CMD python3 run.py controller
+FROM ubuntu:18.04
+EXPOSE 8888
+RUN apt-get -y update
+RUN apt-get install -y python3
+WORKDIR /runner
+COPY runner/ .
     """)
         proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
                               shell=True, cwd=tmp_path, encoding='utf8')
@@ -96,7 +95,7 @@ class LocalContainers:
             raise RuntimeError()
         print(f'start controller container ports {ports}')
         proc = subprocess.run(f"docker run {host_access} -p 8888:8888 -d test_run_multiprocess_in_container_controller "
-                              f"python3 run.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}",
+                              f"python3 performance/remote_runner.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}",
                               shell=True,
                               stdout=subprocess.PIPE,
                               cwd=tmp_path,
@@ -113,18 +112,23 @@ class LocalContainers:
                 time.sleep(1)
 
     @staticmethod
-    def send_command(command: str):
+    def _send_command(command: str):
         res = urllib.request.urlopen('http://localhost:8888', data=command.encode('utf8'))
         result = res.read().decode('utf-8')
         return result
 
     @staticmethod
     def shutdown():
-        LocalContainers.send_command('shutdown')
+        LocalContainers._send_command('shutdown')
         time.sleep(1)
         proc = subprocess.run("docker ps",
                               stdout=subprocess.PIPE, shell=True, encoding='utf8')
         assert proc.returncode == 0
         assert len(proc.stdout.strip().split('\n')) == 1, 'no process remains'
+
+    @staticmethod
+    def run_test(filename):
+        result = LocalContainers._send_command(f'run {filename}')
+        return result
 
 

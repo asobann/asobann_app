@@ -38,7 +38,7 @@ def test_run_multiprocess_in_local_containers(tmp_path):
 
     LocalContainers.start_controller(ports, tmp_path)
 
-    result = LocalContainers.send_command('run')
+    result = LocalContainers.run_test('say_hello')
 
     assert result == 'Hello, container!Hello, container!Hello, container!'
 

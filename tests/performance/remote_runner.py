@@ -1,10 +1,11 @@
+import re
+
 AUTHKEY = b'noscret'
 
-
 def worker_server(port):
-    '''
+    """
     This will run on remote host or container.
-    '''
+    """
     from multiprocessing.managers import BaseManager
     from multiprocessing import Queue
     command_queue = Queue()
@@ -22,9 +23,12 @@ def worker_server(port):
     while True:
         print('receiving cmd...')
         cmd = command_queue.get()
-        if cmd == 'run':
-            result_queue.put('Hello, container!')
-        if cmd == 'shutdown':
+        if cmd[0] == 'run':
+            module_name = cmd[1]
+            import importlib
+            mod = importlib.import_module(module_name, '.')
+            mod.execute_worker(command_queue, result_queue)
+        if cmd[0] == 'shutdown':
             mgr.shutdown()
             break
 
@@ -56,31 +60,52 @@ def controller_client(workers):
             self.end_headers()
 
         def do_POST(self):
-            length = self.headers.get('content-length')
-            nbytes = int(length)
-            command = self.rfile.read(nbytes).decode('utf8')
-            print(f'received cmd "{command}"')
-            sys.stdout.flush()
+            try:
+                length = self.headers.get('content-length')
+                nbytes = int(length)
+                command = self.rfile.read(nbytes).decode('utf8')
+                print(f'received cmd "{command}"')
+                sys.stdout.flush()
 
-            print('sending cmd...')
-            for queue in command_queues:
-                queue.put(command)
+                if command.startswith('run '):
+                    module_name = command.split(' ')[1]
+                    print(f'starting testcase {module_name}...')
+                    sys.stdout.flush()
 
-            if command == 'shutdown':
-                self.send_response(200)
-                self.end_headers()
-                self.flush_headers()
-                exit()
+                    for queue in command_queues:
+                        queue.put(['run', module_name])
 
-            print('receiving result...')
-            result = ''
-            for queue in result_queues:
-                result += queue.get()
+                    import importlib
+                    mod = importlib.import_module(module_name, '.')
+                    mod.execute_controller(command_queues, result_queues)
 
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(result.encode('utf8'))
-            print('response sent')
+                    print('receiving result...')
+                    sys.stdout.flush()
+                    result = ''
+                    for queue in result_queues:
+                        result += queue.get()
+
+                    self.send_response(200)
+                    self.end_headers()
+                    self.wfile.write(result.encode('utf8'))
+                    print('response sent')
+                    sys.stdout.flush()
+                elif command == 'shutdown':
+                    print('shutdown controller and workers')
+                    sys.stdout.flush()
+                    for queue in command_queues:
+                        queue.put(['shutdown'])
+
+                    self.send_response(200)
+                    self.end_headers()
+                    self.flush_headers()
+                    exit()
+            except:
+                import traceback
+                traceback.print_exc()
+                sys.stdout.flush()
+                sys.stderr.flush()
+                raise
 
     print('starting http server')
     sys.stdout.flush()
