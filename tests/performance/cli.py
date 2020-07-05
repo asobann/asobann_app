@@ -30,23 +30,30 @@ class LocalContainers:
     @staticmethod
     def build_docker_images(tmp_path):
         d = Path(tmp_path)
-        shutil.copytree(Path('./tests'), d / 'runner')
+        shutil.copytree(Path('./tests'), d / 'runner/tests')
         with open(d / 'Dockerfile_worker', 'w') as f:
             f.write("""
 FROM ubuntu:18.04
 EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
 RUN apt-get -y update
-RUN apt-get install -y python3
+RUN apt-get install -y python3 python3-pip
+RUN pip3 install pipenv
 WORKDIR /runner
 COPY runner/ .
-CMD python3 performance/remote_runner.py worker $PORT
+RUN pipenv install .
+CMD pipenv run python tests/performance/remote_runner.py worker $PORT
     """)
         with open(d / 'Dockerfile_controller', 'w') as f:
             f.write("""
 FROM ubuntu:18.04
 EXPOSE 8888
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
 RUN apt-get -y update
-RUN apt-get install -y python3
+RUN apt-get install -y python3 python3-pip
+RUN pip3 install pipenv
 WORKDIR /runner
 COPY runner/ .
     """)
@@ -95,7 +102,7 @@ COPY runner/ .
             raise RuntimeError()
         print(f'start controller container ports {ports}')
         proc = subprocess.run(f"docker run {host_access} -p 8888:8888 -d test_run_multiprocess_in_container_controller "
-                              f"python3 performance/remote_runner.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}",
+                              f"pipenv run python tests/performance/remote_runner.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}",
                               shell=True,
                               stdout=subprocess.PIPE,
                               cwd=tmp_path,
