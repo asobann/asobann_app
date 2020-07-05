@@ -31,10 +31,10 @@ class LocalContainers:
     def build_docker_images(tmp_path):
         d = Path(tmp_path)
         shutil.copytree(Path('./tests'), d / 'runner/tests')
+        shutil.copytree(Path('./src'), d / 'runner/src')
         with open(d / 'Dockerfile_worker', 'w') as f:
             f.write("""
 FROM ubuntu:18.04
-EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 RUN apt-get -y update
@@ -42,13 +42,13 @@ RUN apt-get install -y python3 python3-pip
 RUN pip3 install pipenv
 WORKDIR /runner
 COPY runner/ .
-RUN pipenv install .
+RUN pipenv install
+EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
 CMD pipenv run python tests/performance/remote_runner.py worker $PORT
     """)
         with open(d / 'Dockerfile_controller', 'w') as f:
             f.write("""
 FROM ubuntu:18.04
-EXPOSE 8888
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 RUN apt-get -y update
@@ -56,6 +56,8 @@ RUN apt-get install -y python3 python3-pip
 RUN pip3 install pipenv
 WORKDIR /runner
 COPY runner/ .
+EXPOSE 8888
+RUN pipenv install
     """)
         proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
                               shell=True, cwd=tmp_path, encoding='utf8')
