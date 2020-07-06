@@ -27,7 +27,7 @@ def gather_status(player: GameHelper):
     while True:
         try:
             c = player.component(n, wait=False)
-            status.append((c.pos(), c.size(), c.face()))
+            status.append((c.rect(), c.face()))
             n += 1
         except NoSuchElementException:
             break
@@ -42,12 +42,12 @@ def save_status(iteration, tag, status: list):
 
 def evaluate_saved_status():
     diff = 0
-    for iteration in saved_status:
-        baseline = iteration["host"]
-        for status in [iteration[key] for key in iteration.keys() if key != "host"]:
+    for statuses_in_iteration in saved_status:
+        baseline = statuses_in_iteration["host"]
+        for status in [statuses_in_iteration[key] for key in statuses_in_iteration.keys() if key != "host"]:
             for i, c in enumerate(status):
                 if baseline[i] != c:
-                    log(f"diff! <{baseline[i]}> <{c}>")
+                    log(f"diff! at {i} <{baseline[i]}> <{c}>")
                     diff += 1
                     break  # don't count diffs for same component
     return diff
@@ -77,8 +77,8 @@ def execute_controller(command_queues, result_queues):
             q.put('move')
         for q in result_queues:
             q.get()  # 'moved'
-        save_status(i, "host", gather_status(host))
         time.sleep(3)
+        save_status(i, "host", gather_status(host))
         log('receive status')
         for q in command_queues:
             q.put('status')
@@ -97,9 +97,10 @@ def execute_worker(name, command_queue, result_queue):
     player = GameHelper(browser(headless=True))
     my_idx, invitation_url = command_queue.get()
     player.go(invitation_url)
-    player.menu.join(name)
+    player.menu.join(f'P{my_idx}')
     player.should_have_text("Table for load testing")
 
+    imagecount = 0
     log('entering loop')
     while True:
         cmd = command_queue.get()
@@ -110,6 +111,8 @@ def execute_worker(name, command_queue, result_queue):
             player.drag(player.component(my_idx + 2), 0, -300)
             result_queue.put('moved')
         elif cmd == 'status':
+            player.browser.save_screenshot(f'/runner/image{imagecount}.png')
+            imagecount += 1
             result_queue.put(gather_status(player))
         elif cmd == 'finish':
             break

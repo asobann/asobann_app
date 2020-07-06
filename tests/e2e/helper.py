@@ -54,11 +54,11 @@ class Component:
         result = []
         try:
             image_url = self.element.find_element_by_tag_name('img').get_attribute('src')
-            result.append(f"image_url : {image_url}")
+            result.append(f"image_url: {image_url}")
         except NoSuchElementException:
             pass
         if self.element.text:
-            result.append(f"text : {self.element.text}")
+            result.append(f"text: {self.element.text}")
 
         return ",".join(result) or "not implemented"
 
