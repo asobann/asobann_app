@@ -6,6 +6,7 @@ import tempfile
 import urllib.request
 import time
 import shutil
+import json
 
 import typer
 
@@ -22,10 +23,6 @@ def run(name: str):
         run_local(name, tmpdir=tmpdir)
 
 
-if __name__=='__main__':
-    typer.run(run)
-
-
 class LocalContainers:
     @staticmethod
     def build_docker_images(tmp_path):
@@ -38,7 +35,7 @@ FROM ubuntu:18.04
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 RUN apt-get -y update
-RUN apt-get install -y python3 python3-pip
+RUN apt-get install -y python3 python3-pip firefox firefox-geckodriver
 RUN pip3 install pipenv
 WORKDIR /runner
 COPY runner/ .
@@ -138,6 +135,8 @@ RUN pipenv install
     @staticmethod
     def run_test(filename):
         result = LocalContainers._send_command(f'run {filename}')
-        return result
+        return json.loads(result)
 
 
+if __name__=='__main__':
+    typer.run(run)

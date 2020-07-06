@@ -1,6 +1,10 @@
 import re
+import json
 
+import random
+random.seed()
 AUTHKEY = b'noscret'
+
 
 def worker_server(port):
     """
@@ -20,15 +24,19 @@ def worker_server(port):
     mgr = MyManager(address=('', port), authkey=AUTHKEY)
     mgr.start()
 
+    name = ''.join([random.choice('abcdefghijklmnopqrstuvwxyz') for i in range(10)])
     while True:
         print('receiving cmd...')
         cmd = command_queue.get()
-        if cmd[0] == 'run':
+        print(f'received {cmd}')
+        if cmd[0] == 'name':
+            name = cmd[1]
+        elif cmd[0] == 'run':
             module_name = cmd[1]
             import importlib
             mod = importlib.import_module(module_name, '.')
-            mod.execute_worker(command_queue, result_queue)
-        if cmd[0] == 'shutdown':
+            mod.execute_worker(name, command_queue, result_queue)
+        elif cmd[0] == 'shutdown':
             mgr.shutdown()
             break
 
@@ -51,6 +59,7 @@ def controller_client(workers):
         mgr.connect()
         command_queues.append(mgr.command_que())
         result_queues.append(mgr.result_que())
+        mgr.command_que().put(['name', f'{host}:{port}'])
     print('connected to workers')
 
     import http.server
@@ -81,13 +90,13 @@ def controller_client(workers):
 
                     print('receiving result...')
                     sys.stdout.flush()
-                    result = ''
+                    result = []
                     for queue in result_queues:
-                        result += queue.get()
+                        result.append(queue.get())
 
                     self.send_response(200)
                     self.end_headers()
-                    self.wfile.write(result.encode('utf8'))
+                    self.wfile.write(json.dumps(result).encode('utf8'))
                     print('response sent')
                     sys.stdout.flush()
                 elif command == 'shutdown':

@@ -3,7 +3,7 @@ def execute_controller(command_queues, result_queues):
         queue.put('run')
 
 
-def execute_worker(command_queue, result_queue):
+def execute_worker(name, command_queue, result_queue):
     command_queue.get()
-    result_queue.put('Hello, container!')
+    result_queue.put(f'Hello, container! from {name}')
 

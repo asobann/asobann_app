@@ -33,13 +33,12 @@ CMD python3 run.py
 
 def test_run_multiprocess_in_local_containers(tmp_path):
     LocalContainers.build_docker_images(tmp_path)
-
     ports = LocalContainers.start_workers(tmp_path).ports
-
     LocalContainers.start_controller(ports, tmp_path)
-
     result = LocalContainers.run_test('say_hello')
-
-    assert result == 'Hello, container!Hello, container!Hello, container!'
-
     LocalContainers.shutdown()
+
+    assert result == ['Hello, container! from host.docker.internal:50000',
+                      'Hello, container! from host.docker.internal:50001',
+                      'Hello, container! from host.docker.internal:50002']
+
