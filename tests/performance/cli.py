@@ -16,6 +16,10 @@ def run_local(name: str, tmpdir):
     env.build_docker_images(tmpdir)
     ports = env.start_workers(tmpdir).ports
     env.start_controller(ports, tmpdir)
+    result = env.run_test(name)
+    env.shutdown()
+
+    print(result)
 
 
 def run(name: str):
@@ -29,11 +33,14 @@ class LocalContainers:
         d = Path(tmp_path)
         shutil.copytree(Path('./tests'), d / 'runner/tests')
         shutil.copytree(Path('./src'), d / 'runner/src')
+        shutil.copy(Path('./Pipfile'), d / 'runner/')
+        shutil.copy(Path('./Pipfile.lock'), d / 'runner/')
         with open(d / 'Dockerfile_worker', 'w') as f:
             f.write("""
 FROM ubuntu:18.04
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
+ENV PYTHONPATH=/runner
 RUN apt-get -y update
 RUN apt-get install -y python3 python3-pip firefox firefox-geckodriver
 RUN pip3 install pipenv
@@ -48,6 +55,7 @@ CMD pipenv run python tests/performance/remote_runner.py worker $PORT
 FROM ubuntu:18.04
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
+ENV PYTHONPATH=/runner
 RUN apt-get -y update
 RUN apt-get install -y python3 python3-pip
 RUN pip3 install pipenv

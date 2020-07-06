@@ -1,15 +1,16 @@
 import time
-from threading import Thread
+import sys
 from pathlib import Path
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
-from ..e2e.conftest import browser as browser_fixture
+from ..e2e.conftest import browser_func as browser
 from ..e2e.helper import compo_pos, Rect, GameHelper, STAGING_TOP
 
 
-def browser():
-    return next(browser_fixture())
+def log(*args):
+    print(*args)
+    sys.stdout.flush()
 
 
 def drag_slowly(player: GameHelper, component, x, y, steps):
@@ -33,10 +34,9 @@ def gather_status(player: GameHelper):
     return status
 
 
-def save_status(iteration, tag, player: GameHelper):
+def save_status(iteration, tag, status: list):
     while iteration > len(saved_status) - 1:
         saved_status.append({})
-    status = gather_status(player)
     saved_status[iteration][tag] = status
 
 
@@ -47,59 +47,72 @@ def evaluate_saved_status():
         for status in [iteration[key] for key in iteration.keys() if key != "host"]:
             for i, c in enumerate(status):
                 if baseline[i] != c:
-                    print(f"diff! <{baseline[i]}> <{c}>")
+                    log(f"diff! <{baseline[i]}> <{c}>")
                     diff += 1
                     break  # don't count diffs for same component
     return diff
 
 
-def simultaneous_dragging_controller(cmd_queues, result_queues):
-    for q in cmd_queues:
-        q.put('run simultaneous_dragging_worker')
-
-    host = GameHelper(browser())
+def execute_controller(command_queues, result_queues):
+    log('execute move_single_card_each controller')
+    host = GameHelper(browser(headless=True))
     host.go(STAGING_TOP)
 
-    host.menu.import_jsonfile(str(Path(__file__).parent / "./test_load_on_heroku.json"))
+    host.menu.import_jsonfile(str(Path(__file__).parent / "./move_single_card_each.json"))
 
     host.should_have_text("you are host")
     host.should_have_text("Table for load testing")
 
     invitation_url = host.menu.invitation_url.value
+    log(f'table is opened at {invitation_url}')
 
-    for idx, q in enumerate(cmd_queues):
-        q.put(idx, invitation_url)
+    for idx, q in enumerate(command_queues):
+        q.put([idx, invitation_url])
 
+    log('loop 10 times')
     for i in range(10):
-        time.sleep(1)
-        save_status(i, "host", host)
+        log(i)
+        log('move')
+        for q in command_queues:
+            q.put('move')
+        for q in result_queues:
+            q.get()  # 'moved'
+        save_status(i, "host", gather_status(host))
+        time.sleep(3)
+        log('receive status')
+        for q in command_queues:
+            q.put('status')
         for j, q in enumerate(result_queues):
             save_status(i, f"player{j + 1}", q.get())
-        for q in cmd_queues:
-            q.put('move')
+        log('continue ...')
 
-    for q in cmd_queues:
+    log('finishing up ...')
+    for q in command_queues:
         q.put('finish')
 
-    assert evaluate_saved_status() == 0
+    return evaluate_saved_status()
 
 
-def simultaneous_dragging_worker(name, cmd_queue, result_queue):
-    player = GameHelper(browser())
-    my_idx, invitation_url = cmd_queue.get()
+def execute_worker(name, command_queue, result_queue):
+    player = GameHelper(browser(headless=True))
+    my_idx, invitation_url = command_queue.get()
     player.go(invitation_url)
     player.menu.join(name)
     player.should_have_text("Table for load testing")
 
+    log('entering loop')
     while True:
-        cmd = cmd_queue.get()
+        cmd = command_queue.get()
+        log(f'received command {cmd}')
         if cmd == 'move':
             player.drag(player.component(my_idx + 2), 0, 300)
             time.sleep(0.1)  # avoid double clicking
             player.drag(player.component(my_idx + 2), 0, -300)
+            result_queue.put('moved')
         elif cmd == 'status':
             result_queue.put(gather_status(player))
         elif cmd == 'finish':
             break
         else:
             raise RuntimeError(f'unknown command {cmd}')
+        log('continue ...')
