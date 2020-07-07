@@ -86,6 +86,9 @@ class AbstractContainers:
         shutil.copy(Path('./Pipfile'), d / 'runner/')
         shutil.copy(Path('./Pipfile.lock'), d / 'runner/')
 
+    def build_docker_images(self) -> None:
+        raise NotImplementedError()
+
     def build_docker_image_for_worker(self, base_dir):
         with open(Path(base_dir) / 'Dockerfile_worker', 'w') as f:
             f.write("""
@@ -329,8 +332,10 @@ class Ecs:
                     ],
                     "essential": True,
                     "command": [
-                        "/usr/bin/python3",
-                        "run.py",
+                        "/usr/local/bin/pipenv",
+                        "run",
+                        "python",
+                        "tests/performance/remote_runner.py",
                         "controller",
                         arg_workers,
                     ],
@@ -374,6 +379,21 @@ class Ecs:
             json.dump(task_def, f)
         registered = Aws.run(f'aws ecs register-task-definition --cli-input-json file://{task_def_file}')
         return json.loads(registered)
+
+    @staticmethod
+    def run_task(cluster, task_def_name, subnet, security_group, count=1):
+        task = Aws.run(
+            f'aws ecs run-task --task-definition {task_def_name}'
+            f' --cluster {cluster["clusterArn"]}'
+            f' --network-configuration "awsvpcConfiguration={{subnets=[{subnet}],securityGroups=[{security_group}],assignPublicIp=ENABLED}}"'
+            f' --launch-type FARGATE --count {count}')
+        return json.loads(task)
+
+    @staticmethod
+    def get_tasks(task, cluster):
+        task_arns = [t['taskArn'] for t in task['tasks']]
+        latest = Aws.run(f'aws ecs describe-tasks --tasks {" ".join(task_arns)} --cluster {cluster["clusterArn"]}')
+        return json.loads(latest)
 
 
 class AwsContainers(AbstractContainers):

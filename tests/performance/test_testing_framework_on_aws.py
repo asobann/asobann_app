@@ -41,26 +41,13 @@ class TestRunInMultiprocessOnAws:
 
     @staticmethod
     def run_worker(cluster, subnet, security_group, count=1):
-        task = Aws.run(
-            f'aws ecs run-task --task-definition test_run_multiprocess_in_container_worker'
-            f' --cluster {cluster["clusterArn"]}'
-            f' --network-configuration "awsvpcConfiguration={{subnets=[{subnet}],securityGroups=[{security_group}],assignPublicIp=ENABLED}}"'
-            f' --launch-type FARGATE --count {count}')
+        task = Ecs.run_task(cluster, 'test_run_multiprocess_in_container_worker', subnet, security_group, count)
         return json.loads(task)
 
     @staticmethod
     def run_controller(cluster, subnet, security_group):
-        task = Aws.run(
-            f'aws ecs run-task --task-definition test_run_multiprocess_in_container_controller'
-            f' --cluster {cluster["clusterArn"]} --network-configuration "awsvpcConfiguration={{subnets=[{subnet}],securityGroups=[{security_group}],assignPublicIp=ENABLED}}"'
-            f' --launch-type FARGATE')
+        task = Ecs.run_task(cluster, 'test_run_multiprocess_in_container_controller', subnet, security_group, 1)
         return json.loads(task)
-
-    @staticmethod
-    def get_tasks(task, cluster):
-        task_arns = [t['taskArn'] for t in task['tasks']]
-        latest = Aws.run(f'aws ecs describe-tasks --tasks {" ".join(task_arns)} --cluster {cluster["clusterArn"]}')
-        return json.loads(latest)
 
     @staticmethod
     def prepare_controller_task_def(tmp_path, controller_ecr, arg_worker):
@@ -92,7 +79,7 @@ class TestRunInMultiprocessOnAws:
         print('starting workers ...')
         while True:
             time.sleep(5)
-            statuses = [t['lastStatus'] for t in self.get_tasks(worker_tasks, cluster)['tasks']]
+            statuses = [t['lastStatus'] for t in Ecs.get_tasks(worker_tasks, cluster)['tasks']]
             print(statuses)
             if all([s == 'RUNNING' for s in statuses]):
                 break
@@ -100,28 +87,28 @@ class TestRunInMultiprocessOnAws:
                 assert False
 
         worker_ips = []
-        for t in self.get_tasks(worker_tasks, cluster)['tasks']:
+        for t in Ecs.get_tasks(worker_tasks, cluster)['tasks']:
             containers = t['containers']
             ip = containers[0]['networkInterfaces'][0]['privateIpv4Address']
             worker_ips.append(ip)
 
         arg_worker = ','.join([f'{ip}:50000' for ip in worker_ips])
         print(arg_worker)
-        self.build_docker_image_for_controller(base_dir)
+        env.build_docker_image_for_controller(base_dir)
         self.prepare_controller_task_def(base_dir, controller_ecr, arg_worker)
         controller_task = self.run_controller(cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3")
 
         print('starting controller ...')
         while True:
             time.sleep(5)
-            statuses = [t['lastStatus'] for t in self.get_tasks(controller_task, cluster)['tasks']]
+            statuses = [t['lastStatus'] for t in Ecs.get_tasks(controller_task, cluster)['tasks']]
             print(statuses)
             if all([s == 'RUNNING' for s in statuses]):
                 break
 
-        task = self.get_tasks(controller_task, cluster)['tasks']
+        task = Ecs.get_tasks(controller_task, cluster)['tasks']
         print(f'controller task running: {task}')
-        eni_id = [d['value'] for d in self.get_tasks(controller_task, cluster)['tasks'][0]['attachments'][0]['details']
+        eni_id = [d['value'] for d in Ecs.get_tasks(controller_task, cluster)['tasks'][0]['attachments'][0]['details']
                   if d['name'] == 'networkInterfaceId'][0]
         eni = Aws.run(f'aws ec2 describe-network-interfaces --network-interface-ids {eni_id}')
         controller_ip = json.loads(eni)['NetworkInterfaces'][0]['Association']['PublicIp']
@@ -136,12 +123,12 @@ class TestRunInMultiprocessOnAws:
 
         while True:
             time.sleep(5)
-            statuses = [t['lastStatus'] for t in self.get_tasks(worker_tasks, cluster)['tasks']]
+            statuses = [t['lastStatus'] for t in Ecs.get_tasks(worker_tasks, cluster)['tasks']]
             if all([s == 'STOPPED' for s in statuses]):
                 break
         while True:
             time.sleep(5)
-            statuses = [t['lastStatus'] for t in self.get_tasks(controller_task, cluster)['tasks']]
+            statuses = [t['lastStatus'] for t in Ecs.get_tasks(controller_task, cluster)['tasks']]
             if all([s == 'STOPPED' for s in statuses]):
                 break
 
