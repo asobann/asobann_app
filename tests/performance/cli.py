@@ -78,6 +78,7 @@ class AbstractContainers:
 
     def prepare_docker_contents(self, tmpdir: Union[str, Path]):
         d = Path(tmpdir)
+        (d / 'runner').mkdir()
         shutil.copytree(Path('./tests'), d / 'runner/tests')
         shutil.copytree(Path('./src'), d / 'runner/src')
         shutil.copy(Path('./Pipfile'), d / 'runner/')
@@ -149,9 +150,8 @@ class LocalContainers(AbstractContainers):
 
     def build_docker_images(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
-
+            self.prepare_docker_contents(tmpdir)
             d = Path(tmpdir)
-            prepare_docker_contents(tmpdir)
             with open(d / 'Dockerfile_worker', 'w') as f:
                 f.write("""
 FROM ubuntu:18.04
@@ -252,6 +252,91 @@ class Ecs:
     @staticmethod
     def delete_cluster(cluster_name):
         Aws.run(f'aws ecs delete-cluster --cluster {cluster_name}')
+
+    @staticmethod
+    def build_task_definition_worker(execution_role_arn, image_uri, region):
+        return {
+            "containerDefinitions": [
+                {
+                    "name": "test_run_multiprocess_in_container_worker",
+                    "image": image_uri,
+                    "cpu": 0,
+                    "portMappings": [
+                        {
+                            "containerPort": 50000,
+                            "hostPort": 50000,
+                            "protocol": "tcp"
+                        },
+                        {
+                            "containerPort": 50000,
+                            "hostPort": 50000,
+                            "protocol": "udp"
+                        }
+                    ],
+                    "essential": True,
+                    "environment": [
+                        {
+                            "name": "PORT",
+                            "value": "50000"
+                        }
+                    ],
+                    "mountPoints": [],
+                    "volumesFrom": [],
+                    "logConfiguration": {
+                        "logDriver": "awslogs",
+                        "options": {
+                            "awslogs-group": "/ecs/test_run_multiprocess_in_container_worker",
+                            "awslogs-region": region,
+                            "awslogs-stream-prefix": "ecs"
+                        }
+                    }
+                }
+            ],
+            "family": "test_run_multiprocess_in_container_worker",
+            "executionRoleArn": execution_role_arn,
+            "networkMode": "awsvpc",
+            "volumes": [],
+            "placementConstraints": [],
+            "requiresCompatibilities": [
+                "FARGATE"
+            ],
+            "cpu": "256",
+            "memory": "512"
+        }
+
+    @staticmethod
+    def prepare_worker_task_def(tmp_path, worker_ecr):
+        registryId, repositoryUri, region = worker_ecr
+
+        # build docker image for worker
+        with open(tmp_path / 'Dockerfile_worker', 'w') as f:
+            f.write("""
+FROM ubuntu:18.04
+EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
+RUN apt-get -y update
+RUN apt-get install -y python3
+COPY runner/ .
+CMD python3 run.py worker $PORT
+    """)
+        proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
+                              shell=True, cwd=tmp_path, encoding='utf8')
+        assert proc.returncode == 0
+        proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_worker:latest {repositoryUri}',
+                              shell=True, encoding='utf-8')
+        assert proc.returncode == 0
+        proc = subprocess.run(
+            f'aws ecr get-login-password | docker login --username AWS --password-stdin {registryId}.dkr.ecr.{region}.amazonaws.com',
+            shell=True, encoding='utf-8')
+        assert proc.returncode == 0
+        proc = subprocess.run(f'docker push {repositoryUri}', shell=True, encoding='utf-8')
+        assert proc.returncode == 0
+        task_def = Ecs.build_task_definition_worker(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole', repositoryUri,
+                                                region)
+        task_def_file = tmp_path / 'taskdef_worker.json'
+        with open(task_def_file, 'w') as f:
+            json.dump(task_def, f)
+        registered = Aws.run(f'aws ecs register-task-definition --cli-input-json file://{task_def_file}')
+        return json.loads(registered)
 
 
 class AwsContainers(AbstractContainers):
