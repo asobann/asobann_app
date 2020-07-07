@@ -106,6 +106,25 @@ CMD pipenv run python tests/performance/remote_runner.py worker $PORT
                       cwd=base_dir)
         assert proc.returncode == 0
 
+    def build_docker_image_for_controller(self, base_dir):
+        with open(Path(base_dir) / 'Dockerfile_controller', 'w') as f:
+            f.write("""
+FROM ubuntu:18.04
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ENV PYTHONPATH=/runner
+RUN apt-get -y update
+RUN apt-get install -y python3 python3-pip
+RUN pip3 install pipenv
+WORKDIR /runner
+COPY runner/ .
+RUN pipenv install
+EXPOSE 8888
+    """)
+        proc = system("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_controller",
+                      cwd=base_dir)
+        assert proc.returncode == 0
+
     def start_workers(self) -> 'AbstractContainers.Workers':
         ports = [50000, 50001, 50002]
         procs = []
@@ -171,27 +190,11 @@ class LocalContainers(AbstractContainers):
     controller_url = 'http://localhost:8888'
 
     def build_docker_images(self) -> None:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            self.prepare_docker_contents(tmpdir)
-            self.build_docker_image_for_worker(tmpdir)
+        with tempfile.TemporaryDirectory() as base_dir:
+            self.prepare_docker_contents(base_dir)
 
-            with open(Path(tmpdir) / 'Dockerfile_controller', 'w') as f:
-                f.write("""
-FROM ubuntu:18.04
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
-ENV PYTHONPATH=/runner
-RUN apt-get -y update
-RUN apt-get install -y python3 python3-pip
-RUN pip3 install pipenv
-WORKDIR /runner
-COPY runner/ .
-EXPOSE 8888
-RUN pipenv install
-    """)
-            proc = system("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_controller",
-                          cwd=tmpdir)
-            assert proc.returncode == 0
+            self.build_docker_image_for_worker(base_dir)
+            self.build_docker_image_for_controller(base_dir)
 
 
 class Aws:
@@ -298,6 +301,53 @@ class Ecs:
                 }
             ],
             "family": "test_run_multiprocess_in_container_worker",
+            "executionRoleArn": execution_role_arn,
+            "networkMode": "awsvpc",
+            "volumes": [],
+            "placementConstraints": [],
+            "requiresCompatibilities": [
+                "FARGATE"
+            ],
+            "cpu": "256",
+            "memory": "512"
+        }
+
+    @staticmethod
+    def build_task_definition_controller(execution_role_arn, image_uri, region, arg_workers):
+        return {
+            "containerDefinitions": [
+                {
+                    "name": "test_run_multiprocess_in_container_controller",
+                    "image": image_uri,
+                    "cpu": 0,
+                    "portMappings": [
+                        {
+                            "containerPort": 8888,
+                            "hostPort": 8888,
+                            "protocol": "tcp"
+                        },
+                    ],
+                    "essential": True,
+                    "command": [
+                        "/usr/bin/python3",
+                        "run.py",
+                        "controller",
+                        arg_workers,
+                    ],
+                    "environment": [],
+                    "mountPoints": [],
+                    "volumesFrom": [],
+                    "logConfiguration": {
+                        "logDriver": "awslogs",
+                        "options": {
+                            "awslogs-group": "/ecs/test_run_multiprocess_in_container_controller",
+                            "awslogs-region": region,
+                            "awslogs-stream-prefix": "ecs"
+                        }
+                    }
+                }
+            ],
+            "family": "test_run_multiprocess_in_container_controller",
             "executionRoleArn": execution_role_arn,
             "networkMode": "awsvpc",
             "volumes": [],

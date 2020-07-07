@@ -11,51 +11,7 @@ from .cli import Aws, Ecs, AwsContainers, Logger
 from pprint import pprint
 
 
-def build_task_definition_controller(execution_role_arn, image_uri, region, workers):
-    return {
-        "containerDefinitions": [
-            {
-                "name": "test_run_multiprocess_in_container_controller",
-                "image": image_uri,
-                "cpu": 0,
-                "portMappings": [
-                    {
-                        "containerPort": 8888,
-                        "hostPort": 8888,
-                        "protocol": "tcp"
-                    },
-                ],
-                "essential": True,
-                "command": [
-                    "/usr/bin/python3",
-                    "run.py",
-                    "controller",
-                    workers,
-                ],
-                "environment": [],
-                "mountPoints": [],
-                "volumesFrom": [],
-                "logConfiguration": {
-                    "logDriver": "awslogs",
-                    "options": {
-                        "awslogs-group": "/ecs/test_run_multiprocess_in_container_controller",
-                        "awslogs-region": region,
-                        "awslogs-stream-prefix": "ecs"
-                    }
-                }
-            }
-        ],
-        "family": "test_run_multiprocess_in_container_controller",
-        "executionRoleArn": execution_role_arn,
-        "networkMode": "awsvpc",
-        "volumes": [],
-        "placementConstraints": [],
-        "requiresCompatibilities": [
-            "FARGATE"
-        ],
-        "cpu": "256",
-        "memory": "512"
-    }
+
 
 
 
@@ -110,24 +66,12 @@ class TestRunInMultiprocessOnAws:
     def prepare_controller_task_def(tmp_path, controller_ecr, arg_worker):
         # build docker image for controller
         registryId, repositoryUri, region = controller_ecr
-        with open(tmp_path / 'Dockerfile_controller', 'w') as f:
-            f.write("""
-FROM ubuntu:18.04
-EXPOSE 8888
-RUN apt-get -y update
-RUN apt-get install -y python3
-COPY runner/ .
-CMD python3 run.py controller
-    """)
-        proc = subprocess.run("docker build . -f Dockerfile_controller -t test_run_multiprocess_in_container_controller",
-                              shell=True, cwd=tmp_path, encoding='utf8')
-        assert proc.returncode == 0
         proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_controller:latest {repositoryUri}',
                               shell=True, encoding='utf-8')
         assert proc.returncode == 0
         proc = subprocess.run(f'docker push {repositoryUri}', shell=True, encoding='utf-8')
         assert proc.returncode == 0
-        task_def = build_task_definition_controller(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole',
+        task_def = Ecs.build_task_definition_controller(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole',
                                                     repositoryUri, region, arg_worker)
         task_def_file = tmp_path / 'taskdef_controller.json'
         with open(task_def_file, 'w') as f:
@@ -163,6 +107,7 @@ CMD python3 run.py controller
 
         arg_worker = ','.join([f'{ip}:50000' for ip in worker_ips])
         print(arg_worker)
+        self.build_docker_image_for_controller(base_dir)
         self.prepare_controller_task_def(base_dir, controller_ecr, arg_worker)
         controller_task = self.run_controller(cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3")
 
