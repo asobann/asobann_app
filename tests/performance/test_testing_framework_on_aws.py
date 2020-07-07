@@ -7,6 +7,7 @@ import inspect
 import pytest
 import time
 import urllib.request
+from .cli import Aws, Ecs, AwsContainers
 from pprint import pprint
 
 
@@ -108,49 +109,6 @@ def build_task_definition_worker(execution_role_arn, image_uri, region):
     }
 
 
-class Aws:
-    class NonZeroExitError(RuntimeError):
-        pass
-
-    @staticmethod
-    def get_ecr(name):
-        proc = subprocess.run(f'aws ecr create-repository --repository-name {name}',
-                              shell=True,
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT,
-                              encoding='utf8')
-        assert proc.returncode == 0 or 'already exists' in proc.stdout
-        if proc.returncode == 0:
-            result = json.loads(proc.stdout)
-            registryId = result['repository']['registryId']
-            repositoryUri = result['repository']['repositoryUri']
-        else:
-            proc = subprocess.run(f'aws ecr describe-repositories --repository-names {name}',
-                                  shell=True,
-                                  stdout=subprocess.PIPE,
-                                  encoding='utf8')
-            assert proc.returncode == 0
-            result = json.loads(proc.stdout)
-            registryId = result['repositories'][0]['registryId']
-            repositoryUri = result['repositories'][0]['repositoryUri']
-        region = re.match('^[^.]*.dkr.ecr.([^.]*).amazonaws.com/.*$', repositoryUri).group(1)
-
-        return (registryId, repositoryUri, region)
-
-    @staticmethod
-    def delete_ecr(name):
-        proc = subprocess.run(f'aws ecr delete-repository --repository-name {name} --force',
-                              shell=True,
-                              stdout=subprocess.DEVNULL,
-                              encoding='utf8')
-        assert proc.returncode == 0
-
-    @staticmethod
-    def run(cmd):
-        proc = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf8')
-        if not proc.returncode == 0:
-            raise Aws.NonZeroExitError(f'aws command exit with code {proc.returncode}', proc.stdout)
-        return proc.stdout
 
 
 class TestRunInMultiprocessOnAws:
@@ -171,25 +129,9 @@ class TestRunInMultiprocessOnAws:
     @staticmethod
     @pytest.fixture
     def cluster():
-        try:
-            output = Aws.run(
-                'aws ecs create-cluster --cluster-name test-run-multiprocess-in-container --tags key=Yattom:ProductName,value=asobann')
-            created = json.loads(output)['cluster']
-        except Aws.NonZeroExitError as e:
-            if 'inconsistent with arguments' in str(e):
-                output = Aws.run('aws ecs describe-clusters --clusters test-run-multiprocess-in-container')
-                created = json.loads(output)['clusters'][0]
-            else:
-                raise
-        yield created
-        Aws.run('aws ecs delete-cluster --cluster test-run-multiprocess-in-container')
+        yield Ecs.create_cluster('test-run-multiprocess-in-container')
+        Ecs.delete_cluster('test-run-multiprocess-in-container')
 
-
-    @staticmethod
-    def prepare_docker_contents(tmp_path):
-        with open(tmp_path / 'runner' / 'run.py', 'w') as f:
-            from . import remote_runner
-            f.write(inspect.getsource(remote_runner))
 
     @staticmethod
     def prepare_worker_task_def(tmp_path, worker_ecr):
@@ -278,10 +220,11 @@ CMD python3 run.py controller
         return json.loads(registered)
 
     def test_run_multiprocess_in_aws(self, tmp_path, cluster, worker_ecr, controller_ecr):
+        env = AwsContainers()
         worker_count = 5
         d = Path(tmp_path)
         (d / 'runner').mkdir()
-        self.prepare_docker_contents(d)
+        env.prepare_docker_contents(d)
         worker_task_def = self.prepare_worker_task_def(d, worker_ecr)
 
         worker_tasks = self.run_worker(cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3", count=worker_count)
