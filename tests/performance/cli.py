@@ -1,4 +1,3 @@
-import inspect
 import os
 import subprocess
 from pathlib import Path
@@ -7,8 +6,38 @@ import urllib.request
 import time
 import shutil
 import json
+from pprint import pprint
 
 import typer
+
+
+class Logger:
+    debug = False
+
+    @staticmethod
+    def log(*args):
+        if Logger.debug:
+            print(*args)
+
+
+log = Logger.log
+
+
+def system(cmd, capture=False, cwd=None):
+    if capture:
+        stdout = subprocess.PIPE
+    else:
+        if Logger.debug:
+            stdout = None
+        else:
+            stdout = subprocess.DEVNULL
+    proc = subprocess.run(cmd,
+                          shell=True,
+                          stdout=stdout,
+                          stderr=subprocess.STDOUT,
+                          cwd=cwd,
+                          encoding='utf8')
+    return proc
 
 
 def run_local(name: str, tmpdir):
@@ -19,10 +48,11 @@ def run_local(name: str, tmpdir):
     result = env.run_test(name)
     env.shutdown()
 
-    print(result)
+    pprint(result)
 
 
-def run(name: str):
+def run(name: str, debug: bool = False):
+    Logger.debug = debug
     with tempfile.TemporaryDirectory() as tmpdir:
         run_local(name, tmpdir=tmpdir)
 
@@ -64,11 +94,11 @@ COPY runner/ .
 EXPOSE 8888
 RUN pipenv install
     """)
-        proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
-                              shell=True, cwd=tmp_path, encoding='utf8')
+        proc = system("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
+                      cwd=tmp_path)
         assert proc.returncode == 0
-        proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_controller",
-                              shell=True, cwd=tmp_path, encoding='utf8')
+        proc = system("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_controller",
+                      cwd=tmp_path)
         assert proc.returncode == 0
 
     @staticmethod
@@ -76,13 +106,12 @@ RUN pipenv install
         ports = [50000, 50001, 50002]
         procs = []
         for port in ports:
-            print(f'start worker container port {port}')
+            log(f'start worker container port {port}')
             procs.append(
-                subprocess.run(f"docker run -d -p {port}:{port} -e PORT={port} test_run_multiprocess_in_container_worker",
-                               shell=True,
-                               stdout=subprocess.PIPE,
-                               cwd=tmp_path,
-                               encoding='utf8'))
+                system(
+                    f"docker run -d -p {port}:{port} -e PORT={port} test_run_multiprocess_in_container_worker",
+                    capture=True,
+                ))
 
         class Workers:
             def __init__(self, ports):
@@ -95,25 +124,19 @@ RUN pipenv install
     def start_controller(ports, tmp_path):
         if os.name == 'posix':
             # see https://docs.docker.com/engine/reference/commandline/run/#add-entries-to-container-hosts-file-add-host
-            proc = subprocess.run(
+            proc = system(
                 "ip -4 addr show scope global dev docker0 | grep inet | awk '{print $2}' | cut -d / -f 1 | sed -n 1p",
-                shell=True,
-                stdout=subprocess.PIPE,
-                cwd=tmp_path,
-                encoding='utf8')
+                capture=True,
+            )
             host_access = f"--add-host=host.docker.internal:{proc.stdout.strip()}"
         elif os.name == 'nt':
             # see https://docs.docker.com/docker-for-windows/networking/#per-container-ip-addressing-is-not-possible
             host_access = ''
         else:
             raise RuntimeError()
-        print(f'start controller container ports {ports}')
-        proc = subprocess.run(f"docker run {host_access} -p 8888:8888 -d test_run_multiprocess_in_container_controller "
-                              f"pipenv run python tests/performance/remote_runner.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}",
-                              shell=True,
-                              stdout=subprocess.PIPE,
-                              cwd=tmp_path,
-                              encoding='utf8')
+        log(f'start controller container ports {ports}')
+        proc = system(f"docker run {host_access} -p 8888:8888 -d test_run_multiprocess_in_container_controller "
+                      f"pipenv run python tests/performance/remote_runner.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}")
         assert proc.returncode == 0
 
         while True:
@@ -135,8 +158,7 @@ RUN pipenv install
     def shutdown():
         LocalContainers._send_command('shutdown')
         time.sleep(1)
-        proc = subprocess.run("docker ps",
-                              stdout=subprocess.PIPE, shell=True, encoding='utf8')
+        proc = system("docker ps", capture=True)
         assert proc.returncode == 0
         assert len(proc.stdout.strip().split('\n')) == 1, 'no process remains'
 
@@ -146,5 +168,5 @@ RUN pipenv install
         return json.loads(result)
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     typer.run(run)
