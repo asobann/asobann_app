@@ -7,7 +7,7 @@ import inspect
 import pytest
 import time
 import urllib.request
-from .cli import Aws, Ecs, AwsContainers
+from .cli import Aws, Ecs, AwsContainers, Logger
 from pprint import pprint
 
 
@@ -136,6 +136,7 @@ CMD python3 run.py controller
         return json.loads(registered)
 
     def test_run_multiprocess_in_aws(self, tmp_path, cluster, worker_ecr, controller_ecr):
+        Logger.debug = True
         env = AwsContainers()
         worker_count = 5
         base_dir = Path(tmp_path)
@@ -173,12 +174,14 @@ CMD python3 run.py controller
             if all([s == 'RUNNING' for s in statuses]):
                 break
 
+        task = self.get_tasks(controller_task, cluster)['tasks']
+        print(f'controller task running: {task}')
         eni_id = [d['value'] for d in self.get_tasks(controller_task, cluster)['tasks'][0]['attachments'][0]['details']
                   if d['name'] == 'networkInterfaceId'][0]
         eni = Aws.run(f'aws ec2 describe-network-interfaces --network-interface-ids {eni_id}')
         controller_ip = json.loads(eni)['NetworkInterfaces'][0]['Association']['PublicIp']
         print('send run command to ' + controller_ip)
-        res = urllib.request.urlopen(f'http://{controller_ip}:8888', data=b'run say_hello')
+        res = urllib.request.urlopen(f'http://{controller_ip}:8888', data=b'run tests.performance.say_hello')
         print('read response')
         result = res.read().decode('utf-8')
         print('send shutdown command')

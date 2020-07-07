@@ -36,7 +36,7 @@ def test_run_multiprocess_in_local_containers():
     env.build_docker_images()
     env.start_workers()
     env.start_controller()
-    result = env.run_test('say_hello')
+    result = env.run_test('tests.performance.say_hello')
     env.shutdown()
 
     assert result == ['Hello, container! from host.docker.internal:50000',

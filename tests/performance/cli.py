@@ -311,13 +311,13 @@ class Ecs:
 
     @staticmethod
     def prepare_worker_task_def(base_dir, worker_ecr):
-        registryId, repositoryUri, region = worker_ecr
-        system(f'docker tag test_run_multiprocess_in_container_worker:latest {repositoryUri}')
+        registry_id, repository_uri, region = worker_ecr
+        system(f'docker tag test_run_multiprocess_in_container_worker:latest {repository_uri}')
         system(
-            f'aws ecr get-login-password | docker login --username AWS --password-stdin {registryId}.dkr.ecr.{region}.amazonaws.com')
-        system(f'docker push {repositoryUri}')
-        task_def = Ecs.build_task_definition_worker(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole',
-                                                    repositoryUri,
+            f'aws ecr get-login-password | docker login --username AWS --password-stdin {registry_id}.dkr.ecr.{region}.amazonaws.com')
+        system(f'docker push {repository_uri}')
+        task_def = Ecs.build_task_definition_worker(f'arn:aws:iam::{registry_id}:role/ecsTaskExecutionRole',
+                                                    repository_uri,
                                                     region)
         task_def_file = base_dir / 'taskdef_worker.json'
         with open(task_def_file, 'w') as f:
