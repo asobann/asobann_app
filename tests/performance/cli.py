@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 from pathlib import Path
 import tempfile
@@ -7,6 +8,7 @@ import time
 import shutil
 import json
 from pprint import pprint
+from typing import Optional
 
 import typer
 
@@ -40,33 +42,48 @@ def system(cmd, capture=False, cwd=None):
     return proc
 
 
-def run_local(name: str, tmpdir):
-    env = LocalContainers
+def do_run(name: str, tmpdir, env: 'AbstractContainers'):
     env.build_docker_images(tmpdir)
-    ports = env.start_workers(tmpdir).ports
-    env.start_controller(ports, tmpdir)
+    env.start_workers()
+    env.start_controller()
     result = env.run_test(name)
     env.shutdown()
 
     pprint(result)
 
 
-def run(name: str, debug: bool = False):
+def run(name: str, local: bool = False, aws: bool = False, debug: bool = False):
     Logger.debug = debug
     with tempfile.TemporaryDirectory() as tmpdir:
-        run_local(name, tmpdir=tmpdir)
+        if local:
+            env = LocalContainers()
+        elif aws:
+            env = AwsContainers()
+        else:
+            print('Either --local or --aws option must be specified', file=sys.stderr)
+            exit(1)
+        do_run(name, tmpdir=tmpdir, env=env)
 
 
-class LocalContainers:
-    @staticmethod
-    def build_docker_images(tmp_path):
-        d = Path(tmp_path)
-        shutil.copytree(Path('./tests'), d / 'runner/tests')
-        shutil.copytree(Path('./src'), d / 'runner/src')
-        shutil.copy(Path('./Pipfile'), d / 'runner/')
-        shutil.copy(Path('./Pipfile.lock'), d / 'runner/')
-        with open(d / 'Dockerfile_worker', 'w') as f:
-            f.write("""
+class AbstractContainers:
+    controller_url = None
+
+    class Workers:
+        def __init__(self, ports):
+            self.ports = ports
+
+    def __init__(self):
+        self._workers: 'Optional[AbstractContainers.Workers]' = None
+
+    def build_docker_images(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            d = Path(tmpdir)
+            shutil.copytree(Path('./tests'), d / 'runner/tests')
+            shutil.copytree(Path('./src'), d / 'runner/src')
+            shutil.copy(Path('./Pipfile'), d / 'runner/')
+            shutil.copy(Path('./Pipfile.lock'), d / 'runner/')
+            with open(d / 'Dockerfile_worker', 'w') as f:
+                f.write("""
 FROM ubuntu:18.04
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
@@ -80,8 +97,8 @@ RUN pipenv install
 EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
 CMD pipenv run python tests/performance/remote_runner.py worker $PORT
     """)
-        with open(d / 'Dockerfile_controller', 'w') as f:
-            f.write("""
+            with open(d / 'Dockerfile_controller', 'w') as f:
+                f.write("""
 FROM ubuntu:18.04
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
@@ -94,15 +111,14 @@ COPY runner/ .
 EXPOSE 8888
 RUN pipenv install
     """)
-        proc = system("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
-                      cwd=tmp_path)
-        assert proc.returncode == 0
-        proc = system("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_controller",
-                      cwd=tmp_path)
-        assert proc.returncode == 0
+            proc = system("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
+                          cwd=tmpdir)
+            assert proc.returncode == 0
+            proc = system("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_controller",
+                          cwd=tmpdir)
+            assert proc.returncode == 0
 
-    @staticmethod
-    def start_workers(tmp_path):
+    def start_workers(self) -> 'AbstractContainers.Workers':
         ports = [50000, 50001, 50002]
         procs = []
         for port in ports:
@@ -113,15 +129,11 @@ RUN pipenv install
                     capture=True,
                 ))
 
-        class Workers:
-            def __init__(self, ports):
-                self.ports = ports
+        self._workers = AbstractContainers.Workers(ports=ports)
+        return self._workers
 
-        workers = Workers(ports=ports)
-        return workers
-
-    @staticmethod
-    def start_controller(ports, tmp_path):
+    def start_controller(self):
+        ports = self._workers.ports
         if os.name == 'posix':
             # see https://docs.docker.com/engine/reference/commandline/run/#add-entries-to-container-hosts-file-add-host
             proc = system(
@@ -138,34 +150,41 @@ RUN pipenv install
         proc = system(f"docker run {host_access} -p 8888:8888 -d test_run_multiprocess_in_container_controller "
                       f"pipenv run python tests/performance/remote_runner.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}")
         assert proc.returncode == 0
+        self._wait_for_controller_to_start()
 
+    def _wait_for_controller_to_start(self):
         while True:
             try:
-                req = urllib.request.Request('http://localhost:8888', method='HEAD')
+                req = urllib.request.Request(self.controller_url, method='HEAD')
                 res = urllib.request.urlopen(req)
                 if res.getcode() == 200:
                     break
             except ConnectionError:
                 time.sleep(1)
 
-    @staticmethod
-    def _send_command(command: str):
-        res = urllib.request.urlopen('http://localhost:8888', data=command.encode('utf8'))
+    def _send_command(self, command: str):
+        res = urllib.request.urlopen(self.controller_url, data=command.encode('utf8'))
         result = res.read().decode('utf-8')
         return result
 
-    @staticmethod
-    def shutdown():
-        LocalContainers._send_command('shutdown')
+    def shutdown(self):
+        self._send_command('shutdown')
         time.sleep(1)
         proc = system("docker ps", capture=True)
         assert proc.returncode == 0
         assert len(proc.stdout.strip().split('\n')) == 1, 'no process remains'
 
-    @staticmethod
-    def run_test(filename):
-        result = LocalContainers._send_command(f'run {filename}')
+    def run_test(self, filename):
+        result = self._send_command(f'run {filename}')
         return json.loads(result)
+
+
+class LocalContainers(AbstractContainers):
+    controller_url = 'http://localhost:8888'
+
+
+class AwsContainers(AbstractContainers):
+    pass
 
 
 if __name__ == '__main__':

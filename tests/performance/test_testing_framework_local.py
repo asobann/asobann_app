@@ -31,12 +31,13 @@ CMD python3 run.py
     assert output.strip() == 'Hello, container!'
 
 
-def test_run_multiprocess_in_local_containers(tmp_path):
-    LocalContainers.build_docker_images(tmp_path)
-    ports = LocalContainers.start_workers(tmp_path).ports
-    LocalContainers.start_controller(ports, tmp_path)
-    result = LocalContainers.run_test('say_hello')
-    LocalContainers.shutdown()
+def test_run_multiprocess_in_local_containers():
+    env = LocalContainers()
+    env.build_docker_images()
+    env.start_workers()
+    env.start_controller()
+    result = env.run_test('say_hello')
+    env.shutdown()
 
     assert result == ['Hello, container! from host.docker.internal:50000',
                       'Hello, container! from host.docker.internal:50001',
