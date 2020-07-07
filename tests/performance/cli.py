@@ -40,6 +40,8 @@ def system(cmd, capture=False, cwd=None):
                           stderr=subprocess.STDOUT,
                           cwd=cwd,
                           encoding='utf8')
+    if proc.returncode != 0:
+        raise RuntimeError(f'external command "{cmd}" failed. output="{proc.stdout}"')
     return proc
 
 
@@ -76,13 +78,33 @@ class AbstractContainers:
     def __init__(self):
         self._workers: 'Optional[AbstractContainers.Workers]' = None
 
-    def prepare_docker_contents(self, tmpdir: Union[str, Path]):
-        d = Path(tmpdir)
+    def prepare_docker_contents(self, base_dir: Union[str, Path]):
+        d = Path(base_dir)
         (d / 'runner').mkdir()
         shutil.copytree(Path('./tests'), d / 'runner/tests')
         shutil.copytree(Path('./src'), d / 'runner/src')
         shutil.copy(Path('./Pipfile'), d / 'runner/')
         shutil.copy(Path('./Pipfile.lock'), d / 'runner/')
+
+    def build_docker_image_for_worker(self, base_dir):
+        with open(Path(base_dir) / 'Dockerfile_worker', 'w') as f:
+            f.write("""
+FROM ubuntu:18.04
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ENV PYTHONPATH=/runner
+RUN apt-get -y update
+RUN apt-get install -y python3 python3-pip firefox firefox-geckodriver
+RUN pip3 install pipenv
+WORKDIR /runner
+COPY runner/ .
+RUN pipenv install
+EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
+CMD pipenv run python tests/performance/remote_runner.py worker $PORT
+    """)
+        proc = system("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
+                      cwd=base_dir)
+        assert proc.returncode == 0
 
     def start_workers(self) -> 'AbstractContainers.Workers':
         ports = [50000, 50001, 50002]
@@ -151,23 +173,9 @@ class LocalContainers(AbstractContainers):
     def build_docker_images(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             self.prepare_docker_contents(tmpdir)
-            d = Path(tmpdir)
-            with open(d / 'Dockerfile_worker', 'w') as f:
-                f.write("""
-FROM ubuntu:18.04
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
-ENV PYTHONPATH=/runner
-RUN apt-get -y update
-RUN apt-get install -y python3 python3-pip firefox firefox-geckodriver
-RUN pip3 install pipenv
-WORKDIR /runner
-COPY runner/ .
-RUN pipenv install
-EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
-CMD pipenv run python tests/performance/remote_runner.py worker $PORT
-    """)
-            with open(d / 'Dockerfile_controller', 'w') as f:
+            self.build_docker_image_for_worker(tmpdir)
+
+            with open(Path(tmpdir) / 'Dockerfile_controller', 'w') as f:
                 f.write("""
 FROM ubuntu:18.04
 ENV LC_ALL=C.UTF-8
@@ -181,9 +189,6 @@ COPY runner/ .
 EXPOSE 8888
 RUN pipenv install
     """)
-            proc = system("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
-                          cwd=tmpdir)
-            assert proc.returncode == 0
             proc = system("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_controller",
                           cwd=tmpdir)
             assert proc.returncode == 0
@@ -305,34 +310,16 @@ class Ecs:
         }
 
     @staticmethod
-    def prepare_worker_task_def(tmp_path, worker_ecr):
+    def prepare_worker_task_def(base_dir, worker_ecr):
         registryId, repositoryUri, region = worker_ecr
-
-        # build docker image for worker
-        with open(tmp_path / 'Dockerfile_worker', 'w') as f:
-            f.write("""
-FROM ubuntu:18.04
-EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
-RUN apt-get -y update
-RUN apt-get install -y python3
-COPY runner/ .
-CMD python3 run.py worker $PORT
-    """)
-        proc = subprocess.run("docker build . -f Dockerfile_worker -t test_run_multiprocess_in_container_worker",
-                              shell=True, cwd=tmp_path, encoding='utf8')
-        assert proc.returncode == 0
-        proc = subprocess.run(f'docker tag test_run_multiprocess_in_container_worker:latest {repositoryUri}',
-                              shell=True, encoding='utf-8')
-        assert proc.returncode == 0
-        proc = subprocess.run(
-            f'aws ecr get-login-password | docker login --username AWS --password-stdin {registryId}.dkr.ecr.{region}.amazonaws.com',
-            shell=True, encoding='utf-8')
-        assert proc.returncode == 0
-        proc = subprocess.run(f'docker push {repositoryUri}', shell=True, encoding='utf-8')
-        assert proc.returncode == 0
-        task_def = Ecs.build_task_definition_worker(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole', repositoryUri,
-                                                region)
-        task_def_file = tmp_path / 'taskdef_worker.json'
+        system(f'docker tag test_run_multiprocess_in_container_worker:latest {repositoryUri}')
+        system(
+            f'aws ecr get-login-password | docker login --username AWS --password-stdin {registryId}.dkr.ecr.{region}.amazonaws.com')
+        system(f'docker push {repositoryUri}')
+        task_def = Ecs.build_task_definition_worker(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole',
+                                                    repositoryUri,
+                                                    region)
+        task_def_file = base_dir / 'taskdef_worker.json'
         with open(task_def_file, 'w') as f:
             json.dump(task_def, f)
         registered = Aws.run(f'aws ecs register-task-definition --cli-input-json file://{task_def_file}')

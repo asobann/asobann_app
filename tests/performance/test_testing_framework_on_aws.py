@@ -138,9 +138,10 @@ CMD python3 run.py controller
     def test_run_multiprocess_in_aws(self, tmp_path, cluster, worker_ecr, controller_ecr):
         env = AwsContainers()
         worker_count = 5
-        d = Path(tmp_path)
-        env.prepare_docker_contents(d)
-        worker_task_def = Ecs.prepare_worker_task_def(d, worker_ecr)
+        base_dir = Path(tmp_path)
+        env.prepare_docker_contents(base_dir)
+        env.build_docker_image_for_worker(base_dir)
+        worker_task_def = Ecs.prepare_worker_task_def(base_dir, worker_ecr)
 
         worker_tasks = self.run_worker(cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3", count=worker_count)
         print('starting workers ...')
@@ -161,7 +162,7 @@ CMD python3 run.py controller
 
         arg_worker = ','.join([f'{ip}:50000' for ip in worker_ips])
         print(arg_worker)
-        self.prepare_controller_task_def(d, controller_ecr, arg_worker)
+        self.prepare_controller_task_def(base_dir, controller_ecr, arg_worker)
         controller_task = self.run_controller(cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3")
 
         print('starting controller ...')
