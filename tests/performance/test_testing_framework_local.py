@@ -34,7 +34,7 @@ CMD python3 run.py
 def test_run_multiprocess_in_local_containers():
     env = LocalContainers()
     env.build_docker_images()
-    env.start_workers()
+    env.start_workers(3)
     env.start_controller()
     result = env.run_test('tests.performance.say_hello')
     env.shutdown()
