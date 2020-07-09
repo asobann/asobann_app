@@ -450,6 +450,7 @@ class AwsContainers(AbstractContainers):
         super().__init__()
         self.cluster = None
         self.worker_ecr = None
+        self.controller_ecr = None
 
     def build_docker_images(self) -> None:
         self.cluster = Ecs.create_cluster(self.CLUSTER_NAME)
@@ -501,7 +502,7 @@ class AwsContainers(AbstractContainers):
             if any([s == 'STOPPED' for s in statuses]):
                 assert False, 'task is STOPPED unexpectedly while starting up'
 
-    def _wait_for_task_to_stop(self, tasks):
+    def _wait_for_tasks_to_be_running(self, tasks):
         while True:
             time.sleep(5)
             task_latest = Ecs.describe_tasks(tasks, self.cluster)['tasks']
@@ -516,19 +517,21 @@ class AwsContainers(AbstractContainers):
                   if d['name'] == 'networkInterfaceId'][0]
         eni = Aws.run(f'aws ec2 describe-network-interfaces --network-interface-ids {eni_id}')
         controller_ip = json.loads(eni)['NetworkInterfaces'][0]['Association']['PublicIp']
-        log('send run command to ' + controller_ip)
+        log('controller IP address: ' + controller_ip)
         return f'http://{controller_ip}:8888'
 
     def shutdown(self):
         super().shutdown()
 
-        self._wait_for_task_to_stop(self._workers.tasks)
-        self._wait_for_task_to_stop(self.controller_task)
+        self._wait_for_tasks_to_be_running(self._workers.tasks)
+        self._wait_for_tasks_to_be_running(self.controller_task)
 
         if self.cluster:
             Ecs.delete_cluster(self.CLUSTER_NAME)
         if self.worker_ecr:
             Aws.delete_ecr(WORKER_NAME)
+        if self.controller_ecr:
+            Aws.delete_ecr(CONTROLLER_NAME)
 
 
 if __name__ == '__main__':

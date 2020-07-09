@@ -1,9 +1,7 @@
 from pathlib import Path
+import re
 import subprocess
-import  urllib.request
-import time
-
-from .cli import LocalContainers
+from .cli import AwsContainers, LocalContainers, Logger
 
 
 def test_run_in_container(tmp_path):
@@ -42,4 +40,18 @@ def test_run_multiprocess_in_local_containers():
     assert result == ['Hello, container! from host.docker.internal:50000',
                       'Hello, container! from host.docker.internal:50001',
                       'Hello, container! from host.docker.internal:50002']
+
+
+def test_run_multiprocess_in_aws():
+    Logger.debug = True
+    env = AwsContainers()
+    env.build_docker_images()
+    env.start_workers(5)
+    env.start_controller()
+    result = env.run_test('tests.performance.say_hello')
+    env.shutdown()
+
+    assert len(result) == 5
+    for r in result:
+        assert re.match('Hello, container! from [0-9.]*:50000', r)
 
