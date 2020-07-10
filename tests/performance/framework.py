@@ -212,11 +212,7 @@ class Aws:
 
     @staticmethod
     def delete_ecr(name):
-        proc = subprocess.run(f'aws ecr delete-repository --repository-name {name} --force',
-                              shell=True,
-                              stdout=subprocess.DEVNULL,
-                              encoding='utf8')
-        assert proc.returncode == 0
+        Aws.run(f'aws ecr delete-repository --repository-name {name} --force')
 
     @staticmethod
     def run(cmd):
@@ -357,14 +353,13 @@ class Ecs:
     @staticmethod
     def prepare_controller_task_def(base_dir: Path, controller_ecr):
         # build docker image for controller
-        registryId, repositoryUri, region = controller_ecr
-        proc = subprocess.run(f'docker tag {CONTROLLER_NAME}:latest {repositoryUri}',
-                              shell=True, encoding='utf-8')
-        assert proc.returncode == 0
-        proc = subprocess.run(f'docker push {repositoryUri}', shell=True, encoding='utf-8')
-        assert proc.returncode == 0
-        task_def = Ecs.build_task_definition_controller(f'arn:aws:iam::{registryId}:role/ecsTaskExecutionRole',
-                                                        repositoryUri, region)
+        registry_id, repository_uri, region = controller_ecr
+        system(f'docker tag {CONTROLLER_NAME}:latest {repository_uri}')
+        system(
+            f'aws ecr get-login-password | docker login --username AWS --password-stdin {registry_id}.dkr.ecr.{region}.amazonaws.com')
+        system(f'docker push {repository_uri}')
+        task_def = Ecs.build_task_definition_controller(f'arn:aws:iam::{registry_id}:role/ecsTaskExecutionRole',
+                                                        repository_uri, region)
         task_def_file = base_dir / 'taskdef_controller.json'
         with open(str(task_def_file), 'w') as f:
             json.dump(task_def, f)
