@@ -1,7 +1,7 @@
 from pathlib import Path
 import re
 import subprocess
-from .cli import AwsContainers, LocalContainers, Logger
+from .framework import Logger, LocalContainers, AwsContainers
 
 
 def test_run_in_container(tmp_path):
