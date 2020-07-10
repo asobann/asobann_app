@@ -124,6 +124,7 @@ EXPOSE 8888
                 time.sleep(1)
 
     def _send_command(self, command: str) -> str:
+        log(f'send command url={self.controller_url}, data={command}')
         res = urllib.request.urlopen(self.controller_url, data=command.encode('utf8'))
         result = res.read().decode('utf-8')
         return result
@@ -135,8 +136,8 @@ EXPOSE 8888
         assert proc.returncode == 0
         assert len(proc.stdout.strip().split('\n')) == 1, 'no process remains'
 
-    def run_test(self, filename):
-        result = self._send_command(f'run {filename}')
+    def run_test(self, module_name):
+        result = self._send_command(f'run {module_name}')
         return json.loads(result)
 
 
@@ -192,25 +193,19 @@ class Aws:
 
     @staticmethod
     def get_ecr(name):
-        proc = subprocess.run(f'aws ecr create-repository --repository-name {name}',
-                              shell=True,
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT,
-                              encoding='utf8')
-        assert proc.returncode == 0 or 'already exists' in proc.stdout
-        if proc.returncode == 0:
-            result = json.loads(proc.stdout)
+        try:
+            output = Aws.run(f'aws ecr create-repository --repository-name {name}')
+            result = json.loads(output)
             registry_id = result['repository']['registryId']
             repository_uri = result['repository']['repositoryUri']
-        else:
-            proc = subprocess.run(f'aws ecr describe-repositories --repository-names {name}',
-                                  shell=True,
-                                  stdout=subprocess.PIPE,
-                                  encoding='utf8')
-            assert proc.returncode == 0
-            result = json.loads(proc.stdout)
+        except Aws.NonZeroExitError as ex:
+            if 'already exists' not in ex.args[0]:
+                raise
+            output = Aws.run(f'aws ecr describe-repositories --repository-names {name}')
+            result = json.loads(output)
             registry_id = result['repositories'][0]['registryId']
             repository_uri = result['repositories'][0]['repositoryUri']
+
         region = re.match('^[^.]*.dkr.ecr.([^.]*).amazonaws.com/.*$', repository_uri).group(1)
 
         return registry_id, repository_uri, region
@@ -445,7 +440,7 @@ class AwsContainers(AbstractContainers):
         worker_tasks = Ecs.run_worker(self.cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3",
                                       count=worker_count)
         log('starting workers ...')
-        self._wait_for_task_to_be_running(worker_tasks)
+        self._wait_for_tasks_to_be_running(worker_tasks)
 
         worker_binds = []
         for t in Ecs.describe_tasks(worker_tasks, self.cluster)['tasks']:
@@ -462,23 +457,24 @@ class AwsContainers(AbstractContainers):
                                                   arg_worker)
 
         log('starting controller ...')
-        self._wait_for_task_to_be_running(self.controller_task)
+        self._wait_for_tasks_to_be_running(self.controller_task)
 
         task_latest = Ecs.describe_tasks(self.controller_task, self.cluster)['tasks']
         self.controller_url = self._get_public_ip_of_controller(task_latest)
 
-    def _wait_for_task_to_be_running(self, tasks):
+    def _wait_for_tasks_to_be_running(self, tasks):
         while True:
             time.sleep(5)
             task_latest = Ecs.describe_tasks(tasks, self.cluster)['tasks']
             statuses = [t['lastStatus'] for t in task_latest]
             log(statuses)
             if all([s == 'RUNNING' for s in statuses]):
+                time.sleep(5)  # wait a bit more to avoid connection refused
                 return
             if any([s == 'STOPPED' for s in statuses]):
                 assert False, 'task is STOPPED unexpectedly while starting up'
 
-    def _wait_for_tasks_to_be_running(self, tasks):
+    def _wait_for_tasks_to_stop(self, tasks):
         while True:
             time.sleep(5)
             task_latest = Ecs.describe_tasks(tasks, self.cluster)['tasks']
@@ -499,8 +495,8 @@ class AwsContainers(AbstractContainers):
     def shutdown(self):
         super().shutdown()
 
-        self._wait_for_tasks_to_be_running(self._workers.tasks)
-        self._wait_for_tasks_to_be_running(self.controller_task)
+        self._wait_for_tasks_to_stop(self._workers.tasks)
+        self._wait_for_tasks_to_stop(self.controller_task)
 
         if self.cluster:
             Ecs.delete_cluster(self.CLUSTER_NAME)
