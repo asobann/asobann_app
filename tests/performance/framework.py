@@ -74,6 +74,9 @@ class AbstractContainers:
     def start_controller(self) -> None:
         raise NotImplementedError()
 
+    def remove_containers(self) -> None:
+        raise NotImplementedError()
+
     def build_docker_image_for_worker(self, base_dir: Path):
         with open(str(base_dir / 'Dockerfile_worker'), 'w') as f:
             f.write("""
@@ -186,6 +189,9 @@ class LocalContainers(AbstractContainers):
         assert proc.returncode == 0
         self._wait_for_controller_to_start()
 
+    def remove_containers(self) -> None:
+        raise NotImplementedError()
+
 
 class Aws:
     class NonZeroExitError(RuntimeError):
@@ -232,11 +238,14 @@ class Ecs:
             return json.loads(output)['cluster']
         except Aws.NonZeroExitError as e:
             if 'inconsistent with arguments' in str(e):
-                # cluster already exists; just describe it
-                output = Aws.run(f'aws ecs describe-clusters --clusters {cluster_name}')
-                return json.loads(output)['clusters'][0]
+                return Ecs.describe_cluster(cluster_name)
             else:
                 raise
+
+    @staticmethod
+    def describe_cluster(cluster_name):
+        output = Aws.run(f'aws ecs describe-clusters --clusters {cluster_name}')
+        return json.loads(output)['clusters'][0]
 
     @staticmethod
     def delete_cluster(cluster_name):
@@ -432,6 +441,8 @@ class AwsContainers(AbstractContainers):
             Ecs.prepare_controller_task_def(base_path, self.controller_ecr)
 
     def start_workers(self, worker_count) -> None:
+        if not self.cluster:
+            self.cluster = Ecs.describe_cluster(self.CLUSTER_NAME)
         worker_tasks = Ecs.run_worker(self.cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3",
                                       count=worker_count)
         log('starting workers ...')
@@ -489,10 +500,10 @@ class AwsContainers(AbstractContainers):
 
     def shutdown(self):
         super().shutdown()
-
         self._wait_for_tasks_to_stop(self._workers.tasks)
         self._wait_for_tasks_to_stop(self.controller_task)
 
+    def remove_containers(self) -> None:
         if self.cluster:
             Ecs.delete_cluster(self.CLUSTER_NAME)
         if self.worker_ecr:
