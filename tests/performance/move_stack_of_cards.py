@@ -100,7 +100,7 @@ def execute_controller(command_queues, result_queues, headless):
 def execute_worker(name, command_queue, result_queue, headless):
     window = browser(headless=headless)
     try:
-        player = GameHelper(browser(headless=True))
+        player = GameHelper(window)
         my_idx, invitation_url = command_queue.get()
         player.go(invitation_url)
         player.menu.join(f'P{my_idx}')
