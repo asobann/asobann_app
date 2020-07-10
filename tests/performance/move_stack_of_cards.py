@@ -53,69 +53,77 @@ def evaluate_saved_status():
     return diff
 
 
-def execute_controller(command_queues, result_queues):
-    log('execute move_stack_of_cards controller')
-    host = GameHelper(browser(headless=True), base_url=STAGING_TOP)
-    host.create_table(0)
+def execute_controller(command_queues, result_queues, headless):
+    window = browser(headless=headless)
+    try:
+        log('execute move_stack_of_cards controller')
+        host = GameHelper(window, base_url=STAGING_TOP)
+        host.create_table(0)
 
-    host.menu.import_jsonfile(str(Path(__file__).parent / "./move_single_card_each.json"))
+        host.should_have_text("you are host")
+        host.menu.add_kit.execute()
+        host.menu.add_kit_from_list("Playing Card")
 
-    host.should_have_text("you are host")
-    host.should_have_text("Table for load testing")
+        invitation_url = host.menu.invitation_url.value
+        log(f'table is opened at {invitation_url}')
 
-    invitation_url = host.menu.invitation_url.value
-    log(f'table is opened at {invitation_url}')
+        for idx, q in enumerate(command_queues):
+            q.put([idx, invitation_url])
 
-    for idx, q in enumerate(command_queues):
-        q.put([idx, invitation_url])
+        log('loop 10 times')
+        for i in range(10):
+            log(i)
+            log('move')
+            for q in command_queues:
+                q.put('move')
+            for q in result_queues:
+                q.get()  # 'moved'
+            time.sleep(3)
+            save_status(i, "host", gather_status(host))
+            log('receive status')
+            for q in command_queues:
+                q.put('status')
+            for j, q in enumerate(result_queues):
+                save_status(i, f"player{j + 1}", q.get())
+            log('continue ...')
 
-    log('loop 10 times')
-    for i in range(10):
-        log(i)
-        log('move')
+        log('finishing up ...')
         for q in command_queues:
-            q.put('move')
-        for q in result_queues:
-            q.get()  # 'moved'
-        time.sleep(3)
-        save_status(i, "host", gather_status(host))
-        log('receive status')
-        for q in command_queues:
-            q.put('status')
-        for j, q in enumerate(result_queues):
-            save_status(i, f"player{j + 1}", q.get())
-        log('continue ...')
+            q.put('finish')
 
-    log('finishing up ...')
-    for q in command_queues:
-        q.put('finish')
+        return evaluate_saved_status()
 
-    return evaluate_saved_status()
+    finally:
+        window.close()
 
 
-def execute_worker(name, command_queue, result_queue):
-    player = GameHelper(browser(headless=True))
-    my_idx, invitation_url = command_queue.get()
-    player.go(invitation_url)
-    player.menu.join(f'P{my_idx}')
-    player.should_have_text("Table for load testing")
+def execute_worker(name, command_queue, result_queue, headless):
+    window = browser(headless=headless)
+    try:
+        player = GameHelper(browser(headless=True))
+        my_idx, invitation_url = command_queue.get()
+        player.go(invitation_url)
+        player.menu.join(f'P{my_idx}')
 
-    imagecount = 0
-    log('entering loop')
-    while True:
-        cmd = command_queue.get()
-        log(f'received command {cmd}')
-        if cmd == 'move':
-            player.drag(player.component(my_idx + 2), 0, 300)
-            time.sleep(0.1)  # avoid double clicking
-            player.drag(player.component(my_idx + 2), 0, -300)
-            result_queue.put('moved')
-        elif cmd == 'status':
-            player.browser.save_screenshot(f'/runner/image{imagecount}.png')
-            imagecount += 1
-            result_queue.put(gather_status(player))
-        elif cmd == 'finish':
-            break
-        else:
-            raise RuntimeError(f'unknown command {cmd}')
-        log('continue ...')
+        imagecount = 0
+        log('entering loop')
+        while True:
+            cmd = command_queue.get()
+            log(f'received command {cmd}')
+            if cmd == 'move':
+                player.drag(player.component(my_idx + 2), 0, 300)
+                time.sleep(0.1)  # avoid double clicking
+                player.drag(player.component(my_idx + 2), 0, -300)
+                result_queue.put('moved')
+            elif cmd == 'status':
+                player.browser.save_screenshot(f'/runner/image{imagecount}.png')
+                imagecount += 1
+                result_queue.put(gather_status(player))
+            elif cmd == 'finish':
+                break
+            else:
+                raise RuntimeError(f'unknown command {cmd}')
+            log('continue ...')
+
+    finally:
+        window.close()

@@ -31,6 +31,7 @@ def worker_server(port):
     mgr.start()
 
     name = ''.join([random.choice('abcdefghijklmnopqrstuvwxyz') for i in range(10)])
+    headless = True
     while True:
         log('receiving cmd...')
         cmd = command_queue.get()
@@ -41,10 +42,12 @@ def worker_server(port):
             module_name = cmd[1]
             import importlib
             mod = importlib.import_module(module_name, '.')
-            mod.execute_worker(name, command_queue, result_queue)
+            mod.execute_worker(name, command_queue, result_queue, headless)
         elif cmd[0] == 'shutdown':
             mgr.shutdown()
             break
+        elif cmd[0] == 'headless':
+            headless = cmd[1]
 
 
 def controller_client(workers):
@@ -79,16 +82,19 @@ def controller_client(workers):
                 log(f'received cmd "{command}"')
 
                 if command.startswith('run '):
-                    module_name = command.split(' ')[1]
-                    log(f'starting testcase {module_name}...')
+                    args = command.split(' ')
+                    module_name = args[1]
+                    headless = True if args[2] == 'true' else False
+                    log(f'starting testcase {module_name} headless={headless}...')
 
                     for queue in command_queues:
+                        queue.put(['headless', headless])
                         queue.put(['run', module_name])
 
                     try:
                         import importlib
                         mod = importlib.import_module(module_name, '.')
-                        result = mod.execute_controller(command_queues, result_queues)
+                        result = mod.execute_controller(command_queues, result_queues, headless)
                     except:
                         import traceback
                         import io

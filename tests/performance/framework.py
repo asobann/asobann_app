@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import List, Tuple, Dict
@@ -24,7 +25,8 @@ class Logger:
 log = Logger.log
 
 
-def system(cmd, capture=False, cwd=None):
+def system(cmd, capture=False, cwd=None, daemon=False):
+    log(f'system command: {cmd}')
     if capture:
         stdout = subprocess.PIPE
     else:
@@ -32,15 +34,24 @@ def system(cmd, capture=False, cwd=None):
             stdout = None
         else:
             stdout = subprocess.DEVNULL
-    proc = subprocess.run(cmd,
-                          shell=True,
-                          stdout=stdout,
-                          stderr=subprocess.STDOUT,
-                          cwd=cwd,
-                          encoding='utf8')
-    if proc.returncode != 0:
-        raise RuntimeError(f'external command "{cmd}" failed. output="{proc.stdout}"')
-    return proc
+    if daemon:
+        proc = subprocess.Popen(cmd,
+                                shell=True,
+                                stdout=stdout,
+                                stderr=subprocess.STDOUT,
+                                cwd=cwd,
+                                encoding='utf8')
+        return proc
+    else:
+        proc = subprocess.run(cmd,
+                              shell=True,
+                              stdout=stdout,
+                              stderr=subprocess.STDOUT,
+                              cwd=cwd,
+                              encoding='utf8')
+        if proc.returncode != 0:
+            raise RuntimeError(f'external command "{cmd}" failed. output="{proc.stdout}"')
+        return proc
 
 
 WORKER_NAME = 'test_run_multiprocess_in_container_worker'
@@ -51,9 +62,10 @@ class AbstractContainers:
     controller_url = None
 
     class Workers:
-        def __init__(self, binds, tasks=None):
+        def __init__(self, binds, tasks: Dict = None, procs: List = None):
             self.binds: List[Tuple[str, int]] = binds
             self.tasks: Dict = tasks
+            self.procs = procs
 
     def __init__(self):
         self._workers: 'Optional[AbstractContainers.Workers]' = None
@@ -123,7 +135,7 @@ EXPOSE 8888
                 res = urllib.request.urlopen(req)
                 if res.getcode() == 200:
                     break
-            except ConnectionError:
+            except (ConnectionError, urllib.error.URLError):
                 time.sleep(1)
 
     def _send_command(self, command: str) -> str:
@@ -135,13 +147,53 @@ EXPOSE 8888
     def shutdown(self) -> None:
         self._send_command('shutdown')
         time.sleep(1)
-        proc = system("docker ps", capture=True)
-        assert proc.returncode == 0
-        assert len(proc.stdout.strip().split('\n')) == 1, 'no process remains'
 
-    def run_test(self, module_name):
-        result = self._send_command(f'run {module_name}')
+    def run_test(self, module_name, headless=True):
+        result = self._send_command(f'run {module_name} {"true" if headless else "false"}')
         return json.loads(result)
+
+
+class LocalProcesses(AbstractContainers):
+    controller_url = 'http://localhost:8888'
+
+    def build_docker_images(self) -> None:
+        # do nothing
+        pass
+
+    def start_workers(self, worker_count) -> None:
+        assert worker_count < 10, 'Local running permits only less than 10 workers for the time being'
+        ports = [50000 + i for i in range(worker_count)]  # 50000-50009 is EXPOSEd in Dockerfile
+        procs = []
+        for port in ports:
+            log(f'start worker container port {port}')
+            procs.append(
+                system(f"PYTHONPATH=. python tests/performance/remote_runner.py worker {port}",
+                       capture=False, daemon=True))
+
+        self._workers = AbstractContainers.Workers(binds=[('localhost', p) for p in ports], procs=procs)
+        time.sleep(1)
+
+    def start_controller(self) -> None:
+        ports = [p for h, p in self._workers.binds]
+        self._controller_proc = system(f"PYTHONPATH=. python tests/performance/remote_runner.py controller"
+               f" {','.join([f'localhost:{p}' for p in ports])}",
+               capture=False, daemon=True)
+        self._wait_for_controller_to_start()
+
+    def shutdown(self):
+        try:
+            super().shutdown()
+        except:
+            pass
+        for proc in self._workers.procs + [self._controller_proc]:
+            try:
+                proc.wait(1)
+            except subprocess.TimeoutExpired:
+                proc.terminate()
+
+    def remove_containers(self) -> None:
+        # do nothing
+        pass
 
 
 class LocalContainers(AbstractContainers):
@@ -156,8 +208,8 @@ class LocalContainers(AbstractContainers):
             self.build_docker_image_for_controller(base_path)
 
     def start_workers(self, worker_count) -> None:
-        assert worker_count == 3, 'Local running permits only 3 workers for the time being'
-        ports = [50000, 50001, 50002]
+        assert worker_count < 10, 'Local running permits only less than 10 workers for the time being'
+        ports = [50000 + i for i in range(worker_count)]  # 50000-50009 is EXPOSEd in Dockerfile
         procs = []
         for port in ports:
             log(f'start worker container port {port}')
@@ -184,10 +236,15 @@ class LocalContainers(AbstractContainers):
         else:
             raise RuntimeError()
         log(f'start controller container ports {ports}')
-        proc = system(f"docker run {host_access} -p 8888:8888 -d {CONTROLLER_NAME} "
-                      f"pipenv run python tests/performance/remote_runner.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}")
-        assert proc.returncode == 0
+        system(f"docker run {host_access} -p 8888:8888 -d {CONTROLLER_NAME} "
+               f"pipenv run python tests/performance/remote_runner.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}")
         self._wait_for_controller_to_start()
+
+    def shutdown(self) -> None:
+        super().shutdown()
+        proc = system("docker ps", capture=True)
+        assert proc.returncode == 0
+        assert len(proc.stdout.strip().split('\n')) == 1, 'no process remains'
 
     def remove_containers(self) -> None:
         raise NotImplementedError()
