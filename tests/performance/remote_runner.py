@@ -44,6 +44,7 @@ def worker_server(port):
             mod = importlib.import_module(module_name, '.')
             mod.execute_worker(name, command_queue, result_queue, headless)
         elif cmd[0] == 'shutdown':
+            log('shutting down ...')
             mgr.shutdown()
             break
         elif cmd[0] == 'headless':

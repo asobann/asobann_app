@@ -140,9 +140,18 @@ EXPOSE 8888
 
     def _send_command(self, command: str) -> str:
         log(f'send command url={self.controller_url}, data={command}')
-        res = urllib.request.urlopen(self.controller_url, data=command.encode('utf8'))
-        result = res.read().decode('utf-8')
-        return result
+        try:
+            res = urllib.request.urlopen(self.controller_url, data=command.encode('utf8'))
+            result = res.read().decode('utf-8')
+            return result
+        except urllib.error.HTTPError as ex:
+            log('http error', *ex.args)
+            if ex.fp:
+                result = ex.fp.read().decode('utf-8')
+                log(result)
+                return json.dumps({'error': result})
+            else:
+                return '{}'
 
     def shutdown(self) -> None:
         self._send_command('shutdown')
@@ -161,7 +170,7 @@ class LocalProcesses(AbstractContainers):
         pass
 
     def start_workers(self, worker_count) -> None:
-        assert worker_count < 10, 'Local running permits only less than 10 workers for the time being'
+        assert worker_count <= 10, 'Local running permits only less than 10 workers for the time being'
         ports = [50000 + i for i in range(worker_count)]  # 50000-50009 is EXPOSEd in Dockerfile
         procs = []
         for port in ports:

@@ -88,8 +88,8 @@ def execute_controller(command_queues, result_queues, headless):
     for group in groups:
         for q in group.command_queues:
             q.put(['status'])
-        for q in group.result_queues:
-            save_status(0, 0, q.get())
+        for i, q in enumerate(group.result_queues):
+            save_status(0, i, q.get())
 
     log('@5')
     for group in groups:
