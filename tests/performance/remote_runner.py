@@ -102,6 +102,7 @@ def controller_client(workers):
                         traceback.print_exc(file=buf)
                         self.send_response(500)
                         self.end_headers()
+                        print(buf.getvalue())
                         self.wfile.write(buf.getvalue().encode('utf8'))
                         return
 

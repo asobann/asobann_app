@@ -262,7 +262,7 @@ class Aws:
             registry_id = result['repository']['registryId']
             repository_uri = result['repository']['repositoryUri']
         except Aws.NonZeroExitError as ex:
-            if 'already exists' not in ex.args[0]:
+            if not any(['already exists' in a for a in ex.args]):
                 raise
             output = Aws.run(f'aws ecr describe-repositories --repository-names {name}')
             result = json.loads(output)
