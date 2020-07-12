@@ -62,82 +62,38 @@ def execute_controller(command_queues, result_queues, headless):
             self.command_queues: List[Queue] = []
             self.result_queues: List[Queue] = []
 
-    log('execute_controller XXX')
+    log('execute_controller')
     groups = [Group() for i in range(int(len(command_queues) / 2))]
     workers_per_group = int(len(command_queues) / len(groups))
     log('@1', groups)
+    cq, rq = command_queues[:], result_queues[:]
     for i, g in enumerate(groups):
-        g.command_queues = [command_queues.pop() for j in range(workers_per_group)]
-        g.result_queues = [result_queues.pop() for j in range(workers_per_group)]
+        g.command_queues = [cq.pop() for j in range(workers_per_group)]
+        g.result_queues = [rq.pop() for j in range(workers_per_group)]
 
-    log('@2')
     for group in groups:
         group.command_queues[0].put(['create empty table'])
         url = group.result_queues[0].get()
         for q in group.command_queues[1:]:
             q.put(['open', url])
 
-    log('@3')
     for i in range(10):
         for group in groups:
             group.command_queues[0].put(['move'])
         for group in groups:
             group.result_queues[0].get()
 
-    log('@4')
     for group in groups:
         for q in group.command_queues:
             q.put(['status'])
         for i, q in enumerate(group.result_queues):
             save_status(0, i, q.get())
 
-    log('@5')
     for group in groups:
         for q in group.command_queues:
             q.put(['finish'])
 
     return evaluate_saved_status()
-
-    try:
-        log('execute move_stack_of_cards controller')
-        host = GameHelper(window, base_url=STAGING_TOP)
-        host.create_table(0)
-
-        host.should_have_text("you are host")
-        host.menu.add_kit.execute()
-        host.menu.add_kit_from_list("Playing Card")
-
-        invitation_url = host.menu.invitation_url.value
-        log(f'table is opened at {invitation_url}')
-
-        for idx, q in enumerate(command_queues):
-            q.put([idx, invitation_url])
-
-        log('loop 10 times')
-        for i in range(10):
-            log(i)
-            log('move')
-            for q in command_queues:
-                q.put('move')
-            for q in result_queues:
-                q.get()  # 'moved'
-            time.sleep(3)
-            save_status(i, "host", gather_status(host))
-            log('receive status')
-            for q in command_queues:
-                q.put('status')
-            for j, q in enumerate(result_queues):
-                save_status(i, f"player{j + 1}", q.get())
-            log('continue ...')
-
-        log('finishing up ...')
-        for q in command_queues:
-            q.put('finish')
-
-        return evaluate_saved_status()
-
-    finally:
-        window.close()
 
 
 def execute_worker(name, command_queue, result_queue, headless):

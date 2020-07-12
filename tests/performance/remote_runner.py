@@ -1,8 +1,9 @@
-import re
 import json
 import sys
+import time
 
 import random
+
 random.seed()
 AUTHKEY = b'noscret'
 
@@ -43,6 +44,7 @@ def worker_server(port):
             import importlib
             mod = importlib.import_module(module_name, '.')
             mod.execute_worker(name, command_queue, result_queue, headless)
+            log('worker is finished')
         elif cmd[0] == 'shutdown':
             log('shutting down ...')
             mgr.shutdown()
@@ -68,7 +70,13 @@ def controller_client(workers):
         command_queues.append(mgr.command_que())
         result_queues.append(mgr.result_que())
         mgr.command_que().put(['name', f'{host}:{port}'])
-    log('connected to workers')
+    log(f'connected to {len(command_queues)} workers')
+
+    httpd = None
+
+    def shutdown_httpd():
+        from threading import Thread
+        Thread(target=lambda: httpd.shutdown()).start()
 
     import http.server
     class ControllerHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
@@ -77,49 +85,51 @@ def controller_client(workers):
             self.end_headers()
 
         def do_POST(self):
-                length = self.headers.get('content-length')
-                nbytes = int(length)
-                command = self.rfile.read(nbytes).decode('utf8')
-                log(f'received cmd "{command}"')
+            length = self.headers.get('content-length')
+            nbytes = int(length)
+            command = self.rfile.read(nbytes).decode('utf8')
+            log(f'received cmd "{command}"')
 
-                if command.startswith('run '):
-                    args = command.split(' ')
-                    module_name = args[1]
-                    headless = True if args[2] == 'true' else False
-                    log(f'starting testcase {module_name} headless={headless}...')
+            if command.startswith('run '):
+                args = command.split(' ')
+                module_name = args[1]
+                headless = True if args[2] == 'true' else False
+                log(f'starting testcase {module_name} headless={headless}...')
+                for queue in command_queues:
+                    queue.put(['headless', headless])
+                    queue.put(['run', module_name])
 
-                    for queue in command_queues:
-                        queue.put(['headless', headless])
-                        queue.put(['run', module_name])
-
-                    try:
-                        import importlib
-                        mod = importlib.import_module(module_name, '.')
-                        result = mod.execute_controller(command_queues, result_queues, headless)
-                    except:
-                        import traceback
-                        import io
-                        buf = io.StringIO()
-                        traceback.print_exc(file=buf)
-                        self.send_response(500)
-                        self.end_headers()
-                        print(buf.getvalue())
-                        self.wfile.write(buf.getvalue().encode('utf8'))
-                        return
-
-                    self.send_response(200)
+                try:
+                    import importlib
+                    mod = importlib.import_module(module_name, '.')
+                    result = mod.execute_controller(command_queues, result_queues, headless)
+                except:
+                    import traceback
+                    import io
+                    buf = io.StringIO()
+                    traceback.print_exc(file=buf)
+                    self.send_response(500)
                     self.end_headers()
-                    self.wfile.write(json.dumps(result).encode('utf8'))
-                    log('response sent')
-                elif command == 'shutdown':
-                    log('shutdown controller and workers')
-                    for queue in command_queues:
-                        queue.put(['shutdown'])
+                    print(buf.getvalue())
+                    self.wfile.write(buf.getvalue().encode('utf8'))
+                    return
 
-                    self.send_response(200)
-                    self.end_headers()
-                    self.flush_headers()
-                    exit()
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(json.dumps(result).encode('utf8'))
+                log('response sent')
+            elif command == 'shutdown':
+                log('shutdown controller and workers')
+                for queue in command_queues:
+                    queue.put(['shutdown'])
+                log('shutdown sent to the workers')
+                self.send_response(200)
+                self.end_headers()
+                self.flush_headers()
+                shutdown_httpd()
+                log('shutdown httpd')
+                log('exiting ...')
+                exit()
 
     log('starting http server')
     addr = ('', 8888)
