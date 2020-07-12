@@ -158,7 +158,8 @@ EXPOSE 8888
         time.sleep(1)
 
     def run_test(self, module_name, headless=True):
-        result = self._send_command(f'run {module_name} {"true" if headless else "false"}')
+        result = self._send_command(f'headless {"true" if headless else "false"}')
+        result = self._send_command(f'run {module_name}')
         return json.loads(result)
 
 

@@ -79,6 +79,11 @@ def controller_client(workers):
         Thread(target=lambda: httpd.shutdown()).start()
 
     import http.server
+
+    parameters = {
+        'headless': True,
+    }
+
     class ControllerHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         def do_HEAD(self):
             self.send_response(200)
@@ -93,16 +98,18 @@ def controller_client(workers):
             if command.startswith('run '):
                 args = command.split(' ')
                 module_name = args[1]
-                headless = True if args[2] == 'true' else False
-                log(f'starting testcase {module_name} headless={headless}...')
+                log(f'starting testcase {module_name} ...')
                 for queue in command_queues:
-                    queue.put(['headless', headless])
                     queue.put(['run', module_name])
 
                 try:
                     import importlib
                     mod = importlib.import_module(module_name, '.')
-                    result = mod.execute_controller(command_queues, result_queues, headless)
+                    result = mod.execute_controller(command_queues[:], result_queues[:], parameters['headless'])
+                    self.send_response(200)
+                    self.end_headers()
+                    self.wfile.write(json.dumps(result).encode('utf8'))
+                    log('response sent')
                 except:
                     import traceback
                     import io
@@ -114,10 +121,14 @@ def controller_client(workers):
                     self.wfile.write(buf.getvalue().encode('utf8'))
                     return
 
+            elif command.startswith('headless '):
+                args = command.split(' ')
+                parameters['headless'] = True if args[1] == 'true' else False
+                for queue in command_queues:
+                    queue.put(['headless', parameters['headless']])
                 self.send_response(200)
                 self.end_headers()
-                self.wfile.write(json.dumps(result).encode('utf8'))
-                log('response sent')
+                self.wfile.write(f'headless is set to {parameters["headless"]}'.encode('utf8'))
             elif command == 'shutdown':
                 log('shutdown controller and workers')
                 for queue in command_queues:
