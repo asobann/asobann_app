@@ -138,9 +138,9 @@ def execute_worker(name, command_queue, result_queue, headless):
                 time.sleep(0.1)  # avoid double clicking
                 player.drag(player.component_by_name("Playing Card Box"), -40, 0, grab_at=(0, 48))
             elif cmd[0] == 'move card':
-                player.drag(player.component(nth), 0, 30)
+                player.drag(player.component(nth), 0, 200)
                 time.sleep(0.1)  # avoid double clicking
-                player.drag(player.component(nth), 0, -30)
+                player.drag(player.component(nth), 0, -200)
             elif cmd[0] == 'status':
                 player.browser.save_screenshot(f'/runner/image{imagecount}.png')
                 imagecount += 1
