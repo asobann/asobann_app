@@ -67,7 +67,6 @@ def execute_controller(command_queues, result_queues, headless):
     log('execute_controller')
     groups = [Group() for i in range(int(len(command_queues) / 2))]
     workers_per_group = int(len(command_queues) / len(groups))
-    log('@1', groups)
     cq, rq = command_queues[:], result_queues[:]
     for i, g in enumerate(groups):
         g.command_queues = [cq.pop() for j in range(workers_per_group)]

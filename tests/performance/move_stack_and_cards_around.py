@@ -58,38 +58,53 @@ def evaluate_saved_status():
 
 def execute_controller(command_queues, result_queues, headless):
     iteration = 10
+    workers_per_group = 8
 
-    stack_mover = (command_queues[0], result_queues[0])
-    card_movers = (command_queues[1:], result_queues[1:])
+    class Group:
+        def __init__(self):
+            self.command_queues: List[Queue] = []
+            self.result_queues: List[Queue] = []
+
+    groups = [Group() for i in range(int(len(command_queues) / workers_per_group))]
+    cq, rq = command_queues[:], result_queues[:]
+    for i, g in enumerate(groups):
+        g.command_queues = [cq.pop() for j in range(workers_per_group)]
+        g.result_queues = [rq.pop() for j in range(workers_per_group)]
+
+        g.stack_mover = (g.command_queues[0], g.result_queues[0])
+        g.card_movers = (g.command_queues[1:], g.result_queues[1:])
 
     log('execute_controller')
 
-    stack_mover[0].put(['create empty table'])
-    url = stack_mover[1].get()
+    for g in groups:
+        g.stack_mover[0].put(['create empty table'])
+        url = g.stack_mover[1].get()
 
-    for i, q in enumerate(card_movers[0]):
-        q.put(['idx', i])
-        q.put(['open', url])
-        q.put(['grab card'])
-        log('grabbed: ' + card_movers[1][i].get())  # grabbed
+        for i, q in enumerate(g.card_movers[0]):
+            q.put(['idx', i])
+            q.put(['open', url])
+            q.put(['grab card'])
+            log('grabbed: ' + g.card_movers[1][i].get())  # grabbed
 
-    for i in range(iteration):
-        stack_mover[0].put(['move stack'])
-        for q in card_movers[0]:
-            q.put(['move card', i])
+    for g in groups:
+        for i in range(iteration):
+            g.stack_mover[0].put(['move stack'])
+            for q in g.card_movers[0]:
+                q.put(['move card', i])
 
-    for q in command_queues:
-        q.put(['echo back'])
-    for q in result_queues:
-        q.get()  # echo back
+    for g in groups:
+        for q in g.command_queues:
+            q.put(['echo back'])
+        for q in g.result_queues:
+            q.get()  # echo back
 
-    for q in command_queues:
-        q.put(['status'])
-    for tag, q in enumerate(result_queues):
-        save_status(0, tag, q.get())
+        for q in g.command_queues:
+            q.put(['status'])
+        for tag, q in enumerate(g.result_queues):
+            save_status(0, tag, q.get())
 
-    command_queues[0].put(['screen utilization'])
-    utilization = result_queues[0].get()
+    command_queues[-1].put(['screen utilization'])
+    utilization = result_queues[-1].get()
 
     for q in command_queues:
         q.put(['finish'])
@@ -98,6 +113,7 @@ def execute_controller(command_queues, result_queues, headless):
     return {
         'diff_count': diff_count,
         'workers': len(command_queues),
+        'worker_groups': len(groups),
         'iteration': iteration,
         'screen utilization': utilization,
         # 'saved_status': saved_status,
