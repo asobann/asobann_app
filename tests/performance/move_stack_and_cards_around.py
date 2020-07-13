@@ -30,7 +30,7 @@ def gather_status(player: GameHelper):
     while True:
         try:
             c = player.component(n, wait=False)
-            status.append((str(c.rect()), c.face()))
+            status.append((c.rect(), c.face()))
             n += 1
         except NoSuchElementException:
             break
@@ -88,6 +88,9 @@ def execute_controller(command_queues, result_queues, headless):
     for tag, q in enumerate(result_queues):
         save_status(0, tag, q.get())
 
+    command_queues[0].put(['screen utilization'])
+    utilization = result_queues[0].get()
+
     for q in command_queues:
         q.put(['finish'])
 
@@ -96,6 +99,7 @@ def execute_controller(command_queues, result_queues, headless):
         'diff_count': diff_count,
         'workers': len(command_queues),
         'iteration': iteration,
+        'screen utilization': utilization,
         # 'saved_status': saved_status,
     }
 
@@ -143,6 +147,8 @@ def execute_worker(name, command_queue, result_queue, headless):
                 result_queue.put(gather_status(player))
             elif cmd[0] == 'echo back':
                 result_queue.put('echo back')
+            elif cmd[0] == 'screen utilization':
+                result_queue.put(get_screen_utilization(player))
             elif cmd[0] == 'finish':
                 return
             else:
@@ -151,3 +157,30 @@ def execute_worker(name, command_queue, result_queue, headless):
 
     finally:
         window.close()
+
+
+def get_screen_utilization(game_helper):
+    left = top = 9999
+    right = bottom = 0
+    component_statuses = gather_status(game_helper)
+    for rect, face in component_statuses:
+        if rect.left < left:
+            left = rect.left
+        if rect.top < top:
+            top = rect.top
+        if right < rect.right:
+            right = rect.right
+        if bottom < rect.bottom:
+            bottom = rect.bottom
+
+    utilization = {
+        'screen size': game_helper.browser.get_window_size(),
+        'component uses': {
+            'left': left,
+            'top': top,
+            'right': right,
+            'bottom': bottom,
+        },
+        'component count': len(component_statuses),
+    }
+    return utilization
