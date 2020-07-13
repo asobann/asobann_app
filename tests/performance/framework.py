@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import List, Tuple, Dict
 
 
-CONNECTION_RETRY_SECONDS = 20
+CONNECTION_RETRY_SECONDS = 60
 
 
 class Logger:
@@ -150,7 +150,7 @@ EXPOSE 8888
                 try:
                     res = urllib.request.urlopen(self.controller_url, data=command.encode('utf8'))
                     break
-                except ConnectionRefusedError:
+                except urllib.error.URLError:
                     if (datetime.datetime.now() - started_at).total_seconds() > CONNECTION_RETRY_SECONDS:
                         raise
                     log(f'connection to controller {self.controller_url} refused. Retrying ...')
@@ -598,7 +598,14 @@ class AwsContainers(AbstractContainers):
         return f'http://{controller_ip}:8888'
 
     def shutdown(self):
-        super().shutdown()
+        try:
+            super().shutdown()
+        except:
+            # force stop
+            for task_arn in [t['taskArn'] for t in self._workers.tasks['tasks']]:
+                Ecs.stop_task(task_arn, self.cluster)
+            for task_arn in [t['taskArn'] for t in self.controller_task['tasks']]:
+                Ecs.stop_task(task_arn, self.cluster)
         self._wait_for_tasks_to_stop(self._workers.tasks)
         self._wait_for_tasks_to_stop(self.controller_task)
 
