@@ -143,16 +143,18 @@ def controller_client(workers):
                 self.wfile.write(f'headless is set to {parameters["headless"]}'.encode('utf8'))
             elif command == 'shutdown':
                 log('shutdown controller and workers')
-                for queue in command_queues:
-                    queue.put(['shutdown'])
-                log('shutdown sent to the workers')
-                self.send_response(200)
-                self.end_headers()
-                self.flush_headers()
-                shutdown_httpd()
-                log('shutdown httpd')
-                log('exiting ...')
-                exit()
+                try:
+                    for queue in command_queues:
+                        queue.put(['shutdown'])
+                    log('shutdown sent to the workers')
+                    self.send_response(200)
+                    self.end_headers()
+                    self.flush_headers()
+                finally:
+                    shutdown_httpd()
+                    log('shutdown httpd')
+                    log('exiting ...')
+                    exit()
 
     log('starting http server')
     addr = ('', 8888)
