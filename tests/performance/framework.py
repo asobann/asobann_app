@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+import datetime
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -479,11 +480,14 @@ class Ecs:
         return Ecs.run_task(cluster, CONTROLLER_NAME, subnet, security_group, override=override_str, count=1)
 
     @staticmethod
-    def describe_tasks(task, cluster):
-        task_arns = [t['taskArn'] for t in task['tasks']]
+    def describe_tasks(tasks, cluster):
+        task_arns = [t['taskArn'] for t in tasks['tasks']]
         latest = Aws.run(f'aws ecs describe-tasks --tasks {" ".join(task_arns)} --cluster {cluster["clusterArn"]}')
         return json.loads(latest)
 
+    @staticmethod
+    def stop_task(task_arn, cluster):
+        Aws.run(f'aws ecs stop-task --cluster {cluster["clusterArn"]} --task f{task_arn}')
 
 class AwsContainers(AbstractContainers):
     CLUSTER_NAME = 'asobann_tests'
@@ -545,15 +549,24 @@ class AwsContainers(AbstractContainers):
                 time.sleep(5)  # wait a bit more to avoid connection refused
                 return
             if any([s == 'STOPPED' for s in statuses]):
+
                 assert False, 'task is STOPPED unexpectedly while starting up'
 
     def _wait_for_tasks_to_stop(self, tasks):
+        started_at = datetime.datetime.now()
         while True:
             time.sleep(5)
             task_latest = Ecs.describe_tasks(tasks, self.cluster)['tasks']
             statuses = [t['lastStatus'] for t in task_latest]
             log(statuses)
-            if any([s == 'STOPPED' for s in statuses]):
+            if all([s == 'STOPPED' for s in statuses]):
+                return
+            if (datetime.datetime.now() - started_at).total_seconds() > 60 and \
+                    any([s == 'RUNNING' for s in statuses]):
+                log('force stop tasks')
+                for task_arn in [t['taskArn'] for t in tasks['tasks']]:
+                    Ecs.stop_task(task_arn, self.cluster)
+                self._wait_for_tasks_to_stop(tasks)
                 return
 
     def _get_public_ip_of_controller(self, task):
