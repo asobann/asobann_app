@@ -13,6 +13,9 @@ from pathlib import Path
 from typing import List, Tuple, Dict
 
 
+CONNECTION_RETRY_SECONDS = 20
+
+
 class Logger:
     debug = False
 
@@ -142,7 +145,16 @@ EXPOSE 8888
     def _send_command(self, command: str) -> str:
         log(f'send command url={self.controller_url}, data={command}')
         try:
-            res = urllib.request.urlopen(self.controller_url, data=command.encode('utf8'))
+            started_at = datetime.datetime.now()
+            while True:
+                try:
+                    res = urllib.request.urlopen(self.controller_url, data=command.encode('utf8'))
+                    break
+                except ConnectionRefusedError:
+                    if (datetime.datetime.now() - started_at).total_seconds() > CONNECTION_RETRY_SECONDS:
+                        raise
+                    log(f'connection to controller {self.controller_url} refused. Retrying ...')
+                    time.sleep(1)
             result = res.read().decode('utf-8')
             return result
         except urllib.error.HTTPError as ex:
@@ -514,18 +526,25 @@ class AwsContainers(AbstractContainers):
     def start_workers(self, worker_count) -> None:
         if not self.cluster:
             self.cluster = Ecs.describe_cluster(self.CLUSTER_NAME)
-        worker_tasks = Ecs.run_worker(self.cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3",
-                                      count=worker_count)
         log('starting workers ...')
-        self._wait_for_tasks_to_be_running(worker_tasks)
+        all_worker_tasks = {'tasks': []}
+        while worker_count > 0:
+            count_now = min(worker_count, 10)  # 10 is the limit of aws cli
+            worker_tasks = Ecs.run_worker(self.cluster, "subnet-04d6ab48816d73c64", "sg-026a52f114ccf03f3",
+                                          count=count_now)
+            self._wait_for_tasks_to_be_running(worker_tasks)
+            log(worker_tasks)
+            all_worker_tasks['tasks'] += worker_tasks['tasks']
+            log(all_worker_tasks)
+            worker_count -= count_now
 
         worker_binds = []
-        for t in Ecs.describe_tasks(worker_tasks, self.cluster)['tasks']:
+        for t in Ecs.describe_tasks(all_worker_tasks, self.cluster)['tasks']:
             containers = t['containers']
             ip = containers[0]['networkInterfaces'][0]['privateIpv4Address']
             worker_binds.append((ip, 50000))
 
-        self._workers = AbstractContainers.Workers(binds=worker_binds, tasks=worker_tasks)
+        self._workers = AbstractContainers.Workers(binds=worker_binds, tasks=all_worker_tasks)
 
     def start_controller(self) -> None:
         arg_worker = ','.join([f'{host}:{port}' for host, port in self._workers.binds])
