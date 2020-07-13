@@ -30,7 +30,7 @@ def gather_status(player: GameHelper):
     while True:
         try:
             c = player.component(n, wait=False)
-            status.append((c.rect(), c.face()))
+            status.append((str(c.rect()), c.face()))
             n += 1
         except NoSuchElementException:
             break
@@ -57,6 +57,8 @@ def evaluate_saved_status():
 
 
 def execute_controller(command_queues, result_queues, headless):
+    iteration = 10
+
     class Group:
         def __init__(self):
             self.command_queues: List[Queue] = []
@@ -77,23 +79,29 @@ def execute_controller(command_queues, result_queues, headless):
         for q in group.command_queues[1:]:
             q.put(['open', url])
 
-    for i in range(10):
+    for i in range(iteration):
         for group in groups:
             group.command_queues[0].put(['move'])
         for group in groups:
             group.result_queues[0].get()
 
-    for group in groups:
-        for q in group.command_queues:
-            q.put(['status'])
-        for i, q in enumerate(group.result_queues):
-            save_status(0, i, q.get())
+        for group in groups:
+            for q in group.command_queues:
+                q.put(['status'])
+            for tag, q in enumerate(group.result_queues):
+                save_status(i, tag, q.get())
 
     for group in groups:
         for q in group.command_queues:
             q.put(['finish'])
 
-    return evaluate_saved_status()
+    diff_count = evaluate_saved_status()
+    return {
+        'diff_count': diff_count,
+        'worker_groups': len(groups),
+        'iteration': iteration,
+        # 'saved_status': saved_status,
+    }
 
 
 def execute_worker(name, command_queue, result_queue, headless):

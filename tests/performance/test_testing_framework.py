@@ -37,9 +37,9 @@ def test_run_multiprocess_in_local_containers():
     result = env.run_test('tests.performance.say_hello')
     env.shutdown()
 
-    assert result == ['Hello, container! from host.docker.internal:50000',
-                      'Hello, container! from host.docker.internal:50001',
-                      'Hello, container! from host.docker.internal:50002']
+    assert result['result'] == ['Hello, container! from host.docker.internal:50000',
+                                'Hello, container! from host.docker.internal:50001',
+                                'Hello, container! from host.docker.internal:50002']
 
 
 def test_run_multiprocess_in_aws():
@@ -51,7 +51,6 @@ def test_run_multiprocess_in_aws():
     result = env.run_test('tests.performance.say_hello')
     env.shutdown()
 
-    assert len(result) == 5
-    for r in result:
+    assert len(result['result']) == 5
+    for r in result['result']:
         assert re.match('Hello, container! from [0-9.]*:50000', r)
-

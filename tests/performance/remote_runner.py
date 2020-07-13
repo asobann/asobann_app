@@ -1,6 +1,6 @@
 import json
 import sys
-import time
+import datetime
 
 import random
 
@@ -103,12 +103,24 @@ def controller_client(workers):
                     queue.put(['run', module_name])
 
                 try:
+                    started_at = datetime.datetime.now()
                     import importlib
                     mod = importlib.import_module(module_name, '.')
                     result = mod.execute_controller(command_queues[:], result_queues[:], parameters['headless'])
+                    finished_at = datetime.datetime.now()
                     self.send_response(200)
                     self.end_headers()
-                    self.wfile.write(json.dumps(result).encode('utf8'))
+                    resp = {
+                        'name': module_name,
+                        'result': result,
+                        'time': {
+                            'started_at': started_at.ctime(),
+                            'finished_at': finished_at.ctime(),
+                            'elapsed': (finished_at - started_at).total_seconds(),
+                        }
+                    }
+                    log(f'response: {resp}')
+                    self.wfile.write(json.dumps(resp).encode('utf8'))
                     log('response sent')
                 except:
                     import traceback
