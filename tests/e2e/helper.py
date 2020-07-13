@@ -1,3 +1,4 @@
+import re
 from selenium import webdriver
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
@@ -12,7 +13,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 TOP = "http://localhost:10011/"
-CUSTOMIZATION = TOP + "customize"
+CUSTOMIZATION = "/customize"
 STAGING_TOP = "https://fast-dusk-61776.herokuapp.com/"
 
 
@@ -54,11 +55,11 @@ class Component:
         result = []
         try:
             image_url = self.element.find_element_by_tag_name('img').get_attribute('src')
-            result.append(f"image_url : {image_url}")
+            result.append(f"image_url: {image_url}")
         except NoSuchElementException:
             pass
         if self.element.text:
-            result.append(f"text : {self.element.text}")
+            result.append(f"text: {self.element.text}")
 
         return ",".join(result) or "not implemented"
 
@@ -195,15 +196,16 @@ class GameMenu:
 
 class GameHelper:
 
-    def __init__(self, browser: WebDriver):
+    def __init__(self, browser: WebDriver, base_url=TOP):
         self.menu = GameMenu(browser)
         self.browser = browser
+        self.base_url = base_url
 
     def go(self, url):
         self.browser.get(url)
 
     def create_table(self, prepared_table):
-        self.go(CUSTOMIZATION)
+        self.go(self.base_url + CUSTOMIZATION)
         input_element = self.browser.find_element_by_css_selector("input#prepared_table")
         input_element.clear()
         input_element.send_keys(str(prepared_table))

@@ -3,8 +3,11 @@ import subprocess
 import time
 
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 
 import pytest
+
+firefox_options = Options()
 
 
 @pytest.fixture(scope='session')
@@ -31,8 +34,13 @@ def firefox_driver():
 
 
 @pytest.fixture(scope='session')
+def headless():
+    firefox_options.headless = True
+
+
+@pytest.fixture(scope='session')
 def browser_window(firefox_driver):
-    browser = webdriver.Firefox()
+    browser = webdriver.Firefox(options=firefox_options)
     yield browser
     # browser.close()
 
@@ -40,7 +48,14 @@ def browser_window(firefox_driver):
 @pytest.fixture
 def browser(browser_window):
     browser_window.delete_all_cookies()
-    yield browser_window
+    return browser_window
+
+
+def browser_func(headless=False):
+    firefox_options.headless = headless
+    browser = webdriver.Firefox(options=firefox_options)
+    browser.delete_all_cookies()
+    return browser
 
 
 @pytest.fixture(scope='session')
