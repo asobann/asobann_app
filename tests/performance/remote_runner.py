@@ -2,6 +2,7 @@ import json
 import sys
 import datetime
 import queue
+from threading import Thread
 
 import random
 
@@ -80,8 +81,40 @@ def controller_client(workers):
 
     httpd = None
 
+    controller_status = {
+        'status': 'not started',
+        'module_name': None,
+        'run_id': None,
+        'started_at': None,
+        'result': None,
+    }
+
+    def start_controller(module_name):
+        def run():
+            log('controller thread started')
+            controller_status['started_at'] = datetime.datetime.now()
+            import importlib
+            mod = importlib.import_module(module_name, '.')
+            try:
+                result = mod.execute_controller(command_queues[:], result_queues[:], parameters['headless'])
+                controller_status['result'] = result
+                controller_status['status'] = 'finished'
+                log('controller thread finished')
+            except:
+                import traceback
+                import io
+                buf = io.StringIO()
+                traceback.print_exc(file=buf)
+                controller_status['result'] = buf.getvalue()
+                controller_status['status'] = 'error'
+                log('controller thread error')
+
+        controller_status['module_name'] = module_name
+        controller_status['run_id'] = str(datetime.datetime.now().timestamp())
+        controller_status['status'] = 'running'
+        Thread(target=run).start()
+
     def shutdown_httpd():
-        from threading import Thread
         Thread(target=lambda: httpd.shutdown()).start()
 
     import http.server
@@ -108,45 +141,56 @@ def controller_client(workers):
                 for que in command_queues:
                     que.put(['run', module_name])
 
-                try:
-                    started_at = datetime.datetime.now()
-                    import importlib
-                    mod = importlib.import_module(module_name, '.')
-                    result = mod.execute_controller(command_queues[:], result_queues[:], parameters['headless'])
-                    left_in_queues = []
-                    for q in command_queues + result_queues:
-                        while not q.empty():
-                            try:
-                                left_in_queues.append(q.get(block=False))
-                            except (queue.Empty, EOFError):
-                                pass
-
-                    finished_at = datetime.datetime.now()
+                start_controller(module_name)
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(controller_status['run_id'].encode('utf8'))
+                return
+            elif command.startswith('query '):
+                run_id = command.split(' ')[1]
+                if controller_status['run_id'] != run_id:
                     self.send_response(200)
                     self.end_headers()
-                    resp = {
-                        'name': module_name,
-                        'result': result,
-                        'left_in_queues': left_in_queues,
-                        'time': {
-                            'started_at': started_at.ctime(),
-                            'finished_at': finished_at.ctime(),
-                            'elapsed': (finished_at - started_at).total_seconds(),
-                        }
-                    }
-                    log(f'response: {resp}')
-                    self.wfile.write(json.dumps(resp).encode('utf8'))
-                    log('response sent')
-                except:
-                    import traceback
-                    import io
-                    buf = io.StringIO()
-                    traceback.print_exc(file=buf)
+                    self.wfile.write('wrong run_id'.encode('utf8'))
+                    return
+
+                if controller_status['status'] == 'error':
                     self.send_response(500)
                     self.end_headers()
-                    print(buf.getvalue())
-                    self.wfile.write(buf.getvalue().encode('utf8'))
+                    self.wfile.write(json.dumps(controller_status['result']).encode('utf8'))
                     return
+
+                if controller_status['status'] != 'finished':
+                    self.send_response(200)
+                    self.end_headers()
+                    self.wfile.write('still running'.encode('utf8'))
+                    return
+
+                left_in_queues = []
+                for q in command_queues + result_queues:
+                    while not q.empty():
+                        try:
+                            left_in_queues.append(q.get(block=False))
+                        except (queue.Empty, EOFError):
+                            continue
+
+                finished_at = datetime.datetime.now()
+                self.send_response(200)
+                self.end_headers()
+                resp = {
+                    'name': controller_status['module_name'],
+                    'result': controller_status['result'],
+                    'left_in_queues': left_in_queues,
+                    'time': {
+                        'started_at': controller_status['started_at'].ctime(),
+                        'finished_at': finished_at.ctime(),
+                        'elapsed': (finished_at - controller_status['started_at']).total_seconds(),
+                    }
+                }
+                log(f'response: {resp}')
+                self.wfile.write(json.dumps(resp).encode('utf8'))
+                log('response sent')
+                return
 
             elif command.startswith('headless '):
                 args = command.split(' ')
@@ -156,6 +200,8 @@ def controller_client(workers):
                 self.send_response(200)
                 self.end_headers()
                 self.wfile.write(f'headless is set to {parameters["headless"]}'.encode('utf8'))
+                return
+
             elif command == 'shutdown':
                 log('shutdown controller and workers')
                 try:
@@ -165,6 +211,7 @@ def controller_client(workers):
                     self.send_response(200)
                     self.end_headers()
                     self.flush_headers()
+                    return
                 finally:
                     shutdown_httpd()
                     log('shutdown httpd')

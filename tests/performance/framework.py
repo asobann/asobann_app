@@ -171,9 +171,16 @@ EXPOSE 8888
         time.sleep(1)
 
     def run_test(self, module_name, headless=True):
-        result = self._send_command(f'headless {"true" if headless else "false"}')
-        result = self._send_command(f'run {module_name}')
-        log(f'result: f{result}')
+        log('start controller')
+        self._send_command(f'headless {"true" if headless else "false"}')
+        run_id = self._send_command(f'run {module_name}')
+        log(f'run sent; run_id {run_id}')
+        while True:
+            time.sleep(5)
+            result = self._send_command(f'query {run_id}')
+            if result != 'still running':
+                break
+        log(f'result: {result}')
         return json.loads(result)
 
 
