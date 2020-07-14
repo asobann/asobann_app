@@ -2,7 +2,7 @@ running time (seconds) records
 
 move_stack_and_cards_around:
 
-workers workers_per_group elapsed
+workers workers_per_group elapsed diff
 3 3 226
 10 10 225
 10 3 215
@@ -12,6 +12,6 @@ workers workers_per_group elapsed
 30 10 373
 20 10 286
 30 10 365
-30 10 370
+30 10 370 9
 
 
