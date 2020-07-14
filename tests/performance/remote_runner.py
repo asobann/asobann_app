@@ -1,6 +1,7 @@
 import json
 import sys
 import datetime
+import queue
 
 import random
 
@@ -43,7 +44,12 @@ def worker_server(port):
             module_name = cmd[1]
             import importlib
             mod = importlib.import_module(module_name, '.')
-            mod.execute_worker(name, command_queue, result_queue, headless)
+            try:
+                mod.execute_worker(name, command_queue, result_queue, headless)
+            except Exception as ex:
+                log(f'worker raised an exception: {ex} {ex.args}')
+                mgr.shutdown()
+                break
             log('worker is finished')
         elif cmd[0] == 'shutdown':
             log('shutting down ...')
@@ -99,20 +105,29 @@ def controller_client(workers):
                 args = command.split(' ')
                 module_name = args[1]
                 log(f'starting testcase {module_name} ...')
-                for queue in command_queues:
-                    queue.put(['run', module_name])
+                for que in command_queues:
+                    que.put(['run', module_name])
 
                 try:
                     started_at = datetime.datetime.now()
                     import importlib
                     mod = importlib.import_module(module_name, '.')
                     result = mod.execute_controller(command_queues[:], result_queues[:], parameters['headless'])
+                    left_in_queues = []
+                    for q in command_queues + result_queues:
+                        while not q.empty():
+                            try:
+                                left_in_queues.append(q.get(block=False))
+                            except (queue.Empty, EOFError):
+                                pass
+
                     finished_at = datetime.datetime.now()
                     self.send_response(200)
                     self.end_headers()
                     resp = {
                         'name': module_name,
                         'result': result,
+                        'left_in_queues': left_in_queues,
                         'time': {
                             'started_at': started_at.ctime(),
                             'finished_at': finished_at.ctime(),
@@ -136,16 +151,16 @@ def controller_client(workers):
             elif command.startswith('headless '):
                 args = command.split(' ')
                 parameters['headless'] = True if args[1] == 'true' else False
-                for queue in command_queues:
-                    queue.put(['headless', parameters['headless']])
+                for que in command_queues:
+                    que.put(['headless', parameters['headless']])
                 self.send_response(200)
                 self.end_headers()
                 self.wfile.write(f'headless is set to {parameters["headless"]}'.encode('utf8'))
             elif command == 'shutdown':
                 log('shutdown controller and workers')
                 try:
-                    for queue in command_queues:
-                        queue.put(['shutdown'])
+                    for que in command_queues:
+                        que.put(['shutdown'])
                     log('shutdown sent to the workers')
                     self.send_response(200)
                     self.end_headers()

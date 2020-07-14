@@ -1,0 +1,12 @@
+running time (seconds) records
+
+move_stack_and_cards_around:
+
+workers workers_per_group elapsed
+3 3 226
+10 10 225
+10 3 215
+10 10 205
+10 10 217
+20 10 287
+30 10

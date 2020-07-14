@@ -58,7 +58,7 @@ def evaluate_saved_status():
 
 def execute_controller(command_queues, result_queues, headless):
     iteration = 10
-    workers_per_group = 8
+    workers_per_group = 10
 
     class Group:
         def __init__(self):
@@ -86,18 +86,22 @@ def execute_controller(command_queues, result_queues, headless):
             q.put(['grab card'])
             log('grabbed: ' + g.card_movers[1][i].get())  # grabbed
 
-    for g in groups:
-        for i in range(iteration):
+    for i in range(iteration):
+        log(f'{i + 1} / {iteration} moving stack and cards')
+        for g in groups:
             g.stack_mover[0].put(['move stack'])
             for q in g.card_movers[0]:
                 q.put(['move card', i])
 
     for g in groups:
+        log('syncing workers ...')
         for q in g.command_queues:
             q.put(['echo back'])
         for q in g.result_queues:
             q.get()  # echo back
+            log('worker echoed back')
 
+        log('gathering status ...')
         for q in g.command_queues:
             q.put(['status'])
         for tag, q in enumerate(g.result_queues):
@@ -106,6 +110,7 @@ def execute_controller(command_queues, result_queues, headless):
     command_queues[-1].put(['screen utilization'])
     utilization = result_queues[-1].get()
 
+    log('finishing workers ...')
     for q in command_queues:
         q.put(['finish'])
 

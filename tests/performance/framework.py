@@ -173,6 +173,7 @@ EXPOSE 8888
     def run_test(self, module_name, headless=True):
         result = self._send_command(f'headless {"true" if headless else "false"}')
         result = self._send_command(f'run {module_name}')
+        log(f'result: f{result}')
         return json.loads(result)
 
 
@@ -231,7 +232,7 @@ class LocalContainers(AbstractContainers):
             self.build_docker_image_for_controller(base_path)
 
     def start_workers(self, worker_count) -> None:
-        assert worker_count < 10, 'Local running permits only less than 10 workers for the time being'
+        assert worker_count <= 10, 'Local running permits only less than 10 workers for the time being'
         ports = [50000 + i for i in range(worker_count)]  # 50000-50009 is EXPOSEd in Dockerfile
         procs = []
         for port in ports:
@@ -265,9 +266,12 @@ class LocalContainers(AbstractContainers):
 
     def shutdown(self) -> None:
         super().shutdown()
-        proc = system("docker ps", capture=True)
-        assert proc.returncode == 0
-        assert len(proc.stdout.strip().split('\n')) == 1, 'no process remains'
+        while True:
+            proc = system("docker ps", capture=True)
+            assert proc.returncode == 0
+            if len(proc.stdout.strip().split('\n')) == 1:
+                break
+            time.sleep(1)
 
     def remove_containers(self) -> None:
         raise NotImplementedError()
