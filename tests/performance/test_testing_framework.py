@@ -1,7 +1,7 @@
 from pathlib import Path
 import re
 import subprocess
-from .framework import Logger, LocalContainers, AwsContainers
+from .framework import Logger, LocalContainers, AwsContainers, LocalProcesses
 
 
 def test_run_in_container(tmp_path):
@@ -40,6 +40,19 @@ def test_run_multiprocess_in_local_containers():
     assert result['result'] == ['Hello, container! from host.docker.internal:50000',
                                 'Hello, container! from host.docker.internal:50001',
                                 'Hello, container! from host.docker.internal:50002']
+
+
+def test_exception_from_worker():
+    Logger.debug = True
+    env = LocalProcesses()
+    env.build_docker_images()
+    env.start_workers(1)
+    env.start_controller()
+    result = env.run_test('tests.performance.worker_raise_exception')
+    env.shutdown()
+    assert 'error' in result['result'][0]
+    assert 'Some Error In Worker' in result['result'][0]['error']['cause']
+
 
 
 def test_run_multiprocess_in_aws():

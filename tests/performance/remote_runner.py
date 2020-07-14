@@ -3,6 +3,7 @@ import sys
 import datetime
 import queue
 from threading import Thread
+from typing import Dict, Any
 
 import random
 
@@ -48,6 +49,18 @@ def worker_server(port):
             try:
                 mod.execute_worker(name, command_queue, result_queue, headless)
             except Exception as ex:
+                import traceback
+                import io
+                buf = io.StringIO()
+                traceback.print_exc(file=buf)
+                try:
+                    result_queue.put({
+                        'error': {
+                            'worker_name': name,
+                            'cause': buf.getvalue(),
+                        }})
+                except:
+                    pass
                 log(f'worker raised an exception: {ex} {ex.args}')
                 mgr.shutdown()
                 break
@@ -81,7 +94,7 @@ def controller_client(workers):
 
     httpd = None
 
-    controller_status = {
+    controller_status: Dict[str, Any] = {
         'status': 'not started',
         'module_name': None,
         'run_id': None,
@@ -101,13 +114,23 @@ def controller_client(workers):
                 controller_status['status'] = 'finished'
                 log('controller thread finished')
             except:
+                left_in_queues = []
+                for q in command_queues + result_queues:
+                    try:
+                        while not q.empty():
+                            left_in_queues.append(q.get(block=False))
+                    except (queue.Empty, EOFError, BrokenPipeError):
+                        continue
                 import traceback
                 import io
                 buf = io.StringIO()
                 traceback.print_exc(file=buf)
-                controller_status['result'] = buf.getvalue()
+                controller_status['result'] = {
+                    'exception': buf.getvalue(),
+                    'left_in_queues': left_in_queues,
+                }
                 controller_status['status'] = 'error'
-                log('controller thread error')
+                log('controller thread caught exception')
 
         controller_status['module_name'] = module_name
         controller_status['run_id'] = str(datetime.datetime.now().timestamp())
@@ -157,7 +180,11 @@ def controller_client(workers):
                 if controller_status['status'] == 'error':
                     self.send_response(500)
                     self.end_headers()
-                    self.wfile.write(json.dumps(controller_status['result']).encode('utf8'))
+                    result = {
+                        'status': 'error',
+                        'controller': controller_status['result'],
+                    }
+                    self.wfile.write(json.dumps(result).encode('utf8'))
                     return
 
                 if controller_status['status'] != 'finished':
@@ -168,11 +195,11 @@ def controller_client(workers):
 
                 left_in_queues = []
                 for q in command_queues + result_queues:
-                    while not q.empty():
-                        try:
+                    try:
+                        while not q.empty():
                             left_in_queues.append(q.get(block=False))
-                        except (queue.Empty, EOFError):
-                            continue
+                    except (queue.Empty, EOFError, BrokenPipeError):
+                        continue
 
                 finished_at = datetime.datetime.now()
                 self.send_response(200)
