@@ -2178,10 +2178,9 @@
         "ownable": false,
         "resizable": false,
         "rollable": false,
-        "traylike": true,
+        "traylike": false,
         "boxOfComponents": true,
         "cardistry": [
-          "spread out",
           "collect in mess"
         ],
         "positionOfBoxContents": "random",
@@ -2564,7 +2563,8 @@
         "resizable": false,
         "rollable": false,
         "traylike": true,
-        "boxOfComponents": false
+        "boxOfComponents": false,
+        "zIndex": 1
       }
     },
     {
@@ -2581,7 +2581,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2596,7 +2597,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2611,7 +2613,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2626,7 +2629,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2641,7 +2645,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2656,7 +2661,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2671,7 +2677,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2686,7 +2693,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2701,7 +2709,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2716,7 +2725,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2731,7 +2741,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2746,7 +2757,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2761,7 +2773,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2776,7 +2789,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2791,7 +2805,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2806,7 +2821,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2821,7 +2837,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2836,7 +2853,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2851,7 +2869,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2868,7 +2887,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2883,7 +2903,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2898,7 +2919,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2913,7 +2935,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2928,7 +2951,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2943,7 +2967,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2958,7 +2983,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2973,7 +2999,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -2988,7 +3015,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3003,7 +3031,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3018,7 +3047,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3033,7 +3063,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3048,7 +3079,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3063,7 +3095,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3078,7 +3111,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3093,7 +3127,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3108,7 +3143,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3123,7 +3159,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3138,7 +3175,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3153,7 +3191,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3168,7 +3207,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3183,7 +3223,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3198,7 +3239,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3213,7 +3255,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3228,7 +3271,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     },
     {
@@ -3245,7 +3289,8 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false
+        "resizable": false,
+        "zIndex": 2
       }
     }
   ],

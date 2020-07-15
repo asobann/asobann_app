@@ -791,12 +791,12 @@ const traylike = {
 };
 
 const touchToRaise = {
-    install: function (component) {
+    install: function (component, componentData) {
         component.el.addEventListener("mousedown", (/*event*/) => {
             if (featsContext.isPlayerObserver()) {
                 return;
             }
-            if (component.handArea || component.traylike) {
+            if (component.handArea || component.traylike || componentData.boxOfComponents) {
                 return;
             }
             component.zIndex = featsContext.table.getNextZIndex();

@@ -429,9 +429,9 @@ def generate_psychological_safety_game(reg: ComponentRegistry):
         "resizable": False,
         "rollable": False,
         "ownable": False,
-        "traylike": True,
+        "traylike": False,
         "boxOfComponents": True,
-        "cardistry": ['spread out', 'collect in mess'],
+        "cardistry": ['collect in mess'],
         "positionOfBoxContents": "random",
         "zIndex": z_index,
     }).use_components(
@@ -568,6 +568,7 @@ def generate_diamong_game(reg: ComponentRegistry):
         "ownable": False,
         "traylike": True,
         "boxOfComponents": False,
+        "zIndex": 1,
     })
 
     template = {
@@ -579,6 +580,7 @@ def generate_diamong_game(reg: ComponentRegistry):
         "flippable": False,
         "ownable": False,
         "resizable": False,
+        "zIndex": 2,
     }
 
     INTERVAL_W = 40
