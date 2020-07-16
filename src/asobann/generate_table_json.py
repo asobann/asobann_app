@@ -358,7 +358,7 @@ def generate_psychological_safety_game(reg: ComponentRegistry):
         "ownable": False,
         "resizable": True,
         "traylike": True,
-        "zIndex": z_index,
+        "zIndex": 0,
     })
     z_index -= 1
     voice_card_box.box_component = {
@@ -382,7 +382,7 @@ def generate_psychological_safety_game(reg: ComponentRegistry):
         "traylike": True,
         "boxOfComponents": True,
         "cardistry": ['spread out', 'collect', 'shuffle', 'flip all'],
-        "zIndex": z_index,
+        "zIndex": 0,
     }
     z_index -= 1
 
@@ -407,7 +407,7 @@ def generate_psychological_safety_game(reg: ComponentRegistry):
         "traylike": True,
         "boxOfComponents": True,
         "cardistry": ['spread out', 'collect', 'shuffle', 'flip all'],
-        "zIndex": z_index,
+        "zIndex": 0,
     }
     z_index -= 1
 
@@ -433,7 +433,7 @@ def generate_psychological_safety_game(reg: ComponentRegistry):
         "boxOfComponents": True,
         "cardistry": ['collect in mess'],
         "positionOfBoxContents": "random",
-        "zIndex": z_index,
+        "zIndex": 0,
     }).use_components(
         [f"Transparent Stone {stone + 1:02}" for stone in range(4)] * 8
     )

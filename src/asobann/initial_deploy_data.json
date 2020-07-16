@@ -2096,7 +2096,7 @@
         "ownable": false,
         "resizable": true,
         "traylike": true,
-        "zIndex": 51
+        "zIndex": 0
       }
     },
     {
@@ -2126,7 +2126,7 @@
           "shuffle",
           "flip all"
         ],
-        "zIndex": 50
+        "zIndex": 0
       }
     },
     {
@@ -2156,7 +2156,7 @@
           "shuffle",
           "flip all"
         ],
-        "zIndex": 49
+        "zIndex": 0
       }
     },
     {
@@ -2184,7 +2184,7 @@
           "collect in mess"
         ],
         "positionOfBoxContents": "random",
-        "zIndex": 48
+        "zIndex": 0
       }
     },
     {
