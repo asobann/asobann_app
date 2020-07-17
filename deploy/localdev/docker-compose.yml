@@ -1,0 +1,8 @@
+version: '3'
+services:
+    app:
+        build: app/
+        ports:
+            - "5000:5000"
+        volumes:
+            - /home/yattom/work/asobann/asobann_app:/app
