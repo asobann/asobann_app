@@ -5,4 +5,18 @@ services:
         ports:
             - "5000:5000"
         volumes:
-            - /home/yattom/work/asobann/asobann_app:/app
+            - ../../:/app
+        environment:
+            MONGODB_URI: mongodb://admin:password@mongo:27017
+
+    mongo:
+        image: mongo
+        restart: always
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: admin
+            MONGO_INITDB_ROOT_PASSWORD: password
+        ports:
+            - "27017"
+        volumes:
+            - ./mongodata/db:/data/db
+            - ./mongodata/configdb:/data/configdb

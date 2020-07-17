@@ -7,4 +7,4 @@ RUN apt-get install -y python3 python3-pip
 RUN pip3 install pipenv
 VOLUME ["/app"]
 WORKDIR /app
-CMD pipenv install -d ; ls -laF ; pipenv graph ; pipenv run python --version ; FLASK_ENV=development pipenv run python -m asobann.wsgi
+CMD pipenv install -d ; FLASK_ENV=development pipenv run python -m asobann.wsgi
