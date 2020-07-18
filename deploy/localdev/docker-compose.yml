@@ -8,6 +8,12 @@ services:
             - ../../:/app
         environment:
             MONGODB_URI: mongodb://admin:password@mongo:27017
+            REDIS_URI: redis://redis:6379
+
+    redis:
+        image: redis
+        ports:
+            - "6379"
 
     mongo:
         image: mongo

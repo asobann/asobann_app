@@ -40,7 +40,12 @@ def create_app(testing=False):
     app.logger.info("connecting mongo")
     app.mongo = PyMongo(app)
     app.logger.info("connected to mongo")
-    socketio.init_app(app)
+    if app.config['REDIS_URI']:
+        app.logger.info(f'use redis at {app.config["REDIS_URI"]}')
+        socketio.init_app(app, message_queue=app.config['REDIS_URI'])
+    else:
+        app.logger.info('use no message queue')
+        socketio.init_app(app)
     app.socketio = socketio
 
     tables.connect(app.mongo)

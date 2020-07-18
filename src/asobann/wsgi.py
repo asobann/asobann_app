@@ -1,3 +1,6 @@
+import eventlet
+eventlet.monkey_patch()
+
 import asobann
 
 app = asobann.create_app()

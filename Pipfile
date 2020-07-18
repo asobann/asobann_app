@@ -17,6 +17,7 @@ flask-pymongo = "*"
 pytest = "*"
 gunicorn = "*"
 selenium = "*"
+redis = "*"
 
 [requires]
 python_version = "3.6"
