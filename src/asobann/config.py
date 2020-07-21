@@ -5,5 +5,5 @@ if 'REDIS_URI' in os.environ:
 else:
     REDIS_URI = None
 
-MONGO_URI = os.environ["MONGODB_URI"] + '?retryWrites=false'
+MONGO_URI = os.environ["MONGODB_URI"] + ('&' if '?' in os.environ["MONGODB_URI"] else '?') + 'retryWrites=false'
 

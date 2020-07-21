@@ -2,3 +2,8 @@ alias deploydev='cd src/asobann ; pipenv run python generate_table_json.py ; cd 
 alias up='FLASK_ENV=development pipenv run python -m asobann.wsgi'
 alias logstg='heroku logs -a fast-dusk-61776 -t'
 alias release='git co master ; git merge develop ; git tag r`date +'%Y%m%d_%H%M'` ; git push --tags origin master'
+alias build_awsdev='docker build -f Dockerfile.awsdev -t asobann_awsdev:latest . ; \
+                    docker tag asobann_awsdev 550251267268.dkr.ecr.us-east-1.amazonaws.com/asobann_awsdev ; \
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 550251267268.dkr.ecr.us-east-1.amazonaws.com/asobann_awsdev ; \
+                    docker push 550251267268.dkr.ecr.us-east-1.amazonaws.com/asobann_awsdev'
+

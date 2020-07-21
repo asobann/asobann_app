@@ -1,7 +1,7 @@
 const socket = io(
-    // {
-    //     transports: ['websocket']
-    // }
+    {
+        transports: ['websocket']
+    }
 );
 console.log(socket);
 
