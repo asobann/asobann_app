@@ -8,11 +8,11 @@ from .framework import Logger, AbstractContainers, LocalProcesses, LocalContaine
 app = typer.Typer()
 
 
-def do_run(name: str, workers: int, env: 'AbstractContainers', headless: bool):
+def do_run(name: str, workers: int, env: 'AbstractContainers', headless: bool, url: str):
     env.start_workers(workers)
     env.start_controller()
     try:
-        result = env.run_test(name, headless=headless)
+        result = env.run_test(name, headless=headless, url=url)
     finally:
         env.shutdown()
 
@@ -33,13 +33,13 @@ def containers_instance(local, docker, aws):
 
 @app.command()
 def run(name: str, workers:int, local: bool = False, docker: bool = False, aws: bool = False, debug: bool = False,
-        provision: bool = False, headless: bool = True):
+        provision: bool = False, headless: bool = True, url: str = None):
     Logger.debug = debug
     env = containers_instance(local, docker, aws)
 
     if provision:
         env.build_docker_images()
-    do_run(name, workers=workers, env=env, headless=headless)
+    do_run(name, workers=workers, env=env, headless=headless, url=url)
 
 
 @app.command()

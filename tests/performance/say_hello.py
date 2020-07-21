@@ -1,4 +1,4 @@
-def execute_controller(command_queues, result_queues, headless):
+def execute_controller(command_queues, result_queues, parameters):
     for queue in command_queues:
         queue.put('run')
 
@@ -8,7 +8,7 @@ def execute_controller(command_queues, result_queues, headless):
     return result
 
 
-def execute_worker(name, command_queue, result_queue, headless):
+def execute_worker(name, command_queue, result_queue, parameters):
     command_queue.get()
     result_queue.put(f'Hello, container! from {name}')
 

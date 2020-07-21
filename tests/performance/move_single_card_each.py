@@ -53,12 +53,14 @@ def evaluate_saved_status():
     return diff
 
 
-def execute_controller(command_queues, result_queues, headless):
+def execute_controller(command_queues, result_queues, parameters):
+    headless = parameters['headless']
+    url = parameters['url'] if 'url' in parameters else STAGING_TOP
     log('execute move_single_card_each controller')
     window = browser(headless=headless)
     try:
-        host = GameHelper(window)
-        host.go(STAGING_TOP)
+        host = GameHelper(window, base_url=url)
+        host.go(url)
 
         host.menu.import_jsonfile(str(Path(__file__).parent / "./move_single_card_each.json"))
 
@@ -97,10 +99,12 @@ def execute_controller(command_queues, result_queues, headless):
         window.close()
 
 
-def execute_worker(name, command_queue, result_queue, headless):
+def execute_worker(name, command_queue, result_queue, parameters):
+    headless = parameters['headless']
+    url = parameters['url'] if 'url' in parameters else STAGING_TOP
     window = browser(headless=headless)
     try:
-        player = GameHelper(window)
+        player = GameHelper(window, base_url=url)
         my_idx, invitation_url = command_queue.get()
         player.go(invitation_url)
         player.menu.join(f'P{my_idx}')
