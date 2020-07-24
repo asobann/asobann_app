@@ -1,3 +1,6 @@
+from gevent import monkey
+monkey.patch_all()
+
 from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, abort
 from flask_socketio import SocketIO, emit, join_room
 from flask_pymongo import PyMongo
@@ -16,7 +19,7 @@ dictConfig({
         'formatter': 'default'
     }},
     'root': {
-        'level': 'INFO',
+        'level': 'DEBUG',
         'handlers': ['wsgi']
     }
 })
@@ -39,8 +42,15 @@ def create_app(testing=False):
 
     app.logger.info("connecting mongo")
     app.mongo = PyMongo(app)
+    # make sure mongodb is available and fail fast if not
+    app.mongo.db.list_collection_names()
     app.logger.info("connected to mongo")
-    socketio.init_app(app)
+    if app.config['REDIS_URI']:
+        app.logger.info(f'use redis at {app.config["REDIS_URI"]}')
+        socketio.init_app(app, message_queue=app.config['REDIS_URI'])
+    else:
+        app.logger.info('use no message queue')
+        socketio.init_app(app)
     app.socketio = socketio
 
     tables.connect(app.mongo)

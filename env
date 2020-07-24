@@ -1,4 +1,0 @@
-alias deploydev='cd src/asobann ; pipenv run python generate_table_json.py ; cd ../.. ; FLASK_ENV=develop pipenv run python -m asobann.deploy'
-alias up='FLASK_ENV=development pipenv run python -m asobann.wsgi'
-alias logstg='heroku logs -a fast-dusk-61776 -t'
-alias release='git co master ; git merge develop ; git tag r`date +'%Y%m%d_%H%M'` ; git push --tags origin master'

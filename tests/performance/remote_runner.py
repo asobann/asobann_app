@@ -35,7 +35,6 @@ def worker_server(port):
     mgr.start()
 
     name = ''.join([random.choice('abcdefghijklmnopqrstuvwxyz') for i in range(10)])
-    headless = True
     while True:
         log('receiving cmd...')
         cmd = command_queue.get()
@@ -44,10 +43,11 @@ def worker_server(port):
             name = cmd[1]
         elif cmd[0] == 'run':
             module_name = cmd[1]
+            parameters = cmd[2]
             import importlib
             mod = importlib.import_module(module_name, '.')
             try:
-                mod.execute_worker(name, command_queue, result_queue, headless)
+                mod.execute_worker(name, command_queue, result_queue, parameters)
             except Exception as ex:
                 import traceback
                 import io
@@ -69,8 +69,6 @@ def worker_server(port):
             log('shutting down ...')
             mgr.shutdown()
             break
-        elif cmd[0] == 'headless':
-            headless = cmd[1]
 
 
 def controller_client(workers):
@@ -109,7 +107,7 @@ def controller_client(workers):
             import importlib
             mod = importlib.import_module(module_name, '.')
             try:
-                result = mod.execute_controller(command_queues[:], result_queues[:], parameters['headless'])
+                result = mod.execute_controller(command_queues[:], result_queues[:], parameters)
                 controller_status['result'] = result
                 controller_status['status'] = 'finished'
                 log('controller thread finished')
@@ -162,7 +160,7 @@ def controller_client(workers):
                 module_name = args[1]
                 log(f'starting testcase {module_name} ...')
                 for que in command_queues:
-                    que.put(['run', module_name])
+                    que.put(['run', module_name, parameters])
 
                 start_controller(module_name)
                 self.send_response(200)
@@ -178,6 +176,7 @@ def controller_client(workers):
                     return
 
                 if controller_status['status'] == 'error':
+                    log(controller_status['result'])
                     self.send_response(500)
                     self.end_headers()
                     result = {
@@ -219,11 +218,21 @@ def controller_client(workers):
                 log('response sent')
                 return
 
-            elif command.startswith('headless '):
-                args = command.split(' ')
-                parameters['headless'] = True if args[1] == 'true' else False
-                for que in command_queues:
-                    que.put(['headless', parameters['headless']])
+            elif command.startswith('set '):
+                _, key, value = command.split(' ')
+                key = key.strip()
+                value = value.strip()
+
+                if value == 'true':
+                    parsed_value = True
+                elif value == 'false':
+                    parsed_value = False
+                try:
+                    parsed_value = int(value)
+                except ValueError:
+                    parsed_value = value
+
+                parameters[key] = parsed_value
                 self.send_response(200)
                 self.end_headers()
                 self.wfile.write(f'headless is set to {parameters["headless"]}'.encode('utf8'))

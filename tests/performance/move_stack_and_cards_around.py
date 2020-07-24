@@ -56,7 +56,8 @@ def evaluate_saved_status():
     return diff
 
 
-def execute_controller(command_queues, result_queues, headless):
+def execute_controller(command_queues, result_queues, parameters):
+    headless = parameters['headless']
     iteration = 10
     workers_per_group = 10
 
@@ -125,12 +126,14 @@ def execute_controller(command_queues, result_queues, headless):
     }
 
 
-def execute_worker(name, command_queue, result_queue, headless):
+def execute_worker(name, command_queue, result_queue, parameters):
+    headless = parameters['headless']
+    url = parameters['url'] if 'url' in parameters else STAGING_TOP
     window = browser(headless=headless)
     try:
         my_idx = -1
         nth = -1
-        player = GameHelper(window, base_url=STAGING_TOP)
+        player = GameHelper(window, base_url=url)
 
         imagecount = 0
         log('entering loop')
