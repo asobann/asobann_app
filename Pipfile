@@ -19,6 +19,7 @@ pytest = "*"
 gunicorn = "*"
 selenium = "*"
 redis = "*"
+dnspython = "*"
 
 [requires]
 python_version = "3.6"
