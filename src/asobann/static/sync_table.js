@@ -130,6 +130,10 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
     table.update(oldData);
 
     const eventName = "update single component";
+    diff.lastUpdated = {
+        from: context.client_connection_id,
+        epoch: Date.now(),
+    }
     const data = {
         tablename: context.tablename,
         originator: context.client_connection_id,

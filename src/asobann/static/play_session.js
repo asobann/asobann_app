@@ -259,6 +259,13 @@ const sync_table_connector = {
 
     updateSingleComponent: function (componentId, diff) {
         const tableData = table.data;
+        if (tableData.components[componentId].lastUpdated) {
+            if(tableData.components[componentId].lastUpdated.from == diff.lastUpdated.from
+                && tableData.components[componentId].lastUpdated.epoch > diff.lastUpdated.epoch) {
+                // already recieved newer update for this component; ignore the diff
+                return;
+            }
+        }
         Object.assign(tableData.components[componentId], diff);
         table.update(tableData);
         menu.update(tableData);
@@ -273,6 +280,13 @@ const sync_table_connector = {
             }
             const componentId = event.data.componentId;
             const diff = event.data.diff;
+            if (tableData.components[componentId].lastUpdated) {
+                if(tableData.components[componentId].lastUpdated.from == diff.lastUpdated.from
+                    && tableData.components[componentId].lastUpdated.epoch > diff.lastUpdated.epoch) {
+                    // already recieved newer update for this component; ignore the diff
+                    continue;
+                }
+            }
             Object.assign(tableData.components[componentId], diff);
         }
         table.update(tableData);
