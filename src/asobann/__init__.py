@@ -27,6 +27,28 @@ dictConfig({
 
 socketio = SocketIO()
 
+
+def resolve_redis_srv(uri: str):
+    '''
+    Resolve redis+srv:// and return regular redis:// uri.
+    Redis itself does not support connecting with SRV record but current AWS ECS
+    configuration requires to use SRV record.
+    Does not support TXT record.
+
+    :param uri: connection uri starts with redis+srv://
+    :return: redis://host:port/ uri resolved with SRV record
+    '''
+    assert uri.startswith('redis+srv://')
+    import re
+    from dns import resolver
+    auth, host, path_and_rest = re.match(r'redis\+srv://([^@]*@)?([^/?]*)([/?].*)?', uri).groups()
+    results = resolver.resolve('_redis._tcp.' + host, 'SRV')
+    node_host = results[0].target.to_text(omit_final_dot=True)
+    node_port = results[0].port
+    node_uri = f'redis://{auth or ""}{node_host}:{node_port}{path_and_rest or ""}'
+    return node_uri
+
+
 def create_app(testing=False):
     app = Flask(__name__)
     app.config.from_mapping(
@@ -46,8 +68,11 @@ def create_app(testing=False):
     app.mongo.db.list_collection_names()
     app.logger.info("connected to mongo")
     if app.config['REDIS_URI']:
-        app.logger.info(f'use redis at {app.config["REDIS_URI"]}')
-        socketio.init_app(app, message_queue=app.config['REDIS_URI'])
+        uri = app.config["REDIS_URI"]
+        app.logger.info(f'use redis at {uri}')
+        if uri.startswith('redis+srv://'):
+            uri = resolve_redis_srv(uri)
+        socketio.init_app(app, message_queue=uri)
     else:
         app.logger.info('use no message queue')
         socketio.init_app(app)
