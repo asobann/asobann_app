@@ -257,7 +257,7 @@ const sync_table_connector = {
         menu.update(tableData);
     },
 
-    update_single_component: function (componentId, diff) {
+    updateSingleComponent: function (componentId, diff) {
         const tableData = table.data;
         Object.assign(tableData.components[componentId], diff);
         table.update(tableData);

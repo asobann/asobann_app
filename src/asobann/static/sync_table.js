@@ -58,7 +58,7 @@ function emit(eventName, data) {
 function setTableContext(tablename, connector) {
     context.tablename = tablename;
     context.initializeTable = connector.initializeTable;
-    context.update_single_component = connector.update_single_component;
+    context.updateSingleComponent = connector.updateSingleComponent;
     context.updateManyComponents = connector.updateManyComponents;
     context.update_whole_table = connector.update_whole_table;
     context.updatePlayer = connector.updatePlayer;
@@ -151,7 +151,7 @@ socket.on("update single component", (msg) => {
     if (msg.originator === context.client_connection_id) {
         return;
     }
-    context.update_single_component(msg.componentId, msg.diff);
+    context.updateSingleComponent(msg.componentId, msg.diff);
 });
 
 
