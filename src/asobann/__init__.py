@@ -72,6 +72,7 @@ def create_app(testing=False):
         app.logger.info(f'use redis at {uri}')
         if uri.startswith('redis+srv://'):
             uri = resolve_redis_srv(uri)
+            app.logger.info(f'actual uri {uri}')
         socketio.init_app(app, message_queue=uri)
     else:
         app.logger.info('use no message queue')
