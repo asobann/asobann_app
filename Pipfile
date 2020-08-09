@@ -12,14 +12,13 @@ typer = "*"
 [packages]
 flask = "*"
 flask-socketio = "*"
-gevent = "*"
-gevent-websocket="*"
 flask-pymongo = "*"
 pytest = "*"
 gunicorn = "*"
 selenium = "*"
 redis = "*"
 dnspython = "*"
+eventlet = "*"
 
 [requires]
 python_version = "3.6"

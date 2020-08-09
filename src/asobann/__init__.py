@@ -1,5 +1,7 @@
-from gevent import monkey
-monkey.patch_all()
+# from gevent import monkey
+# monkey.patch_all()
+import eventlet
+eventlet.monkey_patch()
 
 from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, abort
 from flask_socketio import SocketIO, emit, join_room
