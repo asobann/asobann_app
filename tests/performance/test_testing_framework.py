@@ -1,3 +1,4 @@
+import pytest
 from pathlib import Path
 import re
 import subprocess
@@ -30,6 +31,7 @@ CMD python3 run.py
 
 
 def test_run_multiprocess_in_local_containers():
+    Logger.debug = True
     env = LocalContainers()
     env.build_docker_images()
     env.start_workers(3)
@@ -52,7 +54,6 @@ def test_exception_from_worker():
     env.shutdown()
     assert 'error' in result['result'][0]
     assert 'Some Error In Worker' in result['result'][0]['error']['cause']
-
 
 
 def test_run_multiprocess_in_aws():
