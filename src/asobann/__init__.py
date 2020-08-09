@@ -44,7 +44,7 @@ def resolve_redis_srv(uri: str):
     import re
     from dns import resolver
     auth, host, path_and_rest = re.match(r'redis\+srv://([^@]*@)?([^/?]*)([/?].*)?', uri).groups()
-    results = resolver.resolve('_redis._tcp.' + host, 'SRV')
+    results = resolver.query('_redis._tcp.' + host, 'SRV')
     node_host = results[0].target.to_text(omit_final_dot=True)
     node_port = results[0].port
     node_uri = f'redis://{auth or ""}{node_host}:{node_port}{path_and_rest or ""}'
