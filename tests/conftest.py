@@ -15,3 +15,7 @@ def server():
         yield
         proc.terminate()
 
+
+@pytest.fixture
+def base_url(server):
+    return 'http://localhost:10011'

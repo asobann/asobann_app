@@ -3,10 +3,11 @@
 import eventlet
 eventlet.monkey_patch()
 
-from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, abort
+from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, abort, send_file
 from flask_socketio import SocketIO, emit, join_room
 from flask_pymongo import PyMongo
 from logging.config import dictConfig
+from werkzeug.datastructures import FileStorage
 
 from asobann.store import tables, components, kits
 
@@ -136,5 +137,27 @@ def create_app(testing=False):
     def get_kits():
         return jsonify(kits.get_all())
 
+    @app.route('/dummy', methods=['POST'])
+    def upload_image():
+        if 'image' not in request.files:
+            return redirect(url_for('/'))
+        file: FileStorage = request.files['image']
+        # image_data = file.read()
+        file_name = file.filename
+        from pathlib import Path
+        image_base_path = Path('/tmp/asobann/images')
+        image_base_path.mkdir(exist_ok=True)
+        file.save(image_base_path / file_name)
+        return jsonify({
+            'imageUrl': '/images/uploaded/' + file_name,
+        })
+
+    @app.route('/images/uploaded/<file_name>', methods=['GET'])
+    def get_uploaded_image(file_name):
+        from pathlib import Path
+        image_base_path = Path('/tmp/asobann/images')
+        return send_file(image_base_path / file_name)
+
     return app
+
 
