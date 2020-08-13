@@ -149,7 +149,7 @@ def create_app(testing=False):
         image_base_path.mkdir(exist_ok=True)
         file.save(image_base_path / file_name)
         return jsonify({
-            'imageUrl': '/images/uploaded/' + file_name,
+            'imageUrl': url_for('get_uploaded_image', file_name=file_name),
         })
 
     @app.route('/images/uploaded/<file_name>', methods=['GET'])
