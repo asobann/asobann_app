@@ -15,4 +15,5 @@ RUN mkdir /app
 COPY . /app
 WORKDIR /app
 RUN pipenv install -d
+ENV FLASK_ENV=development
 CMD pipenv run python -m asobann.deploy ; pipenv run python -m asobann.wsgi
