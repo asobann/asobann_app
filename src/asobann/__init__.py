@@ -71,6 +71,12 @@ def create_app(testing=False):
     app = Flask(__name__)
     configure_app(app, testing=testing)
 
+    socketio_args = {}
+
+    if app.config['ENV'] == 'development':
+        socketio_args['logger'] = app.logger
+        socketio_args['engineio_logger'] = app.logger
+        
     try:
         app.logger.info("connecting mongo")
         app.mongo = PyMongo(app)
@@ -87,10 +93,10 @@ def create_app(testing=False):
         if uri.startswith('redis+srv://'):
             uri = resolve_redis_srv(uri)
             app.logger.info(f'actual uri {uri}')
-        socketio.init_app(app, message_queue=uri)
+        socketio_args['message_queue'] = uri
     else:
         app.logger.info('use no message queue')
-        socketio.init_app(app)
+    socketio.init_app(app, **socketio_args)
     app.socketio = socketio
 
     tables.connect(app.mongo)
