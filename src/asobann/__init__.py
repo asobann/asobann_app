@@ -87,6 +87,7 @@ def create_app(testing=False):
         app.logger.error('failed to connect to mongo')
         app.logger.error(f'connection string: {app.config["MONGO_URI"]}')
         raise
+
     if app.config['REDIS_URI']:
         uri = app.config["REDIS_URI"]
         app.logger.info(f'use redis at {uri}')
@@ -96,6 +97,8 @@ def create_app(testing=False):
         socketio_args['message_queue'] = uri
     else:
         app.logger.info('use no message queue')
+
+    socketio_args['cors_allowed_origins'] = app.config['BASE_URL']
     socketio.init_app(app, **socketio_args)
     app.socketio = socketio
 

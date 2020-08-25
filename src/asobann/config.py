@@ -7,4 +7,7 @@ else:
 
 MONGO_URI = os.environ["MONGODB_URI"] + ('&' if '?' in os.environ["MONGODB_URI"] else '?') + 'retryWrites=false'
 
-BASE_URL = os.environ["BASE_URL"]
+value = os.environ['PUBLIC_HOSTNAME']
+if value.startswith('.'):
+    value = value[1:]
+BASE_URL = 'https://' + value
