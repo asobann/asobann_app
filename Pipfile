@@ -9,7 +9,6 @@ asobann = {editable = true,path = "."}
 pillow = "*"
 typer = "*"
 requests = "*"
-pytest-watch = "*"
 
 [packages]
 flask = "*"
