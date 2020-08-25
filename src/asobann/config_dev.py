@@ -13,5 +13,7 @@ if 'REDIS_URI' in os.environ:
 else:
     REDIS_URI = None
 
-
-
+if 'BASE_URL' in os.environ:
+    BASE_URL = os.environ['BASE_URL']
+else:
+    BASE_URL = 'http://localhost:5000'

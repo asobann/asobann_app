@@ -8,3 +8,4 @@ else:
 MONGO_URI = 'mongodb://localhost:27017/ex2test'
 PORT = 10011
 
+BASE_URL = 'http://localhost:5000'

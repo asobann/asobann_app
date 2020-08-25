@@ -3,6 +3,7 @@
 import eventlet
 eventlet.monkey_patch()
 
+from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, abort, send_file
 from flask_socketio import SocketIO, emit, join_room
 from flask_pymongo import PyMongo
@@ -52,18 +53,23 @@ def resolve_redis_srv(uri: str):
     return node_uri
 
 
-def create_app(testing=False):
-    app = Flask(__name__)
+def configure_app(app, testing):
     app.config.from_mapping(
         SECRET_KEY='secret!',
     )
 
+    folder = Path(__file__).parent.absolute()
     if app.config["ENV"] == "test" or testing:
-        app.config.from_pyfile('config_test.py', silent=True)
+        app.config.from_pyfile(folder / 'config_test.py', silent=True)
     elif app.config["ENV"] == "production":
-        app.config.from_pyfile('config.py', silent=True)
+        app.config.from_pyfile(folder / 'config.py', silent=True)
     else:
-        app.config.from_pyfile('config_dev.py', silent=True)
+        app.config.from_pyfile(folder / 'config_dev.py', silent=True)
+
+
+def create_app(testing=False):
+    app = Flask(__name__)
+    configure_app(app, testing=testing)
 
     try:
         app.logger.info("connecting mongo")
