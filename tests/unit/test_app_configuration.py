@@ -14,6 +14,7 @@ PARAMS = [
             'REDIS_URI': None,
             'MONGO_URI': 'mongodb://localhost:27017/ex2dev',
             'BASE_URL': 'http://localhost:5000',
+            'GOOGLE_ANALYTICS_ID': None,
         },
     },
     {
@@ -35,6 +36,7 @@ PARAMS = [
             'REDIS_URI': None,
             'MONGO_URI': 'mongodb://localhost:27017/ex2test',
             'BASE_URL': 'http://localhost:5000',
+            'GOOGLE_ANALYTICS_ID': None,
         },
         'testing': True,
     },
@@ -45,11 +47,13 @@ PARAMS = [
             'REDIS_URI': 'redis://example.com',
             'MONGODB_URI': 'mongodb://example.com/',
             'PUBLIC_HOSTNAME': 'asobann.example.com',
+            'GOOGLE_ANALYTICS_ID': 'UA-DUMMYID',
         },
         'config': {
             'REDIS_URI': 'redis://example.com',
             'MONGO_URI': 'mongodb://example.com/?retryWrites=false',
             'BASE_URL': 'https://asobann.example.com',
+            'GOOGLE_ANALYTICS_ID': 'UA-DUMMYID',
         },
     },
     {
@@ -59,10 +63,9 @@ PARAMS = [
             'REDIS_URI': 'redis://example.com',
             'MONGODB_URI': 'mongodb://example.com/',
             'PUBLIC_HOSTNAME': '.asobann.example.com',
+            'GOOGLE_ANALYTICS_ID': 'UA-DUMMYID',
         },
         'config': {
-            'REDIS_URI': 'redis://example.com',
-            'MONGO_URI': 'mongodb://example.com/?retryWrites=false',
             'BASE_URL': 'https://asobann.example.com',
         },
     },

@@ -11,3 +11,5 @@ value = os.environ['PUBLIC_HOSTNAME']
 if value.startswith('.'):
     value = value[1:]
 BASE_URL = 'https://' + value
+
+GOOGLE_ANALYTICS_ID = os.environ['GOOGLE_ANALYTICS_ID']

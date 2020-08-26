@@ -20,3 +20,8 @@ if 'PUBLIC_HOSTNAME' in os.environ:
     BASE_URL = 'https://' + value
 else:
     BASE_URL = 'http://localhost:5000'
+
+if 'GOOGLE_ANALYTICS_ID' in os.environ:
+    GOOGLE_ANALYTICS_ID = os.environ['GOOGLE_ANALYTICS_ID']
+else:
+    GOOGLE_ANALYTICS_ID = None
