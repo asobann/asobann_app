@@ -20,3 +20,5 @@ if 'PUBLIC_HOSTNAME' in os.environ:
     BASE_URL = 'https://' + value
 else:
     BASE_URL = 'http://localhost:5000'
+
+GOOGLE_ANALYTICS_ID = None

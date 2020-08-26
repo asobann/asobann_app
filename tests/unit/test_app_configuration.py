@@ -14,6 +14,7 @@ PARAMS = [
             'REDIS_URI': None,
             'MONGO_URI': 'mongodb://localhost:27017/ex2dev',
             'BASE_URL': 'http://localhost:5000',
+            'GOOGLE_ANALYTICS_ID': None,
         },
     },
     {
@@ -27,6 +28,16 @@ PARAMS = [
         },
     },
     {
+        'id': 'development (Google Analytics is disabled)',
+        'FLASK_ENV': 'development',
+        'env': {
+            'GOOGLE_ANALYTICS_ID': 'UA-DUMMYID',
+        },
+        'config': {
+            'GOOGLE_ANALYTICS_ID': None,
+        },
+    },
+    {
         'id': 'test',
         'FLASK_ENV': 'test',
         'env': {
@@ -35,6 +46,7 @@ PARAMS = [
             'REDIS_URI': None,
             'MONGO_URI': 'mongodb://localhost:27017/ex2test',
             'BASE_URL': 'http://localhost:5000',
+            'GOOGLE_ANALYTICS_ID': None,
         },
         'testing': True,
     },
@@ -45,11 +57,13 @@ PARAMS = [
             'REDIS_URI': 'redis://example.com',
             'MONGODB_URI': 'mongodb://example.com/',
             'PUBLIC_HOSTNAME': 'asobann.example.com',
+            'GOOGLE_ANALYTICS_ID': 'UA-DUMMYID',
         },
         'config': {
             'REDIS_URI': 'redis://example.com',
             'MONGO_URI': 'mongodb://example.com/?retryWrites=false',
             'BASE_URL': 'https://asobann.example.com',
+            'GOOGLE_ANALYTICS_ID': 'UA-DUMMYID',
         },
     },
     {
@@ -59,10 +73,9 @@ PARAMS = [
             'REDIS_URI': 'redis://example.com',
             'MONGODB_URI': 'mongodb://example.com/',
             'PUBLIC_HOSTNAME': '.asobann.example.com',
+            'GOOGLE_ANALYTICS_ID': 'UA-DUMMYID',
         },
         'config': {
-            'REDIS_URI': 'redis://example.com',
-            'MONGO_URI': 'mongodb://example.com/?retryWrites=false',
             'BASE_URL': 'https://asobann.example.com',
         },
     },
@@ -72,9 +85,13 @@ PARAMS = [
 @pytest.mark.parametrize('param', PARAMS, ids=[p['id'] for p in PARAMS])
 def test_config(param):
     os.environ['FLASK_ENV'] = param['FLASK_ENV']
-    for key, value in param['env'].items():
-        os.environ[key] = value
-    app = Flask(__name__)
-    asobann.configure_app(app, testing=param.get('testing', False))
-    for key, value in param['config'].items():
-        assert app.config[key] == value
+    try:
+        for key, value in param['env'].items():
+            os.environ[key] = value
+        app = Flask(__name__)
+        asobann.configure_app(app, testing=param.get('testing', False))
+        for key, value in param['config'].items():
+            assert app.config[key] == value
+    finally:
+        for key, value in param['env'].items():
+            del os.environ[key]

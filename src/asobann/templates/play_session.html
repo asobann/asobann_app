@@ -2,6 +2,18 @@
 <html>
 <head>
   <meta charset="utf-8"/>
+  {% if config['GOOGLE_ANALYTICS_ID'] %}
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ config['GOOGLE_ANALYTICS_ID'] }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '{{ config["GOOGLE_ANALYTICS_ID"] }}');
+    </script>
+  {% endif %}
+
   <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
           integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
   <script src="{{ url_for('static', filename='interact.js') }}" type="module"></script>

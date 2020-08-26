@@ -2,6 +2,18 @@
 <html>
 <head>
   <meta charset="utf-8"/>
+  {% if config['GOOGLE_ANALYTICS_ID'] %}
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-176419428-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-176419428-1');
+    </script>
+  {% endif %}
+
   <link rel="stylesheet" href="{{ url_for('static', filename='game.css') }}">
   <script type="text/javascript">
     console.log("hi! i'm index");
