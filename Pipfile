@@ -9,14 +9,14 @@ asobann = {editable = true,path = "."}
 pillow = "*"
 typer = "*"
 requests = "*"
+pytest = "*"
+selenium = "*"
 
 [packages]
 flask = "*"
 flask-socketio = "*"
 flask-pymongo = "*"
-pytest = "*"
 gunicorn = "*"
-selenium = "*"
 redis = "*"
 dnspython = "*"
 eventlet = "*"
