@@ -2,8 +2,10 @@ import random
 import json
 from pathlib import Path
 import pymongo.database
+import datetime
 
 tables: pymongo.database.Database = None
+table_metas: pymongo.database.Database = None
 
 
 def generate_new_tablename():
@@ -25,6 +27,7 @@ def create(tablename, prepared_table):
         table = {'components': {}, 'kits': [], 'players': {}}
 
     tables.insert_one({"tablename": tablename, "table": table})
+    table_metas.insert_one({"tablename": tablename, "created_at": datetime.datetime.now()})
     return table
 
 
@@ -34,6 +37,9 @@ def store(tablename, table):
         {"tablename": tablename},
         {"$set": {"table": table}},
         upsert=True)
+    table_metas.update_one(
+        {"tablename": tablename},
+        {"$set": {"updated_at": datetime.datetime.now()}})
 
 
 def purge_all():
@@ -42,12 +48,18 @@ def purge_all():
 
 def update_table(tablename, table):
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
+    table_metas.update_one(
+        {"tablename": tablename},
+        {"$set": {"updated_at": datetime.datetime.now()}})
 
 
 def update_component(tablename, component_id, diff):
     table = get(tablename)
     table["components"][component_id].update(diff)
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
+    table_metas.update_one(
+        {"tablename": tablename},
+        {"$set": {"updated_at": datetime.datetime.now()}})
 
 
 def add_component(tablename, component_data):
@@ -55,26 +67,39 @@ def add_component(tablename, component_data):
     table = get(tablename)
     table["components"][component_data["componentId"]] = component_data
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
+    table_metas.update_one(
+        {"tablename": tablename},
+        {"$set": {"updated_at": datetime.datetime.now()}})
 
 
 def remove_component(tablename, component_id):
     table = get(tablename)
     del table["components"][component_id]
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
+    table_metas.update_one(
+        {"tablename": tablename},
+        {"$set": {"updated_at": datetime.datetime.now()}})
 
 
 def add_kit(tablename, kitData):
     table = get(tablename)
     table["kits"].append(kitData)
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
+    table_metas.update_one(
+        {"tablename": tablename},
+        {"$set": {"updated_at": datetime.datetime.now()}})
 
 
 def remove_kit(tablename, kit_id):
     table = get(tablename)
     table["kits"] = [e for e in table["kits"] if e["kitId"] != kit_id]
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
+    table_metas.update_one(
+        {"tablename": tablename},
+        {"$set": {"updated_at": datetime.datetime.now()}})
 
 
 def connect(mongo):
-    global tables
+    global tables, table_metas
     tables = mongo.db.tables
+    table_metas = mongo.db.table_metas
