@@ -8,7 +8,7 @@ else:
 MONGO_URI = 'mongodb://localhost:27017/ex2test'
 PORT = 10011
 
-BASE_URL = 'http://localhost:5000'
+BASE_URL = '*'
 
 if 'GOOGLE_ANALYTICS_ID' in os.environ:
     GOOGLE_ANALYTICS_ID = os.environ['GOOGLE_ANALYTICS_ID']

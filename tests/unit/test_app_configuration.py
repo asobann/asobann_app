@@ -45,7 +45,7 @@ PARAMS = [
         'config': {
             'REDIS_URI': None,
             'MONGO_URI': 'mongodb://localhost:27017/ex2test',
-            'BASE_URL': 'http://localhost:5000',
+            'BASE_URL': '*',
             'GOOGLE_ANALYTICS_ID': None,
         },
         'testing': True,
