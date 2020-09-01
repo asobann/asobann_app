@@ -3,7 +3,7 @@ from flask import (
 )
 from flask_socketio import SocketIO, emit, join_room
 from asobann.store import tables, components, kits
-from . import socketio
+from asobann import socketio
 
 blueprint = Blueprint('tables', __name__, url_prefix='/tables')
 

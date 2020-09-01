@@ -4,9 +4,10 @@ from flask_pymongo import PyMongo
 from logging.config import dictConfig
 from werkzeug.datastructures import FileStorage
 
+import asobann
 from asobann.store import tables, components, kits
 
-from . import socketio
+from .. import socketio
 
 
 dictConfig({
@@ -54,7 +55,7 @@ def configure_app(app, testing):
         SECRET_KEY='secret!',
     )
 
-    folder = Path(__file__).parent.absolute()
+    folder = Path(asobann.__file__).parent.absolute()
     if app.config["ENV"] == "test" or testing:
         app.config.from_pyfile(folder / 'config_test.py', silent=True)
     elif app.config["ENV"] == "production":
