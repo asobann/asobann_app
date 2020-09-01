@@ -31,33 +31,38 @@ class TestUploadImage:
 
 
 @pytest.mark.usefixtures("server")
-class TestUploadComponent:
-    @pytest.mark.skip
-    def test_upload_empty_json(self, base_url):
-        res = requests.post(base_url + '/components/new', data=b'{}')
-        assert res.status_code == 400
+class TestUploadKits:
+    class TestFailures:
+        def test_upload_empty_json(self, base_url):
+            files = {'data': b'{}'}
+            res = requests.post(base_url + '/kits/create', files=files)
+            assert res.status_code == 400
+
+        def test_upload_malformed_input(self, base_url):
+            files = {'data': b'hi! this is NOT JSON'}
+            res = requests.post(base_url + '/kits/create', files=files)
+            assert res.status_code == 400
 
     @pytest.mark.skip
-    def test_create_component(self, base_url):
+    def test_create(self, base_url):
         assert False
 
     @pytest.mark.skip
-    def test_update_component(self, base_url):
+    def test_update(self, base_url):
         assert False
 
     @pytest.mark.skip
-    def test_download_component(self, base_url):
+    def test_download(self, base_url):
         assert False
 
     @pytest.mark.skip
-    def test_delete_component(self, base_url):
+    def test_delete(self, base_url):
         assert False
 
     @pytest.mark.skip
-    def test_upload_component_without_images(self, base_url):
+    def test_upload_without_images(self, base_url):
         assert False
 
     @pytest.mark.skip
-    def test_upload_component_with_images(self, base_url):
+    def test_upload_with_images(self, base_url):
         assert False
-

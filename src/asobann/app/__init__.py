@@ -100,9 +100,10 @@ def create_app(testing=False):
     components.connect(app.mongo)
     kits.connect(app.mongo)
 
-    from . import table, component
+    from . import table, component, kit
     app.register_blueprint(table.blueprint)
     app.register_blueprint(component.blueprint)
+    app.register_blueprint(kit.blueprint)
 
     @app.route('/')
     def index():
@@ -140,10 +141,6 @@ def create_app(testing=False):
     @app.route('/customize')
     def customize():
         return render_template('customize.html')
-
-    @app.route('/kits')
-    def get_kits():
-        return jsonify(kits.get_all())
 
     @app.route('/dummy', methods=['POST'])
     def upload_image():
