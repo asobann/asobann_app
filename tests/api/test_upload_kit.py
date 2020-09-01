@@ -79,15 +79,22 @@ class TestUploadKits:
                 },
             ]
         }
-        files = {'data': b'{}'}
+        files = {'data': json.dumps(kit_data)}
         res = requests.post(base_url + '/kits/create', files=files)
         assert res.status_code == 200
-        res_data = json.loads(res.data)
-        kit_id = res_data['kit_id']
-        res = requests.post(f'/kits/{kit_id}')
+        res_data = json.loads(res.text)
+        kit_name = res_data['kitName']
+
+        res = requests.get(f'{base_url}/kits/{kit_name}')
         assert res.status_code == 200
-        res_data = json.loads(res.data)
-        assert 'test kit 01' == res_data['kit']['name']
+        kit_data2 = json.loads(res.text)
+        assert 'test kit 01' == kit_data2['kit']['name']
+        assert 1 == kit_data2['version']
+
+        res = requests.get(f'{base_url}/components/?kit_name={kit_data2["kit"]["name"]}')
+        assert res.status_code == 200
+        components_data = json.loads(res.text)
+        assert 'test component 01' == components_data[0]['component']['name']
 
     @pytest.mark.skip
     def test_update(self, base_url):

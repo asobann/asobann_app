@@ -11,7 +11,8 @@ def get(name):
     data = kits.find_one({"kit.name": name})
     if not data:
         return None
-    return data["kit"]
+    del data['_id']
+    return data
 
 
 def get_all():
@@ -24,7 +25,16 @@ def connect(mongo):
     kits = mongo.db.kits
 
 
+def create(kit_data):
+    assert 'kit' in kit_data
+    assert 'name' in kit_data['kit']
+    kits.insert_one({'kit': kit_data["kit"], 'version': 1})
+
+
 def store_default(data):
+    assert type(data) == list
+    assert all(['kit' in d for d in data])
+    assert all(['name' in d['kit'] for d in data])
     kits.bulk_write(
         [operations.UpdateOne({"kit.name": c["kit"]["name"]}, {"$set": c}, upsert=True) for c in data])
 

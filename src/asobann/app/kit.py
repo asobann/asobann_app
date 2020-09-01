@@ -12,20 +12,22 @@ def get_kits():
     return jsonify(kits.get_all())
 
 
+@blueprint.route('<kit_name>')
+def get_single_kit(kit_name):
+    return jsonify(kits.get(kit_name))
+
+
 @blueprint.route('/create', methods=['POST'])
 def upload_component():
     from json import decoder
     try:
         data = json.load(request.files['data'])
         kit = data['kit']
-        components = data['kit']
-    except KeyError as ex:
-        response = {
-            'result': 'error',
-            'error': repr(ex),
-        }
-        return make_response(jsonify(response), 400)
-    except decoder.JSONDecodeError as ex:
+        kits.create({'kit': kit})
+        comps = data['components']
+        for c in comps:
+            components.create({'component': c})
+    except (decoder.JSONDecodeError, KeyError) as ex:
         response = {
             'result': 'error',
             'error': repr(ex),
@@ -34,6 +36,6 @@ def upload_component():
 
     response = {
         'result': 'success',
-        'id': 'something',
+        'kitName': kit['name'],
     }
     return make_response(jsonify(response), 200)
