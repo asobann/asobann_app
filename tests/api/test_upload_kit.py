@@ -43,9 +43,51 @@ class TestUploadKits:
             res = requests.post(base_url + '/kits/create', files=files)
             assert res.status_code == 400
 
-    @pytest.mark.skip
+        @pytest.mark.skip
+        def test_kit_references_wrong_component(self, base_url):
+            assert False
+
     def test_create(self, base_url):
-        assert False
+        kit_data = {
+            'kit': {
+                'name': 'test kit 01',
+                'label': 'test kit 01',
+                'label_ja': 'test kit 01',
+                'height': '64px',
+                'width': '64px',
+                'boxAndComponents': {
+                    'test component 01': None,
+                },
+                'usedComponentNames': [
+                    'test component 01',
+                ]
+            },
+            'components': [
+                {
+                    "name": "test component 01",
+                    "handArea": False,
+                    "top": "0px",
+                    "left": "0px",
+                    "height": "64px",
+                    "width": "64px",
+                    "showImage": False,
+                    "draggable": True,
+                    "flippable": False,
+                    "resizable": False,
+                    "rollable": True,
+                    "ownable": False,
+                },
+            ]
+        }
+        files = {'data': b'{}'}
+        res = requests.post(base_url + '/kits/create', files=files)
+        assert res.status_code == 200
+        res_data = json.loads(res.data)
+        kit_id = res_data['kit_id']
+        res = requests.post(f'/kits/{kit_id}')
+        assert res.status_code == 200
+        res_data = json.loads(res.data)
+        assert 'test kit 01' == res_data['kit']['name']
 
     @pytest.mark.skip
     def test_update(self, base_url):
