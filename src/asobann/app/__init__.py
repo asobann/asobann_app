@@ -103,8 +103,9 @@ def create_app(testing=False):
     components.connect(app.mongo)
     kits.connect(app.mongo)
 
-    from . import table
+    from . import table, component
     app.register_blueprint(table.blueprint)
+    app.register_blueprint(component.blueprint)
 
     @app.route('/')
     def index():
