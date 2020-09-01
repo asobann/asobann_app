@@ -74,8 +74,8 @@ def browser_factory():
 
 @pytest.fixture(scope='session')
 def in_mem_app():
-    import asobann
-    return asobann.create_app(testing=True)
+    import asobann.app
+    return asobann.app.create_app(testing=True)
 
 
 @pytest.fixture(autouse=True)

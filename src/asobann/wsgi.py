@@ -1,6 +1,7 @@
 import asobann
+import asobann.app
 
-app = asobann.create_app()
+app = asobann.app.create_app()
 
 if __name__ == '__main__':
     if "PORT" in app.config:

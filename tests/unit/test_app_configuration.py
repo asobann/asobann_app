@@ -1,7 +1,9 @@
-from flask import Flask
 import os
+
 import asobann
+import asobann.app
 import pytest
+from flask import Flask
 
 PARAMS = [
     {
@@ -114,7 +116,7 @@ def test_config(param):
         for key, value in input_['env'].items():
             os.environ[key] = value
         app = Flask(__name__)
-        asobann.configure_app(app, testing=input_.get('testing', False))
+        asobann.app.configure_app(app, testing=input_.get('testing', False))
         for key, value in expected['config'].items():
             assert app.config[key] == value
     finally:

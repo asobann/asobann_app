@@ -28,3 +28,36 @@ class TestUploadImage:
         resp = upload_image(base_url, local_image_path)
         data = get_image(base_url, resp['imageUrl'])
         assert local_image == data
+
+
+@pytest.mark.usefixtures("server")
+class TestUploadComponent:
+    @pytest.mark.skip
+    def test_upload_empty_json(self, base_url):
+        res = requests.post(base_url + '/components/new', data=b'{}')
+        assert res.status_code == 400
+
+    @pytest.mark.skip
+    def test_create_component(self, base_url):
+        assert False
+
+    @pytest.mark.skip
+    def test_update_component(self, base_url):
+        assert False
+
+    @pytest.mark.skip
+    def test_download_component(self, base_url):
+        assert False
+
+    @pytest.mark.skip
+    def test_delete_component(self, base_url):
+        assert False
+
+    @pytest.mark.skip
+    def test_upload_component_without_images(self, base_url):
+        assert False
+
+    @pytest.mark.skip
+    def test_upload_component_with_images(self, base_url):
+        assert False
+

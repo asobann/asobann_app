@@ -3,9 +3,10 @@ from codecs import open
 from pathlib import Path
 
 import asobann
+import asobann.app
 
 
-app = asobann.create_app()
+app = asobann.app.create_app()
 
 
 def purge_all():
