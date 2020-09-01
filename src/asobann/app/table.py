@@ -7,7 +7,6 @@ from asobann import socketio
 
 blueprint = Blueprint('tables', __name__, url_prefix='/tables')
 
-
 event_handlers = {}
 
 
@@ -16,6 +15,7 @@ def event_handler(event_name):
         fn.event_name = event_name
         event_handlers[event_name] = fn
         return fn
+
     return passthru
 
 
@@ -77,7 +77,8 @@ def handle_add_component(json):
     table = tables.get(json["tablename"])
     add_component(json, table)
     tables.update_table(json["tablename"], table)
-    emit("add component", {"tablename": json["tablename"], "component": json["component"]}, broadcast=True, room=json["tablename"])
+    emit("add component", {"tablename": json["tablename"], "component": json["component"]}, broadcast=True,
+         room=json["tablename"])
 
 
 @event_handler('add kit')
@@ -91,7 +92,8 @@ def handle_add_kit(json):
     table = tables.get(json["tablename"])
     add_kit(json, table)
     tables.update_table(json["tablename"], table)
-    emit('add kit', {"tablename": json["tablename"], "kit": json["kitData"]["kit"]}, broadcast=True, room=json["tablename"])
+    emit('add kit', {"tablename": json["tablename"], "kit": json["kitData"]["kit"]}, broadcast=True,
+         room=json["tablename"])
 
 
 @event_handler('remove component')
@@ -156,4 +158,3 @@ def create_table():
     tables.create(tablename, request.form.get('prepared_table'))
     response = make_response(redirect(url_for('tables.play_table', tablename=tablename)))
     return response
-

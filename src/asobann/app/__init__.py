@@ -9,7 +9,6 @@ from asobann.store import tables, components, kits
 
 from .. import socketio
 
-
 dictConfig({
     'version': 1,
     'formatters': {'default': {
@@ -25,8 +24,6 @@ dictConfig({
         'handlers': ['wsgi']
     }
 })
-
-
 
 
 def resolve_redis_srv(uri: str):
@@ -144,13 +141,6 @@ def create_app(testing=False):
     def customize():
         return render_template('customize.html')
 
-    @app.route('/components')
-    def get_components_for_kit():
-        kit_name = request.args.get("kit_name")
-        if not kit_name:
-            return abort(500)
-        return jsonify(components.get_for_kit(kit_name))
-
     @app.route('/kits')
     def get_kits():
         return jsonify(kits.get_all())
@@ -177,5 +167,3 @@ def create_app(testing=False):
         return send_file(image_base_path / file_name)
 
     return app
-
-
