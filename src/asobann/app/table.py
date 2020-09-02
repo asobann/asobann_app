@@ -26,6 +26,9 @@ def play_table(tablename):
 
 @socketio.on('come by table')
 def handle_come_by_table(json):
+    if 'DEBUG_HANDLER_WAIT' in current_app.config:
+        from time import sleep
+        sleep(float(current_app.config['DEBUG_HANDLER_WAIT']))
     current_app.logger.info(f'come by table: {json}')
     table = tables.get(json["tablename"])
     if not table:

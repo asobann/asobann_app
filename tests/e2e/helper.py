@@ -224,6 +224,14 @@ class GameHelper:
             pass
         assert False, f'text "{text}" cannot be found (timeout)'
 
+    def should_not_have_text(self, text, timeout=5):
+        try:
+            WebDriverWait(self.browser, timeout).until(
+                expected_conditions.text_to_be_present_in_element((By.TAG_NAME, "body"), text))
+            assert False, f'text "{text}" was found'
+        except TimeoutException:
+            pass
+
     def should_have_element(self, css_locator):
         try:
             WebDriverWait(self.browser, 5).until(
@@ -305,6 +313,9 @@ class GameHelper:
         dy = (rect.top + rect.height / 2) - (card_rect.top + card_rect.height / 2) + offset[1]
         ActionChains(self.browser).move_to_element(card.element).click_and_hold().move_by_offset(dx, dy) \
             .release().perform()
+
+    def move_mouse_by_offset(self, offset):
+        ActionChains(self.browser).move_by_offset(offset[0], offset[1]).perform()
 
     def double_click(self, component: "Component"):
         ActionChains(self.browser).double_click(component.element).perform()
