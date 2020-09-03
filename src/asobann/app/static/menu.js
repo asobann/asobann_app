@@ -36,6 +36,16 @@ class Menu {
         this.connector = connector;
         this.playerStatusEl = el("span", this.connector.getPlayerName());
 
+        function menuitem(id, label, attrs) {
+            let tag;
+            if (id) {
+                tag = "div.menuitem#" + id;
+            } else {
+                tag = "div.menuitem";
+            }
+            return el(tag, el("a", attrs, label));
+        }
+
         this.el = el("div.menu",
             [
                 el("div.menuitem.menuheader", [
@@ -59,12 +69,12 @@ class Menu {
                         }
                     }, _("You are observing.  Join to play!  On the left side, enter name and click Join!")),
                 ], { style: { display: 'none' } }),
-                this.addRemoveComponentItem = el("div.menuitem#add_remove_component",
-                    el("a", { href: "", onclick: showAddRemoveKitsMenu }, _("Add / Remove Kits"))),
-                this.addHandAreaItem = el("div.menuitem#add_hand_area",
-                    el("a", { href: "", onclick: addHandArea }, _("Add Hand Area"))),
-                this.removeHandAreaItem = el("div.menuitem#remove_hand_area",
-                    el("a", { href: "", onclick: this.connector.removeHandArea }, _("Remove Hand Area"))),
+                this.addRemoveComponentItem = menuitem("add_remove_component", _("Add / Remove Kits"),
+                    { href: "", onclick: showAddRemoveKitsMenu }),
+                this.addHandAreaItem = menuitem("add_hand_area", _("Add Hand Area"),
+                    { href: "", onclick: addHandArea }),
+                this.removeHandAreaItem = menuitem("remove_hand_area", _("Remove Hand Area"),
+                    { href: "", onclick: this.connector.removeHandArea }),
                 el("div.menuitem", [
                     _("Share URL for invitation"),
                     el("input#invitation_url", {
@@ -82,10 +92,8 @@ class Menu {
                         }
                     }, _("copy")),
                 ]),
-                el("div.menuitem",
-                    el("a", { href: "/export?tablename=" + this.connector.tablename }, _("Export Table"))),
-                el("div.menuitem#import_table",
-                    el("a", { href: "", onclick: showImport }, _("Import Table"))),
+                menuitem("", _("Export Table"), { href: "/export?tablename=" + this.connector.tablename }),
+                menuitem("import_table", _("Import Table"), { href: "", onclick: showImport }),
                 el("div.menuitem.about", [
                     el("a", {
                         class: 'about',
@@ -121,6 +129,10 @@ class Menu {
                 zIndex: 0,
             };
             self.connector.addNewComponent(newComponent);
+            return false;
+        }
+
+        function openToolbox() {
             return false;
         }
 
