@@ -39,6 +39,7 @@ ATTRS_IN_ORDER = [
     'positionOfBoxContents',
     'stowage',
     "onAdd",
+    'toolboxFunction',
 
     # current status
     "owner",
@@ -180,7 +181,7 @@ def generate_toolbox(reg: ComponentRegistry):
         "top": "0px",
         "left": "0px",
         "height": "300px",
-        "width": "400px",
+        "width": "460px",
         "color": "darkgray",
         "showImage": False,
         "draggable": True,
@@ -196,26 +197,26 @@ def generate_toolbox(reg: ComponentRegistry):
 
     template = {
         "height": "100px",
-        "width": "75px",
-        "showImage": True,
-        "faceupImage": "/static/images/playing_card_up.png",
-        "facedownImage": "/static/images/playing_card_back.png",
+        "width": "125px",
         "facedownText": "",
-        "faceup": False,
+        "faceup": True,
         "draggable": True,
-        "flippable": True,
-        "ownable": True,
+        "flippable": False,
+        "ownable": False,
         "resizable": False,
+        "color": "cyan",
         "textColor": "black",
     }
 
     z_index = 100
     offset = 0
+
     card = {
         "name": "Export Table",
-        "top": f"{offset}px",
-        "left": f"{offset + 100}px",
+        "top": f"{int(offset / 3) * 110}px",
+        "left": f"{(offset % 3) * 135 + 60}px",
         "faceupText": "Export Table",
+        "toolboxFunction": "export table",
         "zIndex": z_index,
     }
     box.add_component(card, template=template)

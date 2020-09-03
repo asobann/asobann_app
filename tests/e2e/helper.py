@@ -1,3 +1,4 @@
+from typing import Union
 import re
 from selenium import webdriver
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -198,7 +199,6 @@ class GameMenu:
         self.browser.find_element_by_css_selector(css_selector).click()
 
 
-
 class GameHelper:
 
     def __init__(self, browser: WebDriver, base_url=TOP):
@@ -287,14 +287,14 @@ class GameHelper:
                 expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, locator)))
         return Component(helper=self, element=self.browser.find_element_by_css_selector(locator))
 
-    def component_by_name(self, name, wait=True, factory=Component) -> "Component":
+    def component_by_name(self, name, wait=True, factory=Component) -> Union["Component", BoxComponent]:
         selector = f'.component[data-component-name="{name}"]'
         if wait:
             WebDriverWait(self.browser, 5).until(
                 expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, selector)))
         return factory(helper=self, element=self.browser.find_element_by_css_selector(selector))
 
-    def box_by_name(self, name, wait=True):
+    def box_by_name(self, name, wait=True) -> BoxComponent:
         return self.component_by_name(name=name, wait=wait, factory=BoxComponent)
 
     def count_components(self):
@@ -346,6 +346,9 @@ class GameHelper:
     def click(self, component: "Component"):
         ActionChains(self.browser).click(component.element).perform()
 
+    def click_at(self, component:"Component", by: By.ID, value: str):
+        ActionChains(self.browser).click(component.element.find_element(by, value)).perform()
+
     def hand_area(self, owner):
         for e in self.browser.find_elements_by_class_name("component"):
             if e.text == f"{owner}'s hand":
@@ -386,17 +389,18 @@ class Rect:
 
     def touch(self, other):
         if any([v is None for v in (self.top, self.left, self.bottom, self.right)]) or \
-           any([v is None for v in (other.top, other.left, other.bottom, other.right)]):
+                any([v is None for v in (other.top, other.left, other.bottom, other.right)]):
             return True
         return not (self.bottom < other.top or other.bottom < self.top
                     or self.right < other.left or other.right < self.left)
 
     def within(self, area):
         if any([v is None for v in (self.top, self.left, self.bottom, self.right)]) or \
-           any([v is None for v in (area.top, area.left, area.bottom, area.right)]):
+                any([v is None for v in (area.top, area.left, area.bottom, area.right)]):
             return True
         return (self.top < area.bottom and area.top < self.bottom
                 and self.left < area.right and area.left < self.right)
+
 
 def compo_pos(browser, element) -> Rect:
     """
