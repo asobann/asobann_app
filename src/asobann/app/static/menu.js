@@ -92,6 +92,7 @@ class Menu {
                         }
                     }, _("copy")),
                 ]),
+                menuitem("open_toolbox", _("Open Toolbox"), { href: "", onclick: openToolbox }),
                 menuitem("", _("Export Table"), { href: "/export?tablename=" + this.connector.tablename }),
                 menuitem("import_table", _("Import Table"), { href: "", onclick: showImport }),
                 el("div.menuitem.about", [

@@ -154,6 +154,10 @@ class GameMenu:
     def join_item(self):
         return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu input#player_name"))
 
+    @property
+    def open_toolbox(self):
+        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu div#open_toolbox"))
+
     def join(self, player_name):
         WebDriverWait(self.browser, 5).until(
             expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, "button#join_button")))
@@ -194,12 +198,23 @@ class GameMenu:
         self.browser.find_element_by_css_selector(css_selector).click()
 
 
+
 class GameHelper:
 
     def __init__(self, browser: WebDriver, base_url=TOP):
         self.menu = GameMenu(browser)
         self.browser = browser
         self.base_url = base_url
+
+    @staticmethod
+    def player(browser, as_host=True):
+        player = GameHelper(browser)
+        if as_host:
+            player.go(TOP)
+            player.should_have_text("you are host")
+            return player
+        else:
+            raise RuntimeError()
 
     def go(self, url):
         self.browser.get(url)
@@ -241,12 +256,20 @@ class GameHelper:
             pass
         assert False, f'element located by css locator "{css_locator}" cannot be found (timeout)'
 
+    def should_see_component(self, name):
+        selector = f'.component[data-component-name="{name}"]'
+        try:
+            WebDriverWait(self.browser, 5).until(
+                expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, selector)))
+        except TimeoutException:
+            assert False, f'component "{name}" is not visible on the table (timeout)'
+
     def should_not_see_component(self, name):
         selector = f'.component[data-component-name="{name}"]'
         try:
             WebDriverWait(self.browser, 5).until(
                 expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, selector)))
-            assert False, f'component "{name}" is on the table'
+            assert False, f'component "{name}" is visible on the table'
         except TimeoutException:
             return
 
