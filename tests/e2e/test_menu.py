@@ -9,4 +9,4 @@ class TestToolbox:
         host = GameHelper.player(browser)
 
         host.menu.open_toolbox.execute()
-        host.should_see_component('toolbox')
+        host.should_see_component('Toolbox')

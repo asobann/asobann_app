@@ -2,6 +2,50 @@
   "components": [
     {
       "component": {
+        "name": "Toolbox",
+        "top": "0px",
+        "left": "0px",
+        "height": "300px",
+        "width": "400px",
+        "color": "darkgray",
+        "showImage": false,
+        "handArea": false,
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": true,
+        "rollable": false,
+        "traylike": true,
+        "boxOfComponents": true,
+        "cardistry": [
+          "collect"
+        ],
+        "zIndex": 1
+      }
+    },
+    {
+      "component": {
+        "name": "Export Table",
+        "top": "0px",
+        "left": "100px",
+        "height": "100px",
+        "width": "75px",
+        "textColor": "black",
+        "showImage": true,
+        "faceupImage": "/static/images/playing_card_up.png",
+        "faceupText": "Export Table",
+        "facedownImage": "/static/images/playing_card_back.png",
+        "facedownText": "",
+        "draggable": true,
+        "flippable": true,
+        "ownable": true,
+        "resizable": false,
+        "faceup": false,
+        "zIndex": 100
+      }
+    },
+    {
+      "component": {
         "name": "Dice (Blue)",
         "top": "0px",
         "left": "0px",
@@ -3295,6 +3339,24 @@
     }
   ],
   "kits": [
+    {
+      "kit": {
+        "name": "Toolbox",
+        "label": "Toolbox",
+        "label_ja": "\u9053\u5177\u7bb1",
+        "width": "400px",
+        "height": "300px",
+        "boxAndComponents": {
+          "Toolbox": [
+            "Export Table"
+          ]
+        },
+        "usedComponentNames": [
+          "Export Table",
+          "Toolbox"
+        ]
+      }
+    },
     {
       "kit": {
         "name": "Dice (Blue)",

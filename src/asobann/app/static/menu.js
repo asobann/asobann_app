@@ -134,6 +134,13 @@ class Menu {
         }
 
         function openToolbox() {
+            async function doOpen() {
+                const url = baseUrl() + "kits/Toolbox";
+                const response = await fetch(url);
+                const kitData = (await response).json();
+                connector.addNewKit(await kitData);
+            }
+            doOpen();
             return false;
         }
 

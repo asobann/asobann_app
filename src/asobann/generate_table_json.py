@@ -163,6 +163,66 @@ class ComponentRegistry:
         return data_for_deploy
 
 
+def generate_toolbox(reg: ComponentRegistry):
+    kit = reg.kit()
+
+    kit.description = {
+        "name": "Toolbox",
+        "label": "Toolbox",
+        "label_ja": "道具箱",
+        "width": "400px",
+        "height": "300px"
+    }
+
+    box = kit.box({
+        "name": "Toolbox",
+        "handArea": False,
+        "top": "0px",
+        "left": "0px",
+        "height": "300px",
+        "width": "400px",
+        "color": "darkgray",
+        "showImage": False,
+        "draggable": True,
+        "flippable": False,
+        "resizable": True,
+        "rollable": False,
+        "ownable": False,
+        "traylike": True,
+        "boxOfComponents": True,
+        "cardistry": ["collect"],
+        "zIndex": 1,
+    })
+
+    template = {
+        "height": "100px",
+        "width": "75px",
+        "showImage": True,
+        "faceupImage": "/static/images/playing_card_up.png",
+        "facedownImage": "/static/images/playing_card_back.png",
+        "facedownText": "",
+        "faceup": False,
+        "draggable": True,
+        "flippable": True,
+        "ownable": True,
+        "resizable": False,
+        "textColor": "black",
+    }
+
+    z_index = 100
+    offset = 0
+    card = {
+        "name": "Export Table",
+        "top": f"{offset}px",
+        "left": f"{offset + 100}px",
+        "faceupText": "Export Table",
+        "zIndex": z_index,
+    }
+    box.add_component(card, template=template)
+    z_index -= 1
+    offset += 1
+
+
 def generate_dice(reg: ComponentRegistry):
     kit = reg.kit()
 
@@ -684,6 +744,7 @@ def write_default_table_json():
 
 def write_initial_deploy_data_json():
     registry = ComponentRegistry()
+    generate_toolbox(registry)
     generate_dice(registry)
     generate_playing_card(registry)
     generate_psychological_safety_game(registry)
