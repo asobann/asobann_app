@@ -180,12 +180,20 @@ class GameMenu:
         form.find_element_by_css_selector("input#file").send_keys(filename)
         form.find_element_by_css_selector("input#submit").click()
 
-    def add_kit_from_list(self, component_name):
-        css_selector = f"div.kit_selection div.item[data-kit-name='{component_name}'"
+    def add_kit_from_list(self, kit_name):
+        css_selector = f"div.kit_selection div.item[data-kit-name='{kit_name}'"
         WebDriverWait(self.browser, 5).until(
             expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
         item = self.browser.find_element_by_css_selector(css_selector)
         item.find_element_by_class_name("add_new_component").click()
+
+    def should_see_kit(self, kit_name):
+        css_selector = f"div.kit_selection div.item[data-kit-name='{kit_name}'"
+        try:
+            WebDriverWait(self.browser, 5).until(
+                expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
+        except TimeoutException:
+            assert False, f'no kit named {kit_name} is visible (timeout)'
 
     def remove_kit_from_list(self, component_name):
         css_selector = f"div.kit_selection div.item[data-kit-name='{component_name}'"
