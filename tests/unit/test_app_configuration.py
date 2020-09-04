@@ -5,6 +5,8 @@ import asobann.app
 import pytest
 from flask import Flask
 
+pytestmark = [pytest.mark.quick]
+
 PARAMS = [
     {
         'id': 'development',

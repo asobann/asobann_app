@@ -6,6 +6,7 @@ os.environ["FLASK_ENV"] = "test"
 
 from asobann import wsgi
 
+pytestmark = [pytest.mark.quick]
 
 @pytest.fixture
 def app():
@@ -21,5 +22,5 @@ def test_get_kits(client):
     resp = client.get('/kits')
     data = json.loads(resp.data)
     assert len(data) > 0
-    assert data[0]['kit']['name'] == 'Dice (Blue)'
+    assert data[0]['kit']['name'] == 'Toolbox'
 

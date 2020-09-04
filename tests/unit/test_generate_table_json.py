@@ -1,7 +1,9 @@
 from json import dumps
+import pytest
 
 from asobann.generate_table_json import ComponentRegistry
 
+pytestmark = [pytest.mark.quick]
 
 def test_single_component_kit():
     registry = ComponentRegistry()

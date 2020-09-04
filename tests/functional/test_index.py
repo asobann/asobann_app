@@ -5,10 +5,13 @@ os.environ["FLASK_ENV"] = "test"
 
 from asobann import wsgi
 
+pytestmark = [pytest.mark.quick]
+
 
 @pytest.fixture
 def app():
     return wsgi.app
+
 
 @pytest.fixture
 def client(app):
