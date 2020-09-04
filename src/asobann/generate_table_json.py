@@ -203,7 +203,7 @@ def generate_toolbox(reg: ComponentRegistry):
         "draggable": True,
         "flippable": False,
         "ownable": False,
-        "resizable": False,
+        "resizable": True,
         "color": "cyan",
         "textColor": "black",
     }
