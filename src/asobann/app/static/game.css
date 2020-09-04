@@ -114,8 +114,13 @@ body {
     text-overflow: ellipsis;
 }
 
-.component .component_text {
+.component span.component_text {
     width: 100%;
+}
+
+.component button.component_text {
+    width: 80%;
+    height: 90%;
 }
 
 div.others_mouse_cursor {

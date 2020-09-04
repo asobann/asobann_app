@@ -1,3 +1,4 @@
+from time import sleep
 import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -16,4 +17,6 @@ class TestToolbox:
         host = GameHelper.player(browser)
 
         host.menu.open_toolbox.execute()
-        host.click_at(host.component_by_name('Export Table'), By.CSS_SELECTOR, 'a')
+        host.click_at(host.component_by_name('Export Table'), By.CSS_SELECTOR, 'button')
+        sleep(0.1)
+        assert 'export?tablename' in host.current_url

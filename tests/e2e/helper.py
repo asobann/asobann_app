@@ -227,7 +227,7 @@ class GameHelper:
         self.browser.find_element_by_css_selector("input#create").click()
 
     @property
-    def current_url(self):
+    def current_url(self) -> str:
         return self.browser.current_url
 
     def should_have_text(self, text):

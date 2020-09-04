@@ -177,6 +177,8 @@ def generate_toolbox(reg: ComponentRegistry):
 
     box = kit.box({
         "name": "Toolbox",
+        "text": "Toolbox",
+        "text_ja": "道具箱",
         "handArea": False,
         "top": "0px",
         "left": "0px",
@@ -198,8 +200,6 @@ def generate_toolbox(reg: ComponentRegistry):
     template = {
         "height": "100px",
         "width": "125px",
-        "facedownText": "",
-        "faceup": True,
         "draggable": True,
         "flippable": False,
         "ownable": False,
@@ -215,7 +215,7 @@ def generate_toolbox(reg: ComponentRegistry):
         "name": "Export Table",
         "top": f"{int(offset / 3) * 110}px",
         "left": f"{(offset % 3) * 135 + 60}px",
-        "faceupText": "Export Table",
+        "text": "Export Table",
         "toolboxFunction": "export table",
         "zIndex": z_index,
     }

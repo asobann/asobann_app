@@ -46,8 +46,17 @@ class Component {
         }
 
         if (this.textEl == null) {
-            this.textEl = el("span.component_text");
-            mount(this.el, this.textEl);
+            if (data.toolboxFunction) {
+                this.textEl = el("button.component_text", {
+                    onclick: () => {
+                        toolbox.use(data.toolboxFunction);
+                    }
+                });
+                mount(this.el, this.textEl);
+            } else {
+                this.textEl = el("span.component_text");
+                mount(this.el, this.textEl);
+            }
         }
         if (data.text) {
             if (data["text_" + language]) {
@@ -238,6 +247,17 @@ class Table {
     }
 }
 
+const toolbox = {
+    map: {
+        'export table': "exportTable",
+    },
+    use: (funcationName)  => {
+        toolbox[toolbox.map[funcationName]]();
+    },
+    exportTable: function () {
+        location.assign("/export?tablename=" + tablename);
+    }
+};
 
 const sync_table_connector = {
     initializeTable: function (tableData) {
