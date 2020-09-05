@@ -18,7 +18,7 @@ class TestToolbox:
         host = GameHelper.player(browser)
 
         host.menu.open_toolbox.execute()
-        host.click_at(host.component_by_name('Export Table'), By.CSS_SELECTOR, 'button')
+        host.toolbox.use(host.toolbox.export_table)
         sleep(0.1)
         assert 'export?tablename' in host.current_url
 

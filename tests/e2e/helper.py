@@ -224,10 +224,13 @@ class Toolbox:
         self.browser = browser
         self.helper = helper
         self.upload_kit: 'Toolbox.UploadKit' = Toolbox.UploadKit(self)
+        self.export_table = object()
 
     def use(self, tool):
         if tool == self.upload_kit:
             self.helper.click_at(self.helper.component_by_name('Upload Kit'), By.CSS_SELECTOR, 'button')
+        elif tool == self.export_table:
+            self.helper.click_at(self.helper.component_by_name('Export Table'), By.CSS_SELECTOR, 'button')
         else:
             raise ValueError(f'tool {tool} is not supported')
 
