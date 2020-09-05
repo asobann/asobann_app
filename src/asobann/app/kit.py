@@ -23,10 +23,10 @@ def upload_component():
     try:
         data = json.load(request.files['data'])
         kit = data['kit']
-        kits.create({'kit': kit})
+        kits.create_or_update({'kit': kit})
         comps = data['components']
         for c in comps:
-            components.create({'component': c})
+            components.create_or_update({'component': c})
     except (decoder.JSONDecodeError, KeyError) as ex:
         response = {
             'result': 'error',

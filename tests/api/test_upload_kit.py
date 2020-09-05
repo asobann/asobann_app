@@ -6,6 +6,40 @@ import pytest
 PWD = Path(__file__).parent
 
 
+def kit_data():
+    return {
+        'kit': {
+            'name': 'test kit 01',
+            'label': 'test kit 01',
+            'label_ja': 'test kit 01',
+            'height': '64px',
+            'width': '64px',
+            'boxAndComponents': {
+                'test component 01': None,
+            },
+            'usedComponentNames': [
+                'test component 01',
+            ]
+        },
+        'components': [
+            {
+                "name": "test component 01",
+                "handArea": False,
+                "top": "0px",
+                "left": "0px",
+                "height": "64px",
+                "width": "64px",
+                "showImage": False,
+                "draggable": True,
+                "flippable": False,
+                "resizable": False,
+                "rollable": True,
+                "ownable": False,
+            },
+        ]
+    }
+
+
 def upload_image(base_url, image_image_path):
     files = {'image': open(image_image_path, 'rb')}
     res = requests.post(base_url + '/dummy', files=files)
@@ -48,38 +82,7 @@ class TestUploadKits:
             assert False
 
     def test_create(self, base_url):
-        kit_data = {
-            'kit': {
-                'name': 'test kit 01',
-                'label': 'test kit 01',
-                'label_ja': 'test kit 01',
-                'height': '64px',
-                'width': '64px',
-                'boxAndComponents': {
-                    'test component 01': None,
-                },
-                'usedComponentNames': [
-                    'test component 01',
-                ]
-            },
-            'components': [
-                {
-                    "name": "test component 01",
-                    "handArea": False,
-                    "top": "0px",
-                    "left": "0px",
-                    "height": "64px",
-                    "width": "64px",
-                    "showImage": False,
-                    "draggable": True,
-                    "flippable": False,
-                    "resizable": False,
-                    "rollable": True,
-                    "ownable": False,
-                },
-            ]
-        }
-        files = {'data': json.dumps(kit_data)}
+        files = {'data': json.dumps(kit_data())}
         res = requests.post(base_url + '/kits/create', files=files)
         assert res.status_code == 200
         res_data = json.loads(res.text)
@@ -87,18 +90,33 @@ class TestUploadKits:
 
         res = requests.get(f'{base_url}/kits/{kit_name}')
         assert res.status_code == 200
-        kit_data2 = json.loads(res.text)
-        assert 'test kit 01' == kit_data2['kit']['name']
-        assert 1 == kit_data2['version']
+        received_data = json.loads(res.text)
+        assert 'test kit 01' == received_data['kit']['name']
+        assert 1 == received_data['version']
 
-        res = requests.get(f'{base_url}/components/?kit_name={kit_data2["kit"]["name"]}')
+        res = requests.get(f'{base_url}/components/?kit_name={received_data["kit"]["name"]}')
         assert res.status_code == 200
         components_data = json.loads(res.text)
         assert 'test component 01' == components_data[0]['component']['name']
 
-    @pytest.mark.skip
     def test_update(self, base_url):
-        assert False
+        requests.post(base_url + '/kits/create', files={'data': json.dumps(kit_data())})
+
+        v2 = kit_data()
+        v2['kit']['width'] = '200px'
+        v2['components'][0]['top'] = '100px'
+        res = requests.post(base_url + '/kits/create', files={'data': json.dumps(v2)})
+        res_data = json.loads(res.text)
+        kit_name = res_data['kitName']
+
+        res = requests.get(f'{base_url}/kits/{kit_name}')
+        received_data = json.loads(res.text)
+        assert '200px' == received_data['kit']['width']
+        assert 2 == received_data['version']
+
+        res = requests.get(f'{base_url}/components/?kit_name={received_data["kit"]["name"]}')
+        components_data = json.loads(res.text)
+        assert '100px' == components_data[0]['component']['top']
 
     @pytest.mark.skip
     def test_download(self, base_url):

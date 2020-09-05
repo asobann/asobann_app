@@ -44,7 +44,18 @@ def purge_all():
     components.delete_many({})
 
 
-def create(data):
+def create_or_update(data):
     assert 'component' in data
     assert 'name' in data['component']
+    if components.count({"component.name": data['component']['name']}) > 0:
+        update(data)
+    else:
+        create(data)
+
+
+def create(data):
     components.insert_one(data)
+
+
+def update(data):
+    components.find_one_and_replace({'component.name': data['component']['name']}, data)

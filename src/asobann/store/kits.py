@@ -25,10 +25,23 @@ def connect(mongo):
     kits = mongo.db.kits
 
 
-def create(kit_data):
+def create_or_update(kit_data):
     assert 'kit' in kit_data
     assert 'name' in kit_data['kit']
+    if kits.count({"kit.name": kit_data['kit']['name']}) > 0:
+        update(kit_data)
+    else:
+        create(kit_data)
+
+
+def create(kit_data):
     kits.insert_one({'kit': kit_data["kit"], 'version': 1})
+
+
+def update(kit_data):
+    current_version = kits.find_one({'kit.name': kit_data['kit']['name']})['version']
+    kits.find_one_and_replace({'kit.name': kit_data['kit']['name']},
+                              {'kit': kit_data["kit"], 'version': current_version + 1})
 
 
 def store_default(data):
