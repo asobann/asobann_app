@@ -220,6 +220,12 @@ class Toolbox:
         def upload(self):
             self.toolbox.browser.find_element_by_css_selector('form button').click()
 
+        def accept_success_alert(self):
+            self.toolbox.helper.accept_alert('Upload Success!')
+
+        def accept_failure_alert(self):
+            self.toolbox.helper.accept_alert('^Upload Failed:.*', regex_match=True)
+
     def __init__(self, browser: WebDriver, helper: 'GameHelper'):
         self.browser = browser
         self.helper = helper
@@ -391,10 +397,14 @@ class GameHelper:
                 return Component(self, e)
         raise NoSuchElementException(msg=f"cannot locate {owner}'s hand area")
 
-    def accept_alert(self, text):
+    def accept_alert(self, text, regex_match=False):
         WebDriverWait(self.browser, 5).until(
             expected_conditions.alert_is_present())
-        assert text == Alert(self.browser).text
+        if regex_match:
+            assert re.match(text, Alert(self.browser).text)
+        else:
+            assert text == Alert(self.browser).text
+
         Alert(self.browser).accept()
 
 
