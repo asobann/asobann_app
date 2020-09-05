@@ -83,3 +83,8 @@ def tables(in_mem_app):
     # clear all documents in tables collection
     from asobann.store import tables
     tables.purge_all()
+
+
+@pytest.fixture(scope='function')
+def default_kits_and_components(deploy_data):
+    pass

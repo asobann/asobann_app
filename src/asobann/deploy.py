@@ -2,8 +2,7 @@ import json
 from codecs import open
 from pathlib import Path
 
-import asobann
-import asobann.app
+import asobann, asobann.app
 
 
 app = asobann.app.create_app()

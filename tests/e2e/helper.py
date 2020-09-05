@@ -196,6 +196,15 @@ class GameMenu:
         except TimeoutException:
             assert False, f'no kit named {kit_name} is visible (timeout)'
 
+    def should_not_see_kit(self, kit_name):
+        css_selector = f"div.kit_selection div.item[data-kit-name='{kit_name}'"
+        try:
+            WebDriverWait(self.browser, 5).until(
+                expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
+            assert False, f'kit named {kit_name} is visible'
+        except TimeoutException:
+            pass
+
     def remove_kit_from_list(self, component_name):
         css_selector = f"div.kit_selection div.item[data-kit-name='{component_name}'"
         WebDriverWait(self.browser, 5).until(
@@ -218,7 +227,10 @@ class Toolbox:
             file_input.send_keys(filepath)
 
         def upload(self):
-            self.toolbox.browser.find_element_by_css_selector('form button').click()
+            self.toolbox.browser.find_element_by_css_selector('form button#upload').click()
+
+        def cancel(self):
+            self.toolbox.browser.find_element_by_css_selector('form button#cancel').click()
 
         def accept_success_alert(self):
             self.toolbox.helper.accept_alert('Upload Success!')

@@ -268,8 +268,9 @@ const toolbox = {
                 el('label', { 'for': 'data' }, _('Kit JSON File')),
                 el('input', { 'type': 'file', 'name': 'data', 'id': 'data' }),
                 el('br'),
-                el('button', { onclick: submitUploadKitForm }, _('Upload Kit')),
+                el('button', { onclick: submitUploadKitForm, id: 'upload' }, _('Upload Kit')),
                 el('br'),
+                el('button', { onclick: cancelForm, id: 'cancel' }, _('Cancel')),
             ]);
         mount(contents, form);
 
@@ -280,13 +281,18 @@ const toolbox = {
                 const response = await res.json();
                 console.log(response);
 
-                if(response.result === 'success') {
+                if (response.result === 'success') {
                     alert('Upload Success!');
                 } else {
                     alert('Upload Failed: \n' + response.error);
                 }
                 unmount(document.body, background);
             })();
+            return false;
+        }
+
+        function cancelForm() {
+            unmount(document.body, background);
             return false;
         }
     },
