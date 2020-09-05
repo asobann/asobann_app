@@ -190,7 +190,8 @@ const shuffle = {
             }
         });
     },
-    onComponentUpdate: function () {
+    onComponentUpdate: function (component, componentData) {
+        component.componentsInBox = componentData.componentsInBox;
     },
     isEnabled: function (component, /*featsContext*/) {
         return component.onTray && countProperties(component.onTray) > 0;
@@ -239,7 +240,8 @@ const flipAll = {
             }
         });
     },
-    onComponentUpdate: function () {
+    onComponentUpdate: function (component, componentData) {
+        component.componentsInBox = componentData.componentsInBox;
     },
     isEnabled: function (component, /*featsContext*/) {
         return component.onTray && countProperties(component.onTray) > 0;
