@@ -7,7 +7,7 @@ from asobann.store import tables, components, kits
 blueprint = Blueprint('components', __name__, url_prefix='/components')
 
 
-@blueprint.route('/')
+@blueprint.route('')
 def get_components_for_kit():
     kit_name = request.args.get("kit_name")
     if not kit_name:

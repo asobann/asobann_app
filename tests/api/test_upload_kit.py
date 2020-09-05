@@ -65,6 +65,7 @@ class TestUploadImage:
 
 
 @pytest.mark.usefixtures("server")
+@pytest.mark.usefixtures("default_kits_and_components")
 class TestUploadKits:
     class TestFailures:
         def test_upload_empty_json(self, base_url):
@@ -94,7 +95,7 @@ class TestUploadKits:
         assert 'test kit 01' == received_data['kit']['name']
         assert 1 == received_data['version']
 
-        res = requests.get(f'{base_url}/components/?kit_name={received_data["kit"]["name"]}')
+        res = requests.get(f'{base_url}/components?kit_name={received_data["kit"]["name"]}')
         assert res.status_code == 200
         components_data = json.loads(res.text)
         assert 'test component 01' == components_data[0]['component']['name']
@@ -114,7 +115,7 @@ class TestUploadKits:
         assert '200px' == received_data['kit']['width']
         assert 2 == received_data['version']
 
-        res = requests.get(f'{base_url}/components/?kit_name={received_data["kit"]["name"]}')
+        res = requests.get(f'{base_url}/components?kit_name={received_data["kit"]["name"]}')
         components_data = json.loads(res.text)
         assert '100px' == components_data[0]['component']['top']
 
