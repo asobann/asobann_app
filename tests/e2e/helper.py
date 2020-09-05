@@ -220,15 +220,22 @@ class Toolbox:
         def upload(self):
             self.toolbox.browser.find_element_by_css_selector('form button').click()
 
-    def __init__(self, browser: WebDriver):
+    def __init__(self, browser: WebDriver, helper: 'GameHelper'):
         self.browser = browser
+        self.helper = helper
         self.upload_kit: 'Toolbox.UploadKit' = Toolbox.UploadKit(self)
+
+    def use(self, tool):
+        if tool == self.upload_kit:
+            self.helper.click_at(self.helper.component_by_name('Upload Kit'), By.CSS_SELECTOR, 'button')
+        else:
+            raise ValueError(f'tool {tool} is not supported')
 
 
 class GameHelper:
     def __init__(self, browser: WebDriver, base_url=TOP):
         self.menu: GameMenu = GameMenu(browser)
-        self.toolbox: Toolbox = Toolbox(browser)
+        self.toolbox: Toolbox = Toolbox(browser, self)
         self.browser: WebDriver = browser
         self.base_url = base_url
 

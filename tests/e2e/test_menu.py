@@ -26,8 +26,7 @@ class TestToolbox:
         host = GameHelper.player(browser)
 
         host.menu.open_toolbox.execute()
-        host.click_at(host.component_by_name('Upload Kit'), By.CSS_SELECTOR, 'button')
-        # upload kit json
+        host.toolbox.use(host.toolbox.upload_kit)
         host.toolbox.upload_kit.select_json_file(str(Path(__file__).parent / 'test_menu_kit.json'))
         host.toolbox.upload_kit.upload()
         host.accept_alert('Upload Success!')
