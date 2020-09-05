@@ -8,6 +8,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import Select
 
+from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 
@@ -207,11 +208,28 @@ class GameMenu:
         self.browser.find_element_by_css_selector(css_selector).click()
 
 
-class GameHelper:
+class Toolbox:
+    class UploadKit:
+        def __init__(self, toolbox: 'Toolbox'):
+            self.toolbox = toolbox
 
-    def __init__(self, browser: WebDriver, base_url=TOP):
-        self.menu = GameMenu(browser)
+        def select_json_file(self, filepath):
+            file_input = self.toolbox.browser.find_element_by_css_selector('form input#data')
+            file_input.send_keys(filepath)
+
+        def upload(self):
+            self.toolbox.browser.find_element_by_css_selector('form button').click()
+
+    def __init__(self, browser: WebDriver):
         self.browser = browser
+        self.upload_kit: 'Toolbox.UploadKit' = Toolbox.UploadKit(self)
+
+
+class GameHelper:
+    def __init__(self, browser: WebDriver, base_url=TOP):
+        self.menu: GameMenu = GameMenu(browser)
+        self.toolbox: Toolbox = Toolbox(browser)
+        self.browser: WebDriver = browser
         self.base_url = base_url
 
     @staticmethod
@@ -354,7 +372,7 @@ class GameHelper:
     def click(self, component: "Component"):
         ActionChains(self.browser).click(component.element).perform()
 
-    def click_at(self, component:"Component", by: By.ID, value: str):
+    def click_at(self, component: "Component", by: By.ID, value: str):
         ActionChains(self.browser).click(component.element.find_element(by, value)).perform()
 
     def hand_area(self, owner):
@@ -362,6 +380,12 @@ class GameHelper:
             if e.text == f"{owner}'s hand":
                 return Component(self, e)
         raise NoSuchElementException(msg=f"cannot locate {owner}'s hand area")
+
+    def accept_alert(self, text):
+        WebDriverWait(self.browser, 5).until(
+            expected_conditions.alert_is_present())
+        assert text == Alert(self.browser).text
+        Alert(self.browser).accept()
 
 
 class Rect:

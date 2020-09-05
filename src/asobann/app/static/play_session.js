@@ -14,7 +14,7 @@ import {
     consolidatePropagation,
 } from "./sync_table.js";
 import {Menu} from "./menu.js";
-import {language} from "./i18n.js"
+import {_, language} from "./i18n.js"
 
 function baseUrl() {
     return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
@@ -250,13 +250,46 @@ class Table {
 const toolbox = {
     map: {
         'export table': "exportTable",
+        'upload kit': "uploadKit",
     },
-    use: (funcationName)  => {
+    use: (funcationName) => {
         toolbox[toolbox.map[funcationName]]();
     },
     exportTable: function () {
         location.assign("/export?tablename=" + tablename);
-    }
+    },
+    uploadKit: function () {
+        const background = el('div.modal_background');
+        mount(document.body, background);
+        const contents = el('div.modal_contents');
+        mount(background, contents);
+        const form = el('form', { method: 'POST', action: '/kits/create', enctype: 'multipart/form-data' },
+            [
+                el('label', { 'for': 'data' }, _('Kit JSON File')),
+                el('input', { 'type': 'file', 'name': 'data', 'id': 'data' }),
+                el('br'),
+                el('button', { onclick: submitUploadKitForm }, _('Upload Kit')),
+                el('br'),
+            ]);
+        mount(contents, form);
+
+
+        function submitUploadKitForm() {
+            (async () => {
+                const res = await fetch('/kits/create', { method: 'POST', body: new FormData(form) });
+                const response = await res.json();
+                console.log(response);
+
+                if(response.result === 'success') {
+                    alert('Upload Success!');
+                } else {
+                    alert('Upload Failed: \n' + response.error);
+                }
+                unmount(document.body, background);
+            })();
+            return false;
+        }
+    },
 };
 
 const sync_table_connector = {

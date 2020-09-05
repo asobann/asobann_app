@@ -223,6 +223,18 @@ def generate_toolbox(reg: ComponentRegistry):
     z_index -= 1
     offset += 1
 
+    card = {
+        "name": "Upload Kit",
+        "top": f"{int(offset / 3) * 110}px",
+        "left": f"{(offset % 3) * 135 + 60}px",
+        "text": "Upload Kit",
+        "toolboxFunction": "upload kit",
+        "zIndex": z_index,
+    }
+    box.add_component(card, template=template)
+    z_index -= 1
+    offset += 1
+
 
 def generate_dice(reg: ComponentRegistry):
     kit = reg.kit()

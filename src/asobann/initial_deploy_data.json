@@ -38,9 +38,27 @@
         "draggable": true,
         "flippable": false,
         "ownable": false,
-        "resizable": false,
+        "resizable": true,
         "toolboxFunction": "export table",
         "zIndex": 100
+      }
+    },
+    {
+      "component": {
+        "name": "Upload Kit",
+        "top": "0px",
+        "left": "195px",
+        "height": "100px",
+        "width": "125px",
+        "color": "cyan",
+        "textColor": "black",
+        "text": "Upload Kit",
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": true,
+        "toolboxFunction": "upload kit",
+        "zIndex": 99
       }
     },
     {
@@ -3347,12 +3365,14 @@
         "height": "300px",
         "boxAndComponents": {
           "Toolbox": [
-            "Export Table"
+            "Export Table",
+            "Upload Kit"
           ]
         },
         "usedComponentNames": [
           "Export Table",
-          "Toolbox"
+          "Toolbox",
+          "Upload Kit"
         ]
       }
     },
