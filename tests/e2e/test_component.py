@@ -354,3 +354,16 @@ class TestCounter:
 
             host.go(url)
             assert host.component_by_name("Counter").element.find_element_by_css_selector(".counterValue").text == "1"
+
+
+def test_unmovable_component_can_be_dragged_to_scroll(server, browser):
+    host = GameHelper(browser)
+    host.go(TOP)
+    host.should_have_text("you are host")
+    host.menu.add_kit.execute()
+    host.menu.add_kit_from_list("Diamond Game")
+    host.menu.add_kit_done()
+
+    assert host.view_origin() == (0, 0)
+    host.drag(host.component_by_name("Diamond Game Board"), 100, 100)
+    assert host.view_origin() == (100, 100)

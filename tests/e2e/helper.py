@@ -19,6 +19,17 @@ CUSTOMIZATION = "/customize"
 STAGING_TOP = "https://fast-dusk-61776.herokuapp.com/"
 
 
+def parse_style(style_str: str) -> dict:
+    style = {}
+    for entry in style_str.split(';'):
+        try:
+            key, value = entry.split(':', 1)
+            style[key.strip()] = value.strip()
+        except ValueError:
+            continue
+    return style
+
+
 class Component:
     def __init__(self, helper: 'GameHelper', element: WebElement):
         self.helper = helper
@@ -69,14 +80,7 @@ class Component:
         return 'box-shadow' in self.element.get_attribute('style')
 
     def style(self):
-        style = {}
-        for entry in self.element.get_attribute('style').split(';'):
-            try:
-                key, value = entry.split(':', 1)
-                style[key.strip()] = value.strip()
-            except ValueError:
-                continue
-        return style
+        return parse_style(self.element.get_attribute('style'))
 
     @property
     def name(self):
@@ -418,6 +422,13 @@ class GameHelper:
             assert text == Alert(self.browser).text
 
         Alert(self.browser).accept()
+
+    def view_origin(self):
+        table = self.browser.find_element_by_css_selector('div.table')
+        style = parse_style(table.get_attribute('style'))
+        top = int(style['top'][0:-2])  # remove px
+        left = int(style['left'][0:-2])  # remove px
+        return top, left
 
 
 class Rect:
