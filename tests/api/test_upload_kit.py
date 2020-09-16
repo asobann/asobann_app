@@ -65,7 +65,7 @@ class TestUploadImage:
 
 
 @pytest.mark.usefixtures("server")
-@pytest.mark.usefixtures("default_kits_and_components")
+@pytest.mark.usefixtures("no_kits_and_components")
 class TestUploadKits:
     class TestFailures:
         def test_upload_empty_json(self, base_url):

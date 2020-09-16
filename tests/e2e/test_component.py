@@ -19,6 +19,7 @@ C_A = 'PlayingCard S_A'
 C_K = 'PlayingCard S_K'
 C_Q = 'PlayingCard S_Q'
 
+@pytest.mark.usefixtures("default_kits_and_components")
 
 @pytest.mark.usefixtures("server")
 class TestHandArea:
