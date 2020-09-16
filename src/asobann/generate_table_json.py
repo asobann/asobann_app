@@ -25,6 +25,7 @@ ATTRS_IN_ORDER = [
     "facedownImage",
     "facedownText",
     "facedownText_ja",
+    "counterValue",
 
     # behavior
     "handArea",
@@ -34,6 +35,7 @@ ATTRS_IN_ORDER = [
     "resizable",
     "rollable",
     "traylike",
+    "counter",
     'boxOfComponents',
     'cardistry',
     'positionOfBoxContents',
@@ -540,6 +542,32 @@ def generate_coin(reg: ComponentRegistry):
     })
 
 
+def generate_counter(reg: ComponentRegistry):
+    kit = reg.kit()
+
+    kit.description = {
+        "name": "Counter",
+        "label": "Counter",
+        "label_ja": "カウンター",
+        "width": "64px",
+        "height": "40px"
+    }
+
+    kit.add_component({
+        "name": "Counter",
+        "top": "0px",
+        "left": "0px",
+        "height": "64px",
+        "width": "96px",
+        "showImage": False,
+        "draggable": True,
+        "flippable": False,
+        "ownable": True,
+        "resizable": True,
+        "counter": True,
+    })
+
+
 def generate_stones(reg: ComponentRegistry):
     template = {
         "height": "25px",
@@ -762,6 +790,7 @@ def write_initial_deploy_data_json():
     generate_playing_card(registry)
     generate_psychological_safety_game(registry)
     generate_coin(registry)
+    generate_counter(registry)
     generate_stones(registry)
     generate_planning_poker(registry)
     generate_diamong_game(registry)

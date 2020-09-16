@@ -2266,6 +2266,21 @@
     },
     {
       "component": {
+        "name": "Counter",
+        "top": "0px",
+        "left": "0px",
+        "height": "40px",
+        "width": "64px",
+        "showImage": false,
+        "draggable": true,
+        "flippable": false,
+        "ownable": true,
+        "resizable": true,
+        "counter": true
+      }
+    },
+    {
+      "component": {
         "name": "Transparent Stone 01",
         "top": "0px",
         "left": "100px",
@@ -3687,6 +3702,21 @@
         },
         "usedComponentNames": [
           "Coin - Tetradrachm of Athens"
+        ]
+      }
+    },
+    {
+      "kit": {
+        "name": "Counter",
+        "label": "Counter",
+        "label_ja": "\u30ab\u30a6\u30f3\u30bf\u30fc",
+        "width": "64px",
+        "height": "40px",
+        "boxAndComponents": {
+          "Counter": null
+        },
+        "usedComponentNames": [
+          "Counter"
         ]
       }
     },

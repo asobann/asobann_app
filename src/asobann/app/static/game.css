@@ -122,6 +122,44 @@ body {
     height: 90%;
 }
 
+.component .counter {
+    display: flex;
+    flex-flow: column;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(47, 79, 63, 0.5);
+}
+
+.component .counter .labelContainer {
+    width: 100%;
+    text-align: center;
+}
+
+.component .counter .valueContainer {
+    width: 100%;
+}
+
+.component .counter .counterValue {
+    margin: 2px 5px 2px 5px;
+    background-color: rgba(255, 255, 255, 0.6);
+    color: black;
+    text-align: right;
+}
+
+.component .counter .buttons {
+    flex: 1;
+    position: relative;
+    width: 100%;
+}
+
+.component .counter .buttons button {
+    width: 20%;
+    height: 90%;
+    font-size: xx-small;
+    margin: 0;
+    padding: 0;
+}
+
 div.others_mouse_cursor {
     position: absolute;
 }

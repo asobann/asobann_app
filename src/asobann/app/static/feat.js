@@ -1,6 +1,6 @@
 import {el, mount, setAttr, setStyle, unmount} from "./redom.es.js";
 import {allCardistry} from "./cardistry.js";
-import {language} from "./i18n.js";
+import {_, language} from "./i18n.js";
 
 // import interact from './interact.js'
 
@@ -16,7 +16,7 @@ function arraysEqual(a, b) {
 }
 
 function toRect(c) {
-    if (c.top != undefined && c.left != undefined  && c.width != undefined  && c.height != undefined ) {
+    if (c.top != undefined && c.left != undefined && c.width != undefined && c.height != undefined) {
         return {
             top: parseFloat(c.top),
             left: parseFloat(c.left),
@@ -193,7 +193,7 @@ const resizability = {
             return component.resizable && featsContext.canOperateOn(component);
         }
 
-        if(!componentData.resizable) {
+        if (!componentData.resizable) {
             // do not install resizability
             return;
         }
@@ -849,15 +849,15 @@ const stowage = {
     },
 
     onComponentUpdate: function (component, data) {
-        if(data.isStowed === undefined) {
+        if (data.isStowed === undefined) {
             return;
         }
         component.isStowed = data.isStowed;
 
-        if(component.isStowed) {
-            setStyle(component.el, {opacity: 0.4});
+        if (component.isStowed) {
+            setStyle(component.el, { opacity: 0.4 });
         } else {
-            setStyle(component.el, {opacity: null});
+            setStyle(component.el, { opacity: null });
         }
     },
     uninstall: function (component) {
@@ -917,6 +917,50 @@ const cardistry = {
     }
 };
 
+const counter = {
+    install: function (component, data) {
+        if (!data.counter) {
+            return;
+        }
+
+        if (!data.counterValue) {
+            data.counterValue = 0;
+        }
+        const counterValue = data.counterValue;
+        component.el.appendChild(
+            el('div.counter', [
+                el('div.labelContainer', [
+                    el('div.counterLabel', {}, _("Counter"))
+                ]),
+                el('div.valueContainer', [
+                    component.valueEl = el('div.counterValue', {}, counterValue)
+                ]),
+                el('div.buttons', [
+                    el('button#subTen', {}, '-10'),
+                    el('button#subOne', {}, '-1'),
+                    el('button#reset', {}, '0'),
+                    el('button#addOne', {}, '+1'),
+                    el('button#addTen', {}, '+10'),
+                ]),
+            ])
+        );
+    },
+    isEnabled: function (/*component, data*/) {
+        return true;
+    },
+    onComponentUpdate: function (component, componentData) {
+        if (!componentData.cardistry) {
+            return;
+        }
+
+        if (componentData.counterValue) {
+            component.valueEl.text(componentData.counterValue);
+        }
+    },
+    uninstall: function (component) {
+    }
+};
+
 const featsContext = {
     canOperateOn: function (component) {
         return ((!component.owner || component.owner === featsContext.getPlayerName())
@@ -926,7 +970,7 @@ const featsContext = {
         if (!eventName) {
             throw `addEventListener: eventName must be specified but was ${eventName}`
         }
-        if(!component.featEventListeners) {
+        if (!component.featEventListeners) {
             component.featEventListeners = {};
         }
         if (!component.featEventListeners[eventName]) {
@@ -985,7 +1029,8 @@ const feats = [
     ownership,
     touchToRaise,
     stowage,
-    cardistry
+    cardistry,
+    counter
 ];
 
 export {setFeatsContext, feats, event};

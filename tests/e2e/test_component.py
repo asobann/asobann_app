@@ -249,3 +249,36 @@ class TestDice:
 
         host.menu.remove_kit_from_list("Dice (Blue)")
         host.should_not_see_component("Dice (Blue)")
+
+
+@pytest.mark.usefixtures("server")
+class TestCounter:
+    @staticmethod
+    def place_counter(host):
+        host.go(TOP)
+        host.should_have_text("you are host")
+
+        host.menu.add_kit.execute()
+        host.menu.add_kit_from_list("Counter")
+        return host.component_by_name("Counter")
+
+
+    def test_add_counter_from_menu(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        counter = self.place_counter(host)
+
+        assert host.component_by_name("Counter")
+        assert host.component_by_name("Counter").rect().height == 40
+        assert host.component_by_name("Counter").rect().width == 64
+
+    def test_initial_value(self, browser: webdriver.Firefox):
+        host, counter = self.place_counter(browser)
+        assert counter.element.find_element_by_css_selector(".counterValue").text == "0"
+
+    class TestCounting:
+        def test_add_1(self, browser: webdriver.Firefox):
+            host = GameHelper(browser)
+            counter = TestCounter.place_counter(host)
+            counter.element.find_element_by_css_selector("button#addOne").click()
+            assert counter.element.find_element_by_css_selector(".counterValue").text == "1"
+
