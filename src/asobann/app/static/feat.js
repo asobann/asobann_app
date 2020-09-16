@@ -923,7 +923,7 @@ const counter = {
             return;
         }
 
-        if (!data.counterValue) {
+        if (!data.hasOwnProperty("counterValue")) {
             data.counterValue = 0;
         }
         const counterValue = data.counterValue;
@@ -936,25 +936,55 @@ const counter = {
                     component.valueEl = el('div.counterValue', {}, counterValue)
                 ]),
                 el('div.buttons', [
-                    el('button#subTen', {}, '-10'),
-                    el('button#subOne', {}, '-1'),
-                    el('button#reset', {}, '0'),
-                    el('button#addOne', {}, '+1'),
-                    el('button#addTen', {}, '+10'),
+                    el('button#subTen', {
+                        onclick: (() => {
+                            count((v) => v - 10)
+                        })
+                    }, '-10'),
+                    el('button#subOne', {
+                        onclick: (() => {
+                            count((v) => v - 1)
+                        })
+                    }, '-1'),
+                    el('button#reset', {
+                        onclick: (() => {
+                            count((v) => 0)
+                        })
+                    }, '0'),
+                    el('button#addOne', {
+                        onclick: (() => {
+                            count((v) => v + 1)
+                        })
+                    }, '+1'),
+                    el('button#addTen', {
+                        onclick: (() => {
+                            count((v) => v + 10)
+                        })
+                    }, '+10'),
                 ]),
             ])
         );
+
+        function count(fn) {
+            if (!data.hasOwnProperty("counterValue")) {
+                data.counterValue = 0;
+            }
+            const counterValue = data.counterValue;
+            const newValue = fn(counterValue);
+            data.counterValue = component.valueEl.innerText = newValue;
+            component.propagate({ counterValue: newValue });
+        }
     },
     isEnabled: function (/*component, data*/) {
         return true;
     },
     onComponentUpdate: function (component, componentData) {
-        if (!componentData.cardistry) {
+        if (!componentData.counter) {
             return;
         }
 
-        if (componentData.counterValue) {
-            component.valueEl.text(componentData.counterValue);
+        if (componentData.hasOwnProperty("counterValue")) {
+            component.valueEl.innerText = componentData.counterValue;
         }
     },
     uninstall: function (component) {
