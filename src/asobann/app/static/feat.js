@@ -36,9 +36,13 @@ function toRect(c) {
 }
 
 const draggability = {
-    install: function (component) {
+    install: function (component, data) {
         function isDraggingPermitted() {
             return component.draggable && featsContext.canOperateOn(component);
+        }
+
+        if(!data.draggable) {
+            return;
         }
 
         interact(component.el).draggable({
