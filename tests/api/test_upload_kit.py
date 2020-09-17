@@ -150,3 +150,18 @@ class TestUploadKits:
         res = requests.get(f'{base_url}/components?kit_name={received_data["kit"]["name"]}')
         components_data = json.loads(res.text)
         assert image_url == components_data[0]['component']['faceupImage']
+
+    @pytest.mark.skip
+    def test_uploaded_image_has_meta_data(self, base_url):
+        resp = upload_image(base_url, PWD / 'example.png')
+        image_url = resp['imageUrl']
+        kit_data_with_image = kit_data()
+        kit_data_with_image['components'][0]['showImage'] = True
+        kit_data_with_image['components'][0]['faceupImage'] = image_url
+
+        files = {'data': json.dumps(kit_data_with_image)}
+        requests.post(base_url + '/kits/create', files=files)
+
+        image_metadata = {}  # get metadata
+        assert 'test kit 01' == image_metadata['kitName']
+        assert 'test component 01' == image_metadata['componentName']

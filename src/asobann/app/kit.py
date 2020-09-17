@@ -3,6 +3,7 @@ from flask import (
     jsonify, json
 )
 from asobann.store import tables, components, kits
+from werkzeug.datastructures import FileStorage
 
 blueprint = Blueprint('kits', __name__, url_prefix='/kits')
 

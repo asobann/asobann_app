@@ -230,6 +230,10 @@ class Toolbox:
             file_input = self.toolbox.browser.find_element_by_css_selector('form input#data')
             file_input.send_keys(filepath)
 
+        def select_image_files(self, filepath):
+            file_input = self.toolbox.browser.find_element_by_css_selector('form input#images')
+            file_input.send_keys(filepath)
+
         def upload(self):
             self.toolbox.browser.find_element_by_css_selector('form button#upload').click()
 

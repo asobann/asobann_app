@@ -8,6 +8,8 @@ def upload_kit(host, filename, image_filenames=[]):
     host.menu.open_toolbox.execute()
     host.toolbox.use(host.toolbox.upload_kit)
     host.toolbox.upload_kit.select_json_file(str(Path(__file__).parent / filename))
+    image_paths = [str(Path(__file__).parent / fn) for fn in image_filenames]
+    host.toolbox.upload_kit.select_image_files('\n'.join(image_paths))
     host.toolbox.upload_kit.upload()
     host.toolbox.upload_kit.accept_success_alert()
 
@@ -52,4 +54,21 @@ class TestUploadKit:
             host.menu.add_kit_from_list("Test Kit")
             host.menu.add_kit_done()
 
-            assert 'image_url: hoge' in host.component_by_name('Test Component').face()
+            assert '/images/uploaded/example.png' in host.component_by_name('Test Component').face()
+
+        @pytest.mark.skip
+        def test_image(self, browser: webdriver.Firefox):
+            pass
+
+        @pytest.mark.skip
+        def test_faceup_image(self, browser: webdriver.Firefox):
+            pass
+
+        @pytest.mark.skip
+        def test_facedown_image(self, browser: webdriver.Firefox):
+            pass
+
+        @pytest.mark.skip
+        def test_multiple_images(self, browser: webdriver.Firefox):
+            pass
+
