@@ -40,8 +40,8 @@ def kit_data():
     }
 
 
-def upload_image(base_url, image_image_path):
-    files = {'image': open(image_image_path, 'rb')}
+def upload_image(base_url, image_path):
+    files = {'image': open(image_path, 'rb')}
     res = requests.post(base_url + '/dummy', files=files)
     assert res.status_code == 200
     return json.loads(res.content)
@@ -131,6 +131,22 @@ class TestUploadKits:
     def test_upload_without_images(self, base_url):
         assert False
 
-    @pytest.mark.skip
     def test_upload_with_images(self, base_url):
-        assert False
+        resp = upload_image(base_url, PWD / 'example.png')
+        image_url = resp['imageUrl']
+        kit_data_with_image = kit_data()
+        kit_data_with_image['components'][0]['showImage'] = True
+        kit_data_with_image['components'][0]['faceupImage'] = image_url
+
+        files = {'data': json.dumps(kit_data_with_image)}
+        res = requests.post(base_url + '/kits/create', files=files)
+        assert res.status_code == 200
+        res_data = json.loads(res.text)
+        kit_name = res_data['kitName']
+
+        res = requests.get(f'{base_url}/kits/{kit_name}')
+        received_data = json.loads(res.text)
+
+        res = requests.get(f'{base_url}/components?kit_name={received_data["kit"]["name"]}')
+        components_data = json.loads(res.text)
+        assert image_url == components_data[0]['component']['faceupImage']
