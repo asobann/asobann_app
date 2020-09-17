@@ -10,7 +10,7 @@ const toolbox = {
         toolbox[toolbox.map[funcationName]]();
     },
     exportTable: function () {
-        location.assign("/export?tablename=" + tablename);
+        location.assign("/export?tablename=" + toolbox.context.tablename);
     },
     uploadKit: function () {
         const background = el('div.modal_background');
@@ -45,16 +45,21 @@ const toolbox = {
                 }
 
                 const jsonFile = document.getElementById('data').files[0];
+                if(!jsonFile) {
+                    alert('Upload Failed: please select Kit JSON File');
+                    unmount(document.body, background);
+                    return;
+                }
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     (async () => {
                         const kitData = JSON.parse(reader.result);
-                        for(const cmp of kitData['components']) {
-                            for(const key of ['image', 'faceupImage', 'facedownImage']) {
-                                if(!cmp.hasOwnProperty(key)) {
+                        for (const cmp of kitData['components']) {
+                            for (const key of ['image', 'faceupImage', 'facedownImage']) {
+                                if (!cmp.hasOwnProperty(key)) {
                                     continue;
                                 }
-                                if(imageUrls.hasOwnProperty(cmp[key])) {
+                                if (imageUrls.hasOwnProperty(cmp[key])) {
                                     cmp[key] = imageUrls[cmp[key]];
                                 }
                             }
@@ -88,6 +93,10 @@ const toolbox = {
             return false;
         }
     },
+    setTableName: function(tablename) {
+        toolbox.context.tablename = tablename;
+    },
+    context: {}
 };
 
 export {toolbox};

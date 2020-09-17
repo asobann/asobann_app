@@ -8,8 +8,9 @@ def upload_kit(host, filename, image_filenames=[]):
     host.menu.open_toolbox.execute()
     host.toolbox.use(host.toolbox.upload_kit)
     host.toolbox.upload_kit.select_json_file(str(Path(__file__).parent / filename))
-    image_paths = [str(Path(__file__).parent / fn) for fn in image_filenames]
-    host.toolbox.upload_kit.select_image_files('\n'.join(image_paths))
+    if image_filenames:
+        image_paths = [str(Path(__file__).parent / fn) for fn in image_filenames]
+        host.toolbox.upload_kit.select_image_files('\n'.join(image_paths))
     host.toolbox.upload_kit.upload()
     host.toolbox.upload_kit.accept_success_alert()
 

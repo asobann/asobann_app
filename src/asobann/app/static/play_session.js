@@ -640,6 +640,7 @@ function setPlayerIsJoined() {
 }
 
 const tablename = location.pathname.split("/")[2];
+toolbox.setTableName(tablename);
 const container = el("div.container");
 mount(document.body, container);
 const table = new Table();
