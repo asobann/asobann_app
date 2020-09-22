@@ -23,12 +23,12 @@ else:
 
 GOOGLE_ANALYTICS_ID = None
 
-if 'UPLOAD_IMAGE_STORAGE' in os.environ:
-    UPLOAD_IMAGE_STORAGE = os.environ['UPLOAD_IMAGE_STORAGE']
+if 'UPLOADED_IMAGE_STORE' in os.environ:
+    UPLOADED_IMAGE_STORE = os.environ['UPLOADED_IMAGE_STORE']
 else:
-    UPLOAD_IMAGE_STORAGE = 'local'
+    UPLOADED_IMAGE_STORE = 'local'
 
-use_aws = UPLOAD_IMAGE_STORAGE.lower() == 's3'
+use_aws = UPLOADED_IMAGE_STORE.lower() == 's3'
 if use_aws:
     AWS_KEY = os.environ['AWS_KEY']
     AWS_SECRET = os.environ['AWS_SECRET']

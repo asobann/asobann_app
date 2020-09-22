@@ -2,6 +2,8 @@ from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, abort, send_file
 from flask_pymongo import PyMongo
 from logging.config import dictConfig
+
+from pygments.unistring import Lo
 from werkzeug.datastructures import FileStorage
 
 import asobann
@@ -61,6 +63,16 @@ def configure_app(app, testing):
         app.config.from_pyfile(folder / 'config_dev.py', silent=True)
 
 
+class LocalImageUploader:
+    def upload(self, file):
+        file_name = file.filename
+        from pathlib import Path
+        image_base_path = Path('/tmp/asobann/images')
+        image_base_path.mkdir(exist_ok=True, parents=True)
+        file.save(image_base_path / file_name)
+        return url_for('get_uploaded_image', file_name=file_name, _external=False)
+
+
 def create_app(testing=False):
     app = Flask(__name__)
     configure_app(app, testing=testing)
@@ -91,6 +103,11 @@ def create_app(testing=False):
         socketio_args['message_queue'] = uri
     else:
         app.logger.info('use no message queue')
+
+    if app.config['UPLOADED_IMAGE_STORE'].lower() == 'local':
+        app.image_store = LocalImageUploader()
+    else:
+        raise ValueError(f'config UPLOAD_IMAGE_STORE "{app.config["UPLOAD_IMAGE_STORE"].lower() }" is invalid')
 
     socketio_args['cors_allowed_origins'] = app.config['BASE_URL']
     socketio.init_app(app, **socketio_args)
@@ -147,14 +164,9 @@ def create_app(testing=False):
         if 'image' not in request.files:
             return redirect(url_for('/'))
         file: FileStorage = request.files['image']
-        # image_data = file.read()
-        file_name = file.filename
-        from pathlib import Path
-        image_base_path = Path('/tmp/asobann/images')
-        image_base_path.mkdir(exist_ok=True, parents=True)
-        file.save(image_base_path / file_name)
+        url = app.image_store.upload(file)
         return jsonify({
-            'imageUrl': url_for('get_uploaded_image', file_name=file_name, _external=False),
+            'imageUrl': url,
         })
 
     @app.route('/images/uploaded/<file_name>', methods=['GET'])
