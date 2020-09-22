@@ -22,3 +22,16 @@ else:
     BASE_URL = 'http://localhost:5000'
 
 GOOGLE_ANALYTICS_ID = None
+
+if 'UPLOAD_IMAGE_STORAGE' in os.environ:
+    UPLOAD_IMAGE_STORAGE = os.environ['UPLOAD_IMAGE_STORAGE']
+else:
+    UPLOAD_IMAGE_STORAGE = 'local'
+
+use_aws = UPLOAD_IMAGE_STORAGE.lower() == 's3'
+if use_aws:
+    AWS_KEY = os.environ['AWS_KEY']
+    AWS_SECRET = os.environ['AWS_SECRET']
+else:
+    AWS_KEY = None
+    AWS_SECRET = None
