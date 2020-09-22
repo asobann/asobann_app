@@ -2,6 +2,7 @@ from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, abort, send_file
 from flask_pymongo import PyMongo
 from logging.config import dictConfig
+import boto3
 
 from pygments.unistring import Lo
 from werkzeug.datastructures import FileStorage
@@ -73,6 +74,37 @@ class LocalImageUploader:
         return url_for('get_uploaded_image', file_name=file_name, _external=False)
 
 
+class S3ImageUploader:
+    def __init__(self, aws_key, aws_secret, aws_region, bucket_name):
+        self.session = boto3.session.Session(
+            aws_access_key_id=aws_key,
+            aws_secret_access_key=aws_secret,
+            region_name=aws_region)
+        self.s3 = self.session.resource('s3')
+        self.bucket = self.s3.Bucket(bucket_name)
+        self.aws_region = aws_region
+        self.bucket_name = bucket_name
+
+    def upload(self, file):
+        filename = file.filename
+        newname = 'upload/' + filename
+        newobj = self.bucket.Object(newname)
+        content_type = 'application/octet-stream'
+        if filename.lower().endswith('.png'):
+            content_type = 'image/png'
+        elif filename.lower().endswith('.jpeg') or filename.lower().endswith('.jpg'):
+            content_type = 'image/jpeg'
+        elif filename.lower().endswith('.gif'):
+            content_type = 'image/gif'
+        elif filename.lower().endswith('.svg'):
+            content_type = 'image/svg'
+        newobj.upload_fileobj(file, ExtraArgs={"ContentType": content_type})
+        newacl = newobj.Acl()
+        newacl.put(ACL='public-read')
+
+        return F'https://{self.bucket_name}.s3.{self.aws_region}.amazonaws.com/{newname}'
+
+
 def create_app(testing=False):
     app = Flask(__name__)
     configure_app(app, testing=testing)
@@ -106,8 +138,15 @@ def create_app(testing=False):
 
     if app.config['UPLOADED_IMAGE_STORE'].lower() == 'local':
         app.image_store = LocalImageUploader()
+    elif app.config['UPLOADED_IMAGE_STORE'].lower() == 's3':
+        app.image_store = S3ImageUploader(
+            aws_key=app.config['AWS_KEY'],
+            aws_secret=app.config['AWS_SECRET'],
+            aws_region=app.config['AWS_REGION'],
+            bucket_name=app.config['AWS_S3_IMAGE_BUCKET_NAME'],
+        )
     else:
-        raise ValueError(f'config UPLOAD_IMAGE_STORE "{app.config["UPLOAD_IMAGE_STORE"].lower() }" is invalid')
+        raise ValueError(f'config UPLOADED_IMAGE_STORE "{app.config["UPLOADED_IMAGE_STORE"].lower()}" is invalid')
 
     socketio_args['cors_allowed_origins'] = app.config['BASE_URL']
     socketio.init_app(app, **socketio_args)

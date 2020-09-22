@@ -20,6 +20,7 @@ gunicorn = "*"
 redis = "*"
 dnspython = "*"
 eventlet = "*"
+boto3 = "*"
 
 [requires]
 python_version = "3.6"
