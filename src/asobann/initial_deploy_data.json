@@ -63,6 +63,26 @@
     },
     {
       "component": {
+        "name": "Note",
+        "top": "0px",
+        "left": "0px",
+        "height": "75px",
+        "width": "100px",
+        "color": "#feff9c",
+        "textColor": "black",
+        "showImage": false,
+        "text": "(Double click to edit)",
+        "handArea": false,
+        "draggable": true,
+        "flippable": false,
+        "ownable": false,
+        "resizable": true,
+        "rollable": false,
+        "editable": true
+      }
+    },
+    {
+      "component": {
         "name": "Dice (Blue)",
         "top": "0px",
         "left": "0px",
@@ -3388,6 +3408,21 @@
           "Export Table",
           "Toolbox",
           "Upload Kit"
+        ]
+      }
+    },
+    {
+      "kit": {
+        "name": "Note",
+        "label": "Note",
+        "label_ja": "\u30e1\u30e2",
+        "width": "100px",
+        "height": "75",
+        "boxAndComponents": {
+          "Note": null
+        },
+        "usedComponentNames": [
+          "Note"
         ]
       }
     },

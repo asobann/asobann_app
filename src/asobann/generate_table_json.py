@@ -42,6 +42,7 @@ ATTRS_IN_ORDER = [
     'stowage',
     "onAdd",
     'toolboxFunction',
+    'editable',
 
     # current status
     "owner",
@@ -237,6 +238,36 @@ def generate_toolbox(reg: ComponentRegistry):
     z_index -= 1
     offset += 1
 
+
+def generate_note(reg: ComponentRegistry):
+    kit = reg.kit()
+
+    kit.description = {
+        "name": "Note",
+        "label": "Note",
+        "label_ja": "メモ",
+        "width": "100px",
+        "height": "75"
+    }
+
+    kit.add_component({
+        "name": "Note",
+        "handArea": False,
+        "top": "0px",
+        "left": "0px",
+        "height": "75px",
+        "width": "100px",
+        "text": "(Double click to edit)",
+        "color": '#feff9c',
+        "textColor": 'black',
+        "showImage": False,
+        "draggable": True,
+        "flippable": False,
+        "resizable": True,
+        "rollable": False,
+        "ownable": False,
+        "editable": True,
+    })
 
 def generate_dice(reg: ComponentRegistry):
     kit = reg.kit()
@@ -786,6 +817,7 @@ def write_default_table_json():
 def write_initial_deploy_data_json():
     registry = ComponentRegistry()
     generate_toolbox(registry)
+    generate_note(registry)
     generate_dice(registry)
     generate_playing_card(registry)
     generate_psychological_safety_game(registry)

@@ -260,3 +260,24 @@ div.modal_contents {
 
 div.modal_contents form {
 }
+
+
+div.note_editor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+}
+
+div.note_editor textarea {
+    flex: 0;
+    width: 100%;
+}
+
+div.note_editor button {
+    text-align: right;
+    max-height: 4vh;
+}

@@ -1020,8 +1020,24 @@ const editability = {
                 return;
             }
 
-            //TODO setup editor
+            if(data.editing) {
+                return;
+            }
+
+            data.editing = true;
+            const formEl = el('div.note_editor', [
+                el('textarea', {}, data.text),
+                el('br', {}, data.text),
+                el('button', {onclick:endEditing}, _('Finish')),
+            ]);
+            mount(component.el, formEl);
+
+            function endEditing() {
+                unmount(component.el, formEl);
+                data.editing = false;
+            }
         });
+
     },
     isEnabled: function (component, data) {
         return data.editable === true;
