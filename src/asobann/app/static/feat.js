@@ -41,7 +41,7 @@ const draggability = {
             return component.draggable && featsContext.canOperateOn(component);
         }
 
-        if(!data.draggable) {
+        if (!data.draggable) {
             return;
         }
 
@@ -113,9 +113,10 @@ const draggability = {
 
 const flippability = {
     install: function (component, data) {
-        if(!flippability.isEnabled(component, data)){
+        if (!flippability.isEnabled(component, data)) {
             return;
         }
+
         function isFlippingPermitted() {
             return component.flippable && featsContext.canOperateOn(component);
         }
@@ -260,7 +261,7 @@ const rollability = {
             return component.rollable && featsContext.canOperateOn(component);
         }
 
-        if(!rollability.isEnabled(component, data)) {
+        if (!rollability.isEnabled(component, data)) {
             return;
         }
 
@@ -730,10 +731,16 @@ const traylike = {
     // Hand Area is a tray-like object.  A box is another example of tray-like object.
     // Currently everything not tray-like can be put on tray-like.  Tray-like does not be put on another tray-like.
     install: function (component, data) {
-        if(!traylike.isEnabled(component, data)) {
+        if (!traylike.isEnabled(component, data)) {
             // do not install
             return;
         }
+
+        // aesthetic
+        if(resizability.isEnabled(component, data)) {
+            setStyle(component.el, { 'border': '10px solid rgba(0, 0, 0, 0.3)' });
+        }
+
         component.onTray = {};
 
         featsContext.addEventListener(component, within.events.onWithin, (e) => {
@@ -963,7 +970,7 @@ const counter = {
                     }, '-1'),
                     el('button#reset', {
                         onclick: (() => {
-                            count((v) => 0)
+                            count((/* v */) => 0)
                         })
                     }, '0'),
                     el('button#addOne', {
@@ -1008,9 +1015,10 @@ const counter = {
 
 const editability = {
     install: function (component, data) {
-        if(!editability.isEnabled(component, data)) {
+        if (!editability.isEnabled(component, data)) {
             return;
         }
+
         function isEditingPermitted() {
             return component.editable && featsContext.canOperateOn(component);
         }
@@ -1020,19 +1028,27 @@ const editability = {
                 return;
             }
 
-            if(data.editing) {
+            if (data.editing) {
                 return;
             }
 
             data.editing = true;
+            let textareaEl;
             const formEl = el('div.note_editor', [
-                el('textarea', {}, data.text),
+                textareaEl = el('textarea', { oninput: editing }, data.text),
                 el('br', {}, data.text),
-                el('button', {onclick:endEditing}, _('Finish')),
+                el('div.button_frame', [
+                    el('button', { onclick: endEditing }, _('Finish')),
+                ])
             ]);
             mount(component.el, formEl);
 
+            function editing() {
+                component.propagate({ 'text': textareaEl.value });
+            }
+
             function endEditing() {
+                component.propagate({ 'text': textareaEl.value });
                 unmount(component.el, formEl);
                 data.editing = false;
             }

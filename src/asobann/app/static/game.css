@@ -273,11 +273,11 @@ div.note_editor {
 }
 
 div.note_editor textarea {
-    flex: 0;
+    flex: 1;
     width: 100%;
 }
 
-div.note_editor button {
+div.note_editor div.button_frame {
     text-align: right;
-    max-height: 4vh;
+    height: 4vh;
 }
