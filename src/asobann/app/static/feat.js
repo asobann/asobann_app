@@ -112,7 +112,10 @@ const draggability = {
 };
 
 const flippability = {
-    install: function (component) {
+    install: function (component, data) {
+        if(!flippability.isEnabled(component, data)){
+            return;
+        }
         function isFlippingPermitted() {
             return component.flippable && featsContext.canOperateOn(component);
         }
@@ -252,9 +255,13 @@ const resizability = {
 };
 
 const rollability = {
-    install: function (component) {
+    install: function (component, data) {
         function isRollingPermitted() {
             return component.rollable && featsContext.canOperateOn(component);
+        }
+
+        if(!rollability.isEnabled(component, data)) {
+            return;
         }
 
         component.el.addEventListener("dblclick", startRoll);
@@ -722,7 +729,11 @@ const traylike = {
     // Objects on a tray moves with the tray.
     // Hand Area is a tray-like object.  A box is another example of tray-like object.
     // Currently everything not tray-like can be put on tray-like.  Tray-like does not be put on another tray-like.
-    install: function (component) {
+    install: function (component, data) {
+        if(!traylike.isEnabled(component, data)) {
+            // do not install
+            return;
+        }
         component.onTray = {};
 
         featsContext.addEventListener(component, within.events.onWithin, (e) => {
@@ -895,8 +906,8 @@ const cardistry = {
             };
         }
     },
-    isEnabled: function (/*component, data*/) {
-        return true;
+    isEnabled: function (component, data) {
+        return data.hasOwnProperty('cardistry');
     },
     onComponentUpdate: function (component, componentData) {
         if (!componentData.cardistry) {
@@ -979,8 +990,8 @@ const counter = {
             component.propagate({ counterValue: newValue });
         }
     },
-    isEnabled: function (/*component, data*/) {
-        return true;
+    isEnabled: function (component, data) {
+        return data.counter === true;
     },
     onComponentUpdate: function (component, componentData) {
         if (!componentData.counter) {
@@ -994,6 +1005,34 @@ const counter = {
     uninstall: function (component) {
     }
 };
+
+const editability = {
+    install: function (component, data) {
+        if(!editability.isEnabled(component, data)) {
+            return;
+        }
+        function isEditingPermitted() {
+            return component.editable && featsContext.canOperateOn(component);
+        }
+
+        component.el.addEventListener("dblclick", () => {
+            if (!isEditingPermitted()) {
+                return;
+            }
+
+            //TODO setup editor
+        });
+    },
+    isEnabled: function (component, data) {
+        return data.editable === true;
+    },
+    onComponentUpdate: function (component, data) {
+        component.editable = data.editable;
+    },
+    uninstall: function (component) {
+    },
+};
+
 
 const featsContext = {
     canOperateOn: function (component) {
@@ -1064,7 +1103,8 @@ const feats = [
     touchToRaise,
     stowage,
     cardistry,
-    counter
+    counter,
+    editability
 ];
 
 export {setFeatsContext, feats, event};
