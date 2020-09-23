@@ -109,7 +109,6 @@ body {
 
 .component span {
     text-align: center;
-    position: absolute;
     text-overflow: ellipsis;
 }
 

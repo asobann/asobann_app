@@ -53,10 +53,18 @@ class Component {
                         toolbox.use(data.toolboxFunction);
                     }
                 });
-                mount(this.el, this.textEl);
+                if(this.el.children.length > 0) {
+                    mount(this.el, el('div', [this.textEl]), this.el.children[0]);
+                } else {
+                    mount(this.el, el('div', [this.textEl]));
+                }
             } else {
                 this.textEl = el("span.component_text");
-                mount(this.el, this.textEl);
+                if(this.el.children.length > 0) {
+                    mount(this.el, el('div', [this.textEl]), this.el.children[0]);
+                } else {
+                    mount(this.el, el('div', [this.textEl]));
+                }
             }
         }
         if (data.text) {
