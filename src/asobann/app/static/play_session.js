@@ -641,6 +641,7 @@ function setPlayerIsJoined() {
 
 const tablename = location.pathname.split("/")[2];
 toolbox.setTableName(tablename);
+document.title = tablename + " on asobann";
 const container = el("div.container");
 mount(document.body, container);
 const table = new Table();
