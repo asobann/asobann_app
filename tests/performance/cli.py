@@ -19,12 +19,12 @@ def do_run(name: str, workers: int, env: 'AbstractContainers', headless: bool, u
     pprint(result)
 
 
-def containers_instance(local, docker, aws):
-    if local:
+def containers_instance(run_on):
+    if run_on == 'local':
         return LocalProcesses()
-    elif docker:
+    elif run_on == 'docker':
         return LocalContainers()
-    elif aws:
+    elif run_on == 'aws':
         return AwsContainers()
     else:
         print('Either --local, --docker or --aws option must be specified', file=sys.stderr)
@@ -32,10 +32,24 @@ def containers_instance(local, docker, aws):
 
 
 @app.command()
-def run(name: str, workers:int, local: bool = False, docker: bool = False, aws: bool = False, debug: bool = False,
-        provision: bool = False, headless: bool = True, url: str = None):
+def run(name: str = typer.Argument(..., help='Name of tests in package.subpackage.module format.'),
+        workers: int = typer.Argument(...,
+                                      help='Number of workers.  Effect of number of workers depends on what test to run.'),
+        run_on: str = typer.Option(default='local',
+                                   help='The environment where the test is run.  One of local / docker /aws. '),
+        debug: bool = False,
+        provision: bool = False,
+        headless: bool = True,
+        url: str = typer.Option(default=None,
+                                help="Target web application's base URL.  ex) https://dev.asobann.yattom.jp")
+        ):
+    """
+    Run specified test.
+
+    ex) python -m tests.performance.cli run tests.performance.move_and_remove_kit 3 --run-on local --provision --url https://asobann.yattom.jp
+    """
     Logger.debug = debug
-    env = containers_instance(local, docker, aws)
+    env = containers_instance(run_on)
 
     if provision:
         env.build_docker_images()
@@ -43,16 +57,20 @@ def run(name: str, workers:int, local: bool = False, docker: bool = False, aws: 
 
 
 @app.command()
-def provision(local: bool = False, docker: bool = False, aws: bool = False, debug: bool = False):
+def provision(run_on: str = typer.Option(default='local',
+                                         help='The environment where the test is run.  One of local / docker /aws. '),
+              debug: bool = False):
     Logger.debug = debug
-    env = containers_instance(local, docker, aws)
+    env = containers_instance(run_on)
     env.build_docker_images()
 
 
 @app.command()
-def teardown(local: bool = False, docker: bool = False, aws: bool = False, debug: bool = False):
+def teardown(run_on: str = typer.Option(default='local',
+                                        help='The environment where the test is run.  One of local / docker /aws. '),
+             debug: bool = False):
     Logger.debug = debug
-    env = containers_instance(local, docker, aws)
+    env = containers_instance(run_on)
     env.remove_containers()
 
 
