@@ -214,4 +214,14 @@ def create_app(testing=False):
         image_base_path = Path('/tmp/asobann/images')
         return send_file(image_base_path / file_name)
 
+    @app.route('/debug_setting')
+    def get_debug_setting():
+        if app.config['ENV'] == 'production':
+            return '{}'
+
+        setting = {
+            'performanceRecording': app.config.get('DEBUG_PERFORMANCE_RECORDING', False),
+        }
+        return jsonify(setting)
+
     return app

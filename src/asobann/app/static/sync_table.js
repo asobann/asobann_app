@@ -1,3 +1,5 @@
+import {dev_inspector} from "./dev_inspector.js";
+
 const socket = io(
     // {
     //     transports: ['websocket']
@@ -51,6 +53,7 @@ function emit(eventName, data) {
         }
         bulkPropagation.events.push({ eventName: eventName, data: data });
     } else {
+        dev_inspector.tracePoint('emitted');
         socket.emit(eventName, data);
     }
 }
@@ -142,8 +145,10 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
         volatile: volatile === true,
     };
     if (isInBulkPropagate()) {
+        dev_inspector.tracePoint('merged in bulk');
         bulkPropagation.events.push({ eventName: eventName, data: data });
     } else {
+        dev_inspector.tracePoint('queued');
         componentUpdateQueue.push({ eventName: eventName, data: data });
     }
 }

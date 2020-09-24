@@ -1,6 +1,7 @@
 import {el, mount, setAttr, setStyle, unmount} from "./redom.es.js";
 import {allCardistry} from "./cardistry.js";
 import {_, language} from "./i18n.js";
+import {dev_inspector} from "./dev_inspector.js"
 
 // import interact from './interact.js'
 
@@ -125,6 +126,8 @@ const flippability = {
             if (!isFlippingPermitted()) {
                 return;
             }
+            dev_inspector.startTrace('flippability.dblclick');
+            dev_inspector.tracePoint('event listener');
             let diff = {};
             if (component.owner && component.owner !== featsContext.getPlayerName()) {
                 return;

@@ -37,3 +37,8 @@ if use_aws:
 else:
     AWS_KEY = None
     AWS_SECRET = None
+
+if 'DEBUG_PERFORMANCE_RECORDING' in os.environ:
+    DEBUG_PERFORMANCE_RECORDING = os.environ['DEBUG_PERFORMANCE_RECORDING']
+else:
+    DEBUG_PERFORMANCE_RECORDING = None
