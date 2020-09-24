@@ -246,6 +246,20 @@ class Table {
         return nextZIndex;
     }
 
+    getNextZIndexFor(componentData) {
+        let currentZIndex = componentData.zIndex;
+        for (const otherId in this.data.components) {
+            if(otherId === componentData.componentId) {
+                continue;
+            }
+            const other = this.data.components[otherId];
+            if (currentZIndex <= other.zIndex) {
+                currentZIndex = other.zIndex + 1;
+            }
+        }
+        return currentZIndex;
+    }
+
     getAllHandAreas() {
         const handAreasData = [];
         for (const cmpId in this.data.components) {

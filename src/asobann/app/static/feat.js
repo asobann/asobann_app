@@ -824,9 +824,12 @@ const touchToRaise = {
             if (component.handArea || component.traylike || componentData.boxOfComponents) {
                 return;
             }
-            component.zIndex = featsContext.table.getNextZIndex();
-            setStyle(component.el, { zIndex: component.zIndex });
-            component.propagate({ zIndex: component.zIndex });
+            const nextZIndex = featsContext.table.getNextZIndexFor(componentData);
+            if(nextZIndex > component.zIndex) {
+                component.zIndex = nextZIndex
+                setStyle(component.el, { zIndex: component.zIndex });
+                component.propagate({ zIndex: component.zIndex });
+            }
         });
     },
 
