@@ -8,7 +8,7 @@ function noop() {
 const dev_inspector = {
     // initialize with NOOP functions
     startTrace: noop,
-    resumeTrace: (name, traceId) => {
+    resumeTrace: (traceId) => {
     },
     endTrace: noop,
     passTraceInfo: noop,
@@ -19,7 +19,7 @@ const dev_inspector = {
 };
 
 
-function setPerformanceRecordingDebugger() {
+function setPerformanceRecordingDebugger(uid) {
     const context = {};
     const traces = [];
 
@@ -37,8 +37,8 @@ function setPerformanceRecordingDebugger() {
         const traceId = Math.floor(Math.random() * 1000000000);
         resetTrace(name, traceId);
     }
-    dev_inspector.resumeTrace = function (name, traceId) {
-        resetTrace(name, traceId);
+    dev_inspector.resumeTrace = function (traceId) {
+        resetTrace(null, traceId);
     }
     dev_inspector.endTrace = function () {
         context.traceId = null;
@@ -74,6 +74,28 @@ function setPerformanceRecordingDebugger() {
         )
     }
 
+    function sendTraces() {
+        const toSend = [];
+        while (traces.length > 0) {
+            if (traces[0] === context.currentTracing) {
+                break;
+            }
+            toSend.push(traces.shift());
+        }
+        if (toSend.length === 0) {
+            return;
+        }
+        const data = {
+            traces: toSend,
+            originator: uid,
+        }
+        const request = new Request('/debug/add_traces', { method: 'POST', body: JSON.stringify(data) });
+        request.headers.append('Content-Type', 'application/json');
+        fetch(request);
+    }
+
+    setInterval(sendTraces, 5000);
+
     const button = document.createElement('button');
     button.setAttribute('id', 'show_performance_recording');
     button.innerText = 'Show Performance Recording';
@@ -85,13 +107,14 @@ function setPerformanceRecordingDebugger() {
 
 (function () {
     (async () => {
+        const uid = Math.floor(Math.random() * 1000000000);
         const url = baseUrl() + "debug_setting";
         const response = await fetch(url);
         const data = response.json();
         const setting = await data;
 
         if (setting.performanceRecording) {
-            setPerformanceRecordingDebugger();
+            setPerformanceRecordingDebugger(uid);
         }
     })();
 })();

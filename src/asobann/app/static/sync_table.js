@@ -121,6 +121,9 @@ function sendComponentUpdateFromQueue() {
             }
         }
         if (shouldEmit) {
+            if (update.data.inspectionTraceId) {
+                dev_inspector.tracePointByTraceId('emitted', update.data.inspectionTraceId);
+            }
             socket.emit(update.eventName, update.data);
         }
     }
@@ -165,7 +168,7 @@ socket.on("update single component", (msg) => {
         return;
     }
     if(msg.inspectionTraceId) {
-        dev_inspector.resumeTrace('receive update single component', msg.inspectionTraceId);
+        dev_inspector.resumeTrace(msg.inspectionTraceId);
         dev_inspector.tracePoint('receive update single component');
     }
     if (msg.originator === context.client_connection_id) {

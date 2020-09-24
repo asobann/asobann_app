@@ -52,6 +52,8 @@ const draggability = {
                     if (!isDraggingPermitted()) {
                         return;
                     }
+                    dev_inspector.startTrace('draggability.move');
+                    dev_inspector.tracePoint('event listener');
                     featsContext.table.consolidatePropagation(() => {
                         featsContext.fireEvent(component, draggability.events.onMoving,
                             {
@@ -61,11 +63,14 @@ const draggability = {
                                 dy: event.dy,
                             });
                     });
+                    dev_inspector.endTrace();
                 },
                 end(event) {
                     if (!isDraggingPermitted()) {
                         return;
                     }
+                    dev_inspector.startTrace('draggability.end');
+                    dev_inspector.tracePoint('event listener');
                     console.log("draggable end", component.componentId);
                     featsContext.table.consolidatePropagation(() => {
                         featsContext.fireEvent(component, featsContext.events.onPositionChanged,
@@ -77,6 +82,7 @@ const draggability = {
                             });
                         featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
                     });
+                    dev_inspector.tracePoint('event listener');
                 }
             }
         });

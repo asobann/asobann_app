@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, abort, send_file
 from flask_pymongo import PyMongo
@@ -223,5 +224,27 @@ def create_app(testing=False):
             'performanceRecording': app.config.get('DEBUG_PERFORMANCE_RECORDING', False),
         }
         return jsonify(setting)
+
+    @app.route('/debug/add_traces', methods=['POST'])
+    def add_traces():
+        data = json.loads(request.get_data())
+        s = str(data)
+        app.logger.debug(f"add trace: {s[:30]}...")
+        app.mongo.db.traces.insert_one({'traces': data, 'created_at': time.time() * 1000})
+        return make_response()
+
+    @app.route('/debug/traces')
+    def view_traces():
+        return render_template('debug/traces.html')
+
+    @app.route('/debug/get_traces', methods=['GET'])
+    def get_traces():
+        since = request.args.get('since')
+        traces = app.mongo.db.traces.find({'created_at': {'$gt': float(since)}})
+        return jsonify({
+            'data': [{'traces': t['traces'],
+                      'created_at': t['created_at']
+                      } for t in traces]
+        })
 
     return app

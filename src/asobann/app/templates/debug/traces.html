@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<script src="{{ url_for('static', filename='debug/traces.js') }}" type="module"></script>
+<style>
+li.point {
+  display: inline;
+  position: absolute;
+  color: white;
+}
+li.locus {
+  position: relative;
+}
+</style>
+<h1>view performance traces</h1>
+<div id="container">
+  <div id="traces">
+  </div>
+</div>
