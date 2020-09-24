@@ -138,6 +138,7 @@ const flippability = {
                 diff.faceup = component.faceup = true;
             }
             component.propagate(diff);
+            dev_inspector.endTrace();
         });
     },
     isEnabled: function (component, data) {

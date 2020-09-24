@@ -39,6 +39,11 @@ function finishConsolidatedPropagationAndEmit() {
         originator: context.client_connection_id,
         events: bulkPropagation.events,
     });
+    for (const e of bulkPropagation.events) {
+        if (e.inspectionTraceId) {
+            dev_inspector.tracePointByTraceId('bulk emitted', e.inspectionTraceId);
+        }
+    }
     bulkPropagation.events = [];
 }
 
@@ -146,9 +151,11 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
     };
     if (isInBulkPropagate()) {
         dev_inspector.tracePoint('merged in bulk');
+        dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
         bulkPropagation.events.push({ eventName: eventName, data: data });
     } else {
         dev_inspector.tracePoint('queued');
+        dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
         componentUpdateQueue.push({ eventName: eventName, data: data });
     }
 }
@@ -157,10 +164,15 @@ socket.on("update single component", (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
     }
+    if(msg.inspectionTraceId) {
+        dev_inspector.resumeTrace('receive update single component', msg.inspectionTraceId);
+        dev_inspector.tracePoint('receive update single component');
+    }
     if (msg.originator === context.client_connection_id) {
         return;
     }
     context.updateSingleComponent(msg.componentId, msg.diff);
+    dev_inspector.endTrace();
 });
 
 

@@ -172,6 +172,8 @@ class Table {
             delete this.componentsOnTable[componentIdToRemove];
             unmount(this.list_el, notUpdatedComponents[componentIdToRemove].el);
         }
+
+        dev_inspector.tracePoint('finish updating table');
     }
 
     addComponent(componentData) {
@@ -295,6 +297,7 @@ const sync_table_connector = {
         if (tableData.components[componentId].lastUpdated) {
             if (tableData.components[componentId].lastUpdated.from == diff.lastUpdated.from
                 && tableData.components[componentId].lastUpdated.epoch > diff.lastUpdated.epoch) {
+                dev_inspector.tracePoint('aborted sync update single component');
                 // already recieved newer update for this component; ignore the diff
                 return;
             }
@@ -302,6 +305,7 @@ const sync_table_connector = {
         Object.assign(tableData.components[componentId], diff);
         table.update(tableData);
         menu.update(tableData);
+        dev_inspector.tracePoint('finished sync update single component');
     },
 
     updateManyComponents: function (updates) {
@@ -324,6 +328,7 @@ const sync_table_connector = {
         }
         table.update(tableData);
         menu.update(tableData);
+        dev_inspector.tracePoint('finished sync update many components');
     },
 
     addComponent: function (componentData) {

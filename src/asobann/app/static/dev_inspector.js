@@ -8,33 +8,70 @@ function noop() {
 const dev_inspector = {
     // initialize with NOOP functions
     startTrace: noop,
+    resumeTrace: (name, traceId) => {
+    },
+    endTrace: noop,
+    passTraceInfo: noop,
+    tracePoint: (label) => {
+    },
+    tracePointByTraceId: (label, traceId) => {
+    },
 };
 
 
 function setPerformanceRecordingDebugger() {
     const context = {};
     const traces = [];
-    dev_inspector.startTrace = function (name, processTraceInfo) {
+
+    function resetTrace(name, traceId) {
+        context.traceId = traceId;
         context.currentTracing = {
+            traceId: context.traceId,
             name: name,
             points: []
         };
         traces.push(context.currentTracing);
-        context.trace_id = Math.floor(Math.random() * 1000000000);
+    }
 
-        if(processTraceInfo) {
-            processTraceInfo(context.trace_id);
+    dev_inspector.startTrace = function (name) {
+        const traceId = Math.floor(Math.random() * 1000000000);
+        resetTrace(name, traceId);
+    }
+    dev_inspector.resumeTrace = function (name, traceId) {
+        resetTrace(name, traceId);
+    }
+    dev_inspector.endTrace = function () {
+        context.traceId = null;
+        context.currentTracing = null;
+    }
+    dev_inspector.passTraceInfo = function (traceInfoReceiver) {
+        if (!context.traceId) {
+            return;
+        }
+        if (traceInfoReceiver) {
+            traceInfoReceiver(context.traceId);
         }
     }
     dev_inspector.tracePoint = function (label) {
-        if(!context.currentTracing) {
+        if (!context.currentTracing) {
             return;
         }
         context.currentTracing.points.push({
-            trace_id: context.trace_id,
             label: label,
             timestamp: Date.now()
         });
+    }
+    dev_inspector.tracePointByTraceId = function (label, traceId) {
+        traces.push(
+            {
+                traceId: traceId,
+                name: '',
+                points: [{
+                    label: label,
+                    timestamp: Date.now(),
+                }]
+            }
+        )
     }
 
     const button = document.createElement('button');
@@ -43,7 +80,7 @@ function setPerformanceRecordingDebugger() {
     button.addEventListener('click', () => {
         alert(JSON.stringify(traces));
     });
-    document.getElementsByTagName('body')[0]. appendChild(button)
+    document.getElementsByTagName('body')[0].appendChild(button)
 }
 
 (function () {
