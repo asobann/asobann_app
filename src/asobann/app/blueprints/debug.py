@@ -38,3 +38,8 @@ def get_traces():
                   'created_at': t['created_at']
                   } for t in traces]
     })
+
+
+@blueprint.route('delete_all_traces')
+def delete_all_traces():
+    current_app.mongo.db.traces.remove({})

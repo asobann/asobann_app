@@ -142,9 +142,16 @@ function clear() {
     refresh();
 }
 
+function deleteData() {
+    fetch('/debug/delete_all_traces')
+}
+
 const containerEl = document.getElementById('container');
 const refreshButton = el('button', { onclick: refresh }, 'Refresh');
 mount(document.body, refreshButton, containerEl);
 
 const clearButton = el('button', { onclick: clear }, 'Clear');
 mount(document.body, clearButton, containerEl);
+
+const deleteButton = el('button', { onclick: deleteData }, 'Delete All Traces from Server');
+mount(document.body, deleteButton, containerEl);
