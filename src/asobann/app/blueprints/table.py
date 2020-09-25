@@ -4,6 +4,7 @@ from flask import (
 from flask_socketio import SocketIO, emit, join_room
 from asobann.store import tables, components, kits
 from asobann import socketio
+from asobann.app import debug_tools
 
 blueprint = Blueprint('tables', __name__, url_prefix='/tables')
 
@@ -56,17 +57,26 @@ def handle_set_player(json):
 
 @event_handler('update single component')
 def update_single_component(json, table):
+    trace = debug_tools.resume_trace(json)
+    trace.trace_point('update single component')
     if "volatile" not in json or not json["volatile"]:
         table["components"][json["componentId"]].update(json["diff"])
+    trace.end()
 
 
 @socketio.on(update_single_component.event_name)
 def handle_update_single_component(json):
+    trace = debug_tools.resume_trace(json)
+    trace.trace_point('handle update single component')
     current_app.logger.debug(f'update single component: {json}')
     table = tables.get(json["tablename"])
     update_single_component(json, table)
+    trace.trace_point('before update_table')
     tables.update_table(json["tablename"], table)
+    trace.trace_point('after update_table')
     emit("update single component", json, broadcast=True, room=json["tablename"])
+    trace.trace_point('emitted response')
+    trace.end()
 
 
 @event_handler('add component')

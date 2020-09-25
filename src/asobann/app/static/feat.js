@@ -503,9 +503,11 @@ const within = {
         }
 
         featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
+            dev_inspector.tracePoint('within.onPositionChanged');
             const withinCheckResult = pickCollidedComponents();
             processAllStart(withinCheckResult);
             processAllEnd(withinCheckResult);
+            dev_inspector.tracePoint('finished within.onPositionChanged');
 
             function pickCollidedComponents() {
                 const thingsWithinMe = [];
