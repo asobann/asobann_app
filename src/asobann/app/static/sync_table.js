@@ -40,8 +40,8 @@ function finishConsolidatedPropagationAndEmit() {
         events: bulkPropagation.events,
     });
     for (const e of bulkPropagation.events) {
-        if (e.inspectionTraceId) {
-            dev_inspector.tracePointByTraceId('bulk emitted', e.inspectionTraceId);
+        if (e.data.inspectionTraceId) {
+            dev_inspector.tracePointByTraceId('bulk emitted', e.data.inspectionTraceId);
         }
     }
     bulkPropagation.events = [];
@@ -172,9 +172,11 @@ socket.on("update single component", (msg) => {
         dev_inspector.tracePoint('receive update single component');
     }
     if (msg.originator === context.client_connection_id) {
+        dev_inspector.endTrace();
         return;
     }
     context.updateSingleComponent(msg.componentId, msg.diff);
+    dev_inspector.tracePoint('finished receive update single component');
     dev_inspector.endTrace();
 });
 
@@ -182,6 +184,11 @@ socket.on("update single component", (msg) => {
 socket.on('update many components', (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
+    }
+    for(const ev of msg.events) {
+        if (ev.data.inspectionTraceId) {
+            dev_inspector.tracePointByTraceId('receive update many components', ev.data.inspectionTraceId);
+        }
     }
     if (msg.originator === context.client_connection_id) {
         return;

@@ -58,10 +58,6 @@ function addPoint(locus, point, singleTrace) {
     }
 }
 
-const colors = [
-    'blue', 'chocolate', 'blueviolet', 'darkgreen', 'darkred', 'mediumblue', 'lightslategray', 'maroon', 'seagreen'
-];
-
 async function refresh() {
     await getTraces();
 
@@ -74,25 +70,25 @@ async function refresh() {
     for (const traceId of sortedTraceIds()) {
         const startedAt = singleTrace(traceId).startedAt;
         const name = singleTrace(traceId).name;
-        const singleTraceEl = el('li.single_trace', {}, name);
+        const singleTraceEl = el('div.single_trace', {}, name + " " + new Date(startedAt).toLocaleString() + " traceId: " + traceId);
         mount(tracesEl, singleTraceEl);
 
-        const lociUl = el('ul');
-        let colorIndex = 0;
-        for (const locus in singleTrace(traceId).loci) {
-            const locusEl = el('li.locus', {}, locus);
-            const pointsUl = el('ul');
-            for (const point of singleTrace(traceId).loci[locus]) {
+        const lociEl = el('div.loci');
+        for (const locusKey of sortedLociKeys(singleTrace(traceId).loci)) {
+            const points = singleTrace(traceId).loci[locusKey];
+            const locusEl = el('div.locus', [el('div.locus_label', locusKey)]);
+            const pointsEl = el('div.points');
+            for (const point of points) {
                 const ts = point.timestamp - startedAt;
-                const pointEl = el('li.point', {}, ts + " " + point.label);
-                setStyle(pointEl, { backgroundColor: colors[colorIndex], left: ts + 'px' });
-                colorIndex = (colorIndex + 1) % colors.length;
-                mount(pointsUl, pointEl);
+                const text = ts + "ms " + point.label + " on " + locusKey;
+                const pointEl = el('div.point', { title: text }, text);
+                setStyle(pointEl, { backgroundColor: colorForText(point.label), left: ts + 'px' });
+                mount(pointsEl, pointEl);
             }
-            mount(locusEl, pointsUl);
-            mount(lociUl, locusEl);
+            mount(locusEl, pointsEl);
+            mount(lociEl, locusEl);
         }
-        mount(singleTraceEl, lociUl);
+        mount(singleTraceEl, lociEl);
     }
     mount(containerEl, tracesEl);
 }
@@ -104,6 +100,30 @@ function sortedTraceIds() {
     }
     traceIds.sort((a, b) => traces[a].startedAt - traces[b].startedAt);
     return traceIds;
+}
+
+function sortedLociKeys(loci) {
+    const keys = [];
+    for (const k in loci) {
+        keys.push(k);
+    }
+    keys.sort((a, b) => loci[a][0].timestamp - loci[b][0].timestamp);
+    return keys;
+
+}
+
+function colorForText(text) {
+    const colors = [
+        'blue', 'chocolate', 'blueviolet', 'darkgreen', 'darkred',
+        'mediumblue', 'lightslategray', 'maroon', 'seagreen', 'darkblue',
+        'teal', 'lightsalmon', 'indigo', 'dimgray', 'darkviolet'
+    ];
+
+    let val = 0;
+    for(let i = 0; i < text.length; i++) {
+        val = val ^ (text.charCodeAt(i) + i);
+    }
+    return colors[val % colors.length];
 }
 
 function clear() {

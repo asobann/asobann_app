@@ -1,13 +1,33 @@
 <!DOCTYPE html>
 <script src="{{ url_for('static', filename='debug/traces.js') }}" type="module"></script>
 <style>
-li.point {
+div.loci {
+  position: static;
+  display: inline-list-item;
+}
+div.locus {
+  display: flex;
+  margin-left: 2em;
+  flex-direction: row;
+}
+div.locus_label {
+  width: 6.5em;
+}
+div.points {
+  flex: 1;
+  position: relative;
+  display: block;
+}
+div.locus_label {
+
+}
+div.point {
+  border-left: 2px solid red;
+  border-top: 2px solid white;
+  border-bottom: 2px solid white;
   display: inline;
   position: absolute;
-  color: white;
-}
-li.locus {
-  position: relative;
+  color: lightgray;
 }
 </style>
 <h1>view performance traces</h1>
