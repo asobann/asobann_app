@@ -78,10 +78,11 @@ async function refresh() {
             const points = singleTrace(traceId).loci[locusKey];
             const locusEl = el('div.locus', [el('div.locus_label', locusKey)]);
             const pointsEl = el('div.points');
+            const pointsText = titleTextForPoints(points, locusKey, startedAt);
             for (const point of points) {
                 const ts = point.timestamp - startedAt;
                 const text = ts + "ms " + point.label;
-                const pointEl = el('div.point', { title: text + " on " + locusKey }, text);
+                const pointEl = el('div.point', { title: pointsText }, text);
                 setStyle(pointEl, { backgroundColor: colorForText(point.label), left: ts + 'px' });
                 mount(pointsEl, pointEl);
             }
@@ -91,6 +92,14 @@ async function refresh() {
         mount(singleTraceEl, lociEl);
     }
     mount(containerEl, tracesEl);
+
+    function titleTextForPoints(points, locusKey, startedAt) {
+        let text = 'on ' + locusKey + ':\n';
+        for(const point of points) {
+            text += (point.timestamp - startedAt) + "ms " + point.label + '\n'
+        }
+        return text;
+    }
 }
 
 function sortedTraceIds() {
