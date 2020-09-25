@@ -80,8 +80,8 @@ async function refresh() {
             const pointsEl = el('div.points');
             for (const point of points) {
                 const ts = point.timestamp - startedAt;
-                const text = ts + "ms " + point.label + " on " + locusKey;
-                const pointEl = el('div.point', { title: text }, text);
+                const text = ts + "ms " + point.label;
+                const pointEl = el('div.point', { title: text + " on " + locusKey }, text);
                 setStyle(pointEl, { backgroundColor: colorForText(point.label), left: ts + 'px' });
                 mount(pointsEl, pointEl);
             }
@@ -120,7 +120,7 @@ function colorForText(text) {
     ];
 
     let val = 0;
-    for(let i = 0; i < text.length; i++) {
+    for (let i = 0; i < text.length; i++) {
         val = val ^ (text.charCodeAt(i) + i);
     }
     return colors[val % colors.length];

@@ -34,7 +34,10 @@ function setPerformanceRecordingDebugger(uid) {
     }
 
     dev_inspector.startTrace = function (name) {
-        const traceId = Math.floor(Math.random() * 1000000000);
+        const traceId = 'xxx-xxx-xxxx'.replace(/[x]/g, function (/*c*/) {
+            const s = '23456789abcdefghjkmnpqrstuvwxyz';
+            return s[Math.floor(Math.random() * s.length)];
+        })
         resetTrace(name, traceId);
     }
     dev_inspector.resumeTrace = function (traceId) {
@@ -108,8 +111,11 @@ function setPerformanceRecordingDebugger(uid) {
 (function () {
     (async () => {
         const uid = Math.floor(Math.random() * 1000000000);
-        const url = baseUrl() + "debug_setting";
+        const url = baseUrl() + "/debug/setting";
         const response = await fetch(url);
+        if(!response.ok) {
+            return;
+        }
         const data = response.json();
         const setting = await data;
 

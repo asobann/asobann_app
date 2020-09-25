@@ -1,11 +1,9 @@
-import time
 from pathlib import Path
-from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, abort, send_file
+from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, send_file
 from flask_pymongo import PyMongo
 from logging.config import dictConfig
 import boto3
 
-from pygments.unistring import Lo
 from werkzeug.datastructures import FileStorage
 
 import asobann
@@ -157,10 +155,14 @@ def create_app(testing=False):
     components.connect(app.mongo)
     kits.connect(app.mongo)
 
-    from . import table, component, kit
+    from asobann.app.blueprints import table, kit, component
     app.register_blueprint(table.blueprint)
     app.register_blueprint(component.blueprint)
     app.register_blueprint(kit.blueprint)
+    if app.config['ENV'] == 'development':
+        from asobann.app.blueprints import debug
+        app.register_blueprint(debug.blueprint)
+
 
     @app.route('/')
     def index():
@@ -215,36 +217,6 @@ def create_app(testing=False):
         image_base_path = Path('/tmp/asobann/images')
         return send_file(image_base_path / file_name)
 
-    @app.route('/debug_setting')
-    def get_debug_setting():
-        if app.config['ENV'] == 'production':
-            return '{}'
 
-        setting = {
-            'performanceRecording': app.config.get('DEBUG_PERFORMANCE_RECORDING', False),
-        }
-        return jsonify(setting)
-
-    @app.route('/debug/add_traces', methods=['POST'])
-    def add_traces():
-        data = json.loads(request.get_data())
-        s = str(data)
-        app.logger.debug(f"add trace: {s[:30]}...")
-        app.mongo.db.traces.insert_one({'traces': data, 'created_at': time.time() * 1000})
-        return make_response()
-
-    @app.route('/debug/traces')
-    def view_traces():
-        return render_template('debug/traces.html')
-
-    @app.route('/debug/get_traces', methods=['GET'])
-    def get_traces():
-        since = request.args.get('since')
-        traces = app.mongo.db.traces.find({'created_at': {'$gt': float(since)}})
-        return jsonify({
-            'data': [{'traces': t['traces'],
-                      'created_at': t['created_at']
-                      } for t in traces]
-        })
 
     return app
