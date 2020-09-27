@@ -1,0 +1,13 @@
+[tool.pytest.ini_options]
+testpaths = [ "tests" ]
+filterwarnings = [
+    "ignore::DeprecationWarning:eventlet",
+    "ignore::DeprecationWarning:dns",
+    "ignore:Monkey-patching::",
+]
+markers = [
+    "loadtest: load tests using heroku",
+    "quick: fast and light tests",
+]
+addopts = "-m 'not loadtest' --ignore tests/performance"
+

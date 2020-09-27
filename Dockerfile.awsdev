@@ -4,16 +4,13 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 RUN apt-get -y update
 RUN apt-get install -y python3 python3-pip
-RUN pip3 install pipenv
 
 # application specific configuration
 EXPOSE 5000
-# These should be defined in AWS Task Definition
-#ENV REDIS_URI=redis://redis:6379
-#ENV MONGODB_URI=mongodb://admin:password@mongodb:27017/asobann_dev?authSource=admin
 RUN mkdir /app
-COPY . /app
 WORKDIR /app
-RUN pipenv install -d
+COPY requirements.txt /app/
+RUN pip3 install --requirement requirements.txt
+COPY src /app/
 ENV FLASK_ENV=development
-CMD pipenv run python -m asobann.deploy ; pipenv run python -m asobann.wsgi
+CMD python3 -m asobann.deploy ; python3 -m asobann.wsgi
