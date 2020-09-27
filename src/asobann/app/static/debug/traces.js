@@ -2,6 +2,8 @@ import {el, mount, unmount, setStyle, setAttr} from "../redom.es.js";
 
 const traces = {};
 let nextGetTrace = 0;  // Date.now();
+let automaticRefresh = false;
+
 async function getTraces() {
     const response = await fetch('/debug/get_traces?since=' + nextGetTrace);
     const data = await (await response).json();
@@ -93,6 +95,8 @@ async function refresh() {
     }
     mount(containerEl, tracesEl);
 
+    window.scrollTo({ top: document.getElementsByTagName('body')[0].scrollHeight });
+
     function titleTextForPoints(points, locusKey, startedAt) {
         let text = 'on ' + locusKey + ':\n';
         for(const point of points) {
@@ -142,9 +146,38 @@ function clear() {
     refresh();
 }
 
-const containerEl = document.getElementById('container');
+function switchAuto() {
+    if(automaticRefresh) {
+        automaticRefresh = false;
+        autoButton.innerText = 'Start Auto Refresh';
+    } else {
+        automaticRefresh = true;
+        autoButton.innerText = 'Stop Auto Refresh';
+
+        setTimeout(autoRefresh, 1000);
+    }
+}
+
+function autoRefresh() {
+    refresh();
+    if(automaticRefresh) {
+        setTimeout(autoRefresh, 1000);
+    }
+}
+
+function deleteOnServer() {
+    fetch('/debug/delete_traces');
+}
+
+const controlsEl = document.getElementById('controls');
 const refreshButton = el('button', { onclick: refresh }, 'Refresh');
-mount(document.body, refreshButton, containerEl);
+mount(controlsEl,refreshButton);
 
 const clearButton = el('button', { onclick: clear }, 'Clear');
-mount(document.body, clearButton, containerEl);
+mount(controlsEl, clearButton);
+
+const deleteButton = el('button', { onclick: deleteOnServer }, 'Delete All Traces on Server');
+mount(controlsEl, deleteButton);
+
+const autoButton = el('button', { onclick: switchAuto }, 'Start Auto Refresh');
+mount(controlsEl, autoButton);

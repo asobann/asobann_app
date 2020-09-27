@@ -29,6 +29,12 @@ def view_traces():
     return render_template('debug/traces.html')
 
 
+@blueprint.route('delete_traces')
+def delete_traces():
+    current_app.mongo.db.traces.remove({})
+    return "{}"
+
+
 @blueprint.route('get_traces', methods=['GET'])
 def get_traces():
     since = request.args.get('since')

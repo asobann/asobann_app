@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <script src="{{ url_for('static', filename='debug/traces.js') }}" type="module"></script>
 <style>
+div#controls {
+  position: sticky;
+  top: 4em;
+  left: 4em;
+  border: 1px solid black;
+  z-index: 1;
+}
 div.loci {
   position: static;
   display: inline-list-item;
@@ -31,6 +38,8 @@ div.point {
 }
 </style>
 <h1>view performance traces</h1>
+<div id="controls">
+</div>
 <div id="container">
   <div id="traces">
   </div>

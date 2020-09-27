@@ -97,7 +97,7 @@ function setPerformanceRecordingDebugger(uid) {
         fetch(request);
     }
 
-    setInterval(sendTraces, 5000);
+    setInterval(sendTraces, 1000);
 
     const button = document.createElement('button');
     button.setAttribute('id', 'show_performance_recording');
