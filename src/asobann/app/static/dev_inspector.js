@@ -98,14 +98,6 @@ function setPerformanceRecordingDebugger(uid) {
     }
 
     setInterval(sendTraces, 1000);
-
-    const button = document.createElement('button');
-    button.setAttribute('id', 'show_performance_recording');
-    button.innerText = 'Show Performance Recording';
-    button.addEventListener('click', () => {
-        alert(JSON.stringify(traces));
-    });
-    document.getElementsByTagName('body')[0].appendChild(button)
 }
 
 (function () {
