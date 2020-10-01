@@ -106,6 +106,7 @@ socket.on("mouse movement", (msg) => {
 
 // sending out component update to server is queued and actually emit()ted intermittently
 const componentUpdateQueue = [];
+const actualUpdateQueue = [];
 
 function sendComponentUpdateFromQueue() {
     while (componentUpdateQueue.length > 0) {
@@ -127,6 +128,11 @@ function sendComponentUpdateFromQueue() {
             socket.emit(update.eventName, update.data);
         }
     }
+
+    while(actualUpdateQueue.length > 0) {
+        const actualUpdate = actualUpdateQueue.shift();
+        actualUpdate();
+    }
 }
 
 setInterval(sendComponentUpdateFromQueue, 75);
@@ -136,9 +142,6 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
     if (!table.data.components[componentId]) {
         console.log("no such component", componentId, table.data);
     }
-    const oldData = table.data;
-    Object.assign(oldData.components[componentId], diff);
-    table.update(oldData);
 
     const eventName = "update single component";
     diff.lastUpdated = {
@@ -152,15 +155,32 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
         diff: diff,
         volatile: volatile === true,
     };
+    const event = {
+        eventName: eventName,
+        data: data
+    };
+    const actualUpdate = () => {
+        applyUpdateNow(table, event.data.componentId, event.data.diff);
+    }
     if (isInBulkPropagate()) {
         dev_inspector.tracePoint('merged in bulk');
         dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
-        bulkPropagation.events.push({ eventName: eventName, data: data });
+        bulkPropagation.events.push(event);
+        actualUpdateQueue.push(actualUpdate);
+        // actualUpdate();
     } else {
         dev_inspector.tracePoint('queued');
         dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
-        componentUpdateQueue.push({ eventName: eventName, data: data });
+        componentUpdateQueue.push(event);
+        actualUpdateQueue.push(actualUpdate);
+        // actualUpdate();
     }
+}
+
+function applyUpdateNow(table, componentId, diff) {
+    const oldData = table.data;
+    Object.assign(oldData.components[componentId], diff);
+    table.update(oldData);
 }
 
 socket.on("update single component", (msg) => {

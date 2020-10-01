@@ -48,6 +48,14 @@ const draggability = {
 
         interact(component.el).draggable({
             listeners: {
+                start(event) {
+                    if (!isDraggingPermitted()) {
+                        return;
+                    }
+
+                    component.dragStartXonTarget = event.x0 - parseFloat(component.el.style.left);
+                    component.dragStartYonTarget = event.y0 - parseFloat(component.el.style.top);
+                },
                 move(event) {
                     if (!isDraggingPermitted()) {
                         return;
@@ -61,6 +69,8 @@ const draggability = {
                                 left: parseFloat(component.el.style.left) + event.dx,
                                 dx: event.dx,
                                 dy: event.dy,
+                                x: event.page.x,
+                                y: event.page.y,
                             });
                     });
                     dev_inspector.endTrace();
@@ -88,7 +98,16 @@ const draggability = {
         });
 
         featsContext.addEventListener(component, draggability.events.onMoving, (e) => {
-            component.propagate_volatile({ top: e.top + "px", left: e.left + "px", moving: true });
+            // component.propagate_volatile({
+            //     top: e.top + "px",
+            //     left: e.left + "px",
+            //     moving: true
+            // });
+            component.propagate_volatile({
+                top: (e.y - component.dragStartYonTarget) + 'px',
+                left: (e.x - component.dragStartXonTarget) + 'px',
+                moving: true
+            });
         });
 
         featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
@@ -829,7 +848,7 @@ const touchToRaise = {
                 return;
             }
             const nextZIndex = featsContext.table.getNextZIndexFor(componentData);
-            if(nextZIndex > component.zIndex) {
+            if (nextZIndex > component.zIndex) {
                 component.zIndex = nextZIndex
                 setStyle(component.el, { zIndex: component.zIndex });
                 component.propagate({ zIndex: component.zIndex });
@@ -1151,7 +1170,7 @@ const feats = [
 
 // dynamic validation
 // It also helps removing some of 'unused property' warning but not all.
-for(const feat of feats) {
+for (const feat of feats) {
     console.assert(feat.install !== undefined);
     console.assert(feat.isEnabled !== undefined);
     console.assert(feat.onComponentUpdate !== undefined);
