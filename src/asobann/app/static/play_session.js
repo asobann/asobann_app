@@ -26,6 +26,12 @@ class Component {
     constructor(data) {
         this.el = el(".component");
         this.imageEl = null;
+        this.rect = {
+            left: data.left,
+            top: data.top,
+            width: data.width,
+            height: data.height,
+        };
 
         for (const ability of feats) {
             ability.install(this, data);
@@ -46,7 +52,7 @@ class Component {
                 //TODO looks like setting image src has impact on performance
                 // Better do it only on install() and don't change later.
                 // Flippability should be applied a similar enhancement.
-                if(this.imageEl.src !== data.imageEl) {
+                if (this.imageEl.src !== data.imageEl) {
                     setAttr(this.imageEl, { src: data.imageEl });
                 }
             }
@@ -59,7 +65,7 @@ class Component {
                         toolbox.use(data.toolboxFunction);
                     }
                 });
-                if(this.el.children.length > 0) {
+                if (this.el.children.length > 0) {
                     mount(this.el, el('div', [this.textEl]), this.el.children[0]);
                 } else {
                     mount(this.el, el('div', [this.textEl]));
@@ -112,9 +118,13 @@ class Component {
             'data-component-name': data.name,
         });
 
+        this.rect.left = parseFloat(data.left);
+        this.rect.top = parseFloat(data.top);
+        this.rect.width = parseFloat(data.width);
+        this.rect.height = parseFloat(data.height);
         setStyle(this.el, {
-            top: parseFloat(data.top) + "px",
             left: parseFloat(data.left) + "px",
+            top: parseFloat(data.top) + "px",
             width: parseFloat(data.width) + "px",
             height: parseFloat(data.height) + "px",
             backgroundColor: data.color,
@@ -141,7 +151,7 @@ class Component {
 class Table {
     constructor() {
         console.log("new Table");
-        this.el = el("div.table", { style: { top: '0px', left: '0px' } },
+        this.el = el("div.table", { style: { left: '0px', top: '0px' } },
             this.list_el = el("div.table_list")
         );
         // this.list = list(this.list_el, Component);
@@ -189,10 +199,10 @@ class Table {
         this.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
         event.fireEvent(this.componentsOnTable[componentData.componentId], event.events.onPositionChanged,
             {
-                top: parseFloat(componentData.top),
                 left: parseFloat(componentData.left),
-                height: parseFloat(componentData.height),
+                top: parseFloat(componentData.top),
                 width: parseFloat(componentData.width),
+                height: parseFloat(componentData.height),
             });
     }
 
@@ -211,8 +221,8 @@ class Table {
 
     findEmptySpace(width, height) {
         const rect = {
-            top: 64,
             left: 64,
+            top: 64,
             width: parseFloat(width),
             height: parseFloat(height),
         };
@@ -256,7 +266,7 @@ class Table {
     getNextZIndexFor(componentData) {
         let currentZIndex = componentData.zIndex;
         for (const otherId in this.data.components) {
-            if(otherId === componentData.componentId) {
+            if (otherId === componentData.componentId) {
                 continue;
             }
             const other = this.data.components[otherId];
@@ -387,11 +397,11 @@ const sync_table_connector = {
             otherPlayersMouse[playerName] = e;
         }
         const e = otherPlayersMouse[playerName];
-        const top = mouseMovement.mouseOnTableY + ICON_OFFSET_Y;
         const left = mouseMovement.mouseOnTableX + ICON_OFFSET_X;
+        const top = mouseMovement.mouseOnTableY + ICON_OFFSET_Y;
         const className = mouseMovement.mouseButtons === 0 ? "" : "buttons_down";
         setAttr(e, { className: "others_mouse_cursor " + className });
-        setStyle(e, { top: top + "px", left: left + "px", zIndex: 999999999 });
+        setStyle(e, { left: left + "px", top: top + "px", zIndex: 999999999 });
     },
 };
 
@@ -467,10 +477,10 @@ function addNewKit(kitData) {
         }
 
         function layoutRandomly(newComponentData, baseRect) {
-            newComponentData.top = Math.floor(parseFloat(baseRect.top) +
-                (Math.random() * (parseFloat(baseRect.height) - parseFloat(newComponentData.height))));
             newComponentData.left = Math.floor(parseFloat(baseRect.left) +
                 (Math.random() * (parseFloat(baseRect.width) - parseFloat(newComponentData.width))));
+            newComponentData.top = Math.floor(parseFloat(baseRect.top) +
+                (Math.random() * (parseFloat(baseRect.height) - parseFloat(newComponentData.height))));
             if (newComponentData.zIndex) {
                 newComponentData.zIndex += baseZIndex;
             } else {
@@ -480,8 +490,8 @@ function addNewKit(kitData) {
         }
 
         function layoutRelativelyAsDefined(newComponentData, baseRect) {
-            newComponentData.top = parseFloat(newComponentData.top) + parseFloat(baseRect.top);
             newComponentData.left = parseFloat(newComponentData.left) + parseFloat(baseRect.left);
+            newComponentData.top = parseFloat(newComponentData.top) + parseFloat(baseRect.top);
             if (newComponentData.zIndex) {
                 newComponentData.zIndex += baseZIndex;
             } else {
@@ -493,17 +503,17 @@ function addNewKit(kitData) {
         }
 
         function layoutInHandArea(componentsInHandArea, handAreaData) {
-            const verticalStart = parseFloat(handAreaData.top) + 1;
-            const height = parseFloat(handAreaData.height) - 2;
             const horizontalStart = parseFloat(handAreaData.left) + 1;
             const width = parseFloat(handAreaData.width) - 2;
+            const verticalStart = parseFloat(handAreaData.top) + 1;
+            const height = parseFloat(handAreaData.height) - 2;
 
             const count = componentsInHandArea.length;
             componentsInHandArea.sort((a, b) => b.zIndex - a.zIndex);
             let index = 0;
             for (const cmp of componentsInHandArea) {
-                cmp.top = verticalStart + ((height - parseFloat(cmp.height)) / count) * index;
                 cmp.left = horizontalStart + ((width - parseFloat(cmp.width)) / count) * index;
+                cmp.top = verticalStart + ((height - parseFloat(cmp.height)) / count) * index;
                 index += 1;
             }
 
@@ -603,8 +613,8 @@ function removeKit(kitId) {
 
 function placeNewComponent(newComponent, baseZIndex) {
     const rect = table.findEmptySpace(parseInt(newComponent.width), parseInt(newComponent.height));
-    newComponent.top = rect.top + "px";
     newComponent.left = rect.left + "px";
+    newComponent.top = rect.top + "px";
     if (newComponent.zIndex) {
         if (baseZIndex) {
             newComponent.zIndex += baseZIndex;
@@ -692,15 +702,15 @@ const SESSION_STORAGE_KEY = {
 interact("div.table_container").draggable({
     listeners: {
         move(event) {
-            let top = table.el.style.top === "" ? 0 : parseFloat(table.el.style.top);
-            top += event.dy;
             let left = table.el.style.left === "" ? 0 : parseFloat(table.el.style.left);
             left += event.dx;
-            table.el.style.top = top + "px";
+            let top = table.el.style.top === "" ? 0 : parseFloat(table.el.style.top);
+            top += event.dy;
             table.el.style.left = left + "px";
+            table.el.style.top = top + "px";
 
-            tableContainer.style.backgroundPositionY = top + "px";
             tableContainer.style.backgroundPositionX = left + "px";
+            tableContainer.style.backgroundPositionY = top + "px";
         },
     },
 });

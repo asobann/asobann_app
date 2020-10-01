@@ -17,20 +17,20 @@ function arraysEqual(a, b) {
 }
 
 function toRect(c) {
-    if (c.top !== undefined && c.left !== undefined && c.width !== undefined && c.height !== undefined) {
+    if (c.left !== undefined && c.top !== undefined && c.width !== undefined && c.height !== undefined) {
         return {
-            top: parseFloat(c.top),
             left: parseFloat(c.left),
-            height: parseFloat(c.height),
+            top: parseFloat(c.top),
             width: parseFloat(c.width),
+            height: parseFloat(c.height),
         }
     }
     if (c.el) {
         return {
-            top: parseFloat(c.el.style.top),
             left: parseFloat(c.el.style.left),
-            height: parseFloat(c.el.style.height),
+            top: parseFloat(c.el.style.top),
             width: parseFloat(c.el.style.width),
+            height: parseFloat(c.el.style.height),
         }
     }
     throw 'Cannot detect rect';
@@ -53,8 +53,8 @@ const draggability = {
                         return;
                     }
 
-                    component.dragStartXonTarget = event.x0 - parseFloat(component.el.style.left);
-                    component.dragStartYonTarget = event.y0 - parseFloat(component.el.style.top);
+                    component.dragStartXonTarget = event.x0 - component.rect.left;
+                    component.dragStartYonTarget = event.y0 - component.rect.top;
                 },
                 move(event) {
                     if (!isDraggingPermitted()) {
@@ -65,8 +65,8 @@ const draggability = {
                     featsContext.table.consolidatePropagation(() => {
                         featsContext.fireEvent(component, draggability.events.onMoving,
                             {
-                                top: parseFloat(component.el.style.top) + event.dy,
                                 left: parseFloat(component.el.style.left) + event.dx,
+                                top: parseFloat(component.el.style.top) + event.dy,
                                 dx: event.dx,
                                 dy: event.dy,
                                 x: event.page.x,
@@ -85,10 +85,10 @@ const draggability = {
                     featsContext.table.consolidatePropagation(() => {
                         featsContext.fireEvent(component, featsContext.events.onPositionChanged,
                             {
-                                top: parseFloat(component.el.style.top) + event.dy,
-                                left: parseFloat(component.el.style.left) + event.dx,
-                                height: parseFloat(component.el.style.height),
-                                width: parseFloat(component.el.style.width),
+                                left: event.page.x - component.dragStartXonTarget,
+                                top: event.page.y - component.dragStartYonTarget,
+                                width: component.rect.width,
+                                height: component.rect.height,
                             });
                         featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
                     });
@@ -104,18 +104,18 @@ const draggability = {
             //     moving: true
             // });
             component.propagate_volatile({
-                top: (e.y - component.dragStartYonTarget) + 'px',
                 left: (e.x - component.dragStartXonTarget) + 'px',
+                top: (e.y - component.dragStartYonTarget) + 'px',
                 moving: true
             });
         });
 
         featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
             component.propagate({
-                top: parseFloat(e.top) + "px",
-                left: parseFloat(e.left) + "px",
-                height: parseFloat(e.height) + "px",
-                width: parseFloat(e.width) + "px",
+                left: e.left + "px",
+                top: e.top + "px",
+                width: e.width + "px",
+                height: e.height + "px",
                 moving: false,
             });
 
@@ -237,10 +237,10 @@ const resizability = {
 
         interact(component.el).resizable({
             edges: {
-                top: true,
                 left: true,
-                bottom: true,
+                top: true,
                 right: true,
+                bottom: true,
             },
             invert: 'reposition',
 
@@ -248,27 +248,27 @@ const resizability = {
                 if (!isResizingPermitted()) {
                     return;
                 }
-                let top = parseFloat(component.el.style.top) + event.deltaRect.top;
                 let left = parseFloat(component.el.style.left) + event.deltaRect.left;
+                let top = parseFloat(component.el.style.top) + event.deltaRect.top;
                 let width = parseFloat(component.el.style.width) + event.deltaRect.width;
                 let height = parseFloat(component.el.style.height) + event.deltaRect.height;
-                component.propagate_volatile({ top: top, left: left, width: width, height: height });
+                component.propagate_volatile({ left: left, top: top, width: width, height: height });
             },
             onend: (/*event*/) => {
                 if (!isResizingPermitted()) {
                     return;
                 }
                 // resizeend event have wrong value in deltaRect so just ignore it
-                let top = parseFloat(component.el.style.top);
                 let left = parseFloat(component.el.style.left);
+                let top = parseFloat(component.el.style.top);
                 let width = parseFloat(component.el.style.width);
                 let height = parseFloat(component.el.style.height);
                 featsContext.fireEvent(component, featsContext.events.onPositionChanged,
                     {
-                        top: top,
                         left: left,
-                        height: height,
+                        top: top,
                         width: width,
+                        height: height,
                     });
             },
         })
@@ -538,12 +538,12 @@ const within = {
                         continue;
                     }
                     if (canThisEverWithin(component, target)) {
-                        if (isWithin({ top: e.top, left: e.left, height: e.height, width: e.width }, target)) {
+                        if (isWithin({ left: e.left, top: e.top, width: e.width, height: e.height }, target)) {
                             thingsWithinMe.push(target);
                         }
                     }
                     if (canThisEverWithin(target, component)) {
-                        if (isWithin(target, { top: e.top, left: e.left, height: e.height, width: e.width })) {
+                        if (isWithin(target, { left: e.left, top: e.top, width: e.width, height: e.height })) {
                             iAmWithin.push(target);
                         }
                     }
@@ -803,8 +803,8 @@ const traylike = {
             for (const componentId in component.onTray) {
                 const target = featsContext.table.componentsOnTable[componentId];
                 target.propagate_volatile({
+                    left: parseFloat(target.el.style.left) + dx,
                     top: parseFloat(target.el.style.top) + dy,
-                    left: parseFloat(target.el.style.left) + dx
                 });
             }
         });
@@ -816,8 +816,8 @@ const traylike = {
             for (const componentId in component.onTray) {
                 const target = featsContext.table.componentsOnTable[componentId];
                 target.propagate({
+                    left: target.el.style.left,
                     top: target.el.style.top,
-                    left: target.el.style.left
                 });
             }
         })
