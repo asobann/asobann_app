@@ -65,8 +65,8 @@ const draggability = {
                     featsContext.table.consolidatePropagation(() => {
                         featsContext.fireEvent(component, draggability.events.onMoving,
                             {
-                                left: parseFloat(component.el.style.left) + event.dx,
-                                top: parseFloat(component.el.style.top) + event.dy,
+                                left: (event.x - component.dragStartXonTarget) + 'px',
+                                top: (event.y - component.dragStartYonTarget) + 'px',
                                 dx: event.dx,
                                 dy: event.dy,
                                 x: event.page.x,
@@ -803,8 +803,8 @@ const traylike = {
             for (const componentId in component.onTray) {
                 const target = featsContext.table.componentsOnTable[componentId];
                 target.propagate_volatile({
-                    left: parseFloat(target.el.style.left) + dx,
-                    top: parseFloat(target.el.style.top) + dy,
+                    left: target.rect.left + dx,
+                    top: target.rect.top + dy,
                 });
             }
         });

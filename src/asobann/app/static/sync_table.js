@@ -166,14 +166,14 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
         dev_inspector.tracePoint('merged in bulk');
         dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
         bulkPropagation.events.push(event);
-        actualUpdateQueue.push(actualUpdate);
-        // actualUpdate();
+        // actualUpdateQueue.push(actualUpdate);
+        actualUpdate();
     } else {
         dev_inspector.tracePoint('queued');
         dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
         componentUpdateQueue.push(event);
-        actualUpdateQueue.push(actualUpdate);
-        // actualUpdate();
+        // actualUpdateQueue.push(actualUpdate);
+        actualUpdate();
     }
 }
 
