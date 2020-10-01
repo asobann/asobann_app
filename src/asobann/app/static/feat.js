@@ -176,7 +176,7 @@ const flippability = {
         if (component.faceup) {
             if (!component.owner || component.owner === featsContext.getPlayerName()) {
                 if (data.showImage) {
-                    setAttr(component.image, { src: data.faceupImage });
+                    setAttr(component.imageEl, { src: data.faceupImage });
                 }
                 if (data.faceupText) {
                     if (data["faceupText_" + language]) {
@@ -189,7 +189,7 @@ const flippability = {
                 }
             } else {
                 if (data.showImage) {
-                    setAttr(component.image, { src: data.facedownImage });
+                    setAttr(component.imageEl, { src: data.facedownImage });
                 }
                 if (data.facedownText) {
                     if (data["facedownText_" + language]) {
@@ -203,7 +203,7 @@ const flippability = {
             }
         } else {
             if (data.showImage) {
-                setAttr(component.image, { src: data.facedownImage });
+                setAttr(component.imageEl, { src: data.facedownImage });
             }
             if (data.facedownText) {
                 if (data["facedownText_" + language]) {

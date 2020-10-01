@@ -25,7 +25,7 @@ function baseUrl() {
 class Component {
     constructor(data) {
         this.el = el(".component");
-        this.image = null;
+        this.imageEl = null;
 
         for (const ability of feats) {
             ability.install(this, data);
@@ -35,19 +35,19 @@ class Component {
     update(data, componentId /*, allData, context*/) {
         this.componentId = componentId;
         if (data.showImage) {
-            if (this.image == null) {
-                this.image = el("img", { draggable: false });
-                this.image.ondragstart = () => {
+            if (this.imageEl == null) {
+                this.imageEl = el("img", { draggable: false });
+                this.imageEl.ondragstart = () => {
                     return false;
                 };
-                mount(this.el, this.image);
+                mount(this.el, this.imageEl);
             }
-            if (data.image) {
+            if (data.imageEl) {
                 //TODO looks like setting image src has impact on performance
                 // Better do it only on install() and don't change later.
                 // Flippability should be applied a similar enhancement.
-                if(this.image.src !== data.image) {
-                    setAttr(this.image, { src: data.image });
+                if(this.imageEl.src !== data.imageEl) {
+                    setAttr(this.imageEl, { src: data.imageEl });
                 }
             }
         }
