@@ -17,7 +17,7 @@ function arraysEqual(a, b) {
 }
 
 function toRect(c) {
-    if (c.top != undefined && c.left != undefined && c.width != undefined && c.height != undefined) {
+    if (c.top !== undefined && c.left !== undefined && c.width !== undefined && c.height !== undefined) {
         return {
             top: parseFloat(c.top),
             left: parseFloat(c.left),
@@ -1148,5 +1148,14 @@ const feats = [
     counter,
     editability
 ];
+
+// dynamic validation
+// It also helps removing some of 'unused property' warning but not all.
+for(const feat of feats) {
+    console.assert(feat.install !== undefined);
+    console.assert(feat.isEnabled !== undefined);
+    console.assert(feat.onComponentUpdate !== undefined);
+    console.assert(feat.uninstall !== undefined);
+}
 
 export {setFeatsContext, feats, event};
