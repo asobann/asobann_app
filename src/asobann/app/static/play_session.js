@@ -43,7 +43,12 @@ class Component {
                 mount(this.el, this.image);
             }
             if (data.image) {
-                setAttr(this.image, { src: data.image });
+                //TODO looks like setting image src has impact on performance
+                // Better do it only on install() and don't change later.
+                // Flippability should be applied a similar enhancement.
+                if(this.image.src !== data.image) {
+                    setAttr(this.image, { src: data.image });
+                }
             }
         }
 
