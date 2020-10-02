@@ -23,7 +23,21 @@ function baseUrl() {
 class Component {
     constructor(data) {
         this.el = el(".component");
-        this.imageEl = null;
+        if (data.showImage) {
+            if (this.imageEl == null) {
+                this.imageEl = el("img", { draggable: false });
+                this.imageEl.ondragstart = () => {
+                    return false;
+                };
+                mount(this.el, this.imageEl);
+            }
+            if (data.image) {
+                setAttr(this.imageEl, { src: data.image });
+            }
+        } else {
+            this.imageEl = null;
+        }
+
         this.rect = {
             left: data.left,
             top: data.top,
@@ -39,20 +53,8 @@ class Component {
     update(data, componentId /*, allData, context*/) {
         this.componentId = componentId;
         if (data.showImage) {
-            if (this.imageEl == null) {
-                this.imageEl = el("img", { draggable: false });
-                this.imageEl.ondragstart = () => {
-                    return false;
-                };
-                mount(this.el, this.imageEl);
-            }
-            if (data.image) {
-                //TODO looks like setting image src has impact on performance
-                // Better do it only on install() and don't change later.
-                // Flippability should be applied a similar enhancement.
-                if (this.imageEl.src !== data.image) {
-                    setAttr(this.imageEl, { src: data.image });
-                }
+            if (this.imageEl.src !== data.image) {
+                setAttr(this.imageEl, { src: data.image });
             }
         }
 
@@ -70,7 +72,7 @@ class Component {
                 }
             } else {
                 this.textEl = el("span.component_text");
-                if(this.el.children.length > 0 && this.el.children[0].tagName !== 'IMG') {
+                if (this.el.children.length > 0 && this.el.children[0].tagName !== 'IMG') {
                     mount(this.el, el('div', [this.textEl]), this.el.children[0]);
                 } else {
                     mount(this.el, el('div', [this.textEl]));
@@ -182,7 +184,7 @@ class Table {
         }
 
         for (const componentIdToRemove in notUpdatedComponents) {
-            if(!notUpdatedComponents.hasOwnProperty(componentIdToRemove)) {
+            if (!notUpdatedComponents.hasOwnProperty(componentIdToRemove)) {
                 continue;
             }
             delete this.componentsOnTable[componentIdToRemove];
@@ -529,7 +531,7 @@ function addNewKit(kitData) {
                             for (const handAreaData of handAreasData) {
                                 const componentsInHandArea = [];
                                 for (const name in kitData.kit.boxAndComponents) {
-                                    if(!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                                    if (!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
                                         continue;
                                     }
                                     const boxOrComponentData = createComponent(name);
@@ -551,7 +553,7 @@ function addNewKit(kitData) {
                             const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
 
                             for (const name in kitData.kit.boxAndComponents) {
-                                if(!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                                if (!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
                                     continue;
                                 }
                                 const boxOrComponentData = createComponent(name);
@@ -569,7 +571,7 @@ function addNewKit(kitData) {
                         const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
 
                         for (const name in kitData.kit.boxAndComponents) {
-                            if(!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                            if (!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
                                 continue;
                             }
                             const boxOrComponentData = createComponent(name);
@@ -587,7 +589,7 @@ function addNewKit(kitData) {
                         const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
 
                         for (const name in kitData.kit.boxAndComponents) {
-                            if(!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                            if (!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
                                 continue;
                             }
                             const boxOrComponentData = createComponent(name);
