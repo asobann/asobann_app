@@ -33,7 +33,18 @@ class Component {
 
         for (const ability of feats) {
             if (ability.isEnabled(this, data)) {
-                ability.onComponentUpdate(this, data);
+                if(ability.hasOwnProperty('receiveData')) {
+                    ability.receiveData(this, data);
+                }
+            }
+        }
+        for (const ability of feats) {
+            if (ability.isEnabled(this, data)) {
+                if(ability.hasOwnProperty('updateView')) {
+                    ability.updateView(this, data);
+                } else {
+                    ability.onComponentUpdate(this, data);
+                }
             }
         }
 
