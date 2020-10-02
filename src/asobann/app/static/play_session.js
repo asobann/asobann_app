@@ -6,11 +6,9 @@ import {
     pushNewComponent,
     pushNewKit,
     pushSyncWithMe,
-    pushRemoveComponent,
+    pushRemoveComponent,  // TODO looks like this is not used
     joinTable,
     pushCursorMovement,
-    startConsolidatedPropagation,
-    finishConsolidatedPropagationAndEmit,
     consolidatePropagation,
 } from "./sync_table.js";
 import {toolbox} from "./toolbox.js"
@@ -184,6 +182,9 @@ class Table {
         }
 
         for (const componentIdToRemove in notUpdatedComponents) {
+            if(!notUpdatedComponents.hasOwnProperty(componentIdToRemove)) {
+                continue;
+            }
             delete this.componentsOnTable[componentIdToRemove];
             unmount(this.list_el, notUpdatedComponents[componentIdToRemove].el);
         }
@@ -310,7 +311,7 @@ const sync_table_connector = {
     updateSingleComponent: function (componentId, diff) {
         const tableData = table.data;
         if (tableData.components[componentId].lastUpdated) {
-            if (tableData.components[componentId].lastUpdated.from == diff.lastUpdated.from
+            if (tableData.components[componentId].lastUpdated.from === diff.lastUpdated.from
                 && tableData.components[componentId].lastUpdated.epoch > diff.lastUpdated.epoch) {
                 dev_inspector.tracePoint('aborted sync update single component');
                 // already recieved newer update for this component; ignore the diff
@@ -333,7 +334,7 @@ const sync_table_connector = {
             const componentId = event.data.componentId;
             const diff = event.data.diff;
             if (tableData.components[componentId].lastUpdated) {
-                if (tableData.components[componentId].lastUpdated.from == diff.lastUpdated.from
+                if (tableData.components[componentId].lastUpdated.from === diff.lastUpdated.from
                     && tableData.components[componentId].lastUpdated.epoch > diff.lastUpdated.epoch) {
                     // already recieved newer update for this component; ignore the diff
                     continue;
@@ -526,9 +527,11 @@ function addNewKit(kitData) {
                         const handAreasData = table.getAllHandAreas();
                         if (handAreasData.length > 0) {
                             for (const handAreaData of handAreasData) {
-                                let componentsCount = 0;
                                 const componentsInHandArea = [];
                                 for (const name in kitData.kit.boxAndComponents) {
+                                    if(!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                                        continue;
+                                    }
                                     const boxOrComponentData = createComponent(name);
                                     if (boxOrComponentData.zIndex) {
                                         boxOrComponentData.zIndex += baseZIndex;
@@ -548,6 +551,9 @@ function addNewKit(kitData) {
                             const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
 
                             for (const name in kitData.kit.boxAndComponents) {
+                                if(!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                                    continue;
+                                }
                                 const boxOrComponentData = createComponent(name);
                                 layoutRelativelyAsDefined(boxOrComponentData, emptySpaceRect);
 
@@ -563,6 +569,9 @@ function addNewKit(kitData) {
                         const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
 
                         for (const name in kitData.kit.boxAndComponents) {
+                            if(!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                                continue;
+                            }
                             const boxOrComponentData = createComponent(name);
                             layoutRandomly(boxOrComponentData, emptySpaceRect);
 
@@ -578,6 +587,9 @@ function addNewKit(kitData) {
                         const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
 
                         for (const name in kitData.kit.boxAndComponents) {
+                            if(!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                                continue;
+                            }
                             const boxOrComponentData = createComponent(name);
                             layoutRelativelyAsDefined(boxOrComponentData, emptySpaceRect);
 
@@ -648,8 +660,9 @@ function removeHandArea() {
 }
 
 function removeComponent(componentId) {
-    table.removeComponent(componentId);
-    pushRemoveComponent(componentId);
+    // TODO looks like this is not used
+    // table.removeComponent(componentId);
+    // pushRemoveComponent(componentId);
 }
 
 function getPlayerName() {

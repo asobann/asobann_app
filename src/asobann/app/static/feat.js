@@ -532,7 +532,9 @@ const within = {
                 const thingsWithinMe = [];
                 const iAmWithin = [];
                 for (const componentId in featsContext.table.componentsOnTable) {
-                    // noinspection JSUnfilteredForInLoop
+                    if(!featsContext.table.componentsOnTable.hasOwnProperty(componentId)) {
+                        continue;
+                    }
                     const target = featsContext.table.componentsOnTable[componentId];
                     if (target === component) {
                         continue;
@@ -654,7 +656,9 @@ const within = {
         component.thingsWithinMe = [];  // avoid recurse
         component.iAmWithin = [];  // avoid recurse
         for (const componentId in thingsWithinMe) {
-            // noinspection JSUnfilteredForInLoop
+            if(!thingsWithinMe.hasOwnProperty(componentId)) {
+                continue;
+            }
             const other = featsContext.table.componentsOnTable[componentId];
             if (other) {
                 // there is a chance that other is already removed from table
@@ -665,7 +669,9 @@ const within = {
             }
         }
         for (const otherId in iAmWithin) {
-            // noinspection JSUnfilteredForInLoop
+            if(!iAmWithin.hasOwnProperty(otherId)) {
+                continue;
+            }
             const other = featsContext.table.componentsOnTable[otherId];
             if (other) {
                 // there is a chance that other is already removed from table
