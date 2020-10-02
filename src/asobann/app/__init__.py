@@ -1,6 +1,7 @@
 from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, send_file
 from flask_pymongo import PyMongo
+import logging
 from logging.config import dictConfig
 import boto3
 
@@ -15,16 +16,39 @@ dictConfig({
     'version': 1,
     'formatters': {'default': {
         'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+        # 'format': '[%(asctime)s] %(levelname)s in %(name)s at %(pathname)s: %(message)s',
     }},
     'handlers': {'wsgi': {
         'class': 'logging.StreamHandler',
         'stream': 'ext://flask.logging.wsgi_errors_stream',
         'formatter': 'default'
     }},
+    'loggers': {
+        'asobann.app': {
+            'level': 'INFO',
+            'handlers': ['wsgi'],
+            'propagate': False,
+        },
+        'socketio': {
+            'level': 'WARNING',
+            'handlers': ['wsgi'],
+            'propagate': False,
+        },
+        'engineio': {
+            'level': 'WARNING',
+            'handlers': ['wsgi'],
+            'propagate': False,
+        },
+        'selenium': {
+            'level': 'ERROR',
+            'handlers': ['wsgi'],
+            'propagate': False,
+        },
+    },
     'root': {
-        'level': 'DEBUG',
+        'level': 'ERROR',
         'handlers': ['wsgi']
-    }
+    },
 })
 
 
@@ -108,11 +132,14 @@ def create_app(testing=False):
     app = Flask(__name__)
     configure_app(app, testing=testing)
 
+    from flask.logging import default_handler
+    app.logger.removeHandler(default_handler)
+
     socketio_args = {}
 
-    if app.config['ENV'] == 'development':
-        socketio_args['logger'] = app.logger
-        socketio_args['engineio_logger'] = app.logger
+    # if app.config['ENV'] == 'development':
+    #     socketio_args['logger'] = app.logger
+    #     socketio_args['engineio_logger'] = app.logger
 
     try:
         app.logger.info("connecting mongo")
@@ -162,7 +189,6 @@ def create_app(testing=False):
     if app.config['ENV'] == 'development':
         from asobann.app.blueprints import debug
         app.register_blueprint(debug.blueprint)
-
 
     @app.route('/')
     def index():
@@ -216,7 +242,5 @@ def create_app(testing=False):
         from pathlib import Path
         image_base_path = Path('/tmp/asobann/images')
         return send_file(image_base_path / file_name)
-
-
 
     return app

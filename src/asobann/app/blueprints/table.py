@@ -30,7 +30,8 @@ def handle_come_by_table(json):
     if 'DEBUG_HANDLER_WAIT' in current_app.config:
         from time import sleep
         sleep(float(current_app.config['DEBUG_HANDLER_WAIT']))
-    current_app.logger.info(f'come by table: {json}')
+    current_app.logger.info(f'come by table')
+    current_app.logger.debug(f'come by table: {json}')
     table = tables.get(json["tablename"])
     if not table:
         table = tables.create(json["tablename"], None)
@@ -41,7 +42,8 @@ def handle_come_by_table(json):
 
 @socketio.on('set player name')
 def handle_set_player(json):
-    current_app.logger.info(f'set player: {json}')
+    current_app.logger.info(f'set player')
+    current_app.logger.debug(f'set player: {json}')
     table = tables.get(json["tablename"])
     if not table:
         current_app.logger.error(f"table {json['tablename']} on set player")
@@ -86,6 +88,7 @@ def add_component(json, table):
 
 @socketio.on(add_component.event_name)
 def handle_add_component(json):
+    current_app.logger.info(f'add component')
     current_app.logger.debug(f'add component: {json}')
     table = tables.get(json["tablename"])
     add_component(json, table)
@@ -101,6 +104,7 @@ def add_kit(json, table):
 
 @socketio.on(add_kit.event_name)
 def handle_add_kit(json):
+    current_app.logger.info(f'add kit')
     current_app.logger.debug(f'add kit: {json}')
     table = tables.get(json["tablename"])
     add_kit(json, table)
@@ -116,6 +120,7 @@ def remove_component(json, table):
 
 @socketio.on(remove_component.event_name)
 def handle_remove_component(json):
+    current_app.logger.info(f'remove component')
     current_app.logger.debug(f'remove component: {json}')
     table = tables.get(json["tablename"])
     remove_component(json, table)
@@ -130,6 +135,7 @@ def remove_kit(json, table):
 
 @socketio.on(remove_kit.event_name)
 def handle_remove_kit(json):
+    current_app.logger.info(f'remove kit')
     current_app.logger.debug(f'remove kit: {json}')
     table = tables.get(json["tablename"])
     remove_kit(json, table)
@@ -139,6 +145,7 @@ def handle_remove_kit(json):
 
 @socketio.on("sync with me")
 def handle_sync_with_me(json):
+    current_app.logger.info(f'sync with me')
     current_app.logger.debug(f'sync with me: {json}')
     tables.store(json['tablename'], json['tableData'])
     table = tables.get(json["tablename"])
@@ -147,6 +154,7 @@ def handle_sync_with_me(json):
 
 @socketio.on("bulk propagate")
 def handle_bulk_propagate(json):
+    current_app.logger.info(f'bulk propagate')
     current_app.logger.debug(f'bulk propagate: {json}')
     table = tables.get(json["tablename"])
     for event in json['events']:
