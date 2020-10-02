@@ -6,7 +6,7 @@ import {
     pushNewComponent,
     pushNewKit,
     pushSyncWithMe,
-    pushRemoveComponent,  // TODO looks like this is not used
+    pushRemoveComponent,
     joinTable,
     pushCursorMovement,
     consolidatePropagation,
@@ -580,9 +580,8 @@ function removeHandArea() {
 }
 
 function removeComponent(componentId) {
-    // TODO looks like this is not used
-    // table.removeComponent(componentId);
-    // pushRemoveComponent(componentId);
+    table.removeComponent(componentId);
+    pushRemoveComponent(componentId);
 }
 
 function getPlayerName() {
