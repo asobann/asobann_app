@@ -114,6 +114,7 @@ body {
 
 .component span.component_text {
     width: 100%;
+    position: relative;
 }
 
 .component button.component_text {

@@ -61,7 +61,7 @@ class Component {
                 }
             } else {
                 this.textEl = el("span.component_text");
-                if(this.el.children.length > 0) {
+                if(this.el.children.length > 0 && this.el.children[0].tagName !== 'IMG') {
                     mount(this.el, el('div', [this.textEl]), this.el.children[0]);
                 } else {
                     mount(this.el, el('div', [this.textEl]));
