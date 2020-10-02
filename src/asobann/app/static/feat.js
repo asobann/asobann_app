@@ -748,11 +748,6 @@ const traylike = {
             return;
         }
 
-        // aesthetic
-        if(resizability.isEnabled(component, data)) {
-            setStyle(component.el, { 'border': '10px solid rgba(0, 0, 0, 0.3)' });
-        }
-
         component.onTray = {};
 
         featsContext.addEventListener(component, within.events.onWithin, (e) => {

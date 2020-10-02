@@ -107,7 +107,7 @@ class TestHandArea:
         assert 'card_back.png' in another.component_by_name(C_K).face()
 
     def test_cards_on_hand_area_follows_when_hand_area_is_moved(self, browser: webdriver.Firefox,
-                                                               another_browser: webdriver.Firefox):
+                                                                another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
         self.put_one_card_each_on_2_hand_areas(host, another)
@@ -207,6 +207,38 @@ class TestHandArea:
         assert not another.component_by_name(C_A).owner()
         assert not another.component_by_name(C_K).owner()
 
+    def test_areas_boundary_is_correct(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        host.go(TOP)
+        host.should_have_text("you are host")
+        host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
+        host.menu.add_kit.execute()
+        host.menu.add_kit_from_list("Playing Card")
+        host.menu.add_kit_done()
+        host.menu.add_my_hand_area.click()
+
+        # move to inside of left top edge
+        hand_area_rect = host.hand_area('host').rect()
+        card_rect = host.component_by_name(C_A).rect()
+        lt_in_offset = -(hand_area_rect.width - card_rect.width) / 2, -(hand_area_rect.height - card_rect.height) / 2
+        host.move_card_to_hand_area(host.component_by_name(C_A), 'host', lt_in_offset)
+        assert host.component_by_name(C_A).owner()
+
+        # move to outside of left top edge
+        lt_out_offset = lt_in_offset[0] - 1, lt_in_offset[1] - 1
+        host.move_card_to_hand_area(host.component_by_name(C_A), 'host', lt_out_offset)
+        assert not host.component_by_name(C_A).owner()
+
+        # move to inside of right bottom edge
+        rb_in_offset = (hand_area_rect.width - card_rect.width) / 2, (hand_area_rect.height - card_rect.height) / 2
+        host.move_card_to_hand_area(host.component_by_name(C_A), 'host', rb_in_offset)
+        assert host.component_by_name(C_A).owner()
+
+        # move to outside of right bottom edge
+        rb_out_offset = rb_in_offset[0] + 1, rb_in_offset[1] + 1
+        host.move_card_to_hand_area(host.component_by_name(C_A), 'host', rb_out_offset)
+        assert not host.component_by_name(C_A).owner()
+
 
 @pytest.mark.usefixtures("server")
 class TestDice:
@@ -262,7 +294,6 @@ class TestCounter:
         host.menu.add_kit.execute()
         host.menu.add_kit_from_list("Counter")
         return host.component_by_name("Counter")
-
 
     def test_add_counter_from_menu(self, browser: webdriver.Firefox):
         host = GameHelper(browser)
