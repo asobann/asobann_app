@@ -2,6 +2,7 @@ import {el, mount, setAttr, setStyle, unmount} from "./redom.es.js";
 import {allCardistry} from "./cardistry.js";
 import {_, language} from "./i18n.js";
 import {dev_inspector} from "./dev_inspector.js"
+import {toolbox} from "./toolbox.js";
 
 // import interact from './interact.js'
 
@@ -34,6 +35,121 @@ function toRect(c) {
         }
     }
     throw 'Cannot detect rect';
+}
+
+const basic = {
+    install: function (component, data) {
+        if (data.showImage) {
+            if (component.imageEl == null) {
+                component.imageEl = el("img", { draggable: false });
+                component.imageEl.ondragstart = () => {
+                    return false;
+                };
+                mount(component.el, component.imageEl);
+            }
+            if (data.image) {
+                setAttr(component.imageEl, { src: data.image });
+            }
+        } else {
+            component.imageEl = null;
+        }
+
+        component.rect = {
+            left: data.left,
+            top: data.top,
+            width: data.width,
+            height: data.height,
+        };
+
+    },
+    isEnabled: function () {
+        return true;
+    },
+    onComponentUpdate: function (component, data) {
+        receiveData(component, data);
+        updateView(component, data);
+
+        function receiveData(component, data) {
+            component.rect.left = parseFloat(data.left);
+            component.rect.top = parseFloat(data.top);
+            component.rect.width = parseFloat(data.width);
+            component.rect.height = parseFloat(data.height);
+        }
+
+        function updateView(component, data) {
+            if (data.showImage) {
+                if (component.imageEl.src !== data.image) {
+                    setAttr(component.imageEl, { src: data.image });
+                }
+            }
+
+            if (component.textEl == null) {
+                if (data.toolboxFunction) {
+                    component.textEl = el("button.component_text", {
+                        onclick: () => {
+                            toolbox.use(data.toolboxFunction);
+                        }
+                    });
+                    if (component.el.children.length > 0) {
+                        mount(component.el, el('div', [component.textEl]), component.el.children[0]);
+                    } else {
+                        mount(component.el, el('div', [component.textEl]));
+                    }
+                } else {
+                    component.textEl = el("span.component_text");
+                    if (component.el.children.length > 0 && component.el.children[0].tagName !== 'IMG') {
+                        mount(component.el, el('div', [component.textEl]), component.el.children[0]);
+                    } else {
+                        mount(component.el, el('div', [component.textEl]));
+                    }
+                }
+            }
+            if (data.text) {
+                if (data["text_" + language]) {
+                    component.textEl.innerText = data["text_" + language];
+                } else {
+                    component.textEl.innerText = data.text;
+                }
+            }
+            if (data.textColor) {
+                setStyle(component.textEl, { color: data.textColor });
+            }
+            if (data.textAlign) {
+                switch (data.textAlign.trim()) {
+                    case 'center':
+                        setStyle(component.textEl, {
+                            "text-align": "center",
+                            "vertical-align": "center",
+                        });
+                        break;
+                    case 'center bottom':
+                        setStyle(component.textEl, {
+                            "text-align": "center",
+                            "bottom": 0,
+                        });
+                        break;
+                    default:
+                        console.warn(`unsupported textAlign "${data.textAlign}"`);
+                }
+            }
+
+            setAttr(component.el, {
+                'data-component-name': data.name,
+            });
+
+            setStyle(component.el, {
+                left: parseFloat(data.left) + "px",
+                top: parseFloat(data.top) + "px",
+                width: parseFloat(data.width) + "px",
+                height: parseFloat(data.height) + "px",
+                backgroundColor: data.color,
+                zIndex: component.zIndex,
+            });
+        }
+
+    },
+    uninstall: function () {
+    },
 }
 
 const draggability = {
@@ -1165,6 +1281,7 @@ const event = {
 };
 
 const feats = [
+    basic,  // this must be the first ability in feats
     within,
     draggability,
     flippability,

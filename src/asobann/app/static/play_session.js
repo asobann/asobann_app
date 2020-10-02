@@ -23,116 +23,13 @@ function baseUrl() {
 class Component {
     constructor(data) {
         this.el = el(".component");
-        if (data.showImage) {
-            if (this.imageEl == null) {
-                this.imageEl = el("img", { draggable: false });
-                this.imageEl.ondragstart = () => {
-                    return false;
-                };
-                mount(this.el, this.imageEl);
-            }
-            if (data.image) {
-                setAttr(this.imageEl, { src: data.image });
-            }
-        } else {
-            this.imageEl = null;
-        }
-
-        this.rect = {
-            left: data.left,
-            top: data.top,
-            width: data.width,
-            height: data.height,
-        };
-
         for (const ability of feats) {
             ability.install(this, data);
         }
     }
 
-    receiveData(data) {
-
-        this.rect.left = parseFloat(data.left);
-        this.rect.top = parseFloat(data.top);
-        this.rect.width = parseFloat(data.width);
-        this.rect.height = parseFloat(data.height);
-    }
-
-    updateView(data) {
-        if (data.showImage) {
-            if (this.imageEl.src !== data.image) {
-                setAttr(this.imageEl, { src: data.image });
-            }
-        }
-
-        if (this.textEl == null) {
-            if (data.toolboxFunction) {
-                this.textEl = el("button.component_text", {
-                    onclick: () => {
-                        toolbox.use(data.toolboxFunction);
-                    }
-                });
-                if (this.el.children.length > 0) {
-                    mount(this.el, el('div', [this.textEl]), this.el.children[0]);
-                } else {
-                    mount(this.el, el('div', [this.textEl]));
-                }
-            } else {
-                this.textEl = el("span.component_text");
-                if (this.el.children.length > 0 && this.el.children[0].tagName !== 'IMG') {
-                    mount(this.el, el('div', [this.textEl]), this.el.children[0]);
-                } else {
-                    mount(this.el, el('div', [this.textEl]));
-                }
-            }
-        }
-        if (data.text) {
-            if (data["text_" + language]) {
-                this.textEl.innerText = data["text_" + language];
-            } else {
-                this.textEl.innerText = data.text;
-            }
-        }
-        if (data.textColor) {
-            setStyle(this.textEl, { color: data.textColor });
-        }
-        if (data.textAlign) {
-            switch (data.textAlign.trim()) {
-                case 'center':
-                    setStyle(this.textEl, {
-                        "text-align": "center",
-                        "vertical-align": "center",
-                    });
-                    break;
-                case 'center bottom':
-                    setStyle(this.textEl, {
-                        "text-align": "center",
-                        "bottom": 0,
-                    });
-                    break;
-                default:
-                    console.warn(`unsupported textAlign "${data.textAlign}"`);
-            }
-        }
-
-        setAttr(this.el, {
-            'data-component-name': data.name,
-        });
-
-        setStyle(this.el, {
-            left: parseFloat(data.left) + "px",
-            top: parseFloat(data.top) + "px",
-            width: parseFloat(data.width) + "px",
-            height: parseFloat(data.height) + "px",
-            backgroundColor: data.color,
-            zIndex: this.zIndex,
-        });
-    }
-
     update(data, componentId /*, allData, context*/) {
         this.componentId = componentId;
-        this.receiveData(data);
-        this.updateView(data);
 
         for (const ability of feats) {
             if (ability.isEnabled(this, data)) {
