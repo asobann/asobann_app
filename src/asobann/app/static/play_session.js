@@ -50,8 +50,15 @@ class Component {
         }
     }
 
-    update(data, componentId /*, allData, context*/) {
-        this.componentId = componentId;
+    receiveData(data) {
+
+        this.rect.left = parseFloat(data.left);
+        this.rect.top = parseFloat(data.top);
+        this.rect.width = parseFloat(data.width);
+        this.rect.height = parseFloat(data.height);
+    }
+
+    updateView(data) {
         if (data.showImage) {
             if (this.imageEl.src !== data.image) {
                 setAttr(this.imageEl, { src: data.image });
@@ -108,20 +115,10 @@ class Component {
             }
         }
 
-        for (const ability of feats) {
-            if (ability.isEnabled(this, data)) {
-                ability.onComponentUpdate(this, data);
-            }
-        }
-
         setAttr(this.el, {
             'data-component-name': data.name,
         });
 
-        this.rect.left = parseFloat(data.left);
-        this.rect.top = parseFloat(data.top);
-        this.rect.width = parseFloat(data.width);
-        this.rect.height = parseFloat(data.height);
         setStyle(this.el, {
             left: parseFloat(data.left) + "px",
             top: parseFloat(data.top) + "px",
@@ -130,6 +127,19 @@ class Component {
             backgroundColor: data.color,
             zIndex: this.zIndex,
         });
+    }
+
+    update(data, componentId /*, allData, context*/) {
+        this.componentId = componentId;
+        this.receiveData(data);
+        this.updateView(data);
+
+        for (const ability of feats) {
+            if (ability.isEnabled(this, data)) {
+                ability.onComponentUpdate(this, data);
+            }
+        }
+
     }
 
     disappear() {

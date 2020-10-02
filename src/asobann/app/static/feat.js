@@ -82,16 +82,16 @@ const draggability = {
                     dev_inspector.startTrace('draggability.end');
                     dev_inspector.tracePoint('event listener');
                     console.log("draggable end", component.componentId);
-                    featsContext.table.consolidatePropagation(() => {
-                        featsContext.fireEvent(component, featsContext.events.onPositionChanged,
-                            {
-                                left: event.page.x - component.dragStartXonTarget,
-                                top: event.page.y - component.dragStartYonTarget,
-                                width: component.rect.width,
-                                height: component.rect.height,
-                            });
-                        featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
-                    });
+                    // featsContext.table.consolidatePropagation(() => {
+                    featsContext.fireEvent(component, featsContext.events.onPositionChanged,
+                        {
+                            left: event.page.x - component.dragStartXonTarget,
+                            top: event.page.y - component.dragStartYonTarget,
+                            width: component.rect.width,
+                            height: component.rect.height,
+                        });
+                    featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
+                    // });
                     dev_inspector.tracePoint('event listener');
                 }
             }
@@ -176,7 +176,7 @@ const flippability = {
         if (component.faceup) {
             if (!component.owner || component.owner === featsContext.getPlayerName()) {
                 if (data.showImage) {
-                    if(component.imageEl.src !== data.faceupImage ) {
+                    if (component.imageEl.src !== data.faceupImage) {
                         setAttr(component.imageEl, { src: data.faceupImage });
                     }
                 }
@@ -191,7 +191,7 @@ const flippability = {
                 }
             } else {
                 if (data.showImage) {
-                    if(component.imageEl.src !== data.facedownImage) {
+                    if (component.imageEl.src !== data.facedownImage) {
                         setAttr(component.imageEl, { src: data.facedownImage });
                     }
                 }
@@ -207,7 +207,7 @@ const flippability = {
             }
         } else {
             if (data.showImage) {
-                if(component.imageEl.src !== data.facedownImage) {
+                if (component.imageEl.src !== data.facedownImage) {
                     setAttr(component.imageEl, { src: data.facedownImage });
                 }
             }
@@ -538,7 +538,7 @@ const within = {
                 const thingsWithinMe = [];
                 const iAmWithin = [];
                 for (const componentId in featsContext.table.componentsOnTable) {
-                    if(!featsContext.table.componentsOnTable.hasOwnProperty(componentId)) {
+                    if (!featsContext.table.componentsOnTable.hasOwnProperty(componentId)) {
                         continue;
                     }
                     const target = featsContext.table.componentsOnTable[componentId];
@@ -662,7 +662,7 @@ const within = {
         component.thingsWithinMe = [];  // avoid recurse
         component.iAmWithin = [];  // avoid recurse
         for (const componentId in thingsWithinMe) {
-            if(!thingsWithinMe.hasOwnProperty(componentId)) {
+            if (!thingsWithinMe.hasOwnProperty(componentId)) {
                 continue;
             }
             const other = featsContext.table.componentsOnTable[componentId];
@@ -675,7 +675,7 @@ const within = {
             }
         }
         for (const otherId in iAmWithin) {
-            if(!iAmWithin.hasOwnProperty(otherId)) {
+            if (!iAmWithin.hasOwnProperty(otherId)) {
                 continue;
             }
             const other = featsContext.table.componentsOnTable[otherId];
@@ -828,8 +828,8 @@ const traylike = {
             for (const componentId in component.onTray) {
                 const target = featsContext.table.componentsOnTable[componentId];
                 target.propagate({
-                    left: target.el.style.left,
-                    top: target.el.style.top,
+                    left: target.rect.left,
+                    top: target.rect.top,
                 });
             }
         })

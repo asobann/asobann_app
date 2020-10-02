@@ -129,7 +129,7 @@ function sendComponentUpdateFromQueue() {
         }
     }
 
-    while(actualUpdateQueue.length > 0) {
+    while (actualUpdateQueue.length > 0) {
         const actualUpdate = actualUpdateQueue.shift();
         actualUpdate();
     }
@@ -187,7 +187,7 @@ socket.on("update single component", (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
     }
-    if(msg.inspectionTraceId) {
+    if (msg.inspectionTraceId) {
         dev_inspector.resumeTrace(msg.inspectionTraceId);
         dev_inspector.tracePoint('receive update single component');
     }
@@ -205,7 +205,7 @@ socket.on('update many components', (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
     }
-    for(const ev of msg.events) {
+    for (const ev of msg.events) {
         if (ev.data.inspectionTraceId) {
             dev_inspector.tracePointByTraceId('receive update many components', ev.data.inspectionTraceId);
         }
