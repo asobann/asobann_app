@@ -65,88 +65,81 @@ const basic = {
     isEnabled: function () {
         return true;
     },
-    onComponentUpdate: function (component, data) {
-        receiveData(component, data);
-        updateView(component, data);
-
-        function receiveData(component, data) {
-            component.rect.left = parseFloat(data.left);
-            component.rect.top = parseFloat(data.top);
-            component.rect.width = parseFloat(data.width);
-            component.rect.height = parseFloat(data.height);
+    receiveData(component, data) {
+        component.rect.left = parseFloat(data.left);
+        component.rect.top = parseFloat(data.top);
+        component.rect.width = parseFloat(data.width);
+        component.rect.height = parseFloat(data.height);
+    },
+    updateView(component, data) {
+        if (data.showImage) {
+            if (component.imageEl.src !== data.image) {
+                setAttr(component.imageEl, { src: data.image });
+            }
         }
 
-        function updateView(component, data) {
-            if (data.showImage) {
-                if (component.imageEl.src !== data.image) {
-                    setAttr(component.imageEl, { src: data.image });
+        if (component.textEl == null) {
+            if (data.toolboxFunction) {
+                component.textEl = el("button.component_text", {
+                    onclick: () => {
+                        toolbox.use(data.toolboxFunction);
+                    }
+                });
+                if (component.el.children.length > 0) {
+                    mount(component.el, el('div', [component.textEl]), component.el.children[0]);
+                } else {
+                    mount(component.el, el('div', [component.textEl]));
+                }
+            } else {
+                component.textEl = el("span.component_text");
+                if (component.el.children.length > 0 && component.el.children[0].tagName !== 'IMG') {
+                    mount(component.el, el('div', [component.textEl]), component.el.children[0]);
+                } else {
+                    mount(component.el, el('div', [component.textEl]));
                 }
             }
-
-            if (component.textEl == null) {
-                if (data.toolboxFunction) {
-                    component.textEl = el("button.component_text", {
-                        onclick: () => {
-                            toolbox.use(data.toolboxFunction);
-                        }
+        }
+        if (data.text) {
+            if (data["text_" + language]) {
+                component.textEl.innerText = data["text_" + language];
+            } else {
+                component.textEl.innerText = data.text;
+            }
+        }
+        if (data.textColor) {
+            setStyle(component.textEl, { color: data.textColor });
+        }
+        if (data.textAlign) {
+            switch (data.textAlign.trim()) {
+                case 'center':
+                    setStyle(component.textEl, {
+                        "text-align": "center",
+                        "vertical-align": "center",
                     });
-                    if (component.el.children.length > 0) {
-                        mount(component.el, el('div', [component.textEl]), component.el.children[0]);
-                    } else {
-                        mount(component.el, el('div', [component.textEl]));
-                    }
-                } else {
-                    component.textEl = el("span.component_text");
-                    if (component.el.children.length > 0 && component.el.children[0].tagName !== 'IMG') {
-                        mount(component.el, el('div', [component.textEl]), component.el.children[0]);
-                    } else {
-                        mount(component.el, el('div', [component.textEl]));
-                    }
-                }
+                    break;
+                case 'center bottom':
+                    setStyle(component.textEl, {
+                        "text-align": "center",
+                        "bottom": 0,
+                    });
+                    break;
+                default:
+                    console.warn(`unsupported textAlign "${data.textAlign}"`);
             }
-            if (data.text) {
-                if (data["text_" + language]) {
-                    component.textEl.innerText = data["text_" + language];
-                } else {
-                    component.textEl.innerText = data.text;
-                }
-            }
-            if (data.textColor) {
-                setStyle(component.textEl, { color: data.textColor });
-            }
-            if (data.textAlign) {
-                switch (data.textAlign.trim()) {
-                    case 'center':
-                        setStyle(component.textEl, {
-                            "text-align": "center",
-                            "vertical-align": "center",
-                        });
-                        break;
-                    case 'center bottom':
-                        setStyle(component.textEl, {
-                            "text-align": "center",
-                            "bottom": 0,
-                        });
-                        break;
-                    default:
-                        console.warn(`unsupported textAlign "${data.textAlign}"`);
-                }
-            }
-
-            setAttr(component.el, {
-                'data-component-name': data.name,
-            });
-
-            setStyle(component.el, {
-                left: parseFloat(data.left) + "px",
-                top: parseFloat(data.top) + "px",
-                width: parseFloat(data.width) + "px",
-                height: parseFloat(data.height) + "px",
-                backgroundColor: data.color,
-                zIndex: component.zIndex,
-            });
         }
 
+        setAttr(component.el, {
+            'data-component-name': data.name,
+        });
+
+        setStyle(component.el, {
+            left: parseFloat(data.left) + "px",
+            top: parseFloat(data.top) + "px",
+            width: parseFloat(data.width) + "px",
+            height: parseFloat(data.height) + "px",
+            backgroundColor: data.color,
+            zIndex: component.zIndex,
+        });
     },
     uninstall: function () {
     },
