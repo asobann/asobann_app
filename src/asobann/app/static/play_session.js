@@ -28,9 +28,13 @@ class Component {
         }
     }
 
-    update(data, componentId /*, allData, context*/) {
-        this.componentId = componentId;
+    update(data, componentId) {
+        this.receiveData(data, componentId);
+        this.updateView(data);
+    }
 
+    receiveData(data, componentId) {
+        this.componentId = componentId;
         for (const ability of feats) {
             if (ability.isEnabled(this, data)) {
                 if(ability.hasOwnProperty('receiveData')) {
@@ -38,6 +42,9 @@ class Component {
                 }
             }
         }
+    }
+
+    updateView(data) {
         for (const ability of feats) {
             if (ability.isEnabled(this, data)) {
                 if(ability.hasOwnProperty('updateView')) {
@@ -47,7 +54,6 @@ class Component {
                 }
             }
         }
-
     }
 
     disappear() {
@@ -77,16 +83,12 @@ class Table {
         this.data = {};
     }
 
-    update(data) {
-        const notUpdatedComponents = Object.assign({}, this.componentsOnTable);
-        setFeatsContext(getPlayerName, isPlayerObserver, this);
-
+    receiveData(data) {
         this.data = {
             components: data.components,
             kits: data.kits,
             players: data.players,
         };
-
         for (const componentId in this.data.components) {
             if (!this.data.components.hasOwnProperty(componentId)) {
                 continue;
@@ -96,7 +98,22 @@ class Table {
                 this.componentsOnTable[componentId] = new Component(componentData);
                 mount(this.list_el, this.componentsOnTable[componentId].el);
             }
-            this.componentsOnTable[componentId].update(componentData, componentId, this.data.components);
+            this.componentsOnTable[componentId].receiveData(componentData, componentId);
+        }
+
+        dev_inspector.tracePoint('finish updating table data');
+    }
+
+    updateView() {
+        const notUpdatedComponents = Object.assign({}, this.componentsOnTable);
+        setFeatsContext(getPlayerName, isPlayerObserver, this);
+
+        for (const componentId in this.data.components) {
+            if (!this.data.components.hasOwnProperty(componentId)) {
+                continue;
+            }
+            const componentData = this.data.components[componentId];
+            this.componentsOnTable[componentId].updateView(componentData);
 
             delete notUpdatedComponents[componentId]
         }
@@ -108,7 +125,12 @@ class Table {
             delete this.componentsOnTable[componentIdToRemove];
             unmount(this.list_el, notUpdatedComponents[componentIdToRemove].el);
         }
+        dev_inspector.tracePoint('finish updating table view');
+    }
 
+    update(data) {
+        this.receiveData(data);
+        this.updateView();
         dev_inspector.tracePoint('finish updating table');
     }
 

@@ -159,28 +159,23 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
         eventName: eventName,
         data: data
     };
-    const actualUpdate = () => {
-        applyUpdateNow(table, event.data.componentId, event.data.diff);
-    }
     if (isInBulkPropagate()) {
         dev_inspector.tracePoint('merged in bulk');
         dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
         bulkPropagation.events.push(event);
-        // actualUpdateQueue.push(actualUpdate);
-        actualUpdate();
+        updateTableDataWithComponentDiff(table, componentId, diff);
     } else {
         dev_inspector.tracePoint('queued');
         dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
         componentUpdateQueue.push(event);
-        // actualUpdateQueue.push(actualUpdate);
-        actualUpdate();
+        updateTableDataWithComponentDiff(table, componentId, diff);
     }
 }
 
-function applyUpdateNow(table, componentId, diff) {
+function updateTableDataWithComponentDiff(table, componentId, diff) {
     const oldData = table.data;
     Object.assign(oldData.components[componentId], diff);
-    table.update(oldData);
+    table.receiveData(oldData);
 }
 
 socket.on("update single component", (msg) => {

@@ -182,6 +182,7 @@ const draggability = {
                                 y: event.page.y,
                             });
                     });
+                    featsContext.table.updateView();
                     dev_inspector.endTrace();
                 },
                 end(event) {
@@ -201,6 +202,7 @@ const draggability = {
                         });
                     featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
                     // });
+                    featsContext.table.updateView();
                     dev_inspector.tracePoint('event listener');
                 }
             }
@@ -217,6 +219,7 @@ const draggability = {
                 top: (e.y - component.dragStartYonTarget) + 'px',
                 moving: true
             });
+            featsContext.table.updateView();
         });
 
         featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
@@ -227,6 +230,7 @@ const draggability = {
                 height: e.height + "px",
                 moving: false,
             });
+            featsContext.table.updateView();
 
         });
     },
@@ -272,16 +276,19 @@ const flippability = {
                 diff.faceup = component.faceup = true;
             }
             component.propagate(diff);
+            featsContext.table.updateView();
             dev_inspector.endTrace();
         });
     },
     isEnabled: function (component, data) {
         return data.flippable === true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData(component, data) {
         component.flippable = data.flippable;
         component.owner = data.owner;
         component.faceup = data.faceup;
+    },
+    updateView(component, data) {
         if (component.faceup) {
             if (!component.owner || component.owner === featsContext.getPlayerName()) {
                 if (data.showImage) {
@@ -330,7 +337,6 @@ const flippability = {
                 component.textEl.innerText = '';
             }
         }
-        component.faceup = data.faceup;
 
     },
     uninstall: function (component) {
@@ -368,6 +374,7 @@ const resizability = {
                 let width = parseFloat(component.el.style.width) + event.deltaRect.width;
                 let height = parseFloat(component.el.style.height) + event.deltaRect.height;
                 component.propagate_volatile({ left: left, top: top, width: width, height: height });
+                featsContext.table.updateView();
             },
             onend: (/*event*/) => {
                 if (!isResizingPermitted()) {
@@ -422,6 +429,7 @@ const rollability = {
             const finalValue = Math.floor(Math.random() * 6) + 1;
             component.rolling = true;
             component.propagate({ rollDuration: duration, rollFinalValue: finalValue, startRoll: true });
+            featsContext.table.updateView();
             return false;
         }
     },
@@ -502,6 +510,7 @@ const rollability = {
                 setTimeout(() => {
                     component.rolling = false;
                     component.propagate({ rollDuration: 0, rollFinalValue: finalValue, startRoll: false });
+                    featsContext.table.updateView();
                 }, ANIMATION_INTERVAL);
             }
 
@@ -705,6 +714,7 @@ const within = {
                     area.propagate({ 'thingsWithinMe': area.thingsWithinMe });
                     visitor.propagate({ 'iAmWithin': visitor.iAmWithin });
                     featsContext.fireEvent(area, within.events.onWithin, { visitor: visitor });
+                    featsContext.table.updateView();
                 }
             }
 
@@ -746,6 +756,7 @@ const within = {
                         featsContext.fireEvent(other, within.events.onWithinEnd, { visitor: component });
                     }
                 }
+                featsContext.table.updateView();
                 console.log("processAllEnd end");
 
             }
@@ -796,6 +807,7 @@ const within = {
                 featsContext.fireEvent(other, within.events.onWithinEnd, { visitor: component });
             }
         }
+        featsContext.table.updateView();
     },
 
     events: {
@@ -815,6 +827,7 @@ const ownership = {
                     onHand.propagate({ owner: onHand.owner = hand.owner });
                 }
             }
+            featsContext.table.updateView();
         });
         featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
             const other = e.visitor;
@@ -825,6 +838,7 @@ const ownership = {
                     onHand.propagate({ owner: onHand.owner = null });
                 }
             }
+            featsContext.table.updateView();
         });
     },
     isEnabled: function (/*component, data*/) {
@@ -902,6 +916,7 @@ const traylike = {
             if (e.visitor.zIndex < component.zIndex) {
                 e.visitor.propagate({ zIndex: featsContext.table.getNextZIndex() });
             }
+            featsContext.table.updateView();
         });
 
         featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
@@ -913,6 +928,7 @@ const traylike = {
             }
             delete component.onTray[e.visitor.componentId];
             component.propagate({ onTray: component.onTray });
+            featsContext.table.updateView();
         });
 
         featsContext.addEventListener(component, draggability.events.onMoving, (e) => {
@@ -928,6 +944,7 @@ const traylike = {
                     top: target.rect.top + dy,
                 });
             }
+            featsContext.table.updateView();
         });
 
         featsContext.addEventListener(component, draggability.events.onMoveEnd, (/*e*/) => {
@@ -941,6 +958,7 @@ const traylike = {
                     top: target.rect.top,
                 });
             }
+            featsContext.table.updateView();
         })
     },
     isEnabled: function (component, data) {
@@ -974,6 +992,7 @@ const touchToRaise = {
                 setStyle(component.el, { zIndex: component.zIndex });
                 component.propagate({ zIndex: component.zIndex });
             }
+            featsContext.table.updateView();
         });
     },
 
@@ -1003,6 +1022,7 @@ const stowage = {
                 return;
             }
             e.visitor.propagate({ isStowed: true });
+            featsContext.table.updateView();
         });
 
         featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
@@ -1013,6 +1033,7 @@ const stowage = {
                 return;
             }
             e.visitor.propagate({ isStowed: false });
+            featsContext.table.updateView();
         });
     },
     isEnabled: function (/*component, data*/) {
@@ -1145,6 +1166,7 @@ const counter = {
             const newValue = fn(counterValue);
             data.counterValue = component.valueEl.innerText = newValue;
             component.propagate({ counterValue: newValue });
+            featsContext.table.updateView();
         }
     },
     isEnabled: function (component, data) {
@@ -1195,12 +1217,14 @@ const editability = {
 
             function editing() {
                 component.propagate({ 'text': textareaEl.value });
+                featsContext.table.updateView();
             }
 
             function endEditing() {
                 component.propagate({ 'text': textareaEl.value });
                 unmount(component.el, formEl);
                 data.editing = false;
+                featsContext.table.updateView();
             }
         });
 
