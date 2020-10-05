@@ -4,7 +4,7 @@ import {_, language} from "./i18n.js";
 import {dev_inspector} from "./dev_inspector.js"
 import {toolbox} from "./toolbox.js";
 
-// import interact from './interact.js'
+import interact from 'interactjs';
 
 function arraysEqual(a, b) {
     if (a === b) return true;

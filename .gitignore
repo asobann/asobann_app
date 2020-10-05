@@ -2,6 +2,11 @@
 env
 requirements.txt
 
+
+# webpack generates these files
+/src/asobann/app/static/main.js
+
+
 # from https://github.com/github/gitignore/blob/master/Python.gitignore
 
 # Byte-compiled / optimized / DLL files
