@@ -16,6 +16,7 @@ import {Menu} from "./menu.js";
 import {_, language} from "./i18n.js"
 import {dev_inspector} from "./dev_inspector.js"
 import interact from 'interactjs';
+import '../style/game.css';
 
 function baseUrl() {
     return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";

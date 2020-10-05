@@ -20,6 +20,9 @@
   },
   "homepage": "https://github.com/yattom/asobann_app#readme",
   "devDependencies": {
+    "css-loader": "^4.3.0",
+    "file-loader": "^6.1.0",
+    "style-loader": "^1.3.0",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12"
   },
