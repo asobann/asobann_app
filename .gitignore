@@ -4,7 +4,7 @@ requirements.txt
 
 
 # webpack generates these files
-/src/asobann/app/static/main.js
+/src/asobann/app/static/*.js
 
 
 # from https://github.com/github/gitignore/blob/master/Python.gitignore

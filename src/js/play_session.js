@@ -1,4 +1,4 @@
-import {el, mount, unmount, setStyle, setAttr} from "./redom.es.js";
+import {el, mount, unmount, setStyle, setAttr} from "redom";
 import {setFeatsContext, feats, event} from "./feat.js";
 import {
     setTableContext,

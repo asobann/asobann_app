@@ -1,4 +1,4 @@
-import {el, mount, setAttr, setStyle, unmount} from "./redom.es.js";
+import {el, mount, setAttr, setStyle, unmount} from "redom";
 import {allCardistry} from "./cardistry.js";
 import {_, language} from "./i18n.js";
 import {dev_inspector} from "./dev_inspector.js"
