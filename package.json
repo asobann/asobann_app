@@ -14,7 +14,7 @@
     "url": "git+https://github.com/yattom/asobann_app.git"
   },
   "author": "yattom <tsutomu.yasui@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/yattom/asobann_app/issues"
   },
