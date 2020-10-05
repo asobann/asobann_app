@@ -1,0 +1,26 @@
+{
+  "name": "asobann_app_js",
+  "version": "1.0.0",
+  "description": "online card / board game platform",
+  "private": true,
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yattom/asobann_app.git"
+  },
+  "author": "yattom <tsutomu.yasui@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yattom/asobann_app/issues"
+  },
+  "homepage": "https://github.com/yattom/asobann_app#readme",
+  "devDependencies": {
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12"
+  }
+}
