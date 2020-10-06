@@ -12,6 +12,11 @@ from asobann.store import tables, components, kits
 
 from .. import socketio
 
+# prevent 'Too many packets in paylod' error
+# see https://github.com/miguelgrinberg/python-engineio/issues/142
+from engineio.payload import Payload
+Payload.max_decode_packets = 1000
+
 dictConfig({
     'version': 1,
     'formatters': {'default': {
