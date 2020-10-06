@@ -191,7 +191,7 @@ def create_app(testing=False):
     app.register_blueprint(table.blueprint)
     app.register_blueprint(component.blueprint)
     app.register_blueprint(kit.blueprint)
-    if app.config['ENV'] == 'development':
+    if app.config['ENV'] == 'development' or app.config['ENV'] == 'test':
         from asobann.app.blueprints import debug
         app.register_blueprint(debug.blueprint)
 

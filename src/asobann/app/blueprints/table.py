@@ -63,6 +63,7 @@ def update_single_component(json, table):
     trace.trace_point('update single component')
     if "volatile" not in json or not json["volatile"]:
         table["components"][json["componentId"]].update(json["diff"])
+    debug_tools.add_log_of_updates(json["componentId"], json["diff"]["lastUpdated"]["from"], json["diff"]["lastUpdated"]["epoch"])
     trace.end()
 
 

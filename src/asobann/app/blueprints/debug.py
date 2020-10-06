@@ -4,6 +4,8 @@ from flask import (
     jsonify, json
 )
 
+from .. import debug_tools
+
 blueprint = Blueprint('debug', __name__, url_prefix='/debug')
 
 
@@ -44,3 +46,14 @@ def get_traces():
                   'created_at': t['created_at']
                   } for t in traces]
     })
+
+
+@blueprint.route('get_log_of_updates', methods=['GET'])
+def get_log_of_updates():
+    return jsonify(debug_tools.log_of_updates)
+
+
+@blueprint.route('get_log_of_updates', methods=['GET'])
+def clear_log_of_updates():
+    debug_tools.clear_log_of_updates()
+    return '{}'
