@@ -73,7 +73,6 @@ def test_late_comer_shall_see_the_same_table(server, browser: webdriver.Firefox,
         assert host.component(i).face() == player.component(i).face()
 
 
-@pytest.mark.usefixtures('server')
 class TestOutOfSync:
     '''
     This set of test cases is to detect out-of-sync situations.
@@ -95,7 +94,7 @@ class TestOutOfSync:
         player2.menu.join("Player 2")
         player2.should_have_text("you are Player 2")
 
-    def assert_seeing_same(self, player1: GameHelper, player2: GameHelper):
+    def assert_seeing_same(self, server, player1: GameHelper, player2: GameHelper):
         def assert_components_sync():
             components1 = player1.all_components()
             components2 = player2.all_components()
@@ -112,7 +111,7 @@ class TestOutOfSync:
         player2.browser.refresh()
         assert_components_sync()
 
-    def test_single_card(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_single_card(self, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         player2 = GameHelper(another_browser)
         self.prepare_playing_cards(host, player2)
@@ -122,7 +121,7 @@ class TestOutOfSync:
 
         self.assert_seeing_same(host, player2)
 
-    def test_move_box_of_card_bit_by_bit(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_move_box_of_card_bit_by_bit(self, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         player2 = GameHelper(another_browser)
         self.prepare_playing_cards(host, player2)
@@ -135,7 +134,7 @@ class TestOutOfSync:
 
         self.assert_seeing_same(host, player2)
 
-    def test_move_box_of_card_long(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_move_box_of_card_long(self, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         player2 = GameHelper(another_browser)
         self.prepare_playing_cards(host, player2)
@@ -144,7 +143,7 @@ class TestOutOfSync:
 
         self.assert_seeing_same(host, player2)
 
-    def test_a_card_on_hand_area(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_a_card_on_hand_area(self, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         player2 = GameHelper(another_browser)
         self.prepare_playing_cards(host, player2)
@@ -154,3 +153,6 @@ class TestOutOfSync:
         host.drag(host.hand_area('host'), 50, 100, grab_at=(60, 0))
 
         self.assert_seeing_same(host, player2)
+
+    def test_order_of_updates_at_server(self, debug_order_of_updates, server, browser: webdriver.Firefox):
+        pass
