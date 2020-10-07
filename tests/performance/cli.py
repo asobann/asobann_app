@@ -38,7 +38,7 @@ def run(name: str = typer.Argument(..., help='Name of tests in package.subpackag
         run_on: str = typer.Option(default='local',
                                    help='The environment where the test is run.  One of local / docker /aws. '),
         debug: bool = False,
-        provision: bool = False,
+        build_image: bool = False,
         headless: bool = True,
         url: str = typer.Option(default=None,
                                 help="Target web application's base URL.  ex) https://dev.asobann.yattom.jp")
@@ -46,18 +46,18 @@ def run(name: str = typer.Argument(..., help='Name of tests in package.subpackag
     """
     Run specified test.
 
-    ex) python -m tests.performance.cli run tests.performance.move_and_remove_kit 3 --run-on local --provision --url https://asobann.yattom.jp
+    ex) python -m tests.performance.cli run tests.performance.move_and_remove_kit 3 --run-on local --build-image --url https://asobann.yattom.jp
     """
     Logger.debug = debug
     env = containers_instance(run_on)
 
-    if provision:
+    if build_image:
         env.build_docker_images()
     do_run(name, workers=workers, env=env, headless=headless, url=url)
 
 
 @app.command()
-def provision(run_on: str = typer.Option(default='local',
+def build_image(run_on: str = typer.Option(default='local',
                                          help='The environment where the test is run.  One of local / docker /aws. '),
               debug: bool = False):
     Logger.debug = debug
