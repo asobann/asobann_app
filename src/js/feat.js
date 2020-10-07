@@ -135,6 +135,39 @@ const basic = {
 }
 
 const draggability = {
+    featName: 'draggability',
+    start: function (component, data, event) {
+        component.dragStartXonTarget = event.x0 - component.rect.left;
+        component.dragStartYonTarget = event.y0 - component.rect.top;
+    },
+    move: function (component, data, event) {
+        featsContext.table.consolidatePropagation(() => {
+            featsContext.fireEvent(component, draggability.events.onMoving,
+                {
+                    left: (event.x - component.dragStartXonTarget) + 'px',
+                    top: (event.y - component.dragStartYonTarget) + 'px',
+                    dx: event.dx,
+                    dy: event.dy,
+                    x: event.page.x,
+                    y: event.page.y,
+                });
+        });
+        featsContext.table.updateView();
+    },
+    end: function (component, data, event) {
+        console.log("draggable end", component.componentId);
+        // featsContext.table.consolidatePropagation(() => {
+        featsContext.fireEvent(component, featsContext.events.onPositionChanged,
+            {
+                left: event.page.x - component.dragStartXonTarget,
+                top: event.page.y - component.dragStartYonTarget,
+                width: component.rect.width,
+                height: component.rect.height,
+            });
+        featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
+        // });
+        featsContext.table.updateView();
+    },
     install: function (component, data) {
         function isDraggingPermitted() {
             return component.draggable && featsContext.canOperateOn(component);
@@ -150,9 +183,7 @@ const draggability = {
                     if (!isDraggingPermitted()) {
                         return;
                     }
-
-                    component.dragStartXonTarget = event.x0 - component.rect.left;
-                    component.dragStartYonTarget = event.y0 - component.rect.top;
+                    draggability.start(component, data, event);
                 },
                 move(event) {
                     if (!isDraggingPermitted()) {
@@ -160,18 +191,7 @@ const draggability = {
                     }
                     dev_inspector.startTrace('draggability.move');
                     dev_inspector.tracePoint('event listener');
-                    featsContext.table.consolidatePropagation(() => {
-                        featsContext.fireEvent(component, draggability.events.onMoving,
-                            {
-                                left: (event.x - component.dragStartXonTarget) + 'px',
-                                top: (event.y - component.dragStartYonTarget) + 'px',
-                                dx: event.dx,
-                                dy: event.dy,
-                                x: event.page.x,
-                                y: event.page.y,
-                            });
-                    });
-                    featsContext.table.updateView();
+                    draggability.move(component, data, event);
                     dev_inspector.endTrace();
                 },
                 end(event) {
@@ -180,18 +200,7 @@ const draggability = {
                     }
                     dev_inspector.startTrace('draggability.end');
                     dev_inspector.tracePoint('event listener');
-                    console.log("draggable end", component.componentId);
-                    // featsContext.table.consolidatePropagation(() => {
-                    featsContext.fireEvent(component, featsContext.events.onPositionChanged,
-                        {
-                            left: event.page.x - component.dragStartXonTarget,
-                            top: event.page.y - component.dragStartYonTarget,
-                            width: component.rect.width,
-                            height: component.rect.height,
-                        });
-                    featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
-                    // });
-                    featsContext.table.updateView();
+                    draggability.end(component, data, event);
                     dev_inspector.tracePoint('event listener');
                 }
             }
