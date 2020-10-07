@@ -19,9 +19,9 @@ const bulkPropagation = {
 };
 
 function consolidatePropagation(proc) {
-    startConsolidatedPropagation();
+    // startConsolidatedPropagation();
     proc();
-    finishConsolidatedPropagationAndEmit();
+    // finishConsolidatedPropagationAndEmit();
 }
 
 function startConsolidatedPropagation() {

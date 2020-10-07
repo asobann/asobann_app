@@ -170,6 +170,7 @@ function deleteOnServer() {
 }
 
 const controlsEl = document.getElementById('controls');
+const containerEl = document.getElementById('container');
 const refreshButton = el('button', { onclick: refresh }, 'Refresh');
 mount(controlsEl,refreshButton);
 
