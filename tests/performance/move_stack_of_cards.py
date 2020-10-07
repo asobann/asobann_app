@@ -5,10 +5,9 @@ from multiprocessing import Queue
 
 from pathlib import Path
 
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
-
 from ..e2e.conftest import browser_func as browser
 from ..e2e.helper import compo_pos, Rect, GameHelper, STAGING_TOP
+from . import status_diff
 
 
 def log(*args):
@@ -19,41 +18,6 @@ def log(*args):
 def drag_slowly(player: GameHelper, component, x, y, steps):
     for i in range(steps):
         player.drag(component, x / steps, y / steps)
-
-
-saved_status = []
-
-
-def gather_status(player: GameHelper):
-    status = []
-    n = 1
-    while True:
-        try:
-            c = player.component(n, wait=False)
-            status.append((str(c.rect()), c.face()))
-            n += 1
-        except NoSuchElementException:
-            break
-    return status
-
-
-def save_status(iteration, tag, status: list):
-    while iteration > len(saved_status) - 1:
-        saved_status.append({})
-    saved_status[iteration][tag] = status
-
-
-def evaluate_saved_status():
-    diff = 0
-    for statuses_in_iteration in saved_status:
-        baseline = statuses_in_iteration[0]
-        for status in [statuses_in_iteration[key] for key in statuses_in_iteration.keys() if key != 0]:
-            for i, c in enumerate(status):
-                if baseline[i] != c:
-                    log(f"diff! at {i} <{baseline[i]}> <{c}>")
-                    diff += 1
-                    break  # don't count diffs for same component
-    return diff
 
 
 def execute_controller(command_queues, result_queues, parameters):
@@ -90,15 +54,15 @@ def execute_controller(command_queues, result_queues, parameters):
             for q in group.command_queues:
                 q.put(['status'])
             for tag, q in enumerate(group.result_queues):
-                save_status(i, tag, q.get())
+                status_diff.save_status(i, tag, q.get())
 
     for group in groups:
         for q in group.command_queues:
             q.put(['finish'])
 
-    diff_count = evaluate_saved_status()
+    diff = status_diff.evaluate_saved_status()
     return {
-        'diff_count': diff_count,
+        'diff': diff,
         'worker_groups': len(groups),
         'iteration': iteration,
         # 'saved_status': saved_status,
@@ -133,7 +97,7 @@ def execute_worker(name, command_queue, result_queue, parameters):
             elif cmd[0] == 'status':
                 player.browser.save_screenshot(f'/runner/image{imagecount}.png')
                 imagecount += 1
-                result_queue.put(gather_status(player))
+                result_queue.put(status_diff.gather_status(player))
             elif cmd[0] == 'finish':
                 return
             else:
