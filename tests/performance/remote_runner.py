@@ -227,10 +227,11 @@ def controller_client(workers):
                     parsed_value = True
                 elif value == 'false':
                     parsed_value = False
-                try:
-                    parsed_value = int(value)
-                except ValueError:
-                    parsed_value = value
+                else:
+                    try:
+                        parsed_value = int(value)
+                    except ValueError:
+                        parsed_value = value
 
                 parameters[key] = parsed_value
                 self.send_response(200)

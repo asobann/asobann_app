@@ -104,8 +104,9 @@ RUN apt-get -y update
 RUN apt-get install -y python3 python3-pip firefox firefox-geckodriver
 RUN pip3 install pipenv
 WORKDIR /runner
+COPY runner/Pipfile runner/Pipfile.lock ./
+RUN pipenv install -d
 COPY runner/ .
-RUN pipenv install
 EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
 CMD pipenv run python tests/performance/remote_runner.py worker $PORT
     """)
@@ -124,8 +125,9 @@ RUN apt-get -y update
 RUN apt-get install -y python3 python3-pip firefox firefox-geckodriver
 RUN pip3 install pipenv
 WORKDIR /runner
+COPY runner/Pipfile runner/Pipfile.lock ./
+RUN pipenv install -d
 COPY runner/ .
-RUN pipenv install
 EXPOSE 8888
     """)
         proc = system(f"docker build . -f Dockerfile_controller -t {CONTROLLER_NAME}",
