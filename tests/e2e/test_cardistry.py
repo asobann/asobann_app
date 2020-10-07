@@ -50,7 +50,6 @@ class TestShuffle:
             if i < len(all_cards_in_order) - 2:
                 pos1 = c.pos()
                 pos2 = all_cards_in_order[i + 1].pos()
-                print(pos1, pos2)
 
                 # somehow there were cases where two cards separate 2 px but looks ok
                 assert abs(pos1.left - pos2.left) < 3 and abs(pos1.top - pos2.top) < 3

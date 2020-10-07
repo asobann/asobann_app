@@ -106,6 +106,7 @@ socket.on("mouse movement", (msg) => {
 
 // sending out component update to server is queued and actually emit()ted intermittently
 const componentUpdateQueue = [];
+const actualUpdateQueue = [];
 
 function sendComponentUpdateFromQueue() {
     while (componentUpdateQueue.length > 0) {
@@ -127,6 +128,11 @@ function sendComponentUpdateFromQueue() {
             socket.emit(update.eventName, update.data);
         }
     }
+
+    while (actualUpdateQueue.length > 0) {
+        const actualUpdate = actualUpdateQueue.shift();
+        actualUpdate();
+    }
 }
 
 setInterval(sendComponentUpdateFromQueue, 75);
@@ -136,9 +142,6 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
     if (!table.data.components[componentId]) {
         console.log("no such component", componentId, table.data);
     }
-    const oldData = table.data;
-    Object.assign(oldData.components[componentId], diff);
-    table.update(oldData);
 
     const eventName = "update single component";
     diff.lastUpdated = {
@@ -152,22 +155,34 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
         diff: diff,
         volatile: volatile === true,
     };
+    const event = {
+        eventName: eventName,
+        data: data
+    };
     if (isInBulkPropagate()) {
         dev_inspector.tracePoint('merged in bulk');
         dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
-        bulkPropagation.events.push({ eventName: eventName, data: data });
+        bulkPropagation.events.push(event);
+        updateTableDataWithComponentDiff(table, componentId, diff);
     } else {
         dev_inspector.tracePoint('queued');
         dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
-        componentUpdateQueue.push({ eventName: eventName, data: data });
+        componentUpdateQueue.push(event);
+        updateTableDataWithComponentDiff(table, componentId, diff);
     }
+}
+
+function updateTableDataWithComponentDiff(table, componentId, diff) {
+    const oldData = table.data;
+    Object.assign(oldData.components[componentId], diff);
+    table.receiveData(oldData);
 }
 
 socket.on("update single component", (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
     }
-    if(msg.inspectionTraceId) {
+    if (msg.inspectionTraceId) {
         dev_inspector.resumeTrace(msg.inspectionTraceId);
         dev_inspector.tracePoint('receive update single component');
     }
@@ -185,7 +200,7 @@ socket.on('update many components', (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
     }
-    for(const ev of msg.events) {
+    for (const ev of msg.events) {
         if (ev.data.inspectionTraceId) {
             dev_inspector.tracePointByTraceId('receive update many components', ev.data.inspectionTraceId);
         }

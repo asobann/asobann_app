@@ -1,4 +1,4 @@
-import {el, list, mount, setAttr, setStyle, unmount} from "./redom.es.js";
+import {el, list, mount, setAttr, setStyle, unmount} from "redom";
 import {joinTable} from "./sync_table.js";
 import {names} from "./names.js";
 import {_, language} from "./i18n.js";
