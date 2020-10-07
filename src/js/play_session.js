@@ -1,4 +1,4 @@
-import {el, mount, unmount, setStyle, setAttr} from "redom";
+import {el, mount, setStyle, setAttr} from "redom";
 import {Component, Table} from "./table";
 import {
     setTableContext,
@@ -12,9 +12,9 @@ import {
 } from "./sync_table.js";
 import {toolbox} from "./toolbox.js"
 import {Menu} from "./menu.js";
-import {_, language} from "./i18n.js"
 import {dev_inspector} from "./dev_inspector.js"
 import interact from 'interactjs';
+
 import '../style/game.css';
 
 function baseUrl() {

@@ -1,4 +1,4 @@
-import {el, mount, unmount, setStyle, setAttr} from "redom";
+import {el, mount, unmount} from "redom";
 import {setFeatsContext, feats, event} from "./feat.js";
 import {dev_inspector} from "./dev_inspector.js"
 import {consolidatePropagation, pushComponentUpdate} from "./sync_table";
@@ -57,7 +57,7 @@ class Component {
 }
 
 class Table {
-    constructor({getPlayerName, isPlayerObserver}) {
+    constructor({ getPlayerName, isPlayerObserver }) {
         this.getPlayerName = getPlayerName;
         this.isPlayerObserver = isPlayerObserver;
         console.log("new Table");
