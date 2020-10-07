@@ -6,7 +6,6 @@ const socket = io(
     //     transports: ['websocket']
     // }
 );
-console.log(socket);
 
 const context = {
     client_connection_id: 'xxxxxxxxxxxx'.replace(/[x]/g, function (/*c*/) {
