@@ -1,4 +1,5 @@
 import {dev_inspector} from "./dev_inspector.js";
+import io from 'socket.io-client'
 
 const socket = io(
     // {
