@@ -41,14 +41,15 @@ def save_status(iteration, tag, status: list):
 
 
 def evaluate_saved_status():
-    diff = 0
-    for statuses_in_iteration in saved_status:
+    diff = {'count': 0, 'diffs': []}
+    for iter, statuses_in_iteration in enumerate(saved_status):
         baseline = statuses_in_iteration["host"]
         for status in [statuses_in_iteration[key] for key in statuses_in_iteration.keys() if key != "host"]:
             for i, c in enumerate(status):
                 if baseline[i] != c:
                     log(f"diff! at {i} <{baseline[i]}> <{c}>")
-                    diff += 1
+                    diff['diffs'].append(f"diff on iteration {iter + 1} at index {i} <{baseline[i]}> <{c}>")
+                    diff['count'] += 1
                     break  # don't count diffs for same component
     return diff
 
