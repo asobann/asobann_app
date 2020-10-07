@@ -2,7 +2,6 @@ import {el, mount, unmount, setStyle, setAttr} from "redom";
 import {Component, Table} from "./table";
 import {
     setTableContext,
-    pushComponentUpdate,
     pushNewComponent,
     pushNewKit,
     pushSyncWithMe,
