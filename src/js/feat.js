@@ -1325,4 +1325,22 @@ for (const feat of feats) {
     console.assert(feat.uninstall !== undefined);
 }
 
-export {setFeatsContext, feats, event};
+export {
+    setFeatsContext, feats, event,
+
+    // exported for testing only (probably)
+    basic,
+    within,
+    draggability,
+    flippability,
+    resizability,
+    rollability,
+    traylike,
+    handArea,
+    ownership,
+    touchToRaise,
+    stowage,
+    cardistry,
+    counter,
+    editability
+};

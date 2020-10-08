@@ -1,20 +1,10 @@
 import {beforeEach, describe, expect} from "@jest/globals";
 
-const { Component, Table } = require('../../src/js/table');
-const { feats, setFeatsContext } = require('../../src/js/feat');
+const { Table } = require('../../src/js/table');
+const { setFeatsContext, draggability } = require('../../src/js/feat');
 
 import * as sync_table from '../../src/js/sync_table';
-
 jest.spyOn(sync_table, 'pushComponentUpdate');
-
-function getFeatByName(featName) {
-    for (const f of feats) {
-        if (f.featName === featName) {
-            return f;
-        }
-    }
-    throw 'No feat named ' + featName;
-}
 
 describe('feat.draggability basics', () => {
     let table = null
@@ -31,7 +21,6 @@ describe('feat.draggability basics', () => {
         })
         const component = table.componentsOnTable['component1'];
         const data = component.data;
-        const draggability = getFeatByName('draggability');
         draggability.start(component, data, { x0: 100, y0: 100 });
         draggability.move(component, data, { x: 110, y: 130, dx: 10, dy: 30, page: { x: 110, y: 130 } });
         expect(component.rect).toStrictEqual({ left: 10, top: 30, width: 50, height: 100 })
@@ -49,7 +38,7 @@ describe('feat.draggability basics', () => {
             },
             kits: {},
             players: [],
-        })
+        });
         const component1 = table.componentsOnTable['component1'];
         const component2 = table.componentsOnTable['component2'];
         const component3 = table.componentsOnTable['component3'];
@@ -76,7 +65,7 @@ describe('feat.draggability basics', () => {
             },
             kits: {},
             players: [],
-        })
+        });
         const component1 = table.componentsOnTable['component1'];
         const component2 = table.componentsOnTable['component2'];
         const component3 = table.componentsOnTable['component3'];
