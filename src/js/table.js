@@ -3,6 +3,12 @@ import {setFeatsContext, feats, event} from "./feat.js";
 import {dev_inspector} from "./dev_inspector.js"
 import {consolidatePropagation, pushComponentUpdate} from "./sync_table";
 
+const Level = {
+    A: 0,
+    B: 1,
+    C: 2,
+};
+
 class Component {
     constructor(table, data, feats_to_use) {
         this.table = table;
@@ -49,11 +55,44 @@ class Component {
 
     propagate(diff) {
         dev_inspector.tracePoint('propagate');
+        this.table.queueForUpdatingView.pushComponentIdForUpdate(this.componentId);
         pushComponentUpdate(this.table, this.componentId, diff, false);
     }
 
     propagate_volatile(diff) {
         pushComponentUpdate(this.table, this.componentId, diff, true);
+    }
+
+    applyUserAction(level, proc) {
+        const previousLevel = this.table.queueForUpdatingView.currentLevel;
+        if(previousLevel < level) {
+            this.table.queueForUpdatingView.currentLevel = level;
+        }
+        proc();
+
+        this.table.queueForUpdatingView.currentLevel = previousLevel;
+        this.table.updateViewForImmediateOnly();
+        this.table.queueForUpdatingView.queueForImmediate = [];
+    }
+}
+
+class QueueForUpdatingView {
+    constructor() {
+        this.queueToConsolidate = [];
+        this.queueForImmediate = [];
+        this.currentLevel = null;
+    }
+
+    pushComponentIdForUpdate(componentId) {
+        if (this.currentLevel <= Level.A) {
+            if (this.queueForImmediate.indexOf(componentId) === -1) {
+                this.queueForImmediate.push(componentId);
+            }
+        } else {
+            if (this.queueToConsolidate.indexOf(componentId) === -1) {
+                this.queueToConsolidate.push(componentId);
+            }
+        }
     }
 }
 
@@ -73,17 +112,7 @@ class Table {
 // this.list = list(this.list_el, Component);
         this.componentsOnTable = {};
         this.data = {};
-        this.queueForUpdatingView = {
-            queue: [],
-            getEntryForComponent(componentId) {
-                for(let entry of this.queue) {
-                    if(entry.componentId === componentId) {
-                        return entry;
-                    }
-                }
-                return null;
-            },
-        }
+        this.queueForUpdatingView = new QueueForUpdatingView();
     }
 
     receiveData(data) {
@@ -129,6 +158,16 @@ class Table {
             unmount(this.list_el, notUpdatedComponents[componentIdToRemove].el);
         }
         dev_inspector.tracePoint('finish updating table view');
+    }
+
+    updateViewForImmediateOnly() {
+        for (const componentId of this.queueForUpdatingView.queueForImmediate) {
+            if (!this.data.components.hasOwnProperty(componentId)) {
+                continue;
+            }
+            const componentData = this.data.components[componentId];
+            this.componentsOnTable[componentId].updateView(componentData);
+        }
     }
 
     update(data) {
@@ -238,4 +277,5 @@ class Table {
 export {
     Component,
     Table,
+    Level,
 }
