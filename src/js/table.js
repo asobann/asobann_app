@@ -4,10 +4,11 @@ import {dev_inspector} from "./dev_inspector.js"
 import {consolidatePropagation, pushComponentUpdate} from "./sync_table";
 
 class Component {
-    constructor(table, data) {
+    constructor(table, data, feats_to_use) {
         this.table = table;
         this.el = el(".component");
-        for (const ability of feats) {
+        this.feats = feats_to_use;
+        for (const ability of this.feats) {
             ability.install(this, data);
         }
     }
@@ -19,7 +20,7 @@ class Component {
 
     receiveData(data, componentId) {
         this.componentId = componentId;
-        for (const ability of feats) {
+        for (const ability of this.feats) {
             if (ability.isEnabled(this, data)) {
                 if (ability.hasOwnProperty('receiveData')) {
                     ability.receiveData(this, data);
@@ -29,7 +30,7 @@ class Component {
     }
 
     updateView(data) {
-        for (const ability of feats) {
+        for (const ability of this.feats) {
             if (ability.isEnabled(this, data)) {
                 if (ability.hasOwnProperty('updateView')) {
                     ability.updateView(this, data);
@@ -41,7 +42,7 @@ class Component {
     }
 
     disappear() {
-        for (const ability of feats) {
+        for (const ability of this.feats) {
             ability.uninstall(this);
         }
     }
@@ -57,9 +58,14 @@ class Component {
 }
 
 class Table {
-    constructor({ getPlayerName, isPlayerObserver }) {
+    constructor({ getPlayerName, isPlayerObserver, feats_to_use }) {
         this.getPlayerName = getPlayerName;
         this.isPlayerObserver = isPlayerObserver;
+        if(feats_to_use) {
+            this.feats = feats_to_use;
+        } else {
+            this.feats = feats;
+        }
         console.log("new Table");
         this.el = el("div.table", { style: { left: '0px', top: '0px' } },
             this.list_el = el("div.table_list")
@@ -81,7 +87,7 @@ class Table {
             }
             const componentData = this.data.components[componentId];
             if (!this.componentsOnTable[componentId]) {
-                this.componentsOnTable[componentId] = new Component(this, componentData);
+                this.componentsOnTable[componentId] = new Component(this, componentData, this.feats);
                 mount(this.list_el, this.componentsOnTable[componentId].el);
             }
             this.componentsOnTable[componentId].receiveData(componentData, componentId);
@@ -123,7 +129,7 @@ class Table {
     addComponent(componentData) {
         // This is called when a component is added ON THIS BROWSER.
         this.data.components[componentData.componentId] = componentData;
-        this.componentsOnTable[componentData.componentId] = new Component(this, componentData);
+        this.componentsOnTable[componentData.componentId] = new Component(this, componentData, this.feats);
         mount(this.list_el, this.componentsOnTable[componentData.componentId].el);
         this.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
         event.fireEvent(this.componentsOnTable[componentData.componentId], event.events.onPositionChanged,

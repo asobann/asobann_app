@@ -1,18 +1,18 @@
 import {beforeEach, describe, expect} from "@jest/globals";
 
 const { Table } = require('../../src/js/table');
-const { setFeatsContext, draggability } = require('../../src/js/feat');
+const { setFeatsContext, draggability, traylike } = require('../../src/js/feat');
 
 import * as sync_table from '../../src/js/sync_table';
 jest.spyOn(sync_table, 'pushComponentUpdate');
 
-describe('feat.draggability basics', () => {
-    let table = null
-    beforeEach(() => {
-        table = new Table({ getPlayerName: () => 'player', isPlayerObserver: () => false });
-        setFeatsContext(() => 'player', () => false, table);
-    });
+let table = null
+beforeEach(() => {
+    table = new Table({ getPlayerName: () => 'player', isPlayerObserver: () => false });
+    setFeatsContext(() => 'player', () => false, table);
+});
 
+describe('feat.draggability basics', () => {
     test('start, move, then end', () => {
         table.receiveData({
             components: { 'component1': { draggable: true, left: 0, top: 0, width: 50, height: 100 } },
@@ -42,10 +42,9 @@ describe('feat.draggability basics', () => {
         const component1 = table.componentsOnTable['component1'];
         const component2 = table.componentsOnTable['component2'];
         const component3 = table.componentsOnTable['component3'];
-        getFeatByName('traylike').comeIn(component1, { visitor: component2 });
-        getFeatByName('traylike').comeIn(component1, { visitor: component3 });
+        traylike.comeIn(component1, { visitor: component2 });
+        traylike.comeIn(component1, { visitor: component3 });
         const data = component1.data;
-        const draggability = getFeatByName('draggability');
         draggability.start(component1, data, { x0: 100, y0: 100 });
         draggability.move(component1, data, { x: 110, y: 130, dx: 10, dy: 30, page: { x: 110, y: 130 } });
         expect(component2.rect).toStrictEqual({ left: 20, top: 40, width: 50, height: 100 })
@@ -69,10 +68,9 @@ describe('feat.draggability basics', () => {
         const component1 = table.componentsOnTable['component1'];
         const component2 = table.componentsOnTable['component2'];
         const component3 = table.componentsOnTable['component3'];
-        getFeatByName('traylike').comeIn(component1, { visitor: component2 });
-        getFeatByName('traylike').comeIn(component1, { visitor: component3 });
+        traylike.comeIn(component1, { visitor: component2 });
+        traylike.comeIn(component1, { visitor: component3 });
         const data = component1.data;
-        const draggability = getFeatByName('draggability');
         draggability.start(component1, data, { x0: 100, y0: 100 });
         draggability.move(component1, data, { x: 110, y: 130, dx: 10, dy: 30, page: { x: 110, y: 130 } });
         draggability.move(component1, data, { x: 125, y: 150, dx: 15, dy: 20, page: { x: 125, y: 150 } });

@@ -1321,7 +1321,8 @@ const feats = [
 for (const feat of feats) {
     console.assert(feat.install !== undefined);
     console.assert(feat.isEnabled !== undefined);
-    console.assert(feat.onComponentUpdate !== undefined);
+    console.assert((feat.onComponentUpdate !== undefined) ||
+        (feat.receiveData !== undefined && feat.updateView !== undefined));
     console.assert(feat.uninstall !== undefined);
 }
 
