@@ -61,7 +61,12 @@ def handle_set_player(json):
 def update_single_component(json, table):
     trace = debug_tools.resume_trace(json)
     trace.trace_point('update single component')
+    write = False
     if "volatile" not in json or not json["volatile"]:
+        write = True
+    if 'left' in json["diff"]:
+        current_app.logger.info(f'{json["componentId"]}: left {table["components"][json["componentId"]]["left"]}->{json["diff"]["left"]}, ...) write={write}')
+    if write:
         table["components"][json["componentId"]].update(json["diff"])
     debug_tools.add_log_of_updates(json["componentId"], json["diff"]["lastUpdated"]["from"], json["diff"]["lastUpdated"]["epoch"])
     trace.end()
@@ -69,9 +74,10 @@ def update_single_component(json, table):
 
 @socketio.on(update_single_component.event_name)
 def handle_update_single_component(json):
+    current_app.logger.info(f'update single component')
+    current_app.logger.debug(f'update single component: {json}')
     trace = debug_tools.resume_trace(json)
     trace.trace_point('handle update single component')
-    current_app.logger.debug(f'update single component: {json}')
     table = tables.get(json["tablename"])
     update_single_component(json, table)
     trace.trace_point('before update_table')
@@ -80,6 +86,7 @@ def handle_update_single_component(json):
     emit("update single component", json, broadcast=True, room=json["tablename"])
     trace.trace_point('emitted response')
     trace.end()
+    current_app.logger.info(f'end update single component')
 
 
 @event_handler('add component')

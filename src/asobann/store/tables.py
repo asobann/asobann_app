@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import pymongo.database
 import datetime
+from flask import current_app
 
 tables: pymongo.database.Database = None
 table_metas: pymongo.database.Database = None
@@ -16,7 +17,11 @@ def get(tablename):
     data = tables.find_one({"tablename": tablename})
     if not data:
         return None
-    return data["table"]
+    table = data["table"]
+    current_app.logger.info('tables.get...')
+    for ci, c in table['components'].items():
+        current_app.logger.info(f'  {c["componentId"]}: left {c["left"]}')
+    return table
 
 
 def create(tablename, prepared_table):
@@ -47,6 +52,9 @@ def purge_all():
 
 
 def update_table(tablename, table):
+    current_app.logger.info('tables.update_table...')
+    for ci, c in table['components'].items():
+        current_app.logger.info(f'  {c["componentId"]}: left {c["left"]}')
     tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
     table_metas.update_one(
         {"tablename": tablename},
