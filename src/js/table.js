@@ -61,7 +61,7 @@ class Table {
     constructor({ getPlayerName, isPlayerObserver, feats_to_use }) {
         this.getPlayerName = getPlayerName;
         this.isPlayerObserver = isPlayerObserver;
-        if(feats_to_use) {
+        if (feats_to_use) {
             this.feats = feats_to_use;
         } else {
             this.feats = feats;
@@ -73,6 +73,17 @@ class Table {
 // this.list = list(this.list_el, Component);
         this.componentsOnTable = {};
         this.data = {};
+        this.queueForUpdatingView = {
+            queue: [],
+            getEntryForComponent(componentId) {
+                for(let entry of this.queue) {
+                    if(entry.componentId === componentId) {
+                        return entry;
+                    }
+                }
+                return null;
+            },
+        }
     }
 
     receiveData(data) {

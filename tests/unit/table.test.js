@@ -68,6 +68,22 @@ describe('3 levels of user action', () => {
             table.updateView();
             expect(feat_for_test.updateView.mock.calls.length).toBe(0);
         });
+
+        test('component view will be updated later (queued)', () => {
+            table.componentsOnTable['component1'].propagate({ value: 100 });
+            table.updateView();
+            expect(table.queueForUpdatingView.getEntryForComponent('component1')).toStrictEqual({value: 100});
+        });
+
+        describe('updating same component more than two times', ()=>{
+            test('overwrite', () => {
+                // TODO
+            })
+
+            test('merge updating different property', () => {
+                // TODO
+            })
+        })
     });
 })
 
