@@ -894,6 +894,15 @@ const traylike = {
     // Objects on a tray moves with the tray.
     // Hand Area is a tray-like object.  A box is another example of tray-like object.
     // Currently everything not tray-like can be put on tray-like.  Tray-like does not be put on another tray-like.
+    featName: 'traylike',
+    comeIn(component, event) {
+        component.onTray[event.visitor.componentId] = true;
+        component.propagate({ onTray: component.onTray });
+        if (event.visitor.zIndex < component.zIndex) {
+            event.visitor.propagate({ zIndex: featsContext.table.getNextZIndex() });
+        }
+        featsContext.table.updateView();
+    },
     install: function (component, data) {
         if (!traylike.isEnabled(component, data)) {
             // do not install
@@ -909,12 +918,7 @@ const traylike = {
             if (e.visitor.traylike) {
                 return;
             }
-            component.onTray[e.visitor.componentId] = true;
-            component.propagate({ onTray: component.onTray });
-            if (e.visitor.zIndex < component.zIndex) {
-                e.visitor.propagate({ zIndex: featsContext.table.getNextZIndex() });
-            }
-            featsContext.table.updateView();
+            traylike.comeIn(component, e);
         });
 
         featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
