@@ -53,15 +53,6 @@ def update_table(tablename, table):
         {"$set": {"updated_at": datetime.datetime.now()}})
 
 
-def update_component(tablename, component_id, diff):
-    table = get(tablename)
-    table["components"][component_id].update(diff)
-    tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
-    table_metas.update_one(
-        {"tablename": tablename},
-        {"$set": {"updated_at": datetime.datetime.now()}})
-
-
 def add_component(tablename, component_data):
     print(f"add_component({tablename}, {component_data}")
     table = get(tablename)
@@ -103,3 +94,12 @@ def connect(mongo):
     global tables, table_metas
     tables = mongo.db.tables
     table_metas = mongo.db.table_metas
+
+
+def update_components(tablename, diff_of_components):
+    table = get(tablename)
+    modification = {}
+    for component_id in diff_of_components.keys():
+        for key in diff_of_components[component_id].keys():
+            modification[f'table.components.{component_id}.{key}'] = diff_of_components[component_id][key]
+    tables.update_one({"tablename": tablename}, {"$set": modification})
