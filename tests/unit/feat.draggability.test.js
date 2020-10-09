@@ -1,14 +1,20 @@
 import {beforeEach, describe, expect} from "@jest/globals";
 
 const { Table } = require('../../src/js/table');
-const { setFeatsContext, draggability, traylike } = require('../../src/js/feat');
+const { setFeatsContext, draggability, traylike, feats } = require('../../src/js/feat');
 
 import * as sync_table from '../../src/js/sync_table';
+
 jest.spyOn(sync_table, 'pushComponentUpdate');
 
 let table = null
 beforeEach(() => {
-    table = new Table({ getPlayerName: () => 'player', isPlayerObserver: () => false });
+    table = new Table(
+        {
+            getPlayerName: () => 'player',
+            isPlayerObserver: () => false,
+            feats_to_use: feats
+        });
     setFeatsContext(() => 'player', () => false, table);
 });
 
@@ -79,8 +85,8 @@ describe('feat.draggability basics', () => {
 
         // end event is non-volatile and it must have last left, top so that server can save them
         const calls = sync_table.pushComponentUpdate.mock.calls;
-        for(let i = calls.length - 1; i >=0; i--) {
-            if(calls[i][1] === 'component2' && calls[i][3] === false) {
+        for (let i = calls.length - 1; i >= 0; i--) {
+            if (calls[i][1] === 'component2' && calls[i][3] === false) {
                 expect(calls[i][2].left).toBe(35);
                 expect(calls[i][2].top).toBe(60);
                 break;

@@ -1,5 +1,5 @@
 import {el, mount, unmount} from "redom";
-import {setFeatsContext, feats, event} from "./feat.js";
+import {setFeatsContext, event} from "./feat.js";
 import {dev_inspector} from "./dev_inspector.js"
 import {consolidatePropagation, pushComponentUpdate} from "./sync_table";
 
@@ -155,11 +155,7 @@ class Table {
     constructor({ getPlayerName, isPlayerObserver, feats_to_use }) {
         this.getPlayerName = getPlayerName;
         this.isPlayerObserver = isPlayerObserver;
-        if (feats_to_use) {
-            this.feats = feats_to_use;
-        } else {
-            this.feats = feats;
-        }
+        this.feats = feats_to_use;
         console.log("new Table");
         this.el = el("div.table", { style: { left: '0px', top: '0px' } },
             this.list_el = el("div.table_list")

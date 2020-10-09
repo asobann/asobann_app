@@ -989,13 +989,15 @@ const traylike = {
     isEnabled: function (component, data) {
         return data.traylike === true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData(component, data) {
         // On or off of a tray decision is handled in tray-like object's update.
         // This is chiefly to reduce computation.  And also for simplicity.
         component.traylike = data.traylike;
         if (data.onTray) {
             component.onTray = data.onTray;
         }
+    },
+    updateView: function (component, data) {
     },
     uninstall: function (component) {
 

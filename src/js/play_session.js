@@ -16,6 +16,7 @@ import {dev_inspector} from "./dev_inspector.js"
 import interact from 'interactjs';
 
 import '../style/game.css';
+import {feats} from "./feat";
 
 function baseUrl() {
     return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
@@ -83,7 +84,7 @@ const sync_table_connector = {
             table.data.components[componentData.componentId] = componentData;
         }
         if (!table.componentsOnTable[componentData.componentId]) {
-            table.componentsOnTable[componentData.componentId] = new Component(table, componentData);
+            table.componentsOnTable[componentData.componentId] = new Component(table, componentData, table.feats);
             mount(table.list_el, table.componentsOnTable[componentData.componentId].el);
             table.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
         }
@@ -431,7 +432,7 @@ toolbox.setTableName(tablename);
 document.title = tablename + " on asobann";
 const container = el("div.container");
 mount(document.body, container);
-const table = new Table({ getPlayerName, isPlayerObserver });
+const table = new Table({ getPlayerName, isPlayerObserver, feats_to_use: feats });
 const tableContainer = el("div.table_container", [table.el]);
 mount(container, tableContainer);
 
