@@ -116,6 +116,7 @@ class TestHandArea:
         host_card_pos = host_card.pos()
         hand_area = host.hand_area(owner="host")
         host.drag(hand_area, -50, -100)
+        time.sleep(0.1)  # moving with traylike is Level C user action, so it's safer to wait
         assert host_card_pos.left - 50 == host_card.pos().left
         assert host_card_pos.top - 100 == host_card.pos().top
 
@@ -190,6 +191,7 @@ class TestHandArea:
         another = GameHelper(another_browser)
 
         self.put_one_card_each_on_2_hand_areas(host, another)
+        time.sleep(0.1)  # within detection is Level C user action, so it's safer to wait
         assert host.component_by_name(C_A).owner()
         assert host.component_by_name(C_K).owner()
         assert not host.component_by_name('PlayingCard H_A').owner()
@@ -222,21 +224,25 @@ class TestHandArea:
         card_rect = host.component_by_name(C_A).rect()
         lt_in_offset = -(hand_area_rect.width - card_rect.width) / 2, -(hand_area_rect.height - card_rect.height) / 2
         host.move_card_to_hand_area(host.component_by_name(C_A), 'host', lt_in_offset)
+        time.sleep(0.1)  # within detection is Level C user action, so it's safer to wait
         assert host.component_by_name(C_A).owner()
 
         # move to outside of left top edge
         lt_out_offset = lt_in_offset[0] - 1, lt_in_offset[1] - 1
         host.move_card_to_hand_area(host.component_by_name(C_A), 'host', lt_out_offset)
+        time.sleep(0.1)  # within detection is Level C user action, so it's safer to wait
         assert not host.component_by_name(C_A).owner()
 
         # move to inside of right bottom edge
         rb_in_offset = (hand_area_rect.width - card_rect.width) / 2, (hand_area_rect.height - card_rect.height) / 2
         host.move_card_to_hand_area(host.component_by_name(C_A), 'host', rb_in_offset)
+        time.sleep(0.1)  # within detection is Level C user action, so it's safer to wait
         assert host.component_by_name(C_A).owner()
 
         # move to outside of right bottom edge
         rb_out_offset = rb_in_offset[0] + 1, rb_in_offset[1] + 1
         host.move_card_to_hand_area(host.component_by_name(C_A), 'host', rb_out_offset)
+        time.sleep(0.1)  # within detection is Level C user action, so it's safer to wait
         assert not host.component_by_name(C_A).owner()
 
 
