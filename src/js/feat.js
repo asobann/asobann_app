@@ -60,6 +60,7 @@ const basic = {
         component.rect.top = parseFloat(data.top);
         component.rect.width = parseFloat(data.width);
         component.rect.height = parseFloat(data.height);
+        component.zIndex = data.zIndex;
     },
     updateView(component, data) {
         if (data.showImage) {
@@ -790,37 +791,38 @@ const within = {
         component.moving = data.moving;
     },
     uninstall: function (component) {
-        const thingsWithinMe = component.thingsWithinMe;
-        const iAmWithin = component.iAmWithin;
-        component.thingsWithinMe = [];  // avoid recurse
-        component.iAmWithin = [];  // avoid recurse
-        for (const componentId in thingsWithinMe) {
-            if (!thingsWithinMe.hasOwnProperty(componentId)) {
-                continue;
-            }
-            const other = featsContext.table.componentsOnTable[componentId];
-            if (other) {
-                // there is a chance that other is already removed from table
-                delete other.iAmWithin[component.componentId];
+        component.applyUserAction(Level.C, () => {
+            const thingsWithinMe = component.thingsWithinMe;
+            const iAmWithin = component.iAmWithin;
+            component.thingsWithinMe = [];  // avoid recurse
+            component.iAmWithin = [];  // avoid recurse
+            for (const componentId in thingsWithinMe) {
+                if (!thingsWithinMe.hasOwnProperty(componentId)) {
+                    continue;
+                }
+                const other = featsContext.table.componentsOnTable[componentId];
+                if (other) {
+                    // there is a chance that other is already removed from table
+                    delete other.iAmWithin[component.componentId];
 
-                other.propagate({ 'iAmWithin': other.iAmWithin });
-                featsContext.fireEvent(component, within.events.onWithinEnd, { visitor: other });
+                    other.propagate({ 'iAmWithin': other.iAmWithin });
+                    featsContext.fireEvent(component, within.events.onWithinEnd, { visitor: other });
+                }
             }
-        }
-        for (const otherId in iAmWithin) {
-            if (!iAmWithin.hasOwnProperty(otherId)) {
-                continue;
-            }
-            const other = featsContext.table.componentsOnTable[otherId];
-            if (other) {
-                // there is a chance that other is already removed from table
-                delete other.thingsWithinMe[component.componentId];
+            for (const otherId in iAmWithin) {
+                if (!iAmWithin.hasOwnProperty(otherId)) {
+                    continue;
+                }
+                const other = featsContext.table.componentsOnTable[otherId];
+                if (other) {
+                    // there is a chance that other is already removed from table
+                    delete other.thingsWithinMe[component.componentId];
 
-                other.propagate({ 'thingsWithinMe': other.thingsWithinMe });
-                featsContext.fireEvent(other, within.events.onWithinEnd, { visitor: component });
+                    other.propagate({ 'thingsWithinMe': other.thingsWithinMe });
+                    featsContext.fireEvent(other, within.events.onWithinEnd, { visitor: component });
+                }
             }
-        }
-        featsContext.table.updateView();
+        });
     },
 
     events: {
