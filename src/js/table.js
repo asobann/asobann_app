@@ -133,6 +133,13 @@ class QueueForUpdatingView {
             }
         }
     }
+
+    startConsolidatedUpdatingView(table) {
+        setInterval(() => {
+            table.updateViewForComponents(this.queueToConsolidate);
+            this.queueToConsolidate.splice(0);
+        }, 50);
+    }
 }
 
 class Table {
@@ -152,6 +159,7 @@ class Table {
         this.componentsOnTable = {};
         this.data = {};
         this.queueForUpdatingView = new QueueForUpdatingView();
+        this.queueForUpdatingView.startConsolidatedUpdatingView(this);
     }
 
     receiveData(data) {
@@ -199,14 +207,17 @@ class Table {
         dev_inspector.tracePoint('finish updating table view');
     }
 
-    updateViewForImmediateOnly() {
-        for (const componentId of this.queueForUpdatingView.queueForImmediate) {
+    updateViewForComponents(componentIds) {
+        for (const componentId of componentIds) {
             if (!this.data.components.hasOwnProperty(componentId)) {
                 continue;
             }
             const componentData = this.data.components[componentId];
             this.componentsOnTable[componentId].updateView(componentData);
         }
+    }
+    updateViewForImmediateOnly() {
+        this.updateViewForComponents(this.queueForUpdatingView.queueForImmediate);
     }
 
     update(data) {
