@@ -8,14 +8,11 @@ function noop() {
 const dev_inspector = {
     // initialize with NOOP functions
     startTrace: noop,
-    resumeTrace: (/* traceId */) => {
-    },
+    resumeTrace: noop,
     endTrace: noop,
     passTraceInfo: noop,
-    tracePoint: (/* label */) => {
-    },
-    tracePointByTraceId: (/* label, traceId */) => {
-    },
+    tracePoint: noop,
+    tracePointByTraceId: noop,
 };
 
 

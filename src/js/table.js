@@ -53,6 +53,15 @@ class Component {
         }
     }
 
+    /**
+     * propagate does three things:
+     *   - update whole table data with diff
+     *   - update view of affected components
+     *   - emit diff to server to update other players's browser
+     *
+     * @param diff
+     * @param volatile - true if diff is one of points in a series of rapid changes (e.g. dragging) and can be ignored
+     */
     propagate(diff, volatile) {
         if(volatile !== true) {
             volatile = false;
