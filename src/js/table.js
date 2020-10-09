@@ -64,13 +64,10 @@ class Component {
     }
 
     applyUserAction(level, proc) {
-        const previousLevel = this.table.queueForUpdatingView.currentLevel;
-        if(previousLevel < level) {
-            this.table.queueForUpdatingView.currentLevel = level;
-        }
+        this.table.queueForUpdatingView.startLevel(level);
         proc();
 
-        this.table.queueForUpdatingView.currentLevel = previousLevel;
+        this.table.queueForUpdatingView.exitLevel();
         this.table.updateViewForImmediateOnly();
         this.table.queueForUpdatingView.queueForImmediate = [];
     }
@@ -80,13 +77,50 @@ class QueueForUpdatingView {
     constructor() {
         this.queueToConsolidate = [];
         this.queueForImmediate = [];
-        this.currentLevel = null;
+        this.currentEffectiveLevel = null;
+        this.runningApplications = [];
+    }
+
+    startLevel(level) {
+        if (this.currentEffectiveLevel == null || this.currentEffectiveLevel < level) {
+            this.currentEffectiveLevel = level;
+        }
+        this.runningApplications.push(level);
+    }
+
+    exitLevel() {
+        this.runningApplications.pop();
+        const previousLevel = this.runningApplications[this.runningApplications.length - 1];
+        if (previousLevel < this.currentEffectiveLevel) {
+            this.currentEffectiveLevel = previousLevel;
+        }
+    }
+
+    isInTopLevel() {
+        return this.runningApplications.length === 1;
+    }
+
+    isOutOfApplication() {
+        return this.runningApplications.length === 0;
     }
 
     pushComponentIdForUpdate(componentId) {
-        if (this.currentLevel <= Level.A) {
+        if (this.isOutOfApplication()) {
+            return;
+        }
+        if (this.currentEffectiveLevel <= Level.A) {
             if (this.queueForImmediate.indexOf(componentId) === -1) {
                 this.queueForImmediate.push(componentId);
+            }
+        } else if (this.currentEffectiveLevel === Level.B) {
+            if (this.isInTopLevel()) {
+                if (this.queueForImmediate.indexOf(componentId) === -1) {
+                    this.queueForImmediate.push(componentId);
+                }
+            } else {
+                if (this.queueToConsolidate.indexOf(componentId) === -1) {
+                    this.queueToConsolidate.push(componentId);
+                }
             }
         } else {
             if (this.queueToConsolidate.indexOf(componentId) === -1) {
