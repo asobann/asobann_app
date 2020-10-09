@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 from selenium import webdriver
@@ -30,7 +31,8 @@ def headless():
 def browser_window(firefox_driver):
     browser = webdriver.Firefox(options=firefox_options)
     yield browser
-    # browser.close()
+    if 'ASOBANN_KEEP_TEST_BROWSER' not in os.environ:
+        browser.close()
 
 
 @pytest.fixture
@@ -50,7 +52,8 @@ def browser_func(headless=False):
 def another_browser_window(firefox_driver):
     browser = webdriver.Firefox()
     yield browser
-    # browser.close()
+    if 'ASOBANN_KEEP_TEST_BROWSER' not in os.environ:
+        browser.close()
 
 
 @pytest.fixture

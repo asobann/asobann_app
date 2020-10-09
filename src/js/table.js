@@ -53,14 +53,17 @@ class Component {
         }
     }
 
-    propagate(diff) {
+    propagate(diff, volatile) {
+        if(volatile !== true) {
+            volatile = false;
+        }
         dev_inspector.tracePoint('propagate');
         this.table.queueForUpdatingView.pushComponentIdForUpdate(this.componentId);
-        pushComponentUpdate(this.table, this.componentId, diff, false);
+        pushComponentUpdate(this.table, this.componentId, diff, volatile);
     }
 
     propagate_volatile(diff) {
-        pushComponentUpdate(this.table, this.componentId, diff, true);
+        this.propagate(diff, true);
     }
 
     applyUserAction(level, proc) {
@@ -68,8 +71,10 @@ class Component {
         proc();
 
         this.table.queueForUpdatingView.exitLevel();
-        this.table.updateViewForImmediateOnly();
-        this.table.queueForUpdatingView.queueForImmediate = [];
+        if(this.table.queueForUpdatingView.isOutOfApplication()) {
+            this.table.updateViewForImmediateOnly();
+            this.table.queueForUpdatingView.queueForImmediate = [];
+        }
     }
 }
 

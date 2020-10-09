@@ -212,5 +212,15 @@ describe('3 levels of user action', () => {
         expect(table.queueForUpdatingView.queueToConsolidate.length).toBe(0);
         expect(table.queueForUpdatingView.queueForImmediate.length).toBe(0);
     })
+
+    test('can propagate within other components applyUserAction', () => {
+        component1.applyUserAction(Level.C, () => {
+            component2.propagate({ value: 100 });
+        });
+        expect(feat_for_test.updateView.mock.calls.length).toBe(0);
+        expect(table.queueForUpdatingView.queueToConsolidate).not.toContain('component1');
+        expect(table.queueForUpdatingView.queueToConsolidate).toContain('component2');
+    });
+
 })
 
