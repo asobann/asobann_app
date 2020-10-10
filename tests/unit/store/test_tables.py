@@ -78,7 +78,7 @@ class TestTableStore:
 
     class TestUpdateComponents:
         def test_update_components_basic(self, simple_table):
-            tables.update_components('table1', {'component1': {'value1': 100}})
+            tables.update_components('table1', [{'component1': {'value1': 100}}])
             assert tables.get('table1')['components']['component1'] == {'value1': 100, 'value2': 20}
 
         def test_update_components_only_specified_value(self, simple_table):
@@ -89,17 +89,16 @@ class TestTableStore:
                 'kits': [],
                 'players': {},
             })
-            tables.update_components('table1', {'component1': {'value1': 11}})
+            tables.update_components('table1', [{'component1': {'value1': 11}}])
             assert tables.get('table1')['components']['component1'] == {'value1': 11, 'value2': 200}
 
         def test_update_components_several_components(self, table_with_several_components):
             tables.update_components('table1',
-                                     {
-                                         'component1': {'value1': 300},
-                                         'component2': {'value1': 300},
-                                         'component3': {'value1': 300},
-                                     })
+                                     [
+                                         {'component1': {'value1': 300}},
+                                         {'component2': {'value1': 300}},
+                                         {'component3': {'value1': 300}},
+                                     ])
             assert tables.get('table1')['components']['component1'] == {'value1': 300, 'value2': 20}
             assert tables.get('table1')['components']['component2'] == {'value1': 300, 'value2': 120}
             assert tables.get('table1')['components']['component3'] == {'value1': 300, 'value2': 220}
-

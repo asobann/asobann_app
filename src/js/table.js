@@ -154,11 +154,11 @@ class Table {
         this.getPlayerName = getPlayerName;
         this.isPlayerObserver = isPlayerObserver;
         this.feats = feats_to_use;
+        setFeatsContext(this.getPlayerName, this.isPlayerObserver, this);
         console.log("new Table");
         this.el = el("div.table", { style: { left: '0px', top: '0px' } },
             this.list_el = el("div.table_list")
         );
-// this.list = list(this.list_el, Component);
         this.componentsOnTable = {};
         this.data = {};
         this.queueForUpdatingView = new QueueForUpdatingView();
@@ -188,7 +188,6 @@ class Table {
 
     updateView() {
         const notUpdatedComponents = Object.assign({}, this.componentsOnTable);
-        setFeatsContext(this.getPlayerName, this.isPlayerObserver, this);
 
         for (const componentId in this.data.components) {
             if (!this.data.components.hasOwnProperty(componentId)) {

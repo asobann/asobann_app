@@ -1,3 +1,4 @@
+from flask import current_app
 import random
 import json
 from pathlib import Path
@@ -98,7 +99,22 @@ def connect(mongo):
 
 def update_components(tablename, diff_of_components):
     modification = {}
-    for component_id in diff_of_components.keys():
-        for key in diff_of_components[component_id].keys():
-            modification[f'table.components.{component_id}.{key}'] = diff_of_components[component_id][key]
+    i = 0
+    for diff in diff_of_components:
+        for component_id in diff.keys():
+            i += 1
+            for key in diff[component_id].keys():
+                mod_key = f'table.components.{component_id}.{key}'
+                current_app.logger.info(f'  {i:3} {mod_key}={diff[component_id][key]}')
+                modification[mod_key] = diff[component_id][key]
     tables.update_one({"tablename": tablename}, {"$set": modification})
+    modification = {}
+    # i = 0
+    # for diff in diff_of_components:
+    #     for component_id in diff.keys():
+    #         i += 1
+    #         for key in diff[component_id].keys():
+    #             mod_key = f'table.components.{component_id}.{key}'
+    #             current_app.logger.info(f'  {i:3} {mod_key}={diff[component_id][key]}')
+    #             modification[mod_key] = diff[component_id][key]
+    # tables.update_one({"tablename": tablename}, {"$set": modification})

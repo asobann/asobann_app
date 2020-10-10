@@ -76,7 +76,7 @@ describe('ComponentUpdateBuffer builds message', () => {
     test('one simple update', () => {
         pushComponentUpdate(table, 'component1', { value: 100 }, false);
         expect(componentUpdateBuffer.buildMessageToEmit()).toMatchObject({
-            eventName: 'update components',
+            eventName: 'update many components',
             data: {
                 tablename: table.tablename,
                 originator: expect.stringMatching(/.*/),
@@ -92,7 +92,7 @@ describe('ComponentUpdateBuffer builds message', () => {
         pushComponentUpdate(table, 'component2', { value: 200 }, false);
         pushComponentUpdate(table, 'component3', { value: 300 }, false);
         expect(componentUpdateBuffer.buildMessageToEmit()).toMatchObject({
-            eventName: 'update components',
+            eventName: 'update many components',
             data: {
                 tablename: table.tablename,
                 originator: expect.stringMatching(/.*/),

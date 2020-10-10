@@ -1,6 +1,5 @@
 import {dev_inspector} from "./dev_inspector.js";
 import io from 'socket.io-client'
-import {expect} from "@jest/globals";
 
 const socket = io(
     // {
@@ -87,17 +86,17 @@ class ComponentUpdateBuffer {
 
     buildMessageToEmit() {
         if (this.orderOfComponentId.length === 0) {
-            throw 'no updates to emit';
+            throw new Error('no updates to emit');
         }
 
         const diffs = [];
-        for(const componentId of this.orderOfComponentId) {
+        for (const componentId of this.orderOfComponentId) {
             const diff = {};
             diff[componentId] = this.updateOf(componentId);
             diffs.push(diff);
         }
         return {
-            eventName: 'update components',
+            eventName: 'update many components',
             data: {
                 tablename: context.tablename,
                 originator: context.client_connection_id,
@@ -106,7 +105,6 @@ class ComponentUpdateBuffer {
         }
     }
 
-
     /**
      * Reset the buffer and discard all buffered updates.
      */
@@ -114,9 +112,26 @@ class ComponentUpdateBuffer {
         this.buffer = {};
         this.orderOfComponentId.splice(0);
     }
+
+    startBUfferedEmit() {
+        setInterval(() => {
+            try {
+                const event = this.buildMessageToEmit();
+                socket.emit(event.eventName, event.data);
+                this.reset();
+            } catch (e) {
+                if (e.message === 'no updates to emit') {
+                    // ignore
+                } else {
+                    console.log(e)
+                }
+            }
+        }, 75);
+    }
 }
 
 const componentUpdateBuffer = new ComponentUpdateBuffer();
+componentUpdateBuffer.startBUfferedEmit();
 
 function sendComponentUpdateFromQueue() {
     while (componentUpdateQueue.length > 0) {
@@ -148,7 +163,7 @@ function sendComponentUpdateFromQueue() {
 setInterval(sendComponentUpdateFromQueue, 75);
 
 function pushComponentUpdate(table, componentId, diff, volatile) {
-    console.log("pushComponentUpdate", componentId, diff, volatile);
+    // console.log("pushComponentUpdate", componentId, diff, volatile);
     if (!table.data.components[componentId]) {
         console.log("no such component", componentId, table.data);
     }
@@ -171,7 +186,7 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
     };
     dev_inspector.tracePoint('queued');
     dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
-    componentUpdateQueue.push(event);
+    // componentUpdateQueue.push(event);
     componentUpdateBuffer.addDiff(componentId, diff);
     updateTableDataWithComponentDiff(table, componentId, diff);
 }
@@ -204,15 +219,15 @@ socket.on('update many components', (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
     }
-    for (const ev of msg.events) {
-        if (ev.data.inspectionTraceId) {
+    for (const ev of msg.diffs) {
+        if (ev.inspectionTraceId) {
             dev_inspector.tracePointByTraceId('receive update many components', ev.data.inspectionTraceId);
         }
     }
     if (msg.originator === context.client_connection_id) {
         return;
     }
-    context.updateManyComponents(msg.events);
+    context.updateManyComponents(msg.diffs);
 });
 
 function pushNewComponent(componentData) {

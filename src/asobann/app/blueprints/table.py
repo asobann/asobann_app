@@ -84,6 +84,19 @@ def handle_update_single_component(json):
     current_app.logger.info(f'update single component end')
 
 
+@socketio.on('update many components')
+def handle_update_many_components(json):
+    trace = debug_tools.resume_trace(json)
+    trace.trace_point('handle update many components')
+    current_app.logger.debug(f'update many component: {json}')
+    current_app.logger.info(f'update many component')
+    trace.trace_point('before update_table')
+    tables.update_components(json['tablename'], json['diffs'])
+    trace.trace_point('after update_table')
+    emit("update many components", json, broadcast=True, room=json["tablename"])
+    trace.end()
+
+
 @event_handler('add component')
 def add_component(json, table):
     table["components"][json["component"]["componentId"]] = json["component"]
@@ -91,13 +104,14 @@ def add_component(json, table):
 
 @socketio.on(add_component.event_name)
 def handle_add_component(json):
-    current_app.logger.info(f'add component')
+    current_app.logger.info(f'add component: {json["component"]["componentId"]} {json["component"]["name"]}')
     current_app.logger.debug(f'add component: {json}')
     table = tables.get(json["tablename"])
     add_component(json, table)
     tables.update_table(json["tablename"], table)
     emit("add component", {"tablename": json["tablename"], "component": json["component"]}, broadcast=True,
          room=json["tablename"])
+    current_app.logger.info(f'add component end')
 
 
 @event_handler('add kit')
@@ -114,6 +128,7 @@ def handle_add_kit(json):
     tables.update_table(json["tablename"], table)
     emit('add kit', {"tablename": json["tablename"], "kit": json["kitData"]["kit"]}, broadcast=True,
          room=json["tablename"])
+    current_app.logger.info(f'add kit end')
 
 
 @event_handler('remove component')

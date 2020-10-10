@@ -55,23 +55,24 @@ const sync_table_connector = {
         dev_inspector.tracePoint('finished sync update single component');
     },
 
-    updateManyComponents: function (updates) {
+    updateManyComponents: function (diff_of_components) {
         const tableData = table.data;
-        for (const event of updates) {
-            if (event.eventName !== 'update single component') {
-                console.error('updateManyComponents cannot handle events other than update single component', event);
-                continue;
-            }
-            const componentId = event.data.componentId;
-            const diff = event.data.diff;
-            if (tableData.components[componentId].lastUpdated) {
-                if (tableData.components[componentId].lastUpdated.from === diff.lastUpdated.from
-                    && tableData.components[componentId].lastUpdated.epoch > diff.lastUpdated.epoch) {
-                    // already recieved newer update for this component; ignore the diff
+        for (const component_diff of diff_of_components) {
+            for (const componentId in component_diff) {
+                if (!component_diff.hasOwnProperty(componentId)) {
                     continue;
                 }
+                const diff = component_diff[componentId];
+                // TODO logic to discard late-arrived updated is commented out ; probably meaningless
+                // if (tableData.components[componentId].lastUpdated) {
+                //     if (tableData.components[componentId].lastUpdated.from === diff.lastUpdated.from
+                //         && tableData.components[componentId].lastUpdated.epoch > diff.lastUpdated.epoch) {
+                //         // already recieved newer update for this component; ignore the diff
+                //         continue;
+                //     }
+                // }
+                Object.assign(tableData.components[componentId], diff);
             }
-            Object.assign(tableData.components[componentId], diff);
         }
         table.update(tableData);
         menu.update(tableData);
