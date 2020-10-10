@@ -40,8 +40,6 @@ class Component {
             if (ability.isEnabled(this, data)) {
                 if (ability.hasOwnProperty('updateView')) {
                     ability.updateView(this, data);
-                } else {
-                    ability.onComponentUpdate(this, data);
                 }
             }
         }

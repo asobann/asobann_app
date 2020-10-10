@@ -243,9 +243,12 @@ const draggability = {
     isEnabled: function (component, data) {
         return data.draggable === true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData: function (component, data) {
         component.draggable = data.draggable;
         component.ownable = data.ownable;  // TODO: good chance ownable will not be used
+    },
+    updateView: function () {
+
     },
     uninstall: function (component) {
         interact(component.el).draggable(false);
@@ -450,12 +453,17 @@ const rollability = {
     isEnabled: function (component, data) {
         return data.rollable === true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData(component, data) {
         component.rollable = data.rollable;
 
         if (data.startRoll) {
             data.startRoll = undefined;
-            component.rolling = true;
+            component.startRoll = true;
+        }
+    },
+    updateView(component, data) {
+        if (component.startRoll) {
+            component.startRoll = false;
             rollability.roll(component, data.rollDuration, data.rollFinalValue);
         }
 
@@ -780,7 +788,7 @@ const within = {
     isEnabled: function (/*component, data*/) {
         return true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData: function (component, data) {
         if (data.thingsWithinMe) {
             component.thingsWithinMe = data.thingsWithinMe;
         }
@@ -789,6 +797,9 @@ const within = {
         }
 
         component.moving = data.moving;
+    },
+    updateView: function (component, data) {
+
     },
     uninstall: function (component) {
         component.applyUserAction(Level.C, () => {
@@ -861,12 +872,15 @@ const ownership = {
     isEnabled: function (/*component, data*/) {
         return true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData(component, data) {
         if (component.owner !== data.owner) {
             console.log("ownership update change", component.componentId, component.owner, "to", data.owner);
         }
         component.owner = data.owner;
         component.handArea = data.handArea;
+
+    },
+    updateView(component, data) {
         if (component.moving) {
             return;
         }
@@ -901,7 +915,9 @@ const handArea = {
     isEnabled: function (component, data) {
         return data.handArea === true;
     },
-    onComponentUpdate: function () {
+    receiveData: function () {
+    },
+    updateView: function () {
     },
     uninstall: function () {
 
@@ -1028,12 +1044,15 @@ const touchToRaise = {
         return true;
     },
 
-    onComponentUpdate: function (component, data) {
+    receiveData: function (component, data) {
         if (data.zIndex) {
             component.zIndex = data.zIndex;
         } else {
             component.zIndex = featsContext.table.getNextZIndex();
         }
+    },
+    updateView() {
+
     },
 
     uninstall: function (component) {
@@ -1071,11 +1090,14 @@ const stowage = {
         return true;
     },
 
-    onComponentUpdate: function (component, data) {
+    receiveData: function (component, data) {
         if (data.isStowed === undefined) {
             return;
         }
         component.isStowed = data.isStowed;
+
+    },
+    updateView(component, data) {
 
         if (component.isStowed) {
             setStyle(component.el, { opacity: 0.4 });
@@ -1119,7 +1141,10 @@ const cardistry = {
     isEnabled: function (component, data) {
         return data.hasOwnProperty('cardistry');
     },
-    onComponentUpdate: function (component, componentData) {
+    receiveData() {
+
+    },
+    updateView: function (component, componentData) {
         if (!componentData.cardistry) {
             return;
         }
@@ -1205,7 +1230,10 @@ const counter = {
     isEnabled: function (component, data) {
         return data.counter === true;
     },
-    onComponentUpdate: function (component, componentData) {
+    receiveData() {
+
+    },
+    updateView: function (component, componentData) {
         if (!componentData.counter) {
             return;
         }
@@ -1268,8 +1296,11 @@ const editability = {
     isEnabled: function (component, data) {
         return data.editable === true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData: function (component, data) {
         component.editable = data.editable;
+    },
+    updateView() {
+
     },
     uninstall: function (component) {
     },
@@ -1355,8 +1386,7 @@ const feats = [
 for (const feat of feats) {
     console.assert(feat.install !== undefined);
     console.assert(feat.isEnabled !== undefined);
-    console.assert((feat.onComponentUpdate !== undefined) ||
-        (feat.receiveData !== undefined && feat.updateView !== undefined));
+    console.assert(feat.receiveData !== undefined && feat.updateView !== undefined);
     console.assert(feat.uninstall !== undefined);
 }
 

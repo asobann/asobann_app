@@ -72,6 +72,7 @@ def handle_update_single_component(json):
     trace = debug_tools.resume_trace(json)
     trace.trace_point('handle update single component')
     current_app.logger.debug(f'update single component: {json}')
+    current_app.logger.info(f'update single component')
     table = tables.get(json["tablename"])
     update_single_component(json, table)
     trace.trace_point('before update_table')
@@ -80,6 +81,7 @@ def handle_update_single_component(json):
     emit("update single component", json, broadcast=True, room=json["tablename"])
     trace.trace_point('emitted response')
     trace.end()
+    current_app.logger.info(f'update single component end')
 
 
 @event_handler('add component')
