@@ -98,23 +98,27 @@ def connect(mongo):
 
 
 def update_components(tablename, diff_of_components):
+    current_table = get(tablename)
     modification = {}
     i = 0
     for diff in diff_of_components:
         for component_id in diff.keys():
+            if component_id not in current_table["components"]:
+                continue
             i += 1
             for key in diff[component_id].keys():
                 mod_key = f'table.components.{component_id}.{key}'
-                current_app.logger.info(f'  {i:3} {mod_key}={diff[component_id][key]}')
+                # current_app.logger.info(f'  {i:3} {mod_key}={diff[component_id][key]}')
                 modification[mod_key] = diff[component_id][key]
+    if not modification:
+        return
     tables.update_one({"tablename": tablename}, {"$set": modification})
+
+
+def add_new_kit_and_components(tablename, kit, components):
+    tables.update_one({"tablename": tablename}, {"$push": {"table.kits": kit}})
     modification = {}
-    # i = 0
-    # for diff in diff_of_components:
-    #     for component_id in diff.keys():
-    #         i += 1
-    #         for key in diff[component_id].keys():
-    #             mod_key = f'table.components.{component_id}.{key}'
-    #             current_app.logger.info(f'  {i:3} {mod_key}={diff[component_id][key]}')
-    #             modification[mod_key] = diff[component_id][key]
-    # tables.update_one({"tablename": tablename}, {"$set": modification})
+    for component_id in components.keys():
+        mod_key = f'table.components.{component_id}'
+        modification[mod_key] = components[component_id]
+    tables.update_one({"tablename": tablename}, {"$set": modification})

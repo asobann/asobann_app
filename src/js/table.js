@@ -196,7 +196,7 @@ class Table {
             const componentData = this.data.components[componentId];
             this.componentsOnTable[componentId].updateView(componentData);
 
-            delete notUpdatedComponents[componentId]
+            delete notUpdatedComponents[componentId];
         }
 
         for (const componentIdToRemove in notUpdatedComponents) {
@@ -205,6 +205,7 @@ class Table {
             }
             delete this.componentsOnTable[componentIdToRemove];
             unmount(this.list_el, notUpdatedComponents[componentIdToRemove].el);
+            delete notUpdatedComponents[componentIdToRemove].el;
         }
         dev_inspector.tracePoint('finish updating table view');
     }
@@ -247,7 +248,7 @@ class Table {
     removeComponent(componentId) {
         // This is called when a component is removed ON THIS BROWSER.
         // Because component removal is not directly synced but propagated as table refresh,
-// table relies on update() to detect unused / non-referenced components
+        // table relies on update() to detect unused / non-referenced components
         // to remove Component object and DOM object.
         // TODO: maybe it's economical to sync component removal directly...
         this.componentsOnTable[componentId].disappear();

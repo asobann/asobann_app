@@ -3,7 +3,7 @@ import {Component, Table} from "./table";
 import {
     setTableContext,
     pushNewComponent,
-    pushNewKit,
+    pushNewKitAndComponents,
     pushSyncWithMe,
     pushRemoveComponent,
     joinTable,
@@ -80,26 +80,36 @@ const sync_table_connector = {
     },
 
     addComponent: function (componentData) {
-        if (!table.data.components[componentData.componentId]) {
-            table.data.components[componentData.componentId] = componentData;
-        }
-        if (!table.componentsOnTable[componentData.componentId]) {
-            table.componentsOnTable[componentData.componentId] = new Component(table, componentData, table.feats);
-            mount(table.list_el, table.componentsOnTable[componentData.componentId].el);
-            table.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
+        sync_table_connector.addManyComponents([componentData])
+    },
+
+    addManyComponents: function (componentDataObj) {
+        for(const componentId in componentDataObj) {
+            if(!componentDataObj.hasOwnProperty(componentId)) {
+                continue;
+            }
+            const componentData = componentDataObj[componentId];
+            if (!table.data.components[componentData.componentId]) {
+                table.data.components[componentData.componentId] = componentData;
+            }
+            if (!table.componentsOnTable[componentData.componentId]) {
+                table.componentsOnTable[componentData.componentId] = new Component(table, componentData, table.feats);
+                mount(table.list_el, table.componentsOnTable[componentData.componentId].el);
+                table.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
+            }
         }
         table.update(table.data);
         menu.update(table.data);
     },
 
-    addKit: function (kitData) {
+    addKitAndComponents: function (kitData, newComponents) {
         for (const existKit of table.data.kits) {
             if (existKit.kitId === kitData.kitId) {
                 return;
             }
         }
         table.data.kits.push(kitData);
-        menu.update(table.data);
+        sync_table_connector.addManyComponents(newComponents);
     },
 
     update_whole_table: function (data) {
@@ -164,14 +174,13 @@ function addNewKit(kitData) {
 
         layouter();
 
+        pushNewKitAndComponents({
+            kit: { name: kitName, kitId: kitId },
+        }, newComponents);
         for (const componentId in newComponents) {
             const newComponentData = newComponents[componentId];
-            pushNewComponent(newComponentData);
             table.addComponent(newComponentData);
         }
-        pushNewKit({
-            kit: { name: kitName, kitId: kitId },
-        });
 
         function createComponent(name) {
             const newComponentData = Object.assign({}, componentDataMap[name].component);

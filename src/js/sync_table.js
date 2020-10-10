@@ -27,7 +27,7 @@ function setTableContext(tablename, connector) {
     context.updatePlayer = connector.updatePlayer;
     context.showOthersMouseMovement = connector.showOthersMouseMovement;
     context.addComponent = connector.addComponent;
-    context.addKit = connector.addKit;
+    context.addKitAndComponents = connector.addKitAndComponents;
 }
 
 socket.on("load table", (msg) => {
@@ -249,11 +249,12 @@ socket.on("add component", (msg) => {
 });
 
 
-function pushNewKit(kitData) {
+function pushNewKitAndComponents(kitData, newComponents) {
     emit("add kit", {
         tablename: context.tablename,
         originator: context.client_connection_id,
         kitData: kitData,
+        newComponents: newComponents,
     })
 }
 
@@ -262,7 +263,10 @@ socket.on("add kit", (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
     }
-    context.addKit(msg.kit);
+    if (msg.originator === context.client_connection_id) {
+        return;
+    }
+    context.addKitAndComponents(msg.kit, msg.newComponents);
 });
 
 function pushRemoveKit(kitId) {
@@ -317,7 +321,7 @@ export {
     pushComponentUpdate,
     pushNewComponent,
     pushRemoveComponent,
-    pushNewKit,
+    pushNewKitAndComponents,
     pushRemoveKit,
     pushSyncWithMe,
     joinTable,
