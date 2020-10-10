@@ -155,22 +155,6 @@ def handle_sync_with_me(json):
     emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
 
-@socketio.on("bulk propagate")
-def handle_bulk_propagate(json):
-    current_app.logger.info(f'bulk propagate')
-    current_app.logger.debug(f'bulk propagate: {json}')
-    table = tables.get(json["tablename"])
-    for event in json['events']:
-        event_name = event['eventName']
-        data = event['data']
-        event_handlers[event_name](data, table)
-    tables.update_table(json["tablename"], table)
-    if all([e['eventName'] == update_single_component.event_name for e in json['events']]):
-        emit('update many components', json, broadcast=True, room=json["tablename"])
-    else:
-        emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
-
-
 @socketio.on("mouse movement")
 def handle_mouse_movement(json):
     emit("mouse movement", json, broadcast=True, room=json["tablename"])

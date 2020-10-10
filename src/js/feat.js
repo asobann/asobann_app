@@ -146,23 +146,20 @@ const draggability = {
     },
     move: function (component, data, event) {
         component.applyUserAction(Level.A, () => {
-            featsContext.table.consolidatePropagation(() => {
-                featsContext.fireEvent(component, draggability.events.onMoving,
-                    {
-                        left: (event.x - component.dragStartXonTarget) + 'px',
-                        top: (event.y - component.dragStartYonTarget) + 'px',
-                        dx: event.dx,
-                        dy: event.dy,
-                        x: event.page.x,
-                        y: event.page.y,
-                    });
-            });
+            featsContext.fireEvent(component, draggability.events.onMoving,
+                {
+                    left: (event.x - component.dragStartXonTarget) + 'px',
+                    top: (event.y - component.dragStartYonTarget) + 'px',
+                    dx: event.dx,
+                    dy: event.dy,
+                    x: event.page.x,
+                    y: event.page.y,
+                });
         });
     },
     end: function (component, data, event) {
         component.applyUserAction(Level.B, () => {
             console.log("draggable end", component.componentId);
-            // featsContext.table.consolidatePropagation(() => {
             featsContext.fireEvent(component, featsContext.events.onPositionChanged,
                 {
                     left: event.page.x - component.dragStartXonTarget,
@@ -171,7 +168,6 @@ const draggability = {
                     height: component.rect.height,
                 });
             featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
-            // });
         });
     },
     install: function (component, data) {

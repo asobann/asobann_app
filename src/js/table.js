@@ -1,7 +1,7 @@
 import {el, mount, unmount} from "redom";
 import {setFeatsContext, event} from "./feat.js";
 import {dev_inspector} from "./dev_inspector.js"
-import {consolidatePropagation, pushComponentUpdate} from "./sync_table";
+import {pushComponentUpdate} from "./sync_table";
 
 const Level = {
     A: 0,
@@ -61,7 +61,7 @@ class Component {
      * @param volatile - true if diff is one of points in a series of rapid changes (e.g. dragging) and can be ignored
      */
     propagate(diff, volatile) {
-        if(volatile !== true) {
+        if (volatile !== true) {
             volatile = false;
         }
         dev_inspector.tracePoint('propagate');
@@ -78,7 +78,7 @@ class Component {
         proc();
 
         this.table.queueForUpdatingView.exitLevel();
-        if(this.table.queueForUpdatingView.isOutOfApplication()) {
+        if (this.table.queueForUpdatingView.isOutOfApplication()) {
             this.table.updateViewForImmediateOnly();
             this.table.queueForUpdatingView.queueForImmediate = [];
         }
@@ -219,6 +219,7 @@ class Table {
             this.componentsOnTable[componentId].updateView(componentData);
         }
     }
+
     updateViewForImmediateOnly() {
         this.updateViewForComponents(this.queueForUpdatingView.queueForImmediate);
     }
@@ -251,10 +252,6 @@ class Table {
         // to remove Component object and DOM object.
         // TODO: maybe it's economical to sync component removal directly...
         this.componentsOnTable[componentId].disappear();
-    }
-
-    consolidatePropagation(proc) {
-        consolidatePropagation(proc);
     }
 
     findEmptySpace(width, height) {

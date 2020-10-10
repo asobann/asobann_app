@@ -13,54 +13,9 @@ const context = {
     }),
 };
 
-const bulkPropagation = {
-    nested: 0,
-    events: [],
-};
-
-function consolidatePropagation(proc) {
-    startConsolidatedPropagation();
-    proc();
-    finishConsolidatedPropagationAndEmit();
-}
-
-function startConsolidatedPropagation() {
-    bulkPropagation.nested += 1;
-}
-
-function finishConsolidatedPropagationAndEmit() {
-    bulkPropagation.nested -= 1;
-    if (bulkPropagation.nested > 0) {
-        return;
-    }
-    console.log("finishBulkPropagateAndEmit events", bulkPropagation.events.length);
-    socket.emit('bulk propagate', {
-        tablename: context.tablename,
-        originator: context.client_connection_id,
-        events: bulkPropagation.events,
-    });
-    for (const e of bulkPropagation.events) {
-        if (e.data.inspectionTraceId) {
-            dev_inspector.tracePointByTraceId('bulk emitted', e.data.inspectionTraceId);
-        }
-    }
-    bulkPropagation.events = [];
-}
-
-function isInBulkPropagate() {
-    return bulkPropagation.nested > 0;
-}
-
 function emit(eventName, data) {
-    if (isInBulkPropagate()) {
-        if (data.volatile) {
-            return;
-        }
-        bulkPropagation.events.push({ eventName: eventName, data: data });
-    } else {
-        dev_inspector.tracePoint('emitted');
-        socket.emit(eventName, data);
-    }
+    dev_inspector.tracePoint('emitted');
+    socket.emit(eventName, data);
 }
 
 function setTableContext(tablename, connector) {
@@ -159,17 +114,10 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
         eventName: eventName,
         data: data
     };
-    if (isInBulkPropagate()) {
-        dev_inspector.tracePoint('merged in bulk');
-        dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
-        bulkPropagation.events.push(event);
-        updateTableDataWithComponentDiff(table, componentId, diff);
-    } else {
-        dev_inspector.tracePoint('queued');
-        dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
-        componentUpdateQueue.push(event);
-        updateTableDataWithComponentDiff(table, componentId, diff);
-    }
+    dev_inspector.tracePoint('queued');
+    dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
+    componentUpdateQueue.push(event);
+    updateTableDataWithComponentDiff(table, componentId, diff);
 }
 
 function updateTableDataWithComponentDiff(table, componentId, diff) {
@@ -286,7 +234,6 @@ function joinTable(player, isHost) {
 }
 
 function pushCursorMovement(playerName, mouseMovement) {
-    // this event will never be in bulk
     socket.emit("mouse movement", {
         tablename: context.tablename,
         playerName: playerName,
@@ -304,7 +251,4 @@ export {
     pushSyncWithMe,
     joinTable,
     pushCursorMovement,
-    startConsolidatedPropagation,
-    finishConsolidatedPropagationAndEmit,
-    consolidatePropagation,
 };

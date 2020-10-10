@@ -8,7 +8,6 @@ import {
     pushRemoveComponent,
     joinTable,
     pushCursorMovement,
-    consolidatePropagation,
 } from "./sync_table.js";
 import {toolbox} from "./toolbox.js"
 import {Menu} from "./menu.js";
@@ -162,17 +161,15 @@ function addNewKit(kitData) {
             componentDataMap[cmp['component']['name']] = cmp;
         }
 
-        consolidatePropagation(() => {
-            layouter();
+        layouter();
 
-            for (const componentId in newComponents) {
-                const newComponentData = newComponents[componentId];
-                pushNewComponent(newComponentData);
-                table.addComponent(newComponentData);
-            }
-            pushNewKit({
-                kit: { name: kitName, kitId: kitId },
-            });
+        for (const componentId in newComponents) {
+            const newComponentData = newComponents[componentId];
+            pushNewComponent(newComponentData);
+            table.addComponent(newComponentData);
+        }
+        pushNewKit({
+            kit: { name: kitName, kitId: kitId },
         });
 
         function createComponent(name) {
@@ -339,19 +336,17 @@ function addNewKit(kitData) {
 }
 
 function removeKit(kitId) {
-    table.consolidatePropagation(() => {
-        const after = {};
-        for (const componentId in table.data.components) {
-            const cmp = table.data.components[componentId];
-            if (cmp.kitId === kitId) {
-                table.removeComponent(componentId);
-            } else {
-                after[componentId] = cmp;
-            }
+    const after = {};
+    for (const componentId in table.data.components) {
+        const cmp = table.data.components[componentId];
+        if (cmp.kitId === kitId) {
+            table.removeComponent(componentId);
+        } else {
+            after[componentId] = cmp;
         }
-        table.data.components = after;
-        table.data.kits.splice(table.data.kits.findIndex((e) => e.kitId === kitId), 1);
-    });
+    }
+    table.data.components = after;
+    table.data.kits.splice(table.data.kits.findIndex((e) => e.kitId === kitId), 1);
     pushSyncWithMe(table.data);
 }
 
