@@ -1,5 +1,6 @@
 import {dev_inspector} from "./dev_inspector.js";
 import io from 'socket.io-client'
+import {expect} from "@jest/globals";
 
 const socket = io(
     // {
@@ -63,6 +64,60 @@ socket.on("mouse movement", (msg) => {
 const componentUpdateQueue = [];
 const actualUpdateQueue = [];
 
+class ComponentUpdateBuffer {
+    constructor(table) {
+        this.table = table;
+        this.buffer = {};
+        this.orderOfComponentId = [];
+    }
+
+    addDiff(componentId, diff) {
+        Object.assign(this.updateOf(componentId), diff);
+        if (this.orderOfComponentId.indexOf(componentId) < 0) {
+            this.orderOfComponentId.push(componentId);
+        }
+    }
+
+    updateOf(componentId) {
+        if (!this.buffer.hasOwnProperty(componentId)) {
+            this.buffer[componentId] = {};
+        }
+        return this.buffer[componentId];
+    }
+
+    buildMessageToEmit() {
+        if (this.orderOfComponentId.length === 0) {
+            throw 'no updates to emit';
+        }
+
+        const diffs = [];
+        for(const componentId of this.orderOfComponentId) {
+            const diff = {};
+            diff[componentId] = this.updateOf(componentId);
+            diffs.push(diff);
+        }
+        return {
+            eventName: 'update components',
+            data: {
+                tablename: context.tablename,
+                originator: context.client_connection_id,
+                diffs: diffs,
+            },
+        }
+    }
+
+
+    /**
+     * Reset the buffer and discard all buffered updates.
+     */
+    reset() {
+        this.buffer = {};
+        this.orderOfComponentId.splice(0);
+    }
+}
+
+const componentUpdateBuffer = new ComponentUpdateBuffer();
+
 function sendComponentUpdateFromQueue() {
     while (componentUpdateQueue.length > 0) {
         const update = componentUpdateQueue.shift();
@@ -117,6 +172,7 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
     dev_inspector.tracePoint('queued');
     dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
     componentUpdateQueue.push(event);
+    componentUpdateBuffer.addDiff(componentId, diff);
     updateTableDataWithComponentDiff(table, componentId, diff);
 }
 
@@ -251,4 +307,5 @@ export {
     pushSyncWithMe,
     joinTable,
     pushCursorMovement,
+    componentUpdateBuffer,
 };

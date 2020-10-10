@@ -97,7 +97,6 @@ def connect(mongo):
 
 
 def update_components(tablename, diff_of_components):
-    table = get(tablename)
     modification = {}
     for component_id in diff_of_components.keys():
         for key in diff_of_components[component_id].keys():
