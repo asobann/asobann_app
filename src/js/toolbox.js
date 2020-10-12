@@ -1,4 +1,4 @@
-import {el, mount, unmount} from "./redom.es.js";
+import {el, mount, unmount} from "redom";
 import {_} from "./i18n.js";
 
 const toolbox = {

@@ -1,9 +1,10 @@
-import {el, mount, setAttr, setStyle, unmount} from "./redom.es.js";
+import {el, mount, setAttr, setStyle, unmount} from "redom";
 import {allCardistry} from "./cardistry.js";
 import {_, language} from "./i18n.js";
 import {dev_inspector} from "./dev_inspector.js"
+import {toolbox} from "./toolbox.js";
 
-// import interact from './interact.js'
+import interact from 'interactjs';
 
 function arraysEqual(a, b) {
     if (a === b) return true;
@@ -17,23 +18,131 @@ function arraysEqual(a, b) {
 }
 
 function toRect(c) {
-    if (c.top != undefined && c.left != undefined && c.width != undefined && c.height != undefined) {
+    if (c.left !== undefined && c.top !== undefined && c.width !== undefined && c.height !== undefined) {
         return {
-            top: parseFloat(c.top),
             left: parseFloat(c.left),
-            height: parseFloat(c.height),
+            top: parseFloat(c.top),
             width: parseFloat(c.width),
+            height: parseFloat(c.height),
         }
     }
     if (c.el) {
         return {
-            top: parseFloat(c.el.style.top),
             left: parseFloat(c.el.style.left),
-            height: parseFloat(c.el.style.height),
+            top: parseFloat(c.el.style.top),
             width: parseFloat(c.el.style.width),
+            height: parseFloat(c.el.style.height),
         }
     }
     throw 'Cannot detect rect';
+}
+
+const basic = {
+    install: function (component, data) {
+        if (data.showImage) {
+            if (component.imageEl == null) {
+                component.imageEl = el("img", { draggable: false });
+                component.imageEl.ondragstart = () => {
+                    return false;
+                };
+                mount(component.el, component.imageEl);
+            }
+            if (data.image) {
+                setAttr(component.imageEl, { src: data.image });
+            }
+        } else {
+            component.imageEl = null;
+        }
+
+        component.rect = {
+            left: data.left,
+            top: data.top,
+            width: data.width,
+            height: data.height,
+        };
+
+    },
+    isEnabled: function () {
+        return true;
+    },
+    receiveData(component, data) {
+        component.rect.left = parseFloat(data.left);
+        component.rect.top = parseFloat(data.top);
+        component.rect.width = parseFloat(data.width);
+        component.rect.height = parseFloat(data.height);
+    },
+    updateView(component, data) {
+        if (data.showImage) {
+            if (component.imageEl.src !== data.image) {
+                setAttr(component.imageEl, { src: data.image });
+            }
+        }
+
+        if (component.textEl == null) {
+            if (data.toolboxFunction) {
+                component.textEl = el("button.component_text", {
+                    onclick: () => {
+                        toolbox.use(data.toolboxFunction);
+                    }
+                });
+                if (component.el.children.length > 0) {
+                    mount(component.el, el('div', [component.textEl]), component.el.children[0]);
+                } else {
+                    mount(component.el, el('div', [component.textEl]));
+                }
+            } else {
+                component.textEl = el("span.component_text");
+                if (component.el.children.length > 0 && component.el.children[0].tagName !== 'IMG') {
+                    mount(component.el, el('div', [component.textEl]), component.el.children[0]);
+                } else {
+                    mount(component.el, el('div', [component.textEl]));
+                }
+            }
+        }
+        if (data.text) {
+            if (data["text_" + language]) {
+                component.textEl.innerText = data["text_" + language];
+            } else {
+                component.textEl.innerText = data.text;
+            }
+        }
+        if (data.textColor) {
+            setStyle(component.textEl, { color: data.textColor });
+        }
+        if (data.textAlign) {
+            switch (data.textAlign.trim()) {
+                case 'center':
+                    setStyle(component.textEl, {
+                        "text-align": "center",
+                        "vertical-align": "center",
+                    });
+                    break;
+                case 'center bottom':
+                    setStyle(component.textEl, {
+                        "text-align": "center",
+                        "bottom": 0,
+                    });
+                    break;
+                default:
+                    console.warn(`unsupported textAlign "${data.textAlign}"`);
+            }
+        }
+
+        setAttr(component.el, {
+            'data-component-name': data.name,
+        });
+
+        setStyle(component.el, {
+            left: parseFloat(data.left) + "px",
+            top: parseFloat(data.top) + "px",
+            width: parseFloat(data.width) + "px",
+            height: parseFloat(data.height) + "px",
+            backgroundColor: data.color,
+            zIndex: component.zIndex,
+        });
+    },
+    uninstall: function () {
+    },
 }
 
 const draggability = {
@@ -48,6 +157,14 @@ const draggability = {
 
         interact(component.el).draggable({
             listeners: {
+                start(event) {
+                    if (!isDraggingPermitted()) {
+                        return;
+                    }
+
+                    component.dragStartXonTarget = event.x0 - component.rect.left;
+                    component.dragStartYonTarget = event.y0 - component.rect.top;
+                },
                 move(event) {
                     if (!isDraggingPermitted()) {
                         return;
@@ -57,12 +174,15 @@ const draggability = {
                     featsContext.table.consolidatePropagation(() => {
                         featsContext.fireEvent(component, draggability.events.onMoving,
                             {
-                                top: parseFloat(component.el.style.top) + event.dy,
-                                left: parseFloat(component.el.style.left) + event.dx,
+                                left: (event.x - component.dragStartXonTarget) + 'px',
+                                top: (event.y - component.dragStartYonTarget) + 'px',
                                 dx: event.dx,
                                 dy: event.dy,
+                                x: event.page.x,
+                                y: event.page.y,
                             });
                     });
+                    featsContext.table.updateView();
                     dev_inspector.endTrace();
                 },
                 end(event) {
@@ -72,33 +192,45 @@ const draggability = {
                     dev_inspector.startTrace('draggability.end');
                     dev_inspector.tracePoint('event listener');
                     console.log("draggable end", component.componentId);
-                    featsContext.table.consolidatePropagation(() => {
-                        featsContext.fireEvent(component, featsContext.events.onPositionChanged,
-                            {
-                                top: parseFloat(component.el.style.top) + event.dy,
-                                left: parseFloat(component.el.style.left) + event.dx,
-                                height: parseFloat(component.el.style.height),
-                                width: parseFloat(component.el.style.width),
-                            });
-                        featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
-                    });
+                    // featsContext.table.consolidatePropagation(() => {
+                    featsContext.fireEvent(component, featsContext.events.onPositionChanged,
+                        {
+                            left: event.page.x - component.dragStartXonTarget,
+                            top: event.page.y - component.dragStartYonTarget,
+                            width: component.rect.width,
+                            height: component.rect.height,
+                        });
+                    featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
+                    // });
+                    featsContext.table.updateView();
                     dev_inspector.tracePoint('event listener');
                 }
             }
         });
 
         featsContext.addEventListener(component, draggability.events.onMoving, (e) => {
-            component.propagate_volatile({ top: e.top + "px", left: e.left + "px", moving: true });
+            // component.propagate_volatile({
+            //     top: e.top + "px",
+            //     left: e.left + "px",
+            //     moving: true
+            // });
+            component.propagate_volatile({
+                left: (e.x - component.dragStartXonTarget) + 'px',
+                top: (e.y - component.dragStartYonTarget) + 'px',
+                moving: true
+            });
+            featsContext.table.updateView();
         });
 
         featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
             component.propagate({
-                top: parseFloat(e.top) + "px",
-                left: parseFloat(e.left) + "px",
-                height: parseFloat(e.height) + "px",
-                width: parseFloat(e.width) + "px",
+                left: e.left + "px",
+                top: e.top + "px",
+                width: e.width + "px",
+                height: e.height + "px",
                 moving: false,
             });
+            featsContext.table.updateView();
 
         });
     },
@@ -144,20 +276,25 @@ const flippability = {
                 diff.faceup = component.faceup = true;
             }
             component.propagate(diff);
+            featsContext.table.updateView();
             dev_inspector.endTrace();
         });
     },
     isEnabled: function (component, data) {
         return data.flippable === true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData(component, data) {
         component.flippable = data.flippable;
         component.owner = data.owner;
         component.faceup = data.faceup;
+    },
+    updateView(component, data) {
         if (component.faceup) {
             if (!component.owner || component.owner === featsContext.getPlayerName()) {
                 if (data.showImage) {
-                    setAttr(component.image, { src: data.faceupImage });
+                    if (component.imageEl.src !== data.faceupImage) {
+                        setAttr(component.imageEl, { src: data.faceupImage });
+                    }
                 }
                 if (data.faceupText) {
                     if (data["faceupText_" + language]) {
@@ -170,7 +307,9 @@ const flippability = {
                 }
             } else {
                 if (data.showImage) {
-                    setAttr(component.image, { src: data.facedownImage });
+                    if (component.imageEl.src !== data.facedownImage) {
+                        setAttr(component.imageEl, { src: data.facedownImage });
+                    }
                 }
                 if (data.facedownText) {
                     if (data["facedownText_" + language]) {
@@ -184,7 +323,9 @@ const flippability = {
             }
         } else {
             if (data.showImage) {
-                setAttr(component.image, { src: data.facedownImage });
+                if (component.imageEl.src !== data.facedownImage) {
+                    setAttr(component.imageEl, { src: data.facedownImage });
+                }
             }
             if (data.facedownText) {
                 if (data["facedownText_" + language]) {
@@ -196,7 +337,6 @@ const flippability = {
                 component.textEl.innerText = '';
             }
         }
-        component.faceup = data.faceup;
 
     },
     uninstall: function (component) {
@@ -218,10 +358,10 @@ const resizability = {
 
         interact(component.el).resizable({
             edges: {
-                top: true,
                 left: true,
-                bottom: true,
+                top: true,
                 right: true,
+                bottom: true,
             },
             invert: 'reposition',
 
@@ -229,27 +369,28 @@ const resizability = {
                 if (!isResizingPermitted()) {
                     return;
                 }
-                let top = parseFloat(component.el.style.top) + event.deltaRect.top;
                 let left = parseFloat(component.el.style.left) + event.deltaRect.left;
+                let top = parseFloat(component.el.style.top) + event.deltaRect.top;
                 let width = parseFloat(component.el.style.width) + event.deltaRect.width;
                 let height = parseFloat(component.el.style.height) + event.deltaRect.height;
-                component.propagate_volatile({ top: top, left: left, width: width, height: height });
+                component.propagate_volatile({ left: left, top: top, width: width, height: height });
+                featsContext.table.updateView();
             },
             onend: (/*event*/) => {
                 if (!isResizingPermitted()) {
                     return;
                 }
                 // resizeend event have wrong value in deltaRect so just ignore it
-                let top = parseFloat(component.el.style.top);
                 let left = parseFloat(component.el.style.left);
+                let top = parseFloat(component.el.style.top);
                 let width = parseFloat(component.el.style.width);
                 let height = parseFloat(component.el.style.height);
                 featsContext.fireEvent(component, featsContext.events.onPositionChanged,
                     {
-                        top: top,
                         left: left,
-                        height: height,
+                        top: top,
                         width: width,
+                        height: height,
                     });
             },
         })
@@ -288,6 +429,7 @@ const rollability = {
             const finalValue = Math.floor(Math.random() * 6) + 1;
             component.rolling = true;
             component.propagate({ rollDuration: duration, rollFinalValue: finalValue, startRoll: true });
+            featsContext.table.updateView();
             return false;
         }
     },
@@ -368,6 +510,7 @@ const rollability = {
                 setTimeout(() => {
                     component.rolling = false;
                     component.propagate({ rollDuration: 0, rollFinalValue: finalValue, startRoll: false });
+                    featsContext.table.updateView();
                 }, ANIMATION_INTERVAL);
             }
 
@@ -513,18 +656,20 @@ const within = {
                 const thingsWithinMe = [];
                 const iAmWithin = [];
                 for (const componentId in featsContext.table.componentsOnTable) {
-                    // noinspection JSUnfilteredForInLoop
+                    if (!featsContext.table.componentsOnTable.hasOwnProperty(componentId)) {
+                        continue;
+                    }
                     const target = featsContext.table.componentsOnTable[componentId];
                     if (target === component) {
                         continue;
                     }
                     if (canThisEverWithin(component, target)) {
-                        if (isWithin({ top: e.top, left: e.left, height: e.height, width: e.width }, target)) {
+                        if (isWithin({ left: e.left, top: e.top, width: e.width, height: e.height }, target)) {
                             thingsWithinMe.push(target);
                         }
                     }
                     if (canThisEverWithin(target, component)) {
-                        if (isWithin(target, { top: e.top, left: e.left, height: e.height, width: e.width })) {
+                        if (isWithin(target, { left: e.left, top: e.top, width: e.width, height: e.height })) {
                             iAmWithin.push(target);
                         }
                     }
@@ -569,6 +714,7 @@ const within = {
                     area.propagate({ 'thingsWithinMe': area.thingsWithinMe });
                     visitor.propagate({ 'iAmWithin': visitor.iAmWithin });
                     featsContext.fireEvent(area, within.events.onWithin, { visitor: visitor });
+                    featsContext.table.updateView();
                 }
             }
 
@@ -610,6 +756,7 @@ const within = {
                         featsContext.fireEvent(other, within.events.onWithinEnd, { visitor: component });
                     }
                 }
+                featsContext.table.updateView();
                 console.log("processAllEnd end");
 
             }
@@ -635,7 +782,9 @@ const within = {
         component.thingsWithinMe = [];  // avoid recurse
         component.iAmWithin = [];  // avoid recurse
         for (const componentId in thingsWithinMe) {
-            // noinspection JSUnfilteredForInLoop
+            if (!thingsWithinMe.hasOwnProperty(componentId)) {
+                continue;
+            }
             const other = featsContext.table.componentsOnTable[componentId];
             if (other) {
                 // there is a chance that other is already removed from table
@@ -646,7 +795,9 @@ const within = {
             }
         }
         for (const otherId in iAmWithin) {
-            // noinspection JSUnfilteredForInLoop
+            if (!iAmWithin.hasOwnProperty(otherId)) {
+                continue;
+            }
             const other = featsContext.table.componentsOnTable[otherId];
             if (other) {
                 // there is a chance that other is already removed from table
@@ -656,6 +807,7 @@ const within = {
                 featsContext.fireEvent(other, within.events.onWithinEnd, { visitor: component });
             }
         }
+        featsContext.table.updateView();
     },
 
     events: {
@@ -675,6 +827,7 @@ const ownership = {
                     onHand.propagate({ owner: onHand.owner = hand.owner });
                 }
             }
+            featsContext.table.updateView();
         });
         featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
             const other = e.visitor;
@@ -685,6 +838,7 @@ const ownership = {
                     onHand.propagate({ owner: onHand.owner = null });
                 }
             }
+            featsContext.table.updateView();
         });
     },
     isEnabled: function (/*component, data*/) {
@@ -762,6 +916,7 @@ const traylike = {
             if (e.visitor.zIndex < component.zIndex) {
                 e.visitor.propagate({ zIndex: featsContext.table.getNextZIndex() });
             }
+            featsContext.table.updateView();
         });
 
         featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
@@ -773,6 +928,7 @@ const traylike = {
             }
             delete component.onTray[e.visitor.componentId];
             component.propagate({ onTray: component.onTray });
+            featsContext.table.updateView();
         });
 
         featsContext.addEventListener(component, draggability.events.onMoving, (e) => {
@@ -784,10 +940,11 @@ const traylike = {
             for (const componentId in component.onTray) {
                 const target = featsContext.table.componentsOnTable[componentId];
                 target.propagate_volatile({
-                    top: parseFloat(target.el.style.top) + dy,
-                    left: parseFloat(target.el.style.left) + dx
+                    left: target.rect.left + dx,
+                    top: target.rect.top + dy,
                 });
             }
+            featsContext.table.updateView();
         });
 
         featsContext.addEventListener(component, draggability.events.onMoveEnd, (/*e*/) => {
@@ -797,10 +954,11 @@ const traylike = {
             for (const componentId in component.onTray) {
                 const target = featsContext.table.componentsOnTable[componentId];
                 target.propagate({
-                    top: target.el.style.top,
-                    left: target.el.style.left
+                    left: target.rect.left,
+                    top: target.rect.top,
                 });
             }
+            featsContext.table.updateView();
         })
     },
     isEnabled: function (component, data) {
@@ -829,11 +987,12 @@ const touchToRaise = {
                 return;
             }
             const nextZIndex = featsContext.table.getNextZIndexFor(componentData);
-            if(nextZIndex > component.zIndex) {
+            if (nextZIndex > component.zIndex) {
                 component.zIndex = nextZIndex
                 setStyle(component.el, { zIndex: component.zIndex });
                 component.propagate({ zIndex: component.zIndex });
             }
+            featsContext.table.updateView();
         });
     },
 
@@ -863,6 +1022,7 @@ const stowage = {
                 return;
             }
             e.visitor.propagate({ isStowed: true });
+            featsContext.table.updateView();
         });
 
         featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
@@ -873,6 +1033,7 @@ const stowage = {
                 return;
             }
             e.visitor.propagate({ isStowed: false });
+            featsContext.table.updateView();
         });
     },
     isEnabled: function (/*component, data*/) {
@@ -1005,6 +1166,7 @@ const counter = {
             const newValue = fn(counterValue);
             data.counterValue = component.valueEl.innerText = newValue;
             component.propagate({ counterValue: newValue });
+            featsContext.table.updateView();
         }
     },
     isEnabled: function (component, data) {
@@ -1055,12 +1217,14 @@ const editability = {
 
             function editing() {
                 component.propagate({ 'text': textareaEl.value });
+                featsContext.table.updateView();
             }
 
             function endEditing() {
                 component.propagate({ 'text': textareaEl.value });
                 unmount(component.el, formEl);
                 data.editing = false;
+                featsContext.table.updateView();
             }
         });
 
@@ -1134,6 +1298,7 @@ const event = {
 };
 
 const feats = [
+    basic,  // this must be the first ability in feats
     within,
     draggability,
     flippability,
@@ -1148,5 +1313,14 @@ const feats = [
     counter,
     editability
 ];
+
+// dynamic validation
+// It also helps removing some of 'unused property' warning but not all.
+for (const feat of feats) {
+    console.assert(feat.install !== undefined);
+    console.assert(feat.isEnabled !== undefined);
+    console.assert(feat.onComponentUpdate !== undefined);
+    console.assert(feat.uninstall !== undefined);
+}
 
 export {setFeatsContext, feats, event};

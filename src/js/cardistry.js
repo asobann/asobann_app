@@ -69,6 +69,7 @@ const spreadOut = {
                     });
             }
         });
+        featsContext.table.updateView();
     },
     onComponentUpdate: function () {
     },
@@ -142,6 +143,7 @@ const collect = {
                 lastZIndex -= 1;
             }
         });
+        featsContext.table.updateView();
     },
     onComponentUpdate: function (component, componentData) {
         component.componentsInBox = componentData.componentsInBox;
@@ -189,6 +191,7 @@ const shuffle = {
                 lastZIndex -= 1;
             }
         });
+        featsContext.table.updateView();
     },
     onComponentUpdate: function (component, componentData) {
         component.componentsInBox = componentData.componentsInBox;
@@ -238,6 +241,7 @@ const flipAll = {
                     }
                 }
             }
+            featsContext.table.updateView();
         });
     },
     onComponentUpdate: function (component, componentData) {
@@ -294,6 +298,7 @@ const collectInMess = {
                     });
             }
         });
+        featsContext.table.updateView();
     },
     onComponentUpdate: function (component, componentData) {
         component.componentsInBox = componentData.componentsInBox;

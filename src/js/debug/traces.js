@@ -1,4 +1,4 @@
-import {el, mount, unmount, setStyle, setAttr} from "../redom.es.js";
+import {el, mount, unmount, setStyle, setAttr} from "redom";
 
 const traces = {};
 let nextGetTrace = 0;  // Date.now();

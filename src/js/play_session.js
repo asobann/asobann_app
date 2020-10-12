@@ -1,4 +1,4 @@
-import {el, mount, unmount, setStyle, setAttr} from "./redom.es.js";
+import {el, mount, unmount, setStyle, setAttr} from "redom";
 import {setFeatsContext, feats, event} from "./feat.js";
 import {
     setTableContext,
@@ -9,14 +9,14 @@ import {
     pushRemoveComponent,
     joinTable,
     pushCursorMovement,
-    startConsolidatedPropagation,
-    finishConsolidatedPropagationAndEmit,
     consolidatePropagation,
 } from "./sync_table.js";
 import {toolbox} from "./toolbox.js"
 import {Menu} from "./menu.js";
 import {_, language} from "./i18n.js"
 import {dev_inspector} from "./dev_inspector.js"
+import interact from 'interactjs';
+import '../style/game.css';
 
 function baseUrl() {
     return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
@@ -25,96 +25,37 @@ function baseUrl() {
 class Component {
     constructor(data) {
         this.el = el(".component");
-        this.image = null;
-
         for (const ability of feats) {
             ability.install(this, data);
         }
     }
 
-    update(data, componentId /*, allData, context*/) {
+    update(data, componentId) {
+        this.receiveData(data, componentId);
+        this.updateView(data);
+    }
+
+    receiveData(data, componentId) {
         this.componentId = componentId;
-        if (data.showImage) {
-            if (this.image == null) {
-                this.image = el("img", { draggable: false });
-                this.image.ondragstart = () => {
-                    return false;
-                };
-                mount(this.el, this.image);
-            }
-            if (data.image) {
-                setAttr(this.image, { src: data.image });
-            }
-        }
-
-        if (this.textEl == null) {
-            if (data.toolboxFunction) {
-                this.textEl = el("button.component_text", {
-                    onclick: () => {
-                        toolbox.use(data.toolboxFunction);
-                    }
-                });
-                if(this.el.children.length > 0) {
-                    mount(this.el, el('div', [this.textEl]), this.el.children[0]);
-                } else {
-                    mount(this.el, el('div', [this.textEl]));
-                }
-            } else {
-                this.textEl = el("span.component_text");
-                if(this.el.children.length > 0 && this.el.children[0].tagName !== 'IMG') {
-                    mount(this.el, el('div', [this.textEl]), this.el.children[0]);
-                } else {
-                    mount(this.el, el('div', [this.textEl]));
-                }
-            }
-        }
-        if (data.text) {
-            if (data["text_" + language]) {
-                this.textEl.innerText = data["text_" + language];
-            } else {
-                this.textEl.innerText = data.text;
-            }
-        }
-        if (data.textColor) {
-            setStyle(this.textEl, { color: data.textColor });
-        }
-        if (data.textAlign) {
-            switch (data.textAlign.trim()) {
-                case 'center':
-                    setStyle(this.textEl, {
-                        "text-align": "center",
-                        "vertical-align": "center",
-                    });
-                    break;
-                case 'center bottom':
-                    setStyle(this.textEl, {
-                        "text-align": "center",
-                        "bottom": 0,
-                    });
-                    break;
-                default:
-                    console.warn(`unsupported textAlign "${data.textAlign}"`);
-            }
-        }
-
         for (const ability of feats) {
             if (ability.isEnabled(this, data)) {
-                ability.onComponentUpdate(this, data);
+                if(ability.hasOwnProperty('receiveData')) {
+                    ability.receiveData(this, data);
+                }
             }
         }
+    }
 
-        setAttr(this.el, {
-            'data-component-name': data.name,
-        });
-
-        setStyle(this.el, {
-            top: parseFloat(data.top) + "px",
-            left: parseFloat(data.left) + "px",
-            width: parseFloat(data.width) + "px",
-            height: parseFloat(data.height) + "px",
-            backgroundColor: data.color,
-            zIndex: this.zIndex,
-        });
+    updateView(data) {
+        for (const ability of feats) {
+            if (ability.isEnabled(this, data)) {
+                if(ability.hasOwnProperty('updateView')) {
+                    ability.updateView(this, data);
+                } else {
+                    ability.onComponentUpdate(this, data);
+                }
+            }
+        }
     }
 
     disappear() {
@@ -136,7 +77,7 @@ class Component {
 class Table {
     constructor() {
         console.log("new Table");
-        this.el = el("div.table", { style: { top: '0px', left: '0px' } },
+        this.el = el("div.table", { style: { left: '0px', top: '0px' } },
             this.list_el = el("div.table_list")
         );
         // this.list = list(this.list_el, Component);
@@ -144,16 +85,12 @@ class Table {
         this.data = {};
     }
 
-    update(data) {
-        const notUpdatedComponents = Object.assign({}, this.componentsOnTable);
-        setFeatsContext(getPlayerName, isPlayerObserver, this);
-
+    receiveData(data) {
         this.data = {
             components: data.components,
             kits: data.kits,
             players: data.players,
         };
-
         for (const componentId in this.data.components) {
             if (!this.data.components.hasOwnProperty(componentId)) {
                 continue;
@@ -163,16 +100,39 @@ class Table {
                 this.componentsOnTable[componentId] = new Component(componentData);
                 mount(this.list_el, this.componentsOnTable[componentId].el);
             }
-            this.componentsOnTable[componentId].update(componentData, componentId, this.data.components);
+            this.componentsOnTable[componentId].receiveData(componentData, componentId);
+        }
+
+        dev_inspector.tracePoint('finish updating table data');
+    }
+
+    updateView() {
+        const notUpdatedComponents = Object.assign({}, this.componentsOnTable);
+        setFeatsContext(getPlayerName, isPlayerObserver, this);
+
+        for (const componentId in this.data.components) {
+            if (!this.data.components.hasOwnProperty(componentId)) {
+                continue;
+            }
+            const componentData = this.data.components[componentId];
+            this.componentsOnTable[componentId].updateView(componentData);
 
             delete notUpdatedComponents[componentId]
         }
 
         for (const componentIdToRemove in notUpdatedComponents) {
+            if (!notUpdatedComponents.hasOwnProperty(componentIdToRemove)) {
+                continue;
+            }
             delete this.componentsOnTable[componentIdToRemove];
             unmount(this.list_el, notUpdatedComponents[componentIdToRemove].el);
         }
+        dev_inspector.tracePoint('finish updating table view');
+    }
 
+    update(data) {
+        this.receiveData(data);
+        this.updateView();
         dev_inspector.tracePoint('finish updating table');
     }
 
@@ -184,10 +144,10 @@ class Table {
         this.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
         event.fireEvent(this.componentsOnTable[componentData.componentId], event.events.onPositionChanged,
             {
-                top: parseFloat(componentData.top),
                 left: parseFloat(componentData.left),
-                height: parseFloat(componentData.height),
+                top: parseFloat(componentData.top),
                 width: parseFloat(componentData.width),
+                height: parseFloat(componentData.height),
             });
     }
 
@@ -206,8 +166,8 @@ class Table {
 
     findEmptySpace(width, height) {
         const rect = {
-            top: 64,
             left: 64,
+            top: 64,
             width: parseFloat(width),
             height: parseFloat(height),
         };
@@ -251,7 +211,7 @@ class Table {
     getNextZIndexFor(componentData) {
         let currentZIndex = componentData.zIndex;
         for (const otherId in this.data.components) {
-            if(otherId === componentData.componentId) {
+            if (otherId === componentData.componentId) {
                 continue;
             }
             const other = this.data.components[otherId];
@@ -295,7 +255,7 @@ const sync_table_connector = {
     updateSingleComponent: function (componentId, diff) {
         const tableData = table.data;
         if (tableData.components[componentId].lastUpdated) {
-            if (tableData.components[componentId].lastUpdated.from == diff.lastUpdated.from
+            if (tableData.components[componentId].lastUpdated.from === diff.lastUpdated.from
                 && tableData.components[componentId].lastUpdated.epoch > diff.lastUpdated.epoch) {
                 dev_inspector.tracePoint('aborted sync update single component');
                 // already recieved newer update for this component; ignore the diff
@@ -318,7 +278,7 @@ const sync_table_connector = {
             const componentId = event.data.componentId;
             const diff = event.data.diff;
             if (tableData.components[componentId].lastUpdated) {
-                if (tableData.components[componentId].lastUpdated.from == diff.lastUpdated.from
+                if (tableData.components[componentId].lastUpdated.from === diff.lastUpdated.from
                     && tableData.components[componentId].lastUpdated.epoch > diff.lastUpdated.epoch) {
                     // already recieved newer update for this component; ignore the diff
                     continue;
@@ -382,11 +342,11 @@ const sync_table_connector = {
             otherPlayersMouse[playerName] = e;
         }
         const e = otherPlayersMouse[playerName];
-        const top = mouseMovement.mouseOnTableY + ICON_OFFSET_Y;
         const left = mouseMovement.mouseOnTableX + ICON_OFFSET_X;
+        const top = mouseMovement.mouseOnTableY + ICON_OFFSET_Y;
         const className = mouseMovement.mouseButtons === 0 ? "" : "buttons_down";
         setAttr(e, { className: "others_mouse_cursor " + className });
-        setStyle(e, { top: top + "px", left: left + "px", zIndex: 999999999 });
+        setStyle(e, { left: left + "px", top: top + "px", zIndex: 999999999 });
     },
 };
 
@@ -462,10 +422,10 @@ function addNewKit(kitData) {
         }
 
         function layoutRandomly(newComponentData, baseRect) {
-            newComponentData.top = Math.floor(parseFloat(baseRect.top) +
-                (Math.random() * (parseFloat(baseRect.height) - parseFloat(newComponentData.height))));
             newComponentData.left = Math.floor(parseFloat(baseRect.left) +
                 (Math.random() * (parseFloat(baseRect.width) - parseFloat(newComponentData.width))));
+            newComponentData.top = Math.floor(parseFloat(baseRect.top) +
+                (Math.random() * (parseFloat(baseRect.height) - parseFloat(newComponentData.height))));
             if (newComponentData.zIndex) {
                 newComponentData.zIndex += baseZIndex;
             } else {
@@ -475,8 +435,8 @@ function addNewKit(kitData) {
         }
 
         function layoutRelativelyAsDefined(newComponentData, baseRect) {
-            newComponentData.top = parseFloat(newComponentData.top) + parseFloat(baseRect.top);
             newComponentData.left = parseFloat(newComponentData.left) + parseFloat(baseRect.left);
+            newComponentData.top = parseFloat(newComponentData.top) + parseFloat(baseRect.top);
             if (newComponentData.zIndex) {
                 newComponentData.zIndex += baseZIndex;
             } else {
@@ -488,17 +448,17 @@ function addNewKit(kitData) {
         }
 
         function layoutInHandArea(componentsInHandArea, handAreaData) {
-            const verticalStart = parseFloat(handAreaData.top) + 1;
-            const height = parseFloat(handAreaData.height) - 2;
             const horizontalStart = parseFloat(handAreaData.left) + 1;
             const width = parseFloat(handAreaData.width) - 2;
+            const verticalStart = parseFloat(handAreaData.top) + 1;
+            const height = parseFloat(handAreaData.height) - 2;
 
             const count = componentsInHandArea.length;
             componentsInHandArea.sort((a, b) => b.zIndex - a.zIndex);
             let index = 0;
             for (const cmp of componentsInHandArea) {
-                cmp.top = verticalStart + ((height - parseFloat(cmp.height)) / count) * index;
                 cmp.left = horizontalStart + ((width - parseFloat(cmp.width)) / count) * index;
+                cmp.top = verticalStart + ((height - parseFloat(cmp.height)) / count) * index;
                 index += 1;
             }
 
@@ -511,9 +471,11 @@ function addNewKit(kitData) {
                         const handAreasData = table.getAllHandAreas();
                         if (handAreasData.length > 0) {
                             for (const handAreaData of handAreasData) {
-                                let componentsCount = 0;
                                 const componentsInHandArea = [];
                                 for (const name in kitData.kit.boxAndComponents) {
+                                    if (!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                                        continue;
+                                    }
                                     const boxOrComponentData = createComponent(name);
                                     if (boxOrComponentData.zIndex) {
                                         boxOrComponentData.zIndex += baseZIndex;
@@ -533,6 +495,9 @@ function addNewKit(kitData) {
                             const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
 
                             for (const name in kitData.kit.boxAndComponents) {
+                                if (!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                                    continue;
+                                }
                                 const boxOrComponentData = createComponent(name);
                                 layoutRelativelyAsDefined(boxOrComponentData, emptySpaceRect);
 
@@ -548,6 +513,9 @@ function addNewKit(kitData) {
                         const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
 
                         for (const name in kitData.kit.boxAndComponents) {
+                            if (!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                                continue;
+                            }
                             const boxOrComponentData = createComponent(name);
                             layoutRandomly(boxOrComponentData, emptySpaceRect);
 
@@ -563,6 +531,9 @@ function addNewKit(kitData) {
                         const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
 
                         for (const name in kitData.kit.boxAndComponents) {
+                            if (!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                                continue;
+                            }
                             const boxOrComponentData = createComponent(name);
                             layoutRelativelyAsDefined(boxOrComponentData, emptySpaceRect);
 
@@ -598,8 +569,8 @@ function removeKit(kitId) {
 
 function placeNewComponent(newComponent, baseZIndex) {
     const rect = table.findEmptySpace(parseInt(newComponent.width), parseInt(newComponent.height));
-    newComponent.top = rect.top + "px";
     newComponent.left = rect.left + "px";
+    newComponent.top = rect.top + "px";
     if (newComponent.zIndex) {
         if (baseZIndex) {
             newComponent.zIndex += baseZIndex;
@@ -687,15 +658,15 @@ const SESSION_STORAGE_KEY = {
 interact("div.table_container").draggable({
     listeners: {
         move(event) {
-            let top = table.el.style.top === "" ? 0 : parseFloat(table.el.style.top);
-            top += event.dy;
             let left = table.el.style.left === "" ? 0 : parseFloat(table.el.style.left);
             left += event.dx;
-            table.el.style.top = top + "px";
+            let top = table.el.style.top === "" ? 0 : parseFloat(table.el.style.top);
+            top += event.dy;
             table.el.style.left = left + "px";
+            table.el.style.top = top + "px";
 
-            tableContainer.style.backgroundPositionY = top + "px";
             tableContainer.style.backgroundPositionX = left + "px";
+            tableContainer.style.backgroundPositionY = top + "px";
         },
     },
 });

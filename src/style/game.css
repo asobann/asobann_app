@@ -27,13 +27,13 @@ body {
     grid-row: 1 / 2;
     grid-column: 1 / 2;
     background-color: cadetblue;
-    background-image: url("./images/menu_bg.jpg");
+    background-image: url("../image/menu_bg.jpg");
 }
 
 .menuitem {
     display: block;
     margin: 3px;
-    background-image: url("./images/menuitem_bg.png");
+    background-image: url("../image/menuitem_bg.png");
     background-size: 100% 100%;
     padding: 5% 6px 5% 6px;
 }
@@ -41,12 +41,12 @@ body {
 .menuitem.menuheader {
     margin: 0;
     color: white;
-    background-image: url("./images/menuheader_bg.png");
+    background-image: url("../image/menuheader_bg.png");
 }
 
 .menuitem.about {
     font-size: small;
-    background-image: url("./images/menuabout_bg.png");
+    background-image: url("../image/menuabout_bg.png");
 }
 
 .copyright {
@@ -61,7 +61,7 @@ body {
     grid-row: 1 / 2;
     grid-column: 2 / 3;
     background-color: chartreuse;
-    background-image: url("./images/tabletop.jpg");
+    background-image: url("../image/tabletop.jpg");
     clip-path: inset(0px);
 }
 
@@ -95,8 +95,8 @@ body {
     align-items: self-start;
     background-color: rgba(255, 255, 255, 0.5);
     background-repeat: no-repeat;
-    background-image: url("./images/left-hand.png"),
-    url("./images/right-hand.png");
+    background-image: url("../image/left-hand.png"),
+    url("../image/right-hand.png");
     background-position: left, right;
     background-size: contain;
 }
@@ -170,12 +170,12 @@ div.others_mouse_cursor .icon {
     height: 32px;
     border-radius: 6px;
     background-color: darkcyan;
-    background-image: url("./images/mouse_cursor.png");
+    background-image: url("../image/mouse_cursor.png");
     background-size: 100% 100%;
 }
 
 div.others_mouse_cursor.buttons_down .icon {
-    background-image: url("./images/mouse_cursor_buttons_down.png");
+    background-image: url("../image/mouse_cursor_buttons_down.png");
     background-size: 100% 100%;
 }
 
