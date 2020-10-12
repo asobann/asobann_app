@@ -148,7 +148,10 @@ def create_app(testing=False):
     else:
         raise ValueError(f'config UPLOADED_IMAGE_STORE "{app.config["UPLOADED_IMAGE_STORE"].lower()}" is invalid')
 
-    socketio_args['cors_allowed_origins'] = app.config['BASE_URL']
+    if app.config["ENV"] == "development":
+        socketio_args['cors_allowed_origins'] = "*"
+    else:
+        socketio_args['cors_allowed_origins'] = app.config['BASE_URL']
     socketio.init_app(app, **socketio_args)
     app.socketio = socketio
 
