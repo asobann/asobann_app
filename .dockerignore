@@ -4,3 +4,4 @@ tests
 src/js
 src/image
 src/style
+node_modules
