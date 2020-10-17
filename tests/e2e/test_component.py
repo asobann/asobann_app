@@ -404,3 +404,25 @@ def test_unmovable_component_can_be_dragged_to_scroll(server, browser):
     assert host.view_origin() == (0, 0)
     host.drag(host.component_by_name("Diamond Game Board"), 100, 100)
     assert host.view_origin() == (100, 100)
+
+
+def test_moving_box_does_not_lose_things_within(server, browser: webdriver.Firefox):
+    host = GameHelper(browser)
+    host.go(TOP)
+    host.should_have_text("you are host")
+    host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
+    host.menu.add_kit.execute()
+    host.menu.add_kit_from_list("Playing Card")
+    host.menu.add_kit_done()
+
+    for i in range(10):
+        host.drag(host.component_by_name('Playing Card Box'), 10, 10, grab_at=(0, 80))
+
+    box_rect = [c for c in host.all_components() if c.name == 'Playing Card Box'][0].rect()
+    cards = [c for c in host.all_components()
+             if c.name.startswith('PlayingCard ') or c.name.startswith('JOKER')]
+    assert len(cards) == 54
+    for card in cards:
+        assert box_rect.left <= card.rect().left and card.rect().right <= box_rect.right
+        assert box_rect.top <= card.rect().top and card.rect().bottom <= box_rect.bottom
+

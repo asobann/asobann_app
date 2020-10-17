@@ -90,6 +90,12 @@ class Component:
     def z_index(self):
         return int(self.style().get('z-index', 0))
 
+    def __str__(self):
+        return f'Component(name={self.name})'
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class BoxComponent(Component):
     def __init__(self, helper: 'GameHelper', element: WebElement):
@@ -452,10 +458,10 @@ class Rect:
         self.width = width
 
     def __str__(self):
-        return f"Rect({self.top}, {self.left}, {self.bottom}, {self.right}, {self.height}, {self.width})"
+        return f"Rect({self.left}, {self.top}, {self.right}, {self.bottom}, {self.width}, {self.height})"
 
     def __repr__(self):
-        return f"Rect({self.top}, {self.left}, {self.bottom}, {self.right}, {self.height}, {self.width})"
+        return f"Rect({self.left}, {self.top}, {self.right}, {self.bottom}, {self.width}, {self.height})"
 
     def __eq__(self, other):
         if type(other) == Rect:
