@@ -8,6 +8,9 @@ import interact from 'interactjs';
 import {Level} from "./table";
 
 function toRect(c) {
+    if (c.rect) {
+        return c.rect;
+    }
     if (c.left !== undefined && c.top !== undefined && c.width !== undefined && c.height !== undefined) {
         return {
             left: parseFloat(c.left),
@@ -138,32 +141,25 @@ const basic = {
 
 const draggability = {
     featName: 'draggability',
-    start: function (component, data, event) {
-        component.applyUserAction(Level.A, () => {
-            component.dragStartXonTarget = event.x0 - component.rect.left;
-            component.dragStartYonTarget = event.y0 - component.rect.top;
-        });
-    },
     move: function (component, data, event) {
         component.applyUserAction(Level.A, () => {
             featsContext.fireEvent(component, draggability.events.onMoving,
                 {
-                    left: (event.x - component.dragStartXonTarget) + 'px',
-                    top: (event.y - component.dragStartYonTarget) + 'px',
+                    left: (component.rect.left + event.dx) + 'px',
+                    top: (component.rect.top + event.dy) + 'px',
                     dx: event.dx,
                     dy: event.dy,
-                    x: event.page.x,
-                    y: event.page.y,
                 });
         });
     },
     end: function (component, data, event) {
         component.applyUserAction(Level.B, () => {
-            console.log("draggable end", component.componentId);
             featsContext.fireEvent(component, featsContext.events.onPositionChanged,
                 {
-                    left: event.page.x - component.dragStartXonTarget,
-                    top: event.page.y - component.dragStartYonTarget,
+                    // left: (component.rect.left + event.dx) + 'px',
+                    // top: (component.rect.top + event.dy) + 'px',
+                    left: component.rect.left + 'px',
+                    top: component.rect.top + 'px',
                     width: component.rect.width,
                     height: component.rect.height,
                 });
@@ -181,12 +177,6 @@ const draggability = {
 
         interact(component.el).draggable({
             listeners: {
-                start(event) {
-                    if (!isDraggingPermitted()) {
-                        return;
-                    }
-                    draggability.start(component, data, event);
-                },
                 move(event) {
                     if (!isDraggingPermitted()) {
                         return;
@@ -216,8 +206,8 @@ const draggability = {
             // });
             component.applyUserAction(Level.A, () => {
                 component.propagate_volatile({
-                    left: (e.x - component.dragStartXonTarget) + 'px',
-                    top: (e.y - component.dragStartYonTarget) + 'px',
+                    top: e.top + "px",
+                    left: e.left + "px",
                     moving: true
                 });
             });
@@ -295,7 +285,6 @@ const flippability = {
         component.faceup = data.faceup;
     },
     updateView(component, data) {
-        console.log('flippability updateView');
         if (component.faceup) {
             if (!component.owner || component.owner === featsContext.getPlayerName()) {
                 if (data.showImage) {
@@ -712,7 +701,6 @@ const within = {
             }
 
             function processAllStart(withinCheckResult) {
-                console.log("processAllStart start");
                 const thingsWithinMe = withinCheckResult.thingsWithinMe;
                 const iAmWithin = withinCheckResult.iAmWithin;
                 for (const other of thingsWithinMe) {
@@ -722,7 +710,6 @@ const within = {
                 for (const other of iAmWithin) {
                     processStartWithin(other, component);
                 }
-                console.log("processAllStart end");
 
                 function processStartWithin(area, visitor) {
                     if (area.thingsWithinMe[visitor.componentId]) {
@@ -738,7 +725,6 @@ const within = {
             }
 
             function processAllEnd(withinCheckResult) {
-                console.log("processAllEnd start");
 
                 for (const visitorId in component.thingsWithinMe) {
                     if (withinCheckResult.thingsWithinMe.find(e => e.componentId === visitorId)) {
@@ -775,7 +761,6 @@ const within = {
                         featsContext.fireEvent(other, within.events.onWithinEnd, { visitor: component });
                     }
                 }
-                console.log("processAllEnd end");
 
             }
 
