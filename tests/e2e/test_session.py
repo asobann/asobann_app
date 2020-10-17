@@ -101,20 +101,21 @@ class TestOutOfSync:
 
     def assert_seeing_same(self, player1: GameHelper, player2: GameHelper):
         def assert_components_sync():
-            components1 = player1.all_components()
-            components2 = player2.all_components()
+            components1 = {c.name: c for c in player1.all_components()}
+            components2 = {c.name: c for c in player2.all_components()}
             assert len(components1) == len(components2)
-            for i in range(len(components1)):
-                assert components1[i].rect() == components2[i].rect(), f'name={components1[i].name}'
-                assert components1[i].face() == components2[i].face(), f'name={components1[i].name}'
-                assert components1[i].owner() == components2[i].owner(), f'name={components1[i].name}'
-                assert components1[i].style().get('zIndex', None) == components2[i].style().get('zIndex', None), \
-                    f'name={components1[i].name}'
+            assert components1.keys() == components2.keys()
+            for name in components1.keys():
+                assert components1[name].rect() == components2[name].rect(), f'name={components1[name].name}'
+                assert components1[name].face() == components2[name].face(), f'name={components1[name].name}'
+                assert components1[name].owner() == components2[name].owner(), f'name={components1[name].name}'
+                assert components1[name].style().get('zIndex', None) == components2[name].style().get('zIndex', None), \
+                    f'name={components1[name].name}'
 
-        assert_components_sync()
+        assert_components_sync()  # compare two browsers
 
         player2.browser.refresh()
-        assert_components_sync()
+        assert_components_sync()  # compare after reload
 
     def test_single_card(self, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
