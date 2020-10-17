@@ -1,4 +1,7 @@
 import time
+from typing import Optional
+import json
+import requests
 import pytest
 
 from selenium import webdriver
@@ -73,7 +76,6 @@ def test_late_comer_shall_see_the_same_table(server, browser: webdriver.Firefox,
         assert host.component(i).face() == player.component(i).face()
 
 
-@pytest.mark.usefixtures('server')
 class TestOutOfSync:
     '''
     This set of test cases is to detect out-of-sync situations.
@@ -83,7 +85,7 @@ class TestOutOfSync:
     or 3. Reloading browser yields different view.
     '''
 
-    def prepare_playing_cards(self, host: GameHelper, player2: GameHelper):
+    def prepare_playing_cards(self, host: GameHelper, player2: Optional[GameHelper]):
         host.go(TOP)
         host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
         host.menu.add_kit.execute()
@@ -91,6 +93,8 @@ class TestOutOfSync:
         host.menu.add_kit_done()
         host.should_have_text("you are host")
 
+        if not player2:
+            return
         player2.go(host.current_url)
         player2.menu.join("Player 2")
         player2.should_have_text("you are Player 2")
@@ -112,7 +116,7 @@ class TestOutOfSync:
         player2.browser.refresh()
         assert_components_sync()
 
-    def test_single_card(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_single_card(self, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         player2 = GameHelper(another_browser)
         self.prepare_playing_cards(host, player2)
@@ -122,7 +126,7 @@ class TestOutOfSync:
 
         self.assert_seeing_same(host, player2)
 
-    def test_move_box_of_card_bit_by_bit(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_move_box_of_card_bit_by_bit(self, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         player2 = GameHelper(another_browser)
         self.prepare_playing_cards(host, player2)
@@ -135,7 +139,7 @@ class TestOutOfSync:
 
         self.assert_seeing_same(host, player2)
 
-    def test_move_box_of_card_long(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_move_box_of_card_long(self, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         player2 = GameHelper(another_browser)
         self.prepare_playing_cards(host, player2)
@@ -144,7 +148,7 @@ class TestOutOfSync:
 
         self.assert_seeing_same(host, player2)
 
-    def test_a_card_on_hand_area(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_a_card_on_hand_area(self, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         player2 = GameHelper(another_browser)
         self.prepare_playing_cards(host, player2)
@@ -152,5 +156,28 @@ class TestOutOfSync:
         host.menu.add_my_hand_area.click()
         host.move_card_to_hand_area(host.component_by_name("PlayingCard S_A"), 'host')
         host.drag(host.hand_area('host'), 50, 100, grab_at=(60, 0))
+
+        self.assert_seeing_same(host, player2)
+
+    def test_order_of_updates_at_server(self, debug_order_of_updates, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        player2 = GameHelper(another_browser)
+        self.prepare_playing_cards(host, player2)
+        host.drag(host.component_by_name('Playing Card Box'), 200, 200, grab_at=(0, 80))
+        host.drag(host.component_by_name('Playing Card Box'), -200, -200, grab_at=(0, 80))
+        host.drag(host.component_by_name('Playing Card Box'), 500, 500, grab_at=(0, 80))
+        host.drag(host.component_by_name('Playing Card Box'), -500, -500, grab_at=(0, 80))
+        host.drag(host.component_by_name('Playing Card Box'), 200, 200, grab_at=(0, 80))
+        host.drag(host.component_by_name('Playing Card Box'), -200, -200, grab_at=(0, 80))
+        host.drag(host.component_by_name('Playing Card Box'), 500, 500, grab_at=(0, 80))
+        host.drag(host.component_by_name('Playing Card Box'), -500, -500, grab_at=(0, 80))
+
+        res = requests.get(TOP + '/debug/get_log_of_updates')
+        order_of_updates = json.loads(res.content)
+        for browser in order_of_updates.keys():
+            for component_id in order_of_updates[browser]:
+                log = order_of_updates[browser][component_id]
+                for i in range(len(log) - 1):
+                    assert log[i]['epoch'] <= log[i + 1]['epoch']
 
         self.assert_seeing_same(host, player2)

@@ -1,237 +1,24 @@
-import {el, mount, unmount, setStyle, setAttr} from "redom";
-import {setFeatsContext, feats, event} from "./feat.js";
+import {el, mount, setStyle, setAttr} from "redom";
+import {Component, Table} from "./table";
 import {
     setTableContext,
-    pushComponentUpdate,
     pushNewComponent,
-    pushNewKit,
+    pushNewKitAndComponents,
     pushSyncWithMe,
     pushRemoveComponent,
     joinTable,
     pushCursorMovement,
-    consolidatePropagation,
 } from "./sync_table.js";
 import {toolbox} from "./toolbox.js"
 import {Menu} from "./menu.js";
-import {_, language} from "./i18n.js"
 import {dev_inspector} from "./dev_inspector.js"
 import interact from 'interactjs';
+
 import '../style/game.css';
+import {feats} from "./feat";
 
 function baseUrl() {
     return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
-}
-
-class Component {
-    constructor(data) {
-        this.el = el(".component");
-        for (const ability of feats) {
-            ability.install(this, data);
-        }
-    }
-
-    update(data, componentId) {
-        this.receiveData(data, componentId);
-        this.updateView(data);
-    }
-
-    receiveData(data, componentId) {
-        this.componentId = componentId;
-        for (const ability of feats) {
-            if (ability.isEnabled(this, data)) {
-                if(ability.hasOwnProperty('receiveData')) {
-                    ability.receiveData(this, data);
-                }
-            }
-        }
-    }
-
-    updateView(data) {
-        for (const ability of feats) {
-            if (ability.isEnabled(this, data)) {
-                if(ability.hasOwnProperty('updateView')) {
-                    ability.updateView(this, data);
-                } else {
-                    ability.onComponentUpdate(this, data);
-                }
-            }
-        }
-    }
-
-    disappear() {
-        for (const ability of feats) {
-            ability.uninstall(this);
-        }
-    }
-
-    propagate(diff) {
-        dev_inspector.tracePoint('propagate');
-        pushComponentUpdate(table, this.componentId, diff, false);
-    }
-
-    propagate_volatile(diff) {
-        pushComponentUpdate(table, this.componentId, diff, true);
-    }
-}
-
-class Table {
-    constructor() {
-        console.log("new Table");
-        this.el = el("div.table", { style: { left: '0px', top: '0px' } },
-            this.list_el = el("div.table_list")
-        );
-        // this.list = list(this.list_el, Component);
-        this.componentsOnTable = {};
-        this.data = {};
-    }
-
-    receiveData(data) {
-        this.data = {
-            components: data.components,
-            kits: data.kits,
-            players: data.players,
-        };
-        for (const componentId in this.data.components) {
-            if (!this.data.components.hasOwnProperty(componentId)) {
-                continue;
-            }
-            const componentData = this.data.components[componentId];
-            if (!this.componentsOnTable[componentId]) {
-                this.componentsOnTable[componentId] = new Component(componentData);
-                mount(this.list_el, this.componentsOnTable[componentId].el);
-            }
-            this.componentsOnTable[componentId].receiveData(componentData, componentId);
-        }
-
-        dev_inspector.tracePoint('finish updating table data');
-    }
-
-    updateView() {
-        const notUpdatedComponents = Object.assign({}, this.componentsOnTable);
-        setFeatsContext(getPlayerName, isPlayerObserver, this);
-
-        for (const componentId in this.data.components) {
-            if (!this.data.components.hasOwnProperty(componentId)) {
-                continue;
-            }
-            const componentData = this.data.components[componentId];
-            this.componentsOnTable[componentId].updateView(componentData);
-
-            delete notUpdatedComponents[componentId]
-        }
-
-        for (const componentIdToRemove in notUpdatedComponents) {
-            if (!notUpdatedComponents.hasOwnProperty(componentIdToRemove)) {
-                continue;
-            }
-            delete this.componentsOnTable[componentIdToRemove];
-            unmount(this.list_el, notUpdatedComponents[componentIdToRemove].el);
-        }
-        dev_inspector.tracePoint('finish updating table view');
-    }
-
-    update(data) {
-        this.receiveData(data);
-        this.updateView();
-        dev_inspector.tracePoint('finish updating table');
-    }
-
-    addComponent(componentData) {
-        // This is called when a component is added ON THIS BROWSER.
-        this.data.components[componentData.componentId] = componentData;
-        this.componentsOnTable[componentData.componentId] = new Component(componentData);
-        mount(this.list_el, this.componentsOnTable[componentData.componentId].el);
-        this.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
-        event.fireEvent(this.componentsOnTable[componentData.componentId], event.events.onPositionChanged,
-            {
-                left: parseFloat(componentData.left),
-                top: parseFloat(componentData.top),
-                width: parseFloat(componentData.width),
-                height: parseFloat(componentData.height),
-            });
-    }
-
-    removeComponent(componentId) {
-        // This is called when a component is removed ON THIS BROWSER.
-        // Because component removal is not directly synced but propagated as table refresh,
-        // table relies on update() to detect unused / non-referenced components
-        // to remove Component object and DOM object.
-        // TODO: maybe it's economical to sync component removal directly...
-        this.componentsOnTable[componentId].disappear();
-    }
-
-    consolidatePropagation(proc) {
-        consolidatePropagation(proc);
-    }
-
-    findEmptySpace(width, height) {
-        const rect = {
-            left: 64,
-            top: 64,
-            width: parseFloat(width),
-            height: parseFloat(height),
-        };
-        for (let i = 0; i < 10; i++) {
-            let collision = false;
-            rect.bottom = rect.top + rect.height;
-            rect.right = rect.left + rect.width;
-            for (const componentId in this.data.components) {
-                const target = this.data.components[componentId];
-                const targetLeft = parseFloat(target.left);
-                const targetTop = parseFloat(target.top);
-                const targetRight = targetLeft + parseFloat(target.width);
-                const targetBottom = targetTop + parseFloat(target.height);
-                if (rect.left <= targetRight &&
-                    targetLeft <= rect.right &&
-                    rect.top <= targetBottom &&
-                    targetTop <= rect.bottom) {
-                    collision = true;
-                    break;
-                }
-            }
-            if (!collision) {
-                break;
-            }
-            rect.top += 100;
-        }
-        return rect;
-    }
-
-    getNextZIndex() {
-        let nextZIndex = 0;
-        for (const otherId in this.data.components) {
-            const other = this.data.components[otherId];
-            if (nextZIndex <= other.zIndex) {
-                nextZIndex = other.zIndex + 1;
-            }
-        }
-        return nextZIndex;
-    }
-
-    getNextZIndexFor(componentData) {
-        let currentZIndex = componentData.zIndex;
-        for (const otherId in this.data.components) {
-            if (otherId === componentData.componentId) {
-                continue;
-            }
-            const other = this.data.components[otherId];
-            if (currentZIndex <= other.zIndex) {
-                currentZIndex = other.zIndex + 1;
-            }
-        }
-        return currentZIndex;
-    }
-
-    getAllHandAreas() {
-        const handAreasData = [];
-        for (const cmpId in this.data.components) {
-            const cmp = this.data.components[cmpId];
-            if (cmp.handArea) {
-                handAreasData.push(cmp);
-            }
-        }
-        return handAreasData;
-    }
 }
 
 const sync_table_connector = {
@@ -268,23 +55,24 @@ const sync_table_connector = {
         dev_inspector.tracePoint('finished sync update single component');
     },
 
-    updateManyComponents: function (updates) {
+    updateManyComponents: function (diff_of_components) {
         const tableData = table.data;
-        for (const event of updates) {
-            if (event.eventName !== 'update single component') {
-                console.error('updateManyComponents cannot handle events other than update single component', event);
-                continue;
-            }
-            const componentId = event.data.componentId;
-            const diff = event.data.diff;
-            if (tableData.components[componentId].lastUpdated) {
-                if (tableData.components[componentId].lastUpdated.from === diff.lastUpdated.from
-                    && tableData.components[componentId].lastUpdated.epoch > diff.lastUpdated.epoch) {
-                    // already recieved newer update for this component; ignore the diff
+        for (const component_diff of diff_of_components) {
+            for (const componentId in component_diff) {
+                if (!component_diff.hasOwnProperty(componentId)) {
                     continue;
                 }
+                const diff = component_diff[componentId];
+                // TODO logic to discard late-arrived updated is commented out ; probably meaningless
+                // if (tableData.components[componentId].lastUpdated) {
+                //     if (tableData.components[componentId].lastUpdated.from === diff.lastUpdated.from
+                //         && tableData.components[componentId].lastUpdated.epoch > diff.lastUpdated.epoch) {
+                //         // already recieved newer update for this component; ignore the diff
+                //         continue;
+                //     }
+                // }
+                Object.assign(tableData.components[componentId], diff);
             }
-            Object.assign(tableData.components[componentId], diff);
         }
         table.update(tableData);
         menu.update(tableData);
@@ -292,26 +80,36 @@ const sync_table_connector = {
     },
 
     addComponent: function (componentData) {
-        if (!table.data.components[componentData.componentId]) {
-            table.data.components[componentData.componentId] = componentData;
-        }
-        if (!table.componentsOnTable[componentData.componentId]) {
-            table.componentsOnTable[componentData.componentId] = new Component(componentData);
-            mount(table.list_el, table.componentsOnTable[componentData.componentId].el);
-            table.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
+        sync_table_connector.addManyComponents([componentData])
+    },
+
+    addManyComponents: function (componentDataObj) {
+        for(const componentId in componentDataObj) {
+            if(!componentDataObj.hasOwnProperty(componentId)) {
+                continue;
+            }
+            const componentData = componentDataObj[componentId];
+            if (!table.data.components[componentData.componentId]) {
+                table.data.components[componentData.componentId] = componentData;
+            }
+            if (!table.componentsOnTable[componentData.componentId]) {
+                table.componentsOnTable[componentData.componentId] = new Component(table, componentData, table.feats);
+                mount(table.list_el, table.componentsOnTable[componentData.componentId].el);
+                table.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
+            }
         }
         table.update(table.data);
         menu.update(table.data);
     },
 
-    addKit: function (kitData) {
+    addKitAndComponents: function (kitData, newComponents) {
         for (const existKit of table.data.kits) {
             if (existKit.kitId === kitData.kitId) {
                 return;
             }
         }
         table.data.kits.push(kitData);
-        menu.update(table.data);
+        sync_table_connector.addManyComponents(newComponents);
     },
 
     update_whole_table: function (data) {
@@ -374,18 +172,15 @@ function addNewKit(kitData) {
             componentDataMap[cmp['component']['name']] = cmp;
         }
 
-        consolidatePropagation(() => {
-            layouter();
+        layouter();
 
-            for (const componentId in newComponents) {
-                const newComponentData = newComponents[componentId];
-                pushNewComponent(newComponentData);
-                table.addComponent(newComponentData);
-            }
-            pushNewKit({
-                kit: { name: kitName, kitId: kitId },
-            });
-        });
+        pushNewKitAndComponents({
+            kit: { name: kitName, kitId: kitId },
+        }, newComponents);
+        for (const componentId in newComponents) {
+            const newComponentData = newComponents[componentId];
+            table.addComponent(newComponentData);
+        }
 
         function createComponent(name) {
             const newComponentData = Object.assign({}, componentDataMap[name].component);
@@ -551,19 +346,17 @@ function addNewKit(kitData) {
 }
 
 function removeKit(kitId) {
-    table.consolidatePropagation(() => {
-        const after = {};
-        for (const componentId in table.data.components) {
-            const cmp = table.data.components[componentId];
-            if (cmp.kitId === kitId) {
-                table.removeComponent(componentId);
-            } else {
-                after[componentId] = cmp;
-            }
+    const after = {};
+    for (const componentId in table.data.components) {
+        const cmp = table.data.components[componentId];
+        if (cmp.kitId === kitId) {
+            table.removeComponent(componentId);
+        } else {
+            after[componentId] = cmp;
         }
-        table.data.components = after;
-        table.data.kits.splice(table.data.kits.findIndex((e) => e.kitId === kitId), 1);
-    });
+    }
+    table.data.components = after;
+    table.data.kits.splice(table.data.kits.findIndex((e) => e.kitId === kitId), 1);
     pushSyncWithMe(table.data);
 }
 
@@ -644,7 +437,7 @@ toolbox.setTableName(tablename);
 document.title = tablename + " on asobann";
 const container = el("div.container");
 mount(document.body, container);
-const table = new Table();
+const table = new Table({ getPlayerName, isPlayerObserver, feats_to_use: feats });
 const tableContainer = el("div.table_container", [table.el]);
 mount(container, tableContainer);
 

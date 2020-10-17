@@ -63,6 +63,8 @@ def update_single_component(json, table):
     trace.trace_point('update single component')
     if "volatile" not in json or not json["volatile"]:
         table["components"][json["componentId"]].update(json["diff"])
+    debug_tools.add_log_of_updates(json["componentId"], json["diff"]["lastUpdated"]["from"],
+                                   json["diff"]["lastUpdated"]["epoch"])
     trace.end()
 
 
@@ -71,6 +73,7 @@ def handle_update_single_component(json):
     trace = debug_tools.resume_trace(json)
     trace.trace_point('handle update single component')
     current_app.logger.debug(f'update single component: {json}')
+    current_app.logger.info(f'update single component')
     table = tables.get(json["tablename"])
     update_single_component(json, table)
     trace.trace_point('before update_table')
@@ -78,6 +81,20 @@ def handle_update_single_component(json):
     trace.trace_point('after update_table')
     emit("update single component", json, broadcast=True, room=json["tablename"])
     trace.trace_point('emitted response')
+    trace.end()
+    current_app.logger.info(f'update single component end')
+
+
+@socketio.on('update many components')
+def handle_update_many_components(json):
+    trace = debug_tools.resume_trace(json)
+    trace.trace_point('handle update many components')
+    current_app.logger.debug(f'update many component: {json}')
+    current_app.logger.info(f'update many component')
+    trace.trace_point('before update_table')
+    tables.update_components(json['tablename'], json['diffs'])
+    trace.trace_point('after update_table')
+    emit("update many components", json, broadcast=True, room=json["tablename"])
     trace.end()
 
 
@@ -88,29 +105,27 @@ def add_component(json, table):
 
 @socketio.on(add_component.event_name)
 def handle_add_component(json):
-    current_app.logger.info(f'add component')
+    current_app.logger.info(f'add component: {json["component"]["componentId"]} {json["component"]["name"]}')
     current_app.logger.debug(f'add component: {json}')
     table = tables.get(json["tablename"])
     add_component(json, table)
     tables.update_table(json["tablename"], table)
     emit("add component", {"tablename": json["tablename"], "component": json["component"]}, broadcast=True,
          room=json["tablename"])
+    current_app.logger.info(f'add component end')
 
 
-@event_handler('add kit')
-def add_kit(json, table):
-    table["kits"].append(json["kitData"]["kit"])
-
-
-@socketio.on(add_kit.event_name)
+@socketio.on('add kit')
 def handle_add_kit(json):
     current_app.logger.info(f'add kit')
-    current_app.logger.debug(f'add kit: {json}')
-    table = tables.get(json["tablename"])
-    add_kit(json, table)
-    tables.update_table(json["tablename"], table)
-    emit('add kit', {"tablename": json["tablename"], "kit": json["kitData"]["kit"]}, broadcast=True,
-         room=json["tablename"])
+    current_app.logger.info(f'add kit: {json}')
+    tables.add_new_kit_and_components(json['tablename'], json['kitData']['kit'], json['newComponents'])
+    emit('add kit',
+         {"tablename": json["tablename"],
+          "kit": json["kitData"]["kit"],
+          "newComponents": json["newComponents"]},
+         broadcast=True, room=json["tablename"])
+    current_app.logger.info(f'add kit end')
 
 
 @event_handler('remove component')
@@ -146,26 +161,10 @@ def handle_remove_kit(json):
 @socketio.on("sync with me")
 def handle_sync_with_me(json):
     current_app.logger.info(f'sync with me')
-    current_app.logger.debug(f'sync with me: {json}')
+    current_app.logger.info(f'sync with me: {json}')
     tables.store(json['tablename'], json['tableData'])
     table = tables.get(json["tablename"])
     emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
-
-
-@socketio.on("bulk propagate")
-def handle_bulk_propagate(json):
-    current_app.logger.info(f'bulk propagate')
-    current_app.logger.debug(f'bulk propagate: {json}')
-    table = tables.get(json["tablename"])
-    for event in json['events']:
-        event_name = event['eventName']
-        data = event['data']
-        event_handlers[event_name](data, table)
-    tables.update_table(json["tablename"], table)
-    if all([e['eventName'] == update_single_component.event_name for e in json['events']]):
-        emit('update many components', json, broadcast=True, room=json["tablename"])
-    else:
-        emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])
 
 
 @socketio.on("mouse movement")

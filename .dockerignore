@@ -1,3 +1,6 @@
 deploy
 .git
 tests
+src/js
+src/image
+src/style

@@ -32,3 +32,7 @@ if use_aws:
 else:
     AWS_KEY = None
     AWS_SECRET = None
+
+if 'ASOBANN_DEBUG_OPTS' in os.environ:
+    DEBUG_PERFORMANCE_RECORDING = 'PERFORMANCE_RECORDING' in os.environ['ASOBANN_DEBUG_OPTS']
+    DEBUG_ORDER_OF_UPDATES = 'ORDER_OF_UPDATES' in os.environ['ASOBANN_DEBUG_OPTS']

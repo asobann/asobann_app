@@ -1,3 +1,4 @@
+from flask import current_app
 import random
 import json
 from pathlib import Path
@@ -53,15 +54,6 @@ def update_table(tablename, table):
         {"$set": {"updated_at": datetime.datetime.now()}})
 
 
-def update_component(tablename, component_id, diff):
-    table = get(tablename)
-    table["components"][component_id].update(diff)
-    tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
-    table_metas.update_one(
-        {"tablename": tablename},
-        {"$set": {"updated_at": datetime.datetime.now()}})
-
-
 def add_component(tablename, component_data):
     print(f"add_component({tablename}, {component_data}")
     table = get(tablename)
@@ -103,3 +95,30 @@ def connect(mongo):
     global tables, table_metas
     tables = mongo.db.tables
     table_metas = mongo.db.table_metas
+
+
+def update_components(tablename, diff_of_components):
+    current_table = get(tablename)
+    modification = {}
+    i = 0
+    for diff in diff_of_components:
+        for component_id in diff.keys():
+            if component_id not in current_table["components"]:
+                continue
+            i += 1
+            for key in diff[component_id].keys():
+                mod_key = f'table.components.{component_id}.{key}'
+                # current_app.logger.info(f'  {i:3} {mod_key}={diff[component_id][key]}')
+                modification[mod_key] = diff[component_id][key]
+    if not modification:
+        return
+    tables.update_one({"tablename": tablename}, {"$set": modification})
+
+
+def add_new_kit_and_components(tablename, kit, components):
+    tables.update_one({"tablename": tablename}, {"$push": {"table.kits": kit}})
+    modification = {}
+    for component_id in components.keys():
+        mod_key = f'table.components.{component_id}'
+        modification[mod_key] = components[component_id]
+    tables.update_one({"tablename": tablename}, {"$set": modification})

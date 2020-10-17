@@ -5,17 +5,7 @@ import {dev_inspector} from "./dev_inspector.js"
 import {toolbox} from "./toolbox.js";
 
 import interact from 'interactjs';
-
-function arraysEqual(a, b) {
-    if (a === b) return true;
-    if (a == null || b == null) return false;
-    if (a.length !== b.length) return false;
-
-    for (let i = 0; i < a.length; ++i) {
-        if (a[i] !== b[i]) return false;
-    }
-    return true;
-}
+import {Level} from "./table";
 
 function toRect(c) {
     if (c.left !== undefined && c.top !== undefined && c.width !== undefined && c.height !== undefined) {
@@ -70,6 +60,7 @@ const basic = {
         component.rect.top = parseFloat(data.top);
         component.rect.width = parseFloat(data.width);
         component.rect.height = parseFloat(data.height);
+        component.zIndex = data.zIndex;
     },
     updateView(component, data) {
         if (data.showImage) {
@@ -146,6 +137,39 @@ const basic = {
 }
 
 const draggability = {
+    featName: 'draggability',
+    start: function (component, data, event) {
+        component.applyUserAction(Level.A, () => {
+            component.dragStartXonTarget = event.x0 - component.rect.left;
+            component.dragStartYonTarget = event.y0 - component.rect.top;
+        });
+    },
+    move: function (component, data, event) {
+        component.applyUserAction(Level.A, () => {
+            featsContext.fireEvent(component, draggability.events.onMoving,
+                {
+                    left: (event.x - component.dragStartXonTarget) + 'px',
+                    top: (event.y - component.dragStartYonTarget) + 'px',
+                    dx: event.dx,
+                    dy: event.dy,
+                    x: event.page.x,
+                    y: event.page.y,
+                });
+        });
+    },
+    end: function (component, data, event) {
+        component.applyUserAction(Level.B, () => {
+            console.log("draggable end", component.componentId);
+            featsContext.fireEvent(component, featsContext.events.onPositionChanged,
+                {
+                    left: event.page.x - component.dragStartXonTarget,
+                    top: event.page.y - component.dragStartYonTarget,
+                    width: component.rect.width,
+                    height: component.rect.height,
+                });
+            featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
+        });
+    },
     install: function (component, data) {
         function isDraggingPermitted() {
             return component.draggable && featsContext.canOperateOn(component);
@@ -161,9 +185,7 @@ const draggability = {
                     if (!isDraggingPermitted()) {
                         return;
                     }
-
-                    component.dragStartXonTarget = event.x0 - component.rect.left;
-                    component.dragStartYonTarget = event.y0 - component.rect.top;
+                    draggability.start(component, data, event);
                 },
                 move(event) {
                     if (!isDraggingPermitted()) {
@@ -171,18 +193,7 @@ const draggability = {
                     }
                     dev_inspector.startTrace('draggability.move');
                     dev_inspector.tracePoint('event listener');
-                    featsContext.table.consolidatePropagation(() => {
-                        featsContext.fireEvent(component, draggability.events.onMoving,
-                            {
-                                left: (event.x - component.dragStartXonTarget) + 'px',
-                                top: (event.y - component.dragStartYonTarget) + 'px',
-                                dx: event.dx,
-                                dy: event.dy,
-                                x: event.page.x,
-                                y: event.page.y,
-                            });
-                    });
-                    featsContext.table.updateView();
+                    draggability.move(component, data, event);
                     dev_inspector.endTrace();
                 },
                 end(event) {
@@ -191,18 +202,7 @@ const draggability = {
                     }
                     dev_inspector.startTrace('draggability.end');
                     dev_inspector.tracePoint('event listener');
-                    console.log("draggable end", component.componentId);
-                    // featsContext.table.consolidatePropagation(() => {
-                    featsContext.fireEvent(component, featsContext.events.onPositionChanged,
-                        {
-                            left: event.page.x - component.dragStartXonTarget,
-                            top: event.page.y - component.dragStartYonTarget,
-                            width: component.rect.width,
-                            height: component.rect.height,
-                        });
-                    featsContext.fireEvent(component, draggability.events.onMoveEnd, {});
-                    // });
-                    featsContext.table.updateView();
+                    draggability.end(component, data, event);
                     dev_inspector.tracePoint('event listener');
                 }
             }
@@ -214,32 +214,37 @@ const draggability = {
             //     left: e.left + "px",
             //     moving: true
             // });
-            component.propagate_volatile({
-                left: (e.x - component.dragStartXonTarget) + 'px',
-                top: (e.y - component.dragStartYonTarget) + 'px',
-                moving: true
+            component.applyUserAction(Level.A, () => {
+                component.propagate_volatile({
+                    left: (e.x - component.dragStartXonTarget) + 'px',
+                    top: (e.y - component.dragStartYonTarget) + 'px',
+                    moving: true
+                });
             });
-            featsContext.table.updateView();
         });
 
         featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
-            component.propagate({
-                left: e.left + "px",
-                top: e.top + "px",
-                width: e.width + "px",
-                height: e.height + "px",
-                moving: false,
+            component.applyUserAction(Level.A, () => {
+                component.propagate({
+                    left: e.left + "px",
+                    top: e.top + "px",
+                    width: e.width + "px",
+                    height: e.height + "px",
+                    moving: false,
+                });
             });
-            featsContext.table.updateView();
 
         });
     },
     isEnabled: function (component, data) {
         return data.draggable === true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData: function (component, data) {
         component.draggable = data.draggable;
         component.ownable = data.ownable;  // TODO: good chance ownable will not be used
+    },
+    updateView: function () {
+
     },
     uninstall: function (component) {
         interact(component.el).draggable(false);
@@ -264,20 +269,21 @@ const flippability = {
             if (!isFlippingPermitted()) {
                 return;
             }
-            dev_inspector.startTrace('flippability.dblclick');
-            dev_inspector.tracePoint('event listener');
-            let diff = {};
-            if (component.owner && component.owner !== featsContext.getPlayerName()) {
-                return;
-            }
-            if (component.faceup) {
-                diff.faceup = component.faceup = false;
-            } else {
-                diff.faceup = component.faceup = true;
-            }
-            component.propagate(diff);
-            featsContext.table.updateView();
-            dev_inspector.endTrace();
+            component.applyUserAction(Level.A, () => {
+                dev_inspector.startTrace('flippability.dblclick');
+                dev_inspector.tracePoint('event listener');
+                let diff = {};
+                if (component.owner && component.owner !== featsContext.getPlayerName()) {
+                    return;
+                }
+                if (component.faceup) {
+                    diff.faceup = component.faceup = false;
+                } else {
+                    diff.faceup = component.faceup = true;
+                }
+                component.propagate(diff);
+                dev_inspector.endTrace();
+            });
         });
     },
     isEnabled: function (component, data) {
@@ -289,6 +295,7 @@ const flippability = {
         component.faceup = data.faceup;
     },
     updateView(component, data) {
+        console.log('flippability updateView');
         if (component.faceup) {
             if (!component.owner || component.owner === featsContext.getPlayerName()) {
                 if (data.showImage) {
@@ -369,37 +376,42 @@ const resizability = {
                 if (!isResizingPermitted()) {
                     return;
                 }
-                let left = parseFloat(component.el.style.left) + event.deltaRect.left;
-                let top = parseFloat(component.el.style.top) + event.deltaRect.top;
-                let width = parseFloat(component.el.style.width) + event.deltaRect.width;
-                let height = parseFloat(component.el.style.height) + event.deltaRect.height;
-                component.propagate_volatile({ left: left, top: top, width: width, height: height });
-                featsContext.table.updateView();
+                component.applyUserAction(Level.A, () => {
+                    let left = parseFloat(component.el.style.left) + event.deltaRect.left;
+                    let top = parseFloat(component.el.style.top) + event.deltaRect.top;
+                    let width = parseFloat(component.el.style.width) + event.deltaRect.width;
+                    let height = parseFloat(component.el.style.height) + event.deltaRect.height;
+                    component.propagate_volatile({ left: left, top: top, width: width, height: height });
+                });
             },
             onend: (/*event*/) => {
                 if (!isResizingPermitted()) {
                     return;
                 }
-                // resizeend event have wrong value in deltaRect so just ignore it
-                let left = parseFloat(component.el.style.left);
-                let top = parseFloat(component.el.style.top);
-                let width = parseFloat(component.el.style.width);
-                let height = parseFloat(component.el.style.height);
-                featsContext.fireEvent(component, featsContext.events.onPositionChanged,
-                    {
-                        left: left,
-                        top: top,
-                        width: width,
-                        height: height,
-                    });
+                component.applyUserAction(Level.A, () => {
+                    // resizeend event have wrong value in deltaRect so just ignore it
+                    let left = parseFloat(component.el.style.left);
+                    let top = parseFloat(component.el.style.top);
+                    let width = parseFloat(component.el.style.width);
+                    let height = parseFloat(component.el.style.height);
+                    featsContext.fireEvent(component, featsContext.events.onPositionChanged,
+                        {
+                            left: left,
+                            top: top,
+                            width: width,
+                            height: height,
+                        });
+                });
             },
         })
     },
     isEnabled: function (component, data) {
         return data.resizable === true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData: function (component, data) {
         component.resizable = data.resizable;
+    },
+    updateView: function () {
     },
     uninstall: function (component) {
         interact(component.el).resizable(false);
@@ -425,23 +437,29 @@ const rollability = {
             if (component.rolling) {
                 return false;
             }
-            const duration = Math.random() * 1000 + 500;
-            const finalValue = Math.floor(Math.random() * 6) + 1;
-            component.rolling = true;
-            component.propagate({ rollDuration: duration, rollFinalValue: finalValue, startRoll: true });
-            featsContext.table.updateView();
+            component.applyUserAction(Level.C, () => {
+                const duration = Math.random() * 1000 + 500;
+                const finalValue = Math.floor(Math.random() * 6) + 1;
+                component.rolling = true;
+                component.propagate({ rollDuration: duration, rollFinalValue: finalValue, startRoll: true });
+            });
             return false;
         }
     },
     isEnabled: function (component, data) {
         return data.rollable === true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData(component, data) {
         component.rollable = data.rollable;
 
         if (data.startRoll) {
             data.startRoll = undefined;
-            component.rolling = true;
+            component.startRoll = true;
+        }
+    },
+    updateView(component, data) {
+        if (component.startRoll) {
+            component.startRoll = false;
             rollability.roll(component, data.rollDuration, data.rollFinalValue);
         }
 
@@ -646,11 +664,13 @@ const within = {
         }
 
         featsContext.addEventListener(component, featsContext.events.onPositionChanged, (e) => {
-            dev_inspector.tracePoint('within.onPositionChanged');
-            const withinCheckResult = pickCollidedComponents();
-            processAllStart(withinCheckResult);
-            processAllEnd(withinCheckResult);
-            dev_inspector.tracePoint('finished within.onPositionChanged');
+            component.applyUserAction(Level.C, () => {
+                dev_inspector.tracePoint('within.onPositionChanged');
+                const withinCheckResult = pickCollidedComponents();
+                processAllStart(withinCheckResult);
+                processAllEnd(withinCheckResult);
+                dev_inspector.tracePoint('finished within.onPositionChanged');
+            });
 
             function pickCollidedComponents() {
                 const thingsWithinMe = [];
@@ -714,7 +734,6 @@ const within = {
                     area.propagate({ 'thingsWithinMe': area.thingsWithinMe });
                     visitor.propagate({ 'iAmWithin': visitor.iAmWithin });
                     featsContext.fireEvent(area, within.events.onWithin, { visitor: visitor });
-                    featsContext.table.updateView();
                 }
             }
 
@@ -756,7 +775,6 @@ const within = {
                         featsContext.fireEvent(other, within.events.onWithinEnd, { visitor: component });
                     }
                 }
-                featsContext.table.updateView();
                 console.log("processAllEnd end");
 
             }
@@ -766,7 +784,7 @@ const within = {
     isEnabled: function (/*component, data*/) {
         return true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData: function (component, data) {
         if (data.thingsWithinMe) {
             component.thingsWithinMe = data.thingsWithinMe;
         }
@@ -776,38 +794,42 @@ const within = {
 
         component.moving = data.moving;
     },
+    updateView: function (component, data) {
+
+    },
     uninstall: function (component) {
-        const thingsWithinMe = component.thingsWithinMe;
-        const iAmWithin = component.iAmWithin;
-        component.thingsWithinMe = [];  // avoid recurse
-        component.iAmWithin = [];  // avoid recurse
-        for (const componentId in thingsWithinMe) {
-            if (!thingsWithinMe.hasOwnProperty(componentId)) {
-                continue;
-            }
-            const other = featsContext.table.componentsOnTable[componentId];
-            if (other) {
-                // there is a chance that other is already removed from table
-                delete other.iAmWithin[component.componentId];
+        component.applyUserAction(Level.C, () => {
+            const thingsWithinMe = component.thingsWithinMe;
+            const iAmWithin = component.iAmWithin;
+            component.thingsWithinMe = [];  // avoid recurse
+            component.iAmWithin = [];  // avoid recurse
+            for (const componentId in thingsWithinMe) {
+                if (!thingsWithinMe.hasOwnProperty(componentId)) {
+                    continue;
+                }
+                const other = featsContext.table.componentsOnTable[componentId];
+                if (other) {
+                    // there is a chance that other is already removed from table
+                    delete other.iAmWithin[component.componentId];
 
-                other.propagate({ 'iAmWithin': other.iAmWithin });
-                featsContext.fireEvent(component, within.events.onWithinEnd, { visitor: other });
+                    other.propagate({ 'iAmWithin': other.iAmWithin });
+                    featsContext.fireEvent(component, within.events.onWithinEnd, { visitor: other });
+                }
             }
-        }
-        for (const otherId in iAmWithin) {
-            if (!iAmWithin.hasOwnProperty(otherId)) {
-                continue;
-            }
-            const other = featsContext.table.componentsOnTable[otherId];
-            if (other) {
-                // there is a chance that other is already removed from table
-                delete other.thingsWithinMe[component.componentId];
+            for (const otherId in iAmWithin) {
+                if (!iAmWithin.hasOwnProperty(otherId)) {
+                    continue;
+                }
+                const other = featsContext.table.componentsOnTable[otherId];
+                if (other) {
+                    // there is a chance that other is already removed from table
+                    delete other.thingsWithinMe[component.componentId];
 
-                other.propagate({ 'thingsWithinMe': other.thingsWithinMe });
-                featsContext.fireEvent(other, within.events.onWithinEnd, { visitor: component });
+                    other.propagate({ 'thingsWithinMe': other.thingsWithinMe });
+                    featsContext.fireEvent(other, within.events.onWithinEnd, { visitor: component });
+                }
             }
-        }
-        featsContext.table.updateView();
+        });
     },
 
     events: {
@@ -819,37 +841,42 @@ const within = {
 const ownership = {
     install: function (component) {
         featsContext.addEventListener(component, within.events.onWithin, (e) => {
-            const other = e.visitor;
-            if (component.handArea && !other.handArea) {
-                const hand = component;
-                const onHand = other;
-                if (!(onHand.owner === hand.owner)) {
-                    onHand.propagate({ owner: onHand.owner = hand.owner });
+            component.applyUserAction(Level.C, () => {
+                const other = e.visitor;
+                if (component.handArea && !other.handArea) {
+                    const hand = component;
+                    const onHand = other;
+                    if (!(onHand.owner === hand.owner)) {
+                        onHand.propagate({ owner: onHand.owner = hand.owner });
+                    }
                 }
-            }
-            featsContext.table.updateView();
+            });
         });
         featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
-            const other = e.visitor;
-            if (component.handArea && !other.handArea) {
-                const hand = component;
-                const onHand = other;
-                if (onHand.owner === hand.owner) {
-                    onHand.propagate({ owner: onHand.owner = null });
+            component.applyUserAction(Level.C, () => {
+                const other = e.visitor;
+                if (component.handArea && !other.handArea) {
+                    const hand = component;
+                    const onHand = other;
+                    if (onHand.owner === hand.owner) {
+                        onHand.propagate({ owner: onHand.owner = null });
+                    }
                 }
-            }
-            featsContext.table.updateView();
+            });
         });
     },
     isEnabled: function (/*component, data*/) {
         return true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData(component, data) {
         if (component.owner !== data.owner) {
             console.log("ownership update change", component.componentId, component.owner, "to", data.owner);
         }
         component.owner = data.owner;
         component.handArea = data.handArea;
+
+    },
+    updateView(component, data) {
         if (component.moving) {
             return;
         }
@@ -884,7 +911,9 @@ const handArea = {
     isEnabled: function (component, data) {
         return data.handArea === true;
     },
-    onComponentUpdate: function () {
+    receiveData: function () {
+    },
+    updateView: function () {
     },
     uninstall: function () {
 
@@ -896,6 +925,16 @@ const traylike = {
     // Objects on a tray moves with the tray.
     // Hand Area is a tray-like object.  A box is another example of tray-like object.
     // Currently everything not tray-like can be put on tray-like.  Tray-like does not be put on another tray-like.
+    featName: 'traylike',
+    comeIn(component, event) {
+        component.applyUserAction(Level.C, () => {
+            component.onTray[event.visitor.componentId] = true;
+            component.propagate({ onTray: component.onTray });
+            if (event.visitor.zIndex < component.zIndex) {
+                event.visitor.propagate({ zIndex: featsContext.table.getNextZIndex() });
+            }
+        });
+    },
     install: function (component, data) {
         if (!traylike.isEnabled(component, data)) {
             // do not install
@@ -911,12 +950,7 @@ const traylike = {
             if (e.visitor.traylike) {
                 return;
             }
-            component.onTray[e.visitor.componentId] = true;
-            component.propagate({ onTray: component.onTray });
-            if (e.visitor.zIndex < component.zIndex) {
-                e.visitor.propagate({ zIndex: featsContext.table.getNextZIndex() });
-            }
-            featsContext.table.updateView();
+            traylike.comeIn(component, e);
         });
 
         featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
@@ -926,51 +960,56 @@ const traylike = {
             if (e.visitor.traylike) {
                 return;
             }
-            delete component.onTray[e.visitor.componentId];
-            component.propagate({ onTray: component.onTray });
-            featsContext.table.updateView();
+            component.applyUserAction(Level.C, () => {
+                delete component.onTray[e.visitor.componentId];
+                component.propagate({ onTray: component.onTray });
+            });
         });
 
         featsContext.addEventListener(component, draggability.events.onMoving, (e) => {
             if (!component.traylike) {
                 return;
             }
-            const dx = e.dx;
-            const dy = e.dy;
-            for (const componentId in component.onTray) {
-                const target = featsContext.table.componentsOnTable[componentId];
-                target.propagate_volatile({
-                    left: target.rect.left + dx,
-                    top: target.rect.top + dy,
-                });
-            }
-            featsContext.table.updateView();
+            component.applyUserAction(Level.C, () => {
+                const dx = e.dx;
+                const dy = e.dy;
+                for (const componentId in component.onTray) {
+                    const target = featsContext.table.componentsOnTable[componentId];
+                    target.propagate_volatile({
+                        left: target.rect.left + dx,
+                        top: target.rect.top + dy,
+                    });
+                }
+            });
         });
 
         featsContext.addEventListener(component, draggability.events.onMoveEnd, (/*e*/) => {
             if (!component.traylike) {
                 return;
             }
-            for (const componentId in component.onTray) {
-                const target = featsContext.table.componentsOnTable[componentId];
-                target.propagate({
-                    left: target.rect.left,
-                    top: target.rect.top,
-                });
-            }
-            featsContext.table.updateView();
+            component.applyUserAction(Level.C, () => {
+                for (const componentId in component.onTray) {
+                    const target = featsContext.table.componentsOnTable[componentId];
+                    target.propagate({
+                        left: target.rect.left,
+                        top: target.rect.top,
+                    });
+                }
+            });
         })
     },
     isEnabled: function (component, data) {
         return data.traylike === true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData(component, data) {
         // On or off of a tray decision is handled in tray-like object's update.
         // This is chiefly to reduce computation.  And also for simplicity.
         component.traylike = data.traylike;
         if (data.onTray) {
             component.onTray = data.onTray;
         }
+    },
+    updateView: function (component, data) {
     },
     uninstall: function (component) {
 
@@ -980,19 +1019,20 @@ const traylike = {
 const touchToRaise = {
     install: function (component, componentData) {
         component.el.addEventListener("mousedown", (/*event*/) => {
-            if (featsContext.isPlayerObserver()) {
-                return;
-            }
-            if (component.handArea || component.traylike || componentData.boxOfComponents) {
-                return;
-            }
-            const nextZIndex = featsContext.table.getNextZIndexFor(componentData);
-            if (nextZIndex > component.zIndex) {
-                component.zIndex = nextZIndex
-                setStyle(component.el, { zIndex: component.zIndex });
-                component.propagate({ zIndex: component.zIndex });
-            }
-            featsContext.table.updateView();
+            component.applyUserAction(Level.A, () => {
+                if (featsContext.isPlayerObserver()) {
+                    return;
+                }
+                if (component.handArea || component.traylike || componentData.boxOfComponents) {
+                    return;
+                }
+                const nextZIndex = featsContext.table.getNextZIndexFor(componentData);
+                if (nextZIndex > component.zIndex) {
+                    component.zIndex = nextZIndex
+                    setStyle(component.el, { zIndex: component.zIndex });
+                    component.propagate({ zIndex: component.zIndex });
+                }
+            });
         });
     },
 
@@ -1000,12 +1040,15 @@ const touchToRaise = {
         return true;
     },
 
-    onComponentUpdate: function (component, data) {
+    receiveData: function (component, data) {
         if (data.zIndex) {
             component.zIndex = data.zIndex;
         } else {
             component.zIndex = featsContext.table.getNextZIndex();
         }
+    },
+    updateView() {
+
     },
 
     uninstall: function (component) {
@@ -1021,8 +1064,9 @@ const stowage = {
             if (e.visitor.traylike) {
                 return;
             }
-            e.visitor.propagate({ isStowed: true });
-            featsContext.table.updateView();
+            component.applyUserAction(Level.A, () => {
+                e.visitor.propagate({ isStowed: true });
+            });
         });
 
         featsContext.addEventListener(component, within.events.onWithinEnd, (e) => {
@@ -1032,8 +1076,9 @@ const stowage = {
             if (e.visitor.traylike) {
                 return;
             }
-            e.visitor.propagate({ isStowed: false });
-            featsContext.table.updateView();
+            component.applyUserAction(Level.A, () => {
+                e.visitor.propagate({ isStowed: false });
+            });
         });
     },
     isEnabled: function (/*component, data*/) {
@@ -1041,11 +1086,14 @@ const stowage = {
         return true;
     },
 
-    onComponentUpdate: function (component, data) {
+    receiveData: function (component, data) {
         if (data.isStowed === undefined) {
             return;
         }
         component.isStowed = data.isStowed;
+
+    },
+    updateView(component, data) {
 
         if (component.isStowed) {
             setStyle(component.el, { opacity: 0.4 });
@@ -1073,7 +1121,9 @@ const cardistry = {
             const button = el('button', {
                     'data-button-name': cardistry.name,
                     onclick: () => {
-                        cardistry.execute(component, featsContext);
+                        component.applyUserAction(Level.A, () => {
+                            cardistry.execute(component, featsContext);
+                        });
                     },
                 },
                 cardistry.label,
@@ -1087,7 +1137,10 @@ const cardistry = {
     isEnabled: function (component, data) {
         return data.hasOwnProperty('cardistry');
     },
-    onComponentUpdate: function (component, componentData) {
+    receiveData() {
+
+    },
+    updateView: function (component, componentData) {
         if (!componentData.cardistry) {
             return;
         }
@@ -1159,20 +1212,24 @@ const counter = {
         );
 
         function count(fn) {
-            if (!data.hasOwnProperty("counterValue")) {
-                data.counterValue = 0;
-            }
-            const counterValue = data.counterValue;
-            const newValue = fn(counterValue);
-            data.counterValue = component.valueEl.innerText = newValue;
-            component.propagate({ counterValue: newValue });
-            featsContext.table.updateView();
+            component.applyUserAction(Level.A, () => {
+                if (!data.hasOwnProperty("counterValue")) {
+                    data.counterValue = 0;
+                }
+                const counterValue = data.counterValue;
+                const newValue = fn(counterValue);
+                data.counterValue = component.valueEl.innerText = newValue;
+                component.propagate({ counterValue: newValue });
+            });
         }
     },
     isEnabled: function (component, data) {
         return data.counter === true;
     },
-    onComponentUpdate: function (component, componentData) {
+    receiveData() {
+
+    },
+    updateView: function (component, componentData) {
         if (!componentData.counter) {
             return;
         }
@@ -1206,6 +1263,7 @@ const editability = {
 
             data.editing = true;
             let textareaEl;
+            // TODO keep element for reuse; delete when uninstall()ed
             const formEl = el('div.note_editor', [
                 textareaEl = el('textarea', { oninput: editing }, data.text),
                 el('br', {}, data.text),
@@ -1216,15 +1274,17 @@ const editability = {
             mount(component.el, formEl);
 
             function editing() {
-                component.propagate({ 'text': textareaEl.value });
-                featsContext.table.updateView();
+                component.applyUserAction(Level.A, () => {
+                    component.propagate({ 'text': textareaEl.value });
+                });
             }
 
             function endEditing() {
-                component.propagate({ 'text': textareaEl.value });
-                unmount(component.el, formEl);
-                data.editing = false;
-                featsContext.table.updateView();
+                component.applyUserAction(Level.A, () => {
+                    component.propagate({ 'text': textareaEl.value });
+                    unmount(component.el, formEl);
+                    data.editing = false;
+                });
             }
         });
 
@@ -1232,8 +1292,11 @@ const editability = {
     isEnabled: function (component, data) {
         return data.editable === true;
     },
-    onComponentUpdate: function (component, data) {
+    receiveData: function (component, data) {
         component.editable = data.editable;
+    },
+    updateView() {
+
     },
     uninstall: function (component) {
     },
@@ -1319,8 +1382,26 @@ const feats = [
 for (const feat of feats) {
     console.assert(feat.install !== undefined);
     console.assert(feat.isEnabled !== undefined);
-    console.assert(feat.onComponentUpdate !== undefined);
+    console.assert(feat.receiveData !== undefined && feat.updateView !== undefined);
     console.assert(feat.uninstall !== undefined);
 }
 
-export {setFeatsContext, feats, event};
+export {
+    setFeatsContext, feats, event,
+
+    // exported for testing only (probably)
+    basic,
+    within,
+    draggability,
+    flippability,
+    resizability,
+    rollability,
+    traylike,
+    handArea,
+    ownership,
+    touchToRaise,
+    stowage,
+    cardistry,
+    counter,
+    editability
+};

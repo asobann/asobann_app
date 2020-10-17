@@ -1,11 +1,11 @@
 import {dev_inspector} from "./dev_inspector.js";
+import io from 'socket.io-client'
 
 const socket = io(
     // {
     //     transports: ['websocket']
     // }
 );
-console.log(socket);
 
 const context = {
     client_connection_id: 'xxxxxxxxxxxx'.replace(/[x]/g, function (/*c*/) {
@@ -13,54 +13,9 @@ const context = {
     }),
 };
 
-const bulkPropagation = {
-    nested: 0,
-    events: [],
-};
-
-function consolidatePropagation(proc) {
-    // startConsolidatedPropagation();
-    proc();
-    // finishConsolidatedPropagationAndEmit();
-}
-
-function startConsolidatedPropagation() {
-    bulkPropagation.nested += 1;
-}
-
-function finishConsolidatedPropagationAndEmit() {
-    bulkPropagation.nested -= 1;
-    if (bulkPropagation.nested > 0) {
-        return;
-    }
-    console.log("finishBulkPropagateAndEmit events", bulkPropagation.events.length);
-    socket.emit('bulk propagate', {
-        tablename: context.tablename,
-        originator: context.client_connection_id,
-        events: bulkPropagation.events,
-    });
-    for (const e of bulkPropagation.events) {
-        if (e.data.inspectionTraceId) {
-            dev_inspector.tracePointByTraceId('bulk emitted', e.data.inspectionTraceId);
-        }
-    }
-    bulkPropagation.events = [];
-}
-
-function isInBulkPropagate() {
-    return bulkPropagation.nested > 0;
-}
-
 function emit(eventName, data) {
-    if (isInBulkPropagate()) {
-        if (data.volatile) {
-            return;
-        }
-        bulkPropagation.events.push({ eventName: eventName, data: data });
-    } else {
-        dev_inspector.tracePoint('emitted');
-        socket.emit(eventName, data);
-    }
+    dev_inspector.tracePoint('emitted');
+    socket.emit(eventName, data);
 }
 
 function setTableContext(tablename, connector) {
@@ -72,7 +27,7 @@ function setTableContext(tablename, connector) {
     context.updatePlayer = connector.updatePlayer;
     context.showOthersMouseMovement = connector.showOthersMouseMovement;
     context.addComponent = connector.addComponent;
-    context.addKit = connector.addKit;
+    context.addKitAndComponents = connector.addKitAndComponents;
 }
 
 socket.on("load table", (msg) => {
@@ -108,6 +63,76 @@ socket.on("mouse movement", (msg) => {
 const componentUpdateQueue = [];
 const actualUpdateQueue = [];
 
+class ComponentUpdateBuffer {
+    constructor(table) {
+        this.table = table;
+        this.buffer = {};
+        this.orderOfComponentId = [];
+    }
+
+    addDiff(componentId, diff) {
+        Object.assign(this.updateOf(componentId), diff);
+        if (this.orderOfComponentId.indexOf(componentId) < 0) {
+            this.orderOfComponentId.push(componentId);
+        }
+    }
+
+    updateOf(componentId) {
+        if (!this.buffer.hasOwnProperty(componentId)) {
+            this.buffer[componentId] = {};
+        }
+        return this.buffer[componentId];
+    }
+
+    buildMessageToEmit() {
+        if (this.orderOfComponentId.length === 0) {
+            throw new Error('no updates to emit');
+        }
+
+        const diffs = [];
+        for (const componentId of this.orderOfComponentId) {
+            const diff = {};
+            diff[componentId] = this.updateOf(componentId);
+            diffs.push(diff);
+        }
+        return {
+            eventName: 'update many components',
+            data: {
+                tablename: context.tablename,
+                originator: context.client_connection_id,
+                diffs: diffs,
+            },
+        }
+    }
+
+    /**
+     * Reset the buffer and discard all buffered updates.
+     */
+    reset() {
+        this.buffer = {};
+        this.orderOfComponentId.splice(0);
+    }
+
+    startBUfferedEmit() {
+        setInterval(() => {
+            try {
+                const event = this.buildMessageToEmit();
+                socket.emit(event.eventName, event.data);
+                this.reset();
+            } catch (e) {
+                if (e.message === 'no updates to emit') {
+                    // ignore
+                } else {
+                    console.log(e)
+                }
+            }
+        }, 75);
+    }
+}
+
+const componentUpdateBuffer = new ComponentUpdateBuffer();
+componentUpdateBuffer.startBUfferedEmit();
+
 function sendComponentUpdateFromQueue() {
     while (componentUpdateQueue.length > 0) {
         const update = componentUpdateQueue.shift();
@@ -138,7 +163,7 @@ function sendComponentUpdateFromQueue() {
 setInterval(sendComponentUpdateFromQueue, 75);
 
 function pushComponentUpdate(table, componentId, diff, volatile) {
-    console.log("pushComponentUpdate", componentId, diff, volatile);
+    // console.log("pushComponentUpdate", componentId, diff, volatile);
     if (!table.data.components[componentId]) {
         console.log("no such component", componentId, table.data);
     }
@@ -159,17 +184,11 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
         eventName: eventName,
         data: data
     };
-    if (isInBulkPropagate()) {
-        dev_inspector.tracePoint('merged in bulk');
-        dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
-        bulkPropagation.events.push(event);
-        updateTableDataWithComponentDiff(table, componentId, diff);
-    } else {
-        dev_inspector.tracePoint('queued');
-        dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
-        componentUpdateQueue.push(event);
-        updateTableDataWithComponentDiff(table, componentId, diff);
-    }
+    dev_inspector.tracePoint('queued');
+    dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
+    // componentUpdateQueue.push(event);
+    componentUpdateBuffer.addDiff(componentId, diff);
+    updateTableDataWithComponentDiff(table, componentId, diff);
 }
 
 function updateTableDataWithComponentDiff(table, componentId, diff) {
@@ -200,15 +219,15 @@ socket.on('update many components', (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
     }
-    for (const ev of msg.events) {
-        if (ev.data.inspectionTraceId) {
+    for (const ev of msg.diffs) {
+        if (ev.inspectionTraceId) {
             dev_inspector.tracePointByTraceId('receive update many components', ev.data.inspectionTraceId);
         }
     }
     if (msg.originator === context.client_connection_id) {
         return;
     }
-    context.updateManyComponents(msg.events);
+    context.updateManyComponents(msg.diffs);
 });
 
 function pushNewComponent(componentData) {
@@ -230,11 +249,12 @@ socket.on("add component", (msg) => {
 });
 
 
-function pushNewKit(kitData) {
+function pushNewKitAndComponents(kitData, newComponents) {
     emit("add kit", {
         tablename: context.tablename,
         originator: context.client_connection_id,
         kitData: kitData,
+        newComponents: newComponents,
     })
 }
 
@@ -243,7 +263,10 @@ socket.on("add kit", (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
     }
-    context.addKit(msg.kit);
+    if (msg.originator === context.client_connection_id) {
+        return;
+    }
+    context.addKitAndComponents(msg.kit, msg.newComponents);
 });
 
 function pushRemoveKit(kitId) {
@@ -286,7 +309,6 @@ function joinTable(player, isHost) {
 }
 
 function pushCursorMovement(playerName, mouseMovement) {
-    // this event will never be in bulk
     socket.emit("mouse movement", {
         tablename: context.tablename,
         playerName: playerName,
@@ -299,12 +321,10 @@ export {
     pushComponentUpdate,
     pushNewComponent,
     pushRemoveComponent,
-    pushNewKit,
+    pushNewKitAndComponents,
     pushRemoveKit,
     pushSyncWithMe,
     joinTable,
     pushCursorMovement,
-    startConsolidatedPropagation,
-    finishConsolidatedPropagationAndEmit,
-    consolidatePropagation,
+    componentUpdateBuffer,
 };
