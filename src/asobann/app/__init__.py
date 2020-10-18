@@ -142,7 +142,7 @@ def create_app(testing=False):
 
     socketio_args = {}
 
-    if app.config['DEBUG_LOG']:
+    if 'DEBUG_LOG' in app.config and app.config['DEBUG_LOG']:
         socketio_args['logger'] = app.logger
         socketio_args['engineio_logger'] = app.logger
         app.logger.setLevel('DEBUG')
