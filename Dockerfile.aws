@@ -12,5 +12,4 @@ WORKDIR /app
 COPY requirements.txt /app/
 RUN pip3 install --requirement requirements.txt
 COPY src /app/
-ENV FLASK_ENV=development
 CMD python3 -m asobann.deploy ; python3 -m asobann.wsgi
