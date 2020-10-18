@@ -34,5 +34,12 @@ else:
     AWS_SECRET = None
 
 if 'ASOBANN_DEBUG_OPTS' in os.environ:
-    DEBUG_PERFORMANCE_RECORDING = 'PERFORMANCE_RECORDING' in os.environ['ASOBANN_DEBUG_OPTS']
-    DEBUG_ORDER_OF_UPDATES = 'ORDER_OF_UPDATES' in os.environ['ASOBANN_DEBUG_OPTS']
+    opts = os.environ['ASOBANN_DEBUG_OPTS'].split(',')
+    DEBUG_PERFORMANCE_RECORDING = 'PERFORMANCE_RECORDING' in opts
+    DEBUG_ORDER_OF_UPDATES = 'ORDER_OF_UPDATES' in opts
+    DEBUG_LOG = 'LOG' in opts
+
+if "ASOBANN_ACCESS_LOG" in os.environ:
+    ACCESS_LOG = True
+else:
+    ACCESS_LOG = False

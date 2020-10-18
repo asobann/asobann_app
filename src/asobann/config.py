@@ -28,3 +28,5 @@ if use_aws:
 else:
     AWS_KEY = None
     AWS_SECRET = None
+
+ACCESS_LOG = True

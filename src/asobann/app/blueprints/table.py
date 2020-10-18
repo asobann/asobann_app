@@ -118,7 +118,7 @@ def handle_add_component(json):
 @socketio.on('add kit')
 def handle_add_kit(json):
     current_app.logger.info(f'add kit')
-    current_app.logger.info(f'add kit: {json}')
+    current_app.logger.debug(f'add kit: {json}')
     tables.add_new_kit_and_components(json['tablename'], json['kitData']['kit'], json['newComponents'])
     emit('add kit',
          {"tablename": json["tablename"],
@@ -161,7 +161,7 @@ def handle_remove_kit(json):
 @socketio.on("sync with me")
 def handle_sync_with_me(json):
     current_app.logger.info(f'sync with me')
-    current_app.logger.info(f'sync with me: {json}')
+    current_app.logger.debug(f'sync with me: {json}')
     tables.store(json['tablename'], json['tableData'])
     table = tables.get(json["tablename"])
     emit("refresh table", {"tablename": json["tablename"], "table": table}, broadcast=True, room=json["tablename"])

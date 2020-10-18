@@ -142,9 +142,10 @@ def create_app(testing=False):
 
     socketio_args = {}
 
-    # if app.config['ENV'] == 'development':
-    #     socketio_args['logger'] = app.logger
-    #     socketio_args['engineio_logger'] = app.logger
+    if app.config['DEBUG_LOG']:
+        socketio_args['logger'] = app.logger
+        socketio_args['engineio_logger'] = app.logger
+        app.logger.setLevel('DEBUG')
 
     try:
         app.logger.info("connecting mongo")
