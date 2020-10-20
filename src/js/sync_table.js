@@ -113,7 +113,7 @@ class ComponentUpdateBuffer {
         this.orderOfComponentId.splice(0);
     }
 
-    startBUfferedEmit() {
+    startBufferedEmit() {
         setInterval(() => {
             try {
                 const event = this.buildMessageToEmit();
@@ -131,7 +131,7 @@ class ComponentUpdateBuffer {
 }
 
 const componentUpdateBuffer = new ComponentUpdateBuffer();
-componentUpdateBuffer.startBUfferedEmit();
+componentUpdateBuffer.startBufferedEmit();
 
 function sendComponentUpdateFromQueue() {
     while (componentUpdateQueue.length > 0) {
