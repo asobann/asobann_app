@@ -84,8 +84,8 @@ const sync_table_connector = {
     },
 
     addManyComponents: function (componentDataObj) {
-        for(const componentId in componentDataObj) {
-            if(!componentDataObj.hasOwnProperty(componentId)) {
+        for (const componentId in componentDataObj) {
+            if (!componentDataObj.hasOwnProperty(componentId)) {
                 continue;
             }
             const componentData = componentDataObj[componentId];
@@ -341,8 +341,6 @@ function addNewKit(kitData) {
             }
         }
     })();
-
-
 }
 
 function removeKit(kitId) {
