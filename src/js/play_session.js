@@ -21,8 +21,8 @@ function baseUrl() {
     return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
 }
 
-const sync_table_connector = {
-    initializeTable: function (tableData) {
+const syncTableConnector = {
+    initializeTable(tableData) {
         console.log("initializeTable");
         console.log("tableData: ", tableData);
         const players = tableData.players;
@@ -39,7 +39,7 @@ const sync_table_connector = {
         menu.update(tableData);
     },
 
-    updateSingleComponent: function (componentId, diff) {
+    updateSingleComponent(componentId, diff) {
         const tableData = table.data;
         if (tableData.components[componentId].lastUpdated) {
             if (tableData.components[componentId].lastUpdated.from === diff.lastUpdated.from
@@ -55,7 +55,7 @@ const sync_table_connector = {
         dev_inspector.tracePoint('finished sync update single component');
     },
 
-    updateManyComponents: function (diffOfComponents, componentIdsToRemove) {
+    updateManyComponents(diffOfComponents, componentIdsToRemove) {
         const tableData = table.data;
         for (const component_diff of diffOfComponents) {
             for (const componentId in component_diff) {
@@ -89,11 +89,11 @@ const sync_table_connector = {
         }
     },
 
-    addComponent: function (componentData) {
-        sync_table_connector.addManyComponents([componentData])
+    addComponent(componentData) {
+        syncTableConnector.addManyComponents([componentData])
     },
 
-    addManyComponents: function (componentDataObj) {
+    addManyComponents(componentDataObj) {
         for (const componentId in componentDataObj) {
             if (!componentDataObj.hasOwnProperty(componentId)) {
                 continue;
@@ -112,29 +112,29 @@ const sync_table_connector = {
         menu.update(table.data);
     },
 
-    addKitAndComponents: function (kitData, newComponents) {
+    addKitAndComponents(kitData, newComponents) {
         for (const existKit of table.data.kits) {
             if (existKit.kitId === kitData.kitId) {
                 return;
             }
         }
         table.data.kits.push(kitData);
-        sync_table_connector.addManyComponents(newComponents);
+        syncTableConnector.addManyComponents(newComponents);
     },
 
-    update_whole_table: function (data) {
+    update_whole_table(data) {
         table.update(data);
         menu.update(data);
     },
 
-    updatePlayer: function (playerData) {
+    updatePlayer(playerData) {
         if (playerData.name) {
             setPlayerIsJoined();
             setPlayerName(playerData.name);
         }
     },
 
-    showOthersMouseMovement: function (playerName, mouseMovement) {
+    showOthersMouseMovement(playerName, mouseMovement) {
         const ICON_OFFSET_X = -(32 / 2);  // see "div.others_mouse_cursor .icon " in game.css
         const ICON_OFFSET_Y = -(32 / 2);
         if (playerName === getPlayerName()) {
@@ -487,7 +487,7 @@ function isTherePlayersHandArea(playerName) {
     return false;
 }
 
-setTableContext(tablename, sync_table_connector);
+setTableContext(tablename, syncTableConnector);
 
 const menuConnector = {
     tablename: tablename,
