@@ -89,8 +89,12 @@ class ComponentUpdateBuffer {
         this.componentIdsToRemove.push(componentId);
     }
 
+    isEmpty() {
+        return this.orderOfComponentId.length === 0 && this.componentIdsToRemove.length === 0;
+    }
+
     buildMessageToEmit() {
-        if (this.orderOfComponentId.length === 0 && this.componentIdsToRemove.length === 0) {
+        if (this.isEmpty()) {
             throw new Error('no updates to emit');
         }
 

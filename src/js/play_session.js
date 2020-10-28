@@ -1,13 +1,13 @@
-import {el, mount, setStyle, setAttr} from "redom";
+import {el, mount, setAttr, setStyle} from "redom";
 import {Component, Table} from "./table";
 import {
-    setTableContext,
-    pushNewComponent,
-    pushNewKitAndComponents,
-    pushSyncWithMe,
-    pushRemoveComponent,
     joinTable,
     pushCursorMovement,
+    pushNewComponent,
+    pushNewKitAndComponents,
+    pushRemoveComponent,
+    pushSyncWithMe,
+    setTableContext,
 } from "./sync_table.js";
 import {toolbox} from "./toolbox.js"
 import {Menu} from "./menu.js";
@@ -62,24 +62,31 @@ const sync_table_connector = {
                 if (!component_diff.hasOwnProperty(componentId)) {
                     continue;
                 }
-                if (!tableData.components.hasOwnProperty(componentId)) {
-                    // component is already removed from table probably
-                    continue;
-                }
-                const diff = component_diff[componentId];
-                Object.assign(tableData.components[componentId], diff);
+                applyDiffToComponentData(componentId, component_diff[componentId]);
             }
         }
-        for (const componentId of componentIdsToRemove) {
-            if (!tableData.components.hasOwnProperty(componentId)) {
-                continue;
-            }
-            // table.update() will remove components which are absent in tableData
-            delete tableData.components[componentId];
-        }
+        applyRemoveComponents(componentIdsToRemove);
         table.update(tableData);
         menu.update(tableData);
         dev_inspector.tracePoint('finished sync update many components');
+
+        function applyDiffToComponentData(componentId, diff) {
+            if (!tableData.components.hasOwnProperty(componentId)) {
+                // component is already removed from table probably
+                return;
+            }
+            Object.assign(tableData.components[componentId], diff);
+        }
+
+        function applyRemoveComponents(componentIdsToRemove) {
+            for (const componentId of componentIdsToRemove) {
+                if (!tableData.components.hasOwnProperty(componentId)) {
+                    continue;
+                }
+                // table.update() will remove components which are absent in tableData
+                delete tableData.components[componentId];
+            }
+        }
     },
 
     addComponent: function (componentData) {
