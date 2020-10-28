@@ -158,6 +158,8 @@ class TestHandArea:
         host.drag(host.hand_area(owner="host"), 200, 300, grab_at=(-40, 0))
         pos_after = [host.component_by_name(c).pos() for c in (c1, c2, c3)]
 
+        time.sleep(0.2)
+
         assert pos_before[0].left + 200 == pos_after[0].left and pos_before[0].top + 300 == pos_after[0].top
         assert pos_before[1].left + 200 == pos_after[1].left and pos_before[1].top + 300 == pos_after[1].top
         assert pos_before[2].left + 200 == pos_after[2].left and pos_before[2].top + 300 == pos_after[2].top
