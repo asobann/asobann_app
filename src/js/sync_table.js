@@ -23,7 +23,7 @@ function setTableContext(tablename, connector) {
     context.initializeTable = connector.initializeTable;
     context.updateSingleComponent = connector.updateSingleComponent;
     context.updateManyComponents = connector.updateManyComponents;
-    context.update_whole_table = connector.update_whole_table;
+    context.updateWholeTable = connector.updateWholeTable;
     context.updatePlayer = connector.updatePlayer;
     context.showOthersMouseMovement = connector.showOthersMouseMovement;
     context.addComponent = connector.addComponent;
@@ -43,7 +43,7 @@ socket.on("refresh table", (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
     }
-    context.update_whole_table(msg.table);
+    context.updateWholeTable(msg.table);
 });
 
 socket.on("confirmed player name", (msg) => {

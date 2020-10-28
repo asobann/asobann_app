@@ -122,7 +122,7 @@ const syncTableConnector = {
         syncTableConnector.addManyComponents(newComponents);
     },
 
-    update_whole_table(data) {
+    updateWholeTable(data) {
         table.update(data);
         menu.update(data);
     },
