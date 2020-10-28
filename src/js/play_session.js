@@ -55,24 +55,27 @@ const sync_table_connector = {
         dev_inspector.tracePoint('finished sync update single component');
     },
 
-    updateManyComponents: function (diff_of_components) {
+    updateManyComponents: function (diffOfComponents, componentIdsToRemove) {
         const tableData = table.data;
-        for (const component_diff of diff_of_components) {
+        for (const component_diff of diffOfComponents) {
             for (const componentId in component_diff) {
                 if (!component_diff.hasOwnProperty(componentId)) {
                     continue;
                 }
+                if (!tableData.components.hasOwnProperty(componentId)) {
+                    // component is already removed from table probably
+                    continue;
+                }
                 const diff = component_diff[componentId];
-                // TODO logic to discard late-arrived updated is commented out ; probably meaningless
-                // if (tableData.components[componentId].lastUpdated) {
-                //     if (tableData.components[componentId].lastUpdated.from === diff.lastUpdated.from
-                //         && tableData.components[componentId].lastUpdated.epoch > diff.lastUpdated.epoch) {
-                //         // already recieved newer update for this component; ignore the diff
-                //         continue;
-                //     }
-                // }
                 Object.assign(tableData.components[componentId], diff);
             }
+        }
+        for (const componentId of componentIdsToRemove) {
+            if (!tableData.components.hasOwnProperty(componentId)) {
+                continue;
+            }
+            // table.update() will remove components which are absent in tableData
+            delete tableData.components[componentId];
         }
         table.update(tableData);
         menu.update(tableData);
@@ -436,6 +439,9 @@ document.title = tablename + " on asobann";
 const container = el("div.container");
 mount(document.body, container);
 const table = new Table({ getPlayerName, isPlayerObserver, feats_to_use: feats });
+table.el.addEventListener('tableContentsChanged', () => {
+    menu.update(table.data);
+});
 const tableContainer = el("div.table_container", [table.el]);
 mount(container, tableContainer);
 

@@ -92,7 +92,10 @@ def handle_update_many_components(json):
     current_app.logger.debug(f'update many component: {json}')
     current_app.logger.info(f'update many component')
     trace.trace_point('before update_table')
-    tables.update_components(json['tablename'], json['diffs'])
+    if json['diffs']:
+        tables.update_components(json['tablename'], json['diffs'])
+    if json['componentIdsToRemove']:
+        tables.remove_components(json['tablename'], json['componentIdsToRemove'])
     trace.trace_point('after update_table')
     emit("update many components", json, broadcast=True, room=json["tablename"])
     trace.end()

@@ -122,3 +122,13 @@ def add_new_kit_and_components(tablename, kit, components):
         mod_key = f'table.components.{component_id}'
         modification[mod_key] = components[component_id]
     tables.update_one({"tablename": tablename}, {"$set": modification})
+
+
+def remove_components(tablename, component_ids_to_remove):
+    table = get(tablename)
+    for component_id in component_ids_to_remove:
+        del table["components"][component_id]
+    tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
+    table_metas.update_one(
+        {"tablename": tablename},
+        {"$set": {"updated_at": datetime.datetime.now()}})

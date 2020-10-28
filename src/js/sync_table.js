@@ -68,6 +68,7 @@ class ComponentUpdateBuffer {
         this.table = table;
         this.buffer = {};
         this.orderOfComponentId = [];
+        this.componentIdsToRemove = [];
     }
 
     addDiff(componentId, diff) {
@@ -84,8 +85,12 @@ class ComponentUpdateBuffer {
         return this.buffer[componentId];
     }
 
+    addComponentIdToRemove(componentId) {
+        this.componentIdsToRemove.push(componentId);
+    }
+
     buildMessageToEmit() {
-        if (this.orderOfComponentId.length === 0) {
+        if (this.orderOfComponentId.length === 0 && this.componentIdsToRemove.length === 0) {
             throw new Error('no updates to emit');
         }
 
@@ -101,6 +106,7 @@ class ComponentUpdateBuffer {
                 tablename: context.tablename,
                 originator: context.client_connection_id,
                 diffs: diffs,
+                componentIdsToRemove: this.componentIdsToRemove.slice(),
             },
         }
     }
@@ -111,6 +117,7 @@ class ComponentUpdateBuffer {
     reset() {
         this.buffer = {};
         this.orderOfComponentId.splice(0);
+        this.componentIdsToRemove.splice(0);
     }
 
     startBufferedEmit() {
@@ -227,7 +234,7 @@ socket.on('update many components', (msg) => {
     if (msg.originator === context.client_connection_id) {
         return;
     }
-    context.updateManyComponents(msg.diffs);
+    context.updateManyComponents(msg.diffs, msg.componentIdsToRemove);
 });
 
 function pushNewComponent(componentData) {
@@ -279,14 +286,7 @@ function pushRemoveKit(kitId) {
 
 function pushRemoveComponent(componentId) {
     console.log("pushRemoveComponent", componentId);
-    componentUpdateQueue.push({
-        eventName: "remove component",
-        data: {
-            tablename: context.tablename,
-            originator: context.client_connection_id,
-            componentId: componentId,
-        },
-    });
+    componentUpdateBuffer.addComponentIdToRemove(componentId);
 }
 
 

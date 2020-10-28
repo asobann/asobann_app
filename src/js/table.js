@@ -215,6 +215,10 @@ class Table {
             if (!this.data.components.hasOwnProperty(componentId)) {
                 continue;
             }
+            if(!this.componentsOnTable[componentId]) {
+                // component is already removed
+                continue;
+            }
             const componentData = this.data.components[componentId];
             this.componentsOnTable[componentId].updateView(componentData);
         }
@@ -247,11 +251,16 @@ class Table {
 
     removeComponent(componentId) {
         // This is called when a component is removed ON THIS BROWSER.
-        // Because component removal is not directly synced but propagated as table refresh,
-        // table relies on update() to detect unused / non-referenced components
-        // to remove Component object and DOM object.
-        // TODO: maybe it's economical to sync component removal directly...
-        this.componentsOnTable[componentId].disappear();
+        // Component removal is synced through 'update many components' event.
+        // The originating browser (this browser) needs to remove component element here.
+        // Synced browsers will use Table.update() to remove component elements.
+        const component = this.componentsOnTable[componentId];
+        component.disappear();
+        unmount(this.list_el, component.el);
+        delete component.el;
+        delete this.componentsOnTable[componentId];
+
+        this.el.dispatchEvent(new Event('tableContentsChanged'));
     }
 
     findEmptySpace(width, height) {

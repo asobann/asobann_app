@@ -71,6 +71,40 @@ def test_late_comer_shall_see_the_same_table(server, browser: webdriver.Firefox,
     assert_seeing_same(host, player)
 
 
+def test_removing_kit_yields_no_error(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    host = GameHelper(browser)
+    host.go(TOP)
+    host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
+
+    host.should_have_text("you are host")
+    player = GameHelper(another_browser)
+    player.go(host.current_url)
+    player.menu.join("Player A")
+
+    host.menu.add_kit.execute()
+    host.menu.add_kit_from_list("Playing Card")
+    time.sleep(0.1)
+    host.menu.remove_kit_from_list("Playing Card")
+
+    assert len(host.all_components()) == len(player.all_components()) == 2
+    assert_seeing_same(host, player)
+
+
+def test_removing_hand_area_is_propagated(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    host = GameHelper(browser)
+    host.go(TOP)
+    host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
+    host.should_have_text("you are host")
+
+    player = GameHelper(another_browser)
+    player.go(host.current_url)
+    player.menu.join("Player A")
+
+    host.menu.add_my_hand_area.click()
+    host.menu.remove_my_hand_area.click()
+    assert_seeing_same(host, player)
+
+
 def assert_seeing_same(player1: GameHelper, player2: GameHelper):
     def assert_components_sync():
         components1 = {c.name: c for c in player1.all_components()}
