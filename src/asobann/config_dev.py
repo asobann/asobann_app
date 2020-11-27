@@ -23,6 +23,9 @@ else:
 
 GOOGLE_ANALYTICS_ID = None
 
+if 'ASOBANN_DEBUG_HANDLER_WAIT' in os.environ:
+    DEBUG_HANDLER_WAIT = os.environ['ASOBANN_DEBUG_HANDLER_WAIT']
+
 if 'UPLOADED_IMAGE_STORE' in os.environ:
     UPLOADED_IMAGE_STORE = os.environ['UPLOADED_IMAGE_STORE']
 else:
