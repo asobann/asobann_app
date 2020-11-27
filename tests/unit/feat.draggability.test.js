@@ -27,7 +27,6 @@ describe('feat.draggability basics', () => {
         })
         const component = table.componentsOnTable['component1'];
         const data = component.data;
-        draggability.start(component, data, { x0: 100, y0: 100 });
         draggability.move(component, data, { x: 110, y: 130, dx: 10, dy: 30, page: { x: 110, y: 130 } });
         expect(component.rect).toStrictEqual({ left: 10, top: 30, width: 50, height: 100 })
         draggability.move(component, data, { x: 125, y: 150, dx: 15, dy: 20, page: { x: 125, y: 150 } });
@@ -51,7 +50,6 @@ describe('feat.draggability basics', () => {
         traylike.comeIn(component1, { visitor: component2 });
         traylike.comeIn(component1, { visitor: component3 });
         const data = component1.data;
-        draggability.start(component1, data, { x0: 100, y0: 100 });
         draggability.move(component1, data, { x: 110, y: 130, dx: 10, dy: 30, page: { x: 110, y: 130 } });
         expect(component2.rect).toStrictEqual({ left: 20, top: 40, width: 50, height: 100 })
         expect(component3.rect).toStrictEqual({ left: 30, top: 50, width: 50, height: 100 })
@@ -77,7 +75,6 @@ describe('feat.draggability basics', () => {
         traylike.comeIn(component1, { visitor: component2 });
         traylike.comeIn(component1, { visitor: component3 });
         const data = component1.data;
-        draggability.start(component1, data, { x0: 100, y0: 100 });
         draggability.move(component1, data, { x: 110, y: 130, dx: 10, dy: 30, page: { x: 110, y: 130 } });
         draggability.move(component1, data, { x: 125, y: 150, dx: 15, dy: 20, page: { x: 125, y: 150 } });
         sync_table.pushComponentUpdate.mock.calls = [];
