@@ -22,15 +22,15 @@
   "devDependencies": {
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "css-loader": "^4.3.0",
-    "file-loader": "^6.1.0",
-    "jest": "^26.5.2",
+    "file-loader": "^6.2.0",
+    "jest": "^26.6.3",
     "style-loader": "^1.3.0",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12"
   },
   "dependencies": {
-    "interactjs": "^1.10.0",
+    "interactjs": "^1.10.2",
     "redom": "^3.27.1",
-    "socket.io-client": "^2.3.1"
+    "socket.io-client": "^3"
   }
 }
