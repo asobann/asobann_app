@@ -428,3 +428,46 @@ def test_moving_box_does_not_lose_things_within(server, browser: webdriver.Firef
         assert box_rect.left <= card.rect().left and card.rect().right <= box_rect.right
         assert box_rect.top <= card.rect().top and card.rect().bottom <= box_rect.bottom
 
+
+@pytest.mark.usefixtures("server")
+class TestEditable:
+    @staticmethod
+    def place_note(host):
+        host.go(TOP)
+        host.should_have_text("you are host")
+
+        host.menu.add_kit.execute()
+        host.menu.add_kit_from_list("Note")
+        return host.component_by_name("Note")
+
+    def test_add_note_from_menu(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        note = self.place_note(host)
+
+        assert note
+        assert note.rect().width == 100
+        assert note.rect().height == 75
+
+    def test_editing(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        note = self.place_note(host)
+        host.double_click(note)
+        note.element.find_element_by_css_selector('textarea').send_keys('The Quick Brown Fox Jumps Over A Lazy Dog')
+        note.element.find_element_by_css_selector('button').click()
+        assert 'The Quick Brown Fox Jumps Over A Lazy Dog' in note.face()
+
+    def test_editing_is_shared(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        note = self.place_note(host)
+
+        another = GameHelper(another_browser)
+        another.go(host.current_url)
+        another.menu.join("Player 2")
+        another.should_have_text("you are Player 2")
+        
+        host.double_click(note)
+        note.element.find_element_by_css_selector('textarea').send_keys('The Quick Brown Fox Jumps Over A Lazy Dog')
+        note.element.find_element_by_css_selector('button').click()
+
+        note_on_another = another.component_by_name('Note')
+        assert 'The Quick Brown Fox Jumps Over A Lazy Dog' in note_on_another.face()
