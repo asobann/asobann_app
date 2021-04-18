@@ -1,6 +1,8 @@
 /*.sh
 env
 requirements.txt
+# to let using different version of Python
+Pipfile.lock
 
 
 # webpack generates these files
