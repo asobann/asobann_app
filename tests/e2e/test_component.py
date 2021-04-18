@@ -308,8 +308,8 @@ class TestCounter:
         counter = self.place_counter(host)
 
         assert host.component_by_name("Counter")
-        assert host.component_by_name("Counter").rect().height == 64
-        assert host.component_by_name("Counter").rect().width == 96
+        assert host.component_by_name("Counter").rect().height == 96
+        assert host.component_by_name("Counter").rect().width == 192
 
     def test_initial_value(self, browser: webdriver.Firefox):
         host = GameHelper(browser)
