@@ -27,7 +27,7 @@ def headless():
     firefox_options.headless = True
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def browser_window(firefox_driver):
     browser = webdriver.Firefox(options=firefox_options)
     yield browser
@@ -48,7 +48,7 @@ def browser_func(headless=False):
     return browser
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def another_browser_window(firefox_driver):
     browser = webdriver.Firefox()
     yield browser
