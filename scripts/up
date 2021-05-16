@@ -1,0 +1,2 @@
+FLASK_ENV=development pipenv run python -m asobann.wsgi
+

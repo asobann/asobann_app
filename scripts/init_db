@@ -1,0 +1,4 @@
+cd $ASOBANN_ROOT/asobann_app/src/asobann
+pipenv run python generate_table_json.py
+cd ../..
+FLASK_ENV=develop pipenv run python -m asobann.deploy

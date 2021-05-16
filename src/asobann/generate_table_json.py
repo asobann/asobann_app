@@ -580,16 +580,16 @@ def generate_counter(reg: ComponentRegistry):
         "name": "Counter",
         "label": "Counter",
         "label_ja": "カウンター",
-        "width": "64px",
-        "height": "40px"
+        "width": "192px",
+        "height": "96px"
     }
 
     kit.add_component({
         "name": "Counter",
         "top": "0px",
         "left": "0px",
-        "height": "64px",
-        "width": "96px",
+        "width": "192px",
+        "height": "96px",
         "showImage": False,
         "draggable": True,
         "flippable": False,

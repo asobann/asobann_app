@@ -12,6 +12,7 @@ pytest = "*"
 selenium = "*"
 
 [packages]
+python-socketio = "==5.1.0"
 flask = "*"
 flask-socketio = "*"
 flask-pymongo = "*"
@@ -21,5 +22,3 @@ dnspython = "*"
 eventlet = "*"
 boto3 = "*"
 
-[requires]
-python_version = "3.6"

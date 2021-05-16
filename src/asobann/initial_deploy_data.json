@@ -2289,8 +2289,8 @@
         "name": "Counter",
         "top": "0px",
         "left": "0px",
-        "height": "64px",
-        "width": "96px",
+        "height": "96px",
+        "width": "192px",
         "showImage": false,
         "draggable": true,
         "flippable": false,
@@ -3745,8 +3745,8 @@
         "name": "Counter",
         "label": "Counter",
         "label_ja": "\u30ab\u30a6\u30f3\u30bf\u30fc",
-        "width": "64px",
-        "height": "40px",
+        "width": "192px",
+        "height": "96px",
         "boxAndComponents": {
           "Counter": null
         },
