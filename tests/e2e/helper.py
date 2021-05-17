@@ -298,9 +298,9 @@ class GameHelper:
     def current_url(self) -> str:
         return self.browser.current_url
 
-    def should_have_text(self, text):
+    def should_have_text(self, text, timeout=5):
         try:
-            WebDriverWait(self.browser, 5).until(
+            WebDriverWait(self.browser, timeout).until(
                 expected_conditions.text_to_be_present_in_element((By.TAG_NAME, "body"), text))
             return
         except TimeoutException:
