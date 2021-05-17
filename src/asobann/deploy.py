@@ -27,5 +27,23 @@ def load_default():
     asobann.store.kits.store_default(default_data["kits"])
 
 
+def main():
+    import sys
+    if len(sys.argv) == 1:
+        cmd = 'load_default'
+    else:
+        cmd = sys.argv[1]
+
+    if cmd == 'load_default':
+        print("load default ...")
+        load_default()
+    elif cmd == 'purge_kits_and_components':
+        print("purge kits and components ...")
+        purge_kits_and_components()
+    else:
+        print("python deploy.py (load_default | purge_kits_and_components)")
+        exit(1)
+
+
 if __name__ == '__main__':
-    load_default()
+    main()
