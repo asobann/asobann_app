@@ -73,3 +73,16 @@ class TestUploadKit:
         def test_multiple_images(self, browser: webdriver.Firefox):
             pass
 
+
+@pytest.mark.usefixtures("server")
+class TestCounterKit:
+    def test_upload_and_use(self, browser: webdriver.Firefox):
+        host = GameHelper.player(browser)
+        upload_kit(host, 'test_counter_kit.json')
+
+        host.menu.add_kit.execute()
+        host.menu.should_see_kit("Counter Kit")
+        host.menu.add_kit_from_list("Counter Kit")
+        host.menu.add_kit_done()
+
+        host.should_have_text("Counter Name", 100)

@@ -1,0 +1,32 @@
+{
+  "kit": {
+    "name": "Counter Kit",
+    "label": "Counter Kit",
+    "label_ja": "Counter Kit",
+    "height": "300px",
+    "width": "150px",
+    "boxAndComponents": {
+      "Test Counter": null
+    },
+    "usedComponentNames": [
+      "Test Counter"
+    ]
+  },
+  "components": [
+    {
+      "name": "Test Counter",
+      "text": "Counter Name",
+      "handArea": false,
+      "top": "0px",
+      "left": "0px",
+      "height": "250px",
+      "width": "130px",
+      "showImage": false,
+      "draggable": true,
+      "flippable": false,
+      "resizable": true,
+      "rollable": false,
+      "ownable": false
+    }
+  ]
+}
