@@ -14,6 +14,7 @@
   },
   "components": [
     {
+      "counter": true,
       "name": "Test Counter",
       "text": "Counter Name",
       "handArea": false,

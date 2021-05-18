@@ -85,4 +85,4 @@ class TestCounterKit:
         host.menu.add_kit_from_list("Counter Kit")
         host.menu.add_kit_done()
 
-        host.should_have_text("Counter Name", 100)
+        host.should_have_text("Counter Name")

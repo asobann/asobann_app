@@ -1154,15 +1154,22 @@ const counter = {
             return;
         }
 
+        setAttr(component.el, {className: component.el.getAttribute('class') + " counter_component"});
+        setStyle(component.el, {
+            "display": "flex",
+            "flex-direction": "column",
+            "flex-wrap": "nowrap",
+            "justify-content": "flex-start",
+            "align-items": "stretch",
+            "align-content": "stretch",
+        });
+
         if (!data.hasOwnProperty("counterValue")) {
             data.counterValue = 0;
         }
         const counterValue = data.counterValue;
         component.el.appendChild(
             el('div.counter', [
-                el('div.labelContainer', [
-                    el('div.counterLabel', {}, _("Counter"))
-                ]),
                 el('div.valueContainer', [
                     component.valueEl = el('div.counterValue', {}, counterValue)
                 ]),

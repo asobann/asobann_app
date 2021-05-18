@@ -122,17 +122,15 @@ body {
     height: 90%;
 }
 
+.counter_component {
+    background-color: rgba(47, 79, 63, 0.5);
+}
+
 .component .counter {
     display: flex;
     flex-flow: column;
     width: 100%;
     height: 100%;
-    background-color: rgba(47, 79, 63, 0.5);
-}
-
-.component .counter .labelContainer {
-    width: 100%;
-    text-align: center;
 }
 
 .component .counter .valueContainer {
