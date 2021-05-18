@@ -17,6 +17,7 @@
       "counter": true,
       "name": "Test Counter",
       "text": "Counter Name",
+      "text_ja": "カウンター",
       "handArea": false,
       "top": "0px",
       "left": "0px",
