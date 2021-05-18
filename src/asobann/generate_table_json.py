@@ -586,6 +586,8 @@ def generate_counter(reg: ComponentRegistry):
 
     kit.add_component({
         "name": "Counter",
+        "text": "Counter",
+        "text_ja": "カウンター",
         "top": "0px",
         "left": "0px",
         "width": "192px",

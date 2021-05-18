@@ -2292,6 +2292,8 @@
         "height": "96px",
         "width": "192px",
         "showImage": false,
+        "text": "Counter",
+        "text_ja": "\u30ab\u30a6\u30f3\u30bf\u30fc",
         "draggable": true,
         "flippable": false,
         "ownable": true,
