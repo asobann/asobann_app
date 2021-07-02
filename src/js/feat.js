@@ -126,6 +126,10 @@ const basic = {
             'data-component-name': data.name,
         });
 
+        // 厳密に undefined か評価するとき (null も同様)
+        if (data.transData === undefined) {
+          data.transData = 0;
+        }
         setStyle(component.el, {
             left: parseFloat(data.left) + "px",
             top: parseFloat(data.top) + "px",
@@ -133,6 +137,7 @@ const basic = {
             height: parseFloat(data.height) + "px",
             backgroundColor: data.color,
             zIndex: component.zIndex,
+            transform: "rotate(" + String(data.transData * 45)+ "deg)",
         });
     },
     uninstall: function () {
@@ -255,8 +260,21 @@ const flippability = {
             return component.flippable && featsContext.canOperateOn(component);
         }
 
-        component.el.addEventListener("dblclick", () => {
+        component.el.addEventListener("dblclick", ( eventN ) => {
             if (!isFlippingPermitted()) {
+                return;
+            }
+            // シフト推しながらは開店
+            if (eventN.shiftKey) {
+                data.transData = data.transData + 1;
+                if ( data.transData > 8 ){
+                  data.transData = 0;
+                }
+                component.applyUserAction(Level.A, () => {
+                  component.propagate({
+                    'transData': data.transData
+                  });
+                });
                 return;
             }
             component.applyUserAction(Level.A, () => {
@@ -1244,12 +1262,26 @@ const editability = {
             return component.editable && featsContext.canOperateOn(component);
         }
 
-        component.el.addEventListener("dblclick", () => {
+        component.el.addEventListener("dblclick", ( eventN ) => {
             if (!isEditingPermitted()) {
                 return;
             }
 
             if (data.editing) {
+                return;
+            }
+
+            // シフト推しながらは開店
+            if (eventN.shiftKey) {
+                data.transData = data.transData + 1;
+                if ( data.transData > 8 ){
+                  data.transData = 0;
+                }
+                component.applyUserAction(Level.A, () => {
+                  component.propagate({
+                    'transData': data.transData
+                  });
+                });
                 return;
             }
 
