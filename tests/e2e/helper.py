@@ -91,6 +91,8 @@ class Component:
     def z_index(self):
         return int(self.style().get('z-index', 0))
 
+
+
     def __str__(self):
         return f'Component(name={self.name})'
 

@@ -36,25 +36,27 @@ def prepare_table_with_cards(host, another=None):
     another.should_have_text("you are Player 2")
 
 
+def put_one_card_each_on_2_hand_areas(host, another):
+    prepare_table_with_cards(host, another)
+
+    host.menu.add_my_hand_area.click()
+    host.move_card_to_hand_area(host.component_by_name(C_A), 'host', (-100, 0))
+
+    another.menu.add_my_hand_area.click()
+    another.move_card_to_hand_area(another.component_by_name(C_K), 'Player 2', (100, 0))
+
+    host.double_click(host.component_by_name(C_A))
+    another.double_click(another.component_by_name(C_K))
+
+
 @pytest.mark.usefixtures("default_kits_and_components")
 @pytest.mark.usefixtures("server")
 class TestHandArea:
-    def put_one_card_each_on_2_hand_areas(self, host, another):
-        prepare_table_with_cards(host, another)
-
-        host.menu.add_my_hand_area.click()
-        host.move_card_to_hand_area(host.component_by_name(C_A), 'host', (-100, 0))
-
-        another.menu.add_my_hand_area.click()
-        another.move_card_to_hand_area(another.component_by_name(C_K), 'Player 2', (100, 0))
-
-        host.double_click(host.component_by_name(C_A))
-        another.double_click(another.component_by_name(C_K))
 
     def test_cards_in_hand_are_looks_facedown(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
-        self.put_one_card_each_on_2_hand_areas(host, another)
+        put_one_card_each_on_2_hand_areas(host, another)
 
         # assert text
         assert '♠A' in host.component_by_name(C_A).face()
@@ -72,7 +74,7 @@ class TestHandArea:
                                                        another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
-        self.put_one_card_each_on_2_hand_areas(host, another)
+        put_one_card_each_on_2_hand_areas(host, another)
 
         # cannot move
         before = host.component_by_name(C_K).rect()
@@ -96,7 +98,7 @@ class TestHandArea:
                                                                       another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
-        self.put_one_card_each_on_2_hand_areas(host, another)
+        put_one_card_each_on_2_hand_areas(host, another)
 
         host.move_card_to_hand_area(host.component_by_name(C_A), 'Player 2')
         another.move_card_to_hand_area(another.component_by_name(C_K), 'host')
@@ -117,7 +119,7 @@ class TestHandArea:
                                                                 another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
-        self.put_one_card_each_on_2_hand_areas(host, another)
+        put_one_card_each_on_2_hand_areas(host, another)
 
         host_card = host.component_by_name(C_A)
         host_card_pos = host_card.pos()
@@ -168,7 +170,7 @@ class TestHandArea:
     def test_resizing_hand_area_updates_ownership(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
-        self.put_one_card_each_on_2_hand_areas(host, another)
+        put_one_card_each_on_2_hand_areas(host, another)
 
         host.double_click(host.component_by_name(C_Q))
         time.sleep(0.1)  # prevent unintended double clicking
@@ -190,7 +192,7 @@ class TestHandArea:
         host = GameHelper(browser)
         another = GameHelper(another_browser)
 
-        self.put_one_card_each_on_2_hand_areas(host, another)
+        put_one_card_each_on_2_hand_areas(host, another)
         time.sleep(0.1)  # within detection is Level C user action, so it's safer to wait
         assert host.component_by_name(C_A).owner()
         assert host.component_by_name(C_K).owner()
@@ -199,7 +201,7 @@ class TestHandArea:
     def test_removing_hand_area(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
-        self.put_one_card_each_on_2_hand_areas(host, another)
+        put_one_card_each_on_2_hand_areas(host, another)
 
         host.menu.remove_my_hand_area.click()
         another.menu.remove_my_hand_area.click()
@@ -460,15 +462,4 @@ class TestEditable:
         note_on_another = another.component_by_name('Note')
         assert 'The Quick Brown Fox Jumps Over A Lazy Dog' in note_on_another.face()
 
-
-@pytest.mark.usefixtures("server")
-class TestRotation:
-    def test_rotate_card(self, browser: webdriver.Firefox):
-        host = GameHelper(browser)
-        prepare_table_with_cards(host)
-
-        host.menu.add_my_hand_area.click()
-        host.move_card_to_hand_area(host.component_by_name(C_A), 'host')
-        host.double_click(host.component_by_name(C_A), ['SHIFT'])
-        assert '♠A' not in host.component_by_name(C_A).face()
 
