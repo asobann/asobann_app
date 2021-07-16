@@ -1287,15 +1287,11 @@ const editability = {
 
             data.editing = true;
             let textareaEl;
-            let backColorEl;
-            let textColorEl;
             // TODO keep element for reuse; delete when uninstall()ed
             const formEl = el('div.note_editor', [
                 textareaEl = el('textarea', { oninput: editing }, data.text),
                 el('br', {}, data.text),
                 el('div.button_frame', [
-                    textColorEl = el('input', { 'type': 'color', 'value': data.textColor }),
-                    backColorEl = el('input', { 'type': 'color', 'value': data.color }),
                     el('button', { onclick: endEditing }, _('Finish')),
                 ])
             ]);
@@ -1309,7 +1305,7 @@ const editability = {
 
             function endEditing() {
                 component.applyUserAction(Level.A, () => {
-                    component.propagate({ 'text': textareaEl.value, 'textColor': textColorEl.value, 'color': backColorEl.value });
+                    component.propagate({ 'text': textareaEl.value });
                     unmount(component.el, formEl);
                     data.editing = false;
                 });
