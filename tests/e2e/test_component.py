@@ -463,3 +463,15 @@ class TestEditable:
         assert 'The Quick Brown Fox Jumps Over A Lazy Dog' in note_on_another.face()
 
 
+@pytest.mark.usefixtures("server")
+class TestRotation:
+    def test_rotate_card(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        prepare_table_with_cards(host)
+
+        host.menu.add_my_hand_area.click()
+        host.move_card_to_hand_area(host.component_by_name(C_A), 'host')
+        host.double_click(host.component_by_name(C_A), ['SHIFT'])
+        assert '♠A' not in host.component_by_name(C_A).face()
+        assert 45 == host.component_by_name(C_A).rotation
+

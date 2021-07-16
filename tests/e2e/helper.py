@@ -91,7 +91,17 @@ class Component:
     def z_index(self):
         return int(self.style().get('z-index', 0))
 
-
+    @property
+    def rotation(self):
+        style = parse_style(self.element.get_attribute('style'))
+        if 'transform' not in style:
+            return None
+        transform = style['transform']
+        print(f'{transform=}')
+        m = re.search(r'rotate\((\d+)deg\)', transform)
+        if not m:
+            return None
+        return int(m.group(1))
 
     def __str__(self):
         return f'Component(name={self.name})'
