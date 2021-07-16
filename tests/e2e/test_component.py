@@ -20,7 +20,7 @@ C_K = 'PlayingCard S_K'
 C_Q = 'PlayingCard S_Q'
 
 
-def prepare_table_with_cards(host):
+def prepare_table_with_cards(host, another=None):
     host.go(TOP)
     host.should_have_text("you are host")
     host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
@@ -28,24 +28,22 @@ def prepare_table_with_cards(host):
     host.menu.add_kit_from_list("Playing Card")
     host.menu.add_kit_done()
 
+    if not another:
+        return
+
+    another.go(host.current_url)
+    another.menu.join("Player 2")
+    another.should_have_text("you are Player 2")
+
 
 @pytest.mark.usefixtures("default_kits_and_components")
 @pytest.mark.usefixtures("server")
 class TestHandArea:
     def put_one_card_each_on_2_hand_areas(self, host, another):
-        host.go(TOP)
-        host.should_have_text("you are host")
-        host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
-        host.menu.add_kit.execute()
-        host.menu.add_kit_from_list("Playing Card")
-        host.menu.add_kit_done()
+        prepare_table_with_cards(host, another)
 
         host.menu.add_my_hand_area.click()
         host.move_card_to_hand_area(host.component_by_name(C_A), 'host', (-100, 0))
-
-        another.go(host.current_url)
-        another.menu.join("Player 2")
-        another.should_have_text("you are Player 2")
 
         another.menu.add_my_hand_area.click()
         another.move_card_to_hand_area(another.component_by_name(C_K), 'Player 2', (100, 0))
@@ -146,11 +144,7 @@ class TestHandArea:
         host = GameHelper(browser)
         another = GameHelper(another_browser)
 
-        prepare_table_with_cards(host)
-
-        another.go(host.current_url)
-        another.menu.join("Player 2")
-        another.should_have_text("you are Player 2")
+        prepare_table_with_cards(host, another)
 
         host.menu.add_my_hand_area.click()
         c1, c2, c3 = "PlayingCard S_A", "PlayingCard S_K", "PlayingCard S_Q"
@@ -217,12 +211,7 @@ class TestHandArea:
 
     def test_areas_boundary_is_correct(self, browser: webdriver.Firefox):
         host = GameHelper(browser)
-        host.go(TOP)
-        host.should_have_text("you are host")
-        host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
-        host.menu.add_kit.execute()
-        host.menu.add_kit_from_list("Playing Card")
-        host.menu.add_kit_done()
+        prepare_table_with_cards(host)
         host.menu.add_my_hand_area.click()
 
         # move to inside of left top edge
@@ -414,12 +403,7 @@ def test_unmovable_component_can_be_dragged_to_scroll(server, browser):
 
 def test_moving_box_does_not_lose_things_within(server, browser: webdriver.Firefox):
     host = GameHelper(browser)
-    host.go(TOP)
-    host.should_have_text("you are host")
-    host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
-    host.menu.add_kit.execute()
-    host.menu.add_kit_from_list("Playing Card")
-    host.menu.add_kit_done()
+    prepare_table_with_cards(host)
 
     for i in range(10):
         host.drag(host.component_by_name('Playing Card Box'), 10, 10, grab_at=(0, 80))
