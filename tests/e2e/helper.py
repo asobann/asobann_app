@@ -11,6 +11,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
@@ -408,8 +409,11 @@ class GameHelper:
     def move_mouse_by_offset(self, offset):
         ActionChains(self.browser).move_by_offset(offset[0], offset[1]).perform()
 
-    def double_click(self, component: "Component"):
-        ActionChains(self.browser).double_click(component.element).perform()
+    def double_click(self, component: "Component", modifier=[]):
+        chain = ActionChains(self.browser)
+        if 'SHIFT' in modifier:
+            chain.key_down(Keys.SHIFT)
+        chain.double_click(component.element).perform()
 
     def click(self, component: "Component"):
         ActionChains(self.browser).click(component.element).perform()

@@ -19,8 +19,17 @@ C_A = 'PlayingCard S_A'
 C_K = 'PlayingCard S_K'
 C_Q = 'PlayingCard S_Q'
 
-@pytest.mark.usefixtures("default_kits_and_components")
 
+def prepare_table_with_cards(host):
+    host.go(TOP)
+    host.should_have_text("you are host")
+    host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
+    host.menu.add_kit.execute()
+    host.menu.add_kit_from_list("Playing Card")
+    host.menu.add_kit_done()
+
+
+@pytest.mark.usefixtures("default_kits_and_components")
 @pytest.mark.usefixtures("server")
 class TestHandArea:
     def put_one_card_each_on_2_hand_areas(self, host, another):
@@ -137,12 +146,7 @@ class TestHandArea:
         host = GameHelper(browser)
         another = GameHelper(another_browser)
 
-        host.go(TOP)
-        host.should_have_text("you are host")
-        host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
-        host.menu.add_kit.execute()
-        host.menu.add_kit_from_list("Playing Card")
-        host.menu.add_kit_done()
+        prepare_table_with_cards(host)
 
         another.go(host.current_url)
         another.menu.join("Player 2")
@@ -471,3 +475,16 @@ class TestEditable:
 
         note_on_another = another.component_by_name('Note')
         assert 'The Quick Brown Fox Jumps Over A Lazy Dog' in note_on_another.face()
+
+
+@pytest.mark.usefixtures("server")
+class TestRotation:
+    def test_rotate_card(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        prepare_table_with_cards(host)
+
+        host.menu.add_my_hand_area.click()
+        host.move_card_to_hand_area(host.component_by_name(C_A), 'host')
+        host.double_click(host.component_by_name(C_A), ['SHIFT'])
+        assert '♠A' not in host.component_by_name(C_A).face()
+
