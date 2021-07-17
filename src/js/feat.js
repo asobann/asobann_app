@@ -126,10 +126,6 @@ const basic = {
             'data-component-name': data.name,
         });
 
-        // 厳密に undefined か評価するとき (null も同様)
-        if (data.transData === undefined) {
-          data.transData = 0;
-        }
         setStyle(component.el, {
             left: parseFloat(data.left) + "px",
             top: parseFloat(data.top) + "px",
@@ -137,7 +133,6 @@ const basic = {
             height: parseFloat(data.height) + "px",
             backgroundColor: data.color,
             zIndex: component.zIndex,
-            transform: "rotate(" + String(data.transData * 45)+ "deg)",
         });
     },
     uninstall: function () {
@@ -260,21 +255,12 @@ const flippability = {
             return component.flippable && featsContext.canOperateOn(component);
         }
 
-        component.el.addEventListener("dblclick", ( eventN ) => {
+        component.el.addEventListener("dblclick", (e) => {
             if (!isFlippingPermitted()) {
                 return;
             }
-            // シフト推しながらは開店
-            if (eventN.shiftKey) {
-                data.transData = data.transData + 1;
-                if ( data.transData > 8 ){
-                  data.transData = 0;
-                }
-                component.applyUserAction(Level.A, () => {
-                  component.propagate({
-                    'transData': data.transData
-                  });
-                });
+            if (e.shiftKey) {
+                // TODO: temporal workaround for rotatability
                 return;
             }
             component.applyUserAction(Level.A, () => {
@@ -1262,7 +1248,7 @@ const editability = {
             return component.editable && featsContext.canOperateOn(component);
         }
 
-        component.el.addEventListener("dblclick", ( eventN ) => {
+        component.el.addEventListener("dblclick", (e) => {
             if (!isEditingPermitted()) {
                 return;
             }
@@ -1271,17 +1257,8 @@ const editability = {
                 return;
             }
 
-            // シフト推しながらは開店
-            if (eventN.shiftKey) {
-                data.transData = data.transData + 1;
-                if ( data.transData > 8 ){
-                  data.transData = 0;
-                }
-                component.applyUserAction(Level.A, () => {
-                  component.propagate({
-                    'transData': data.transData
-                  });
-                });
+            if (e.shiftKey) {
+                // TODO: temporal workaround for rotatability
                 return;
             }
 
@@ -1321,6 +1298,52 @@ const editability = {
     },
     updateView() {
 
+    },
+    uninstall: function (component) {
+    },
+};
+
+
+const rotatability = {
+    install: function (component, data) {
+        if (!rotatability.isEnabled(component, data)) {
+            return;
+        }
+
+        function isRotationPermitted() {
+            return component.rotatable && featsContext.canOperateOn(component);
+        }
+
+        component.el.addEventListener("dblclick", ( e ) => {
+            if (!isRotationPermitted()) {
+                return;
+            }
+            if (e.shiftKey) {
+                if(!data.rotation) {
+                    data.rotation = 0;
+                }
+                data.rotation += 45;
+                if (data.rotation >= 360) {
+                    data.rotation %= 360;
+                }
+                component.applyUserAction(Level.A, () => {
+                    component.propagate({
+                        'rotation': data.rotation
+                    });
+                });
+            }
+        });
+    },
+    isEnabled: function (component, data) {
+        return data.rotatable === true;
+    },
+    receiveData: function (component, data) {
+        component.rotatable = data.rotatable;
+    },
+    updateView(component, data) {
+        setStyle(component.el, {
+            transform: "rotate(" + String(data.rotation)+ "deg)",
+        });
     },
     uninstall: function (component) {
     },
@@ -1398,7 +1421,8 @@ const feats = [
     stowage,
     cardistry,
     counter,
-    editability
+    editability,
+    rotatability
 ];
 
 // dynamic validation
@@ -1427,5 +1451,6 @@ export {
     stowage,
     cardistry,
     counter,
-    editability
+    editability,
+    rotatability
 };

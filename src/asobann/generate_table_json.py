@@ -43,6 +43,7 @@ ATTRS_IN_ORDER = [
     "onAdd",
     'toolboxFunction',
     'editable',
+    'rotatable',
 
     # current status
     "owner",
@@ -267,6 +268,7 @@ def generate_note(reg: ComponentRegistry):
         "rollable": False,
         "ownable": False,
         "editable": True,
+        "rotatable": True,
     })
 
 def generate_dice(reg: ComponentRegistry):
@@ -344,6 +346,7 @@ def generate_playing_card(reg: ComponentRegistry):
         "flippable": True,
         "ownable": True,
         "resizable": False,
+        "rotatable": True,
     }
     z_index = 100
     offset = 0

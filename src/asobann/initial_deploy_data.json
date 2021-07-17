@@ -78,7 +78,8 @@
         "ownable": false,
         "resizable": true,
         "rollable": false,
-        "editable": true
+        "editable": true,
+        "rotatable": true
       }
     },
     {
@@ -141,6 +142,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 100
       }
@@ -162,6 +164,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 99
       }
@@ -183,6 +186,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 98
       }
@@ -204,6 +208,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 97
       }
@@ -225,6 +230,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 96
       }
@@ -246,6 +252,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 95
       }
@@ -267,6 +274,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 94
       }
@@ -288,6 +296,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 93
       }
@@ -309,6 +318,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 92
       }
@@ -330,6 +340,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 91
       }
@@ -351,6 +362,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 90
       }
@@ -372,6 +384,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 89
       }
@@ -393,6 +406,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 88
       }
@@ -414,6 +428,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 87
       }
@@ -435,6 +450,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 86
       }
@@ -456,6 +472,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 85
       }
@@ -477,6 +494,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 84
       }
@@ -498,6 +516,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 83
       }
@@ -519,6 +538,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 82
       }
@@ -540,6 +560,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 81
       }
@@ -561,6 +582,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 80
       }
@@ -582,6 +604,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 79
       }
@@ -603,6 +626,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 78
       }
@@ -624,6 +648,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 77
       }
@@ -645,6 +670,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 76
       }
@@ -666,6 +692,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 75
       }
@@ -687,6 +714,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 74
       }
@@ -708,6 +736,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 73
       }
@@ -729,6 +758,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 72
       }
@@ -750,6 +780,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 71
       }
@@ -771,6 +802,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 70
       }
@@ -792,6 +824,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 69
       }
@@ -813,6 +846,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 68
       }
@@ -834,6 +868,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 67
       }
@@ -855,6 +890,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 66
       }
@@ -876,6 +912,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 65
       }
@@ -897,6 +934,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 64
       }
@@ -918,6 +956,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 63
       }
@@ -939,6 +978,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 62
       }
@@ -960,6 +1000,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 61
       }
@@ -981,6 +1022,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 60
       }
@@ -1002,6 +1044,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 59
       }
@@ -1023,6 +1066,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 58
       }
@@ -1044,6 +1088,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 57
       }
@@ -1065,6 +1110,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 56
       }
@@ -1086,6 +1132,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 55
       }
@@ -1107,6 +1154,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 54
       }
@@ -1128,6 +1176,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 53
       }
@@ -1149,6 +1198,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 52
       }
@@ -1170,6 +1220,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 51
       }
@@ -1191,6 +1242,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 50
       }
@@ -1212,6 +1264,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 49
       }
@@ -1233,6 +1286,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 48
       }
@@ -1254,6 +1308,7 @@
         "flippable": true,
         "ownable": true,
         "resizable": false,
+        "rotatable": true,
         "faceup": false,
         "zIndex": 47
       }
