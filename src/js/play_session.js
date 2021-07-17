@@ -103,7 +103,7 @@ const syncTableConnector = {
                 table.data.components[componentData.componentId] = componentData;
             }
             if (!table.componentsOnTable[componentData.componentId]) {
-                table.componentsOnTable[componentData.componentId] = new Component(table, componentData, table.feats);
+                table.componentsOnTable[componentData.componentId] = new Component(table, componentData, table.feats, table.overlay);
                 mount(table.list_el, table.componentsOnTable[componentData.componentId].el);
                 table.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
             }
@@ -473,6 +473,12 @@ interact("div.table_container").draggable({
             tableContainer.style.backgroundPositionY = top + "px";
         },
     },
+});
+
+// Clicking table unselect a component and hide overlay
+// TODO inconsistent and suspicious.  At least not obvious.
+document.getElementsByClassName('table_container')[0].addEventListener('click', () => {
+    table.overlay.unselect();
 });
 
 function isTherePlayersHandArea(playerName) {

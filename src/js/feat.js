@@ -1327,6 +1327,42 @@ const editability = {
 };
 
 
+const overlaid = {
+    install: function (component, data) {
+        if (!overlaid.isEnabled(component, data)) {
+            return;
+        }
+        // 'dblclick' comes after 'click' when double-clicked.
+        // Let's consider double-clicking always select the component.
+        component.el.addEventListener("click", ( e ) => {
+            if( component.overlay.isSelected(component)){
+                component.overlay.unselect();
+            } else {
+                component.overlay.select(component);
+            }
+            e.stopPropagation();
+        });
+        component.el.addEventListener("dblclick", ( e ) => {
+            component.overlay.select(component);
+        });
+
+    },
+    isEnabled: function () {
+        return true;
+    },
+    receiveData: function () {
+    },
+    updateView(component, data) {
+        if(!component.overlay.isSelected(component)) {
+            return;
+        }
+        component.overlay.show();
+    },
+    uninstall: function (component) {
+    },
+};
+
+
 const featsContext = {
     canOperateOn: function (component) {
         return ((!component.owner || component.owner === featsContext.getPlayerName())
@@ -1386,6 +1422,7 @@ const event = {
 
 const feats = [
     basic,  // this must be the first ability in feats
+    overlaid,
     within,
     draggability,
     flippability,
@@ -1415,6 +1452,7 @@ export {
 
     // exported for testing only (probably)
     basic,
+    overlaid,
     within,
     draggability,
     flippability,
