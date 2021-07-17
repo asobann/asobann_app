@@ -1,0 +1,12 @@
+FROM ubuntu:20.04
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+RUN apt-get -y update
+RUN apt-get install -y python3 python3-pip
+VOLUME ["/app"]
+WORKDIR /init
+COPY requirements-dev.txt /init
+RUN pip3 install -r requirements-dev.txt
+WORKDIR /app
+ENV PYTHONPATH=/app/src:/app
+CMD cd src/asobann ; FLASK_ENV=development python3 -m asobann.deploy ; FLASK_ENV=development python3 -m asobann.wsgi

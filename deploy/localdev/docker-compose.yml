@@ -1,7 +1,9 @@
 version: '3'
 services:
     app_1:
-        build: app/
+        build:
+          context: ../..
+          dockerfile: Dockerfile.localdev
         ports:
             - "8000:5000"
         volumes:
@@ -11,7 +13,9 @@ services:
             REDIS_URI: redis://redis:6379
 
     app_2:
-        build: app/
+        build:
+            context: ../..
+            dockerfile: Dockerfile.localdev
         ports:
             - "8001:5000"
         volumes:
@@ -21,7 +25,9 @@ services:
             REDIS_URI: redis://redis:6379
 
     app_3:
-        build: app/
+        build:
+            context: ../..
+            dockerfile: Dockerfile.localdev
         ports:
             - "8002:5000"
         volumes:
