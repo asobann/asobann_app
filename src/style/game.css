@@ -288,8 +288,8 @@ button#show_performance_recording {
 }
 
 div.component_overlay {
-    color: red;
-    background-color: black;
+    color: antiquewhite;
+    background-color: forestgreen;
     display: none;
     position: absolute;
     z-index: 999999999999;
