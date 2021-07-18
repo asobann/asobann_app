@@ -1316,6 +1316,8 @@ const rotatability = {
             return component.rotatable && featsContext.canOperateOn(component);
         }
 
+        overlaid.addOverlayItem(component, 'ROTATE');
+
         component.el.addEventListener("dblclick", ( e ) => {
             if (!isRotationPermitted()) {
                 return;
