@@ -17,6 +17,9 @@ class Overlay {
 
     constructor() {
         this.element = el('div.component_overlay', 'OVERLAY');
+        this.element.addEventListener('mouseout', () => {
+            this.unselect();
+        });
     }
 
     isSelected(component) {
@@ -27,6 +30,19 @@ class Overlay {
         console.assert(component != null);
         this.selectedComponent = component;
         this.show();
+    }
+
+    notifyMouseIsOut(component, mouseEvent) {
+        if(!component || component !== this.selectedComponent) {
+            return;
+        }
+        const rect = this.element.getBoundingClientRect();
+        if(rect.left <= mouseEvent.clientX && mouseEvent.clientX <= rect.left + rect.width
+            && rect.top <= mouseEvent.clientY && mouseEvent.clientY <= rect.top + rect.height) {
+            return;
+        } else {
+            this.unselect();
+        }
     }
 
     unselect() {
@@ -43,7 +59,6 @@ class Overlay {
             setStyle(this.element, {
                 left: this.selectedComponent.rect.left + this.selectedComponent.rect.width + 'px',
                 top: this.selectedComponent.rect.top + 'px',
-                zIndex: this.selectedComponent.zIndex,
                 display: 'block',
             });
         }

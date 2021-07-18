@@ -475,11 +475,6 @@ interact("div.table_container").draggable({
     },
 });
 
-// Clicking table unselect a component and hide overlay
-// TODO inconsistent and suspicious.  At least not obvious.
-document.getElementsByClassName('table_container')[0].addEventListener('click', () => {
-    table.overlay.unselect();
-});
 
 function isTherePlayersHandArea(playerName) {
     if (table.data.components) {

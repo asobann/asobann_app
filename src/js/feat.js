@@ -1332,20 +1332,12 @@ const overlaid = {
         if (!overlaid.isEnabled(component, data)) {
             return;
         }
-        // 'dblclick' comes after 'click' when double-clicked.
-        // Let's consider double-clicking always select the component.
-        component.el.addEventListener("click", ( e ) => {
-            if( component.overlay.isSelected(component)){
-                component.overlay.unselect();
-            } else {
-                component.overlay.select(component);
-            }
-            e.stopPropagation();
-        });
-        component.el.addEventListener("dblclick", ( e ) => {
+        component.el.addEventListener("mouseover", ( e ) => {
             component.overlay.select(component);
         });
-
+        component.el.addEventListener("mouseout", ( e ) => {
+            component.overlay.notifyMouseIsOut(component, e);
+        });
     },
     isEnabled: function () {
         return true;
