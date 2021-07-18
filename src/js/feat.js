@@ -1316,25 +1316,40 @@ const rotatability = {
             return component.rotatable && featsContext.canOperateOn(component);
         }
 
-        overlaid.addOverlayItem(component, 'ROTATE');
+        function rotate(component, data) {
+            if(!data.rotation) {
+                data.rotation = 0;
+            }
+            data.rotation += 45;
+            if (data.rotation >= 360) {
+                data.rotation %= 360;
+            }
+            component.applyUserAction(Level.A, () => {
+                component.propagate({
+                    'rotation': data.rotation
+                });
+            });
+        }
+
+        overlaid.addOverlayItem(component, {
+            createElement: () => {
+                const e = el('div', {
+                    onclick: () => {
+                        rotate(component, data);
+                    }
+                },
+                'ROTATE');
+                return e;
+            }
+        });
 
         component.el.addEventListener("dblclick", ( e ) => {
+            // TODO event handler should not access data (which is the data when install)
             if (!isRotationPermitted()) {
                 return;
             }
             if (e.shiftKey) {
-                if(!data.rotation) {
-                    data.rotation = 0;
-                }
-                data.rotation += 45;
-                if (data.rotation >= 360) {
-                    data.rotation %= 360;
-                }
-                component.applyUserAction(Level.A, () => {
-                    component.propagate({
-                        'rotation': data.rotation
-                    });
-                });
+                rotate(component, data);
             }
         });
     },

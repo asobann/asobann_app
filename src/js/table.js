@@ -72,7 +72,11 @@ class Overlay {
 
             if(this.currentItems !== itemsToShow) {
                 for(const item of itemsToShow) {
-                    mount(this.itemsContainer, el('div', item));
+                    if(item.createElement) {
+                        mount(this.itemsContainer, item.createElement());
+                    } else {
+                        mount(this.itemsContainer, el('div', item));
+                    }
                 }
             }
         }
