@@ -1317,16 +1317,16 @@ const rotatability = {
         }
 
         function rotate(component, data) {
-            if(!data.rotation) {
-                data.rotation = 0;
+            if(!component.rotation) {
+                component.rotation = 0;
             }
-            data.rotation += 45;
-            if (data.rotation >= 360) {
-                data.rotation %= 360;
+            component.rotation += 45;
+            if (component.rotation >= 360) {
+                component.rotation %= 360;
             }
             component.applyUserAction(Level.A, () => {
                 component.propagate({
-                    'rotation': data.rotation
+                    'rotation': component.rotation
                 });
             });
         }
@@ -1344,12 +1344,11 @@ const rotatability = {
         });
 
         component.el.addEventListener("dblclick", ( e ) => {
-            // TODO event handler should not access data (which is the data when install)
             if (!isRotationPermitted()) {
                 return;
             }
             if (e.shiftKey) {
-                rotate(component, data);
+                rotate(component);
             }
         });
     },
