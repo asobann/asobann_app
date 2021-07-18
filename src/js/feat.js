@@ -1262,6 +1262,8 @@ const editability = {
             return component.editable && featsContext.canOperateOn(component);
         }
 
+        overlaid.addOverlayItem(component, 'EDIT');
+
         component.el.addEventListener("dblclick", ( eventN ) => {
             if (!isEditingPermitted()) {
                 return;
@@ -1333,14 +1335,14 @@ const overlaid = {
             return;
         }
         component.el.addEventListener("mouseover", ( e ) => {
-            component.overlay.select(component);
+            component.overlay.select(component, component.overlayItems);
         });
         component.el.addEventListener("mouseout", ( e ) => {
             component.overlay.notifyMouseIsOut(component, e);
         });
     },
-    isEnabled: function () {
-        return true;
+    isEnabled: function (component) {
+        return component.overlayItems && component.overlayItems.length > 0;
     },
     receiveData: function () {
     },
@@ -1348,10 +1350,17 @@ const overlaid = {
         if(!component.overlay.isSelected(component)) {
             return;
         }
-        component.overlay.show();
+        component.overlay.show(component.overlayItems);
     },
     uninstall: function (component) {
+        delete component.overlayItems;
     },
+    addOverlayItem(component, item) {
+        if(!component.overlayItems) {
+            component.overlayItems = [];
+        }
+        component.overlayItems.push(item);
+    }
 };
 
 
@@ -1414,7 +1423,6 @@ const event = {
 
 const feats = [
     basic,  // this must be the first ability in feats
-    overlaid,
     within,
     draggability,
     flippability,
@@ -1427,7 +1435,8 @@ const feats = [
     stowage,
     cardistry,
     counter,
-    editability
+    editability,
+    overlaid,  // overlaid must be the last in order
 ];
 
 // dynamic validation
@@ -1444,7 +1453,6 @@ export {
 
     // exported for testing only (probably)
     basic,
-    overlaid,
     within,
     draggability,
     flippability,
@@ -1457,5 +1465,6 @@ export {
     stowage,
     cardistry,
     counter,
-    editability
+    editability,
+    overlaid
 };

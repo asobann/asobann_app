@@ -14,9 +14,13 @@ const Level = {
 class Overlay {
     selectedComponent = null;
     element = null;
+    currentItems = [];
 
     constructor() {
-        this.element = el('div.component_overlay', 'OVERLAY');
+        this.element = el('div.component_overlay',
+            [
+                this.itemsContainer = el('div'),
+            ]);
         this.element.addEventListener('mouseout', () => {
             this.unselect();
         });
@@ -26,10 +30,10 @@ class Overlay {
         return this.selectedComponent === component;
     }
 
-    select(component) {
+    select(component, itemsToShow) {
         console.assert(component != null);
         this.selectedComponent = component;
-        this.show();
+        this.show(itemsToShow);
     }
 
     notifyMouseIsOut(component, mouseEvent) {
@@ -50,7 +54,7 @@ class Overlay {
         this.show();
     }
 
-    show() {
+    show(itemsToShow) {
         if(this.selectedComponent == null) {
             setStyle(this.element, {
                 display: 'none',
@@ -61,6 +65,16 @@ class Overlay {
                 top: this.selectedComponent.rect.top + 'px',
                 display: 'block',
             });
+
+            while(this.itemsContainer.hasChildNodes()) {
+                unmount(this.itemsContainer, this.itemsContainer.firstChild);
+            }
+
+            if(this.currentItems !== itemsToShow) {
+                for(const item of itemsToShow) {
+                    mount(this.itemsContainer, el('div', item));
+                }
+            }
         }
     }
 }
