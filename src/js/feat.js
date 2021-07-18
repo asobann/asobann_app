@@ -1248,22 +1248,8 @@ const editability = {
             return component.editable && featsContext.canOperateOn(component);
         }
 
-        overlaid.addOverlayItem(component, 'EDIT');
 
-        component.el.addEventListener("dblclick", (e) => {
-            if (!isEditingPermitted()) {
-                return;
-            }
-
-            if (data.editing) {
-                return;
-            }
-
-            if (e.shiftKey) {
-                // TODO: temporal workaround for rotatability
-                return;
-            }
-
+        function startEditing(component) {
             data.editing = true;
             let textareaEl;
             // TODO keep element for reuse; delete when uninstall()ed
@@ -1289,6 +1275,35 @@ const editability = {
                     data.editing = false;
                 });
             }
+        }
+
+        overlaid.addOverlayItem(component, {
+            createElement: () => {
+                const e = el('div', {
+                        onclick: () => {
+                            startEditing(component);
+                        }
+                    },
+                    'EDIT');
+                return e;
+            }
+        });
+
+        component.el.addEventListener("dblclick", (e) => {
+            if (!isEditingPermitted()) {
+                return;
+            }
+
+            if (data.editing) {
+                return;
+            }
+
+            if (e.shiftKey) {
+                // TODO: temporal workaround for rotatability
+                return;
+            }
+
+            startEditing(component);
         });
 
     },
@@ -1316,7 +1331,7 @@ const rotatability = {
             return component.rotatable && featsContext.canOperateOn(component);
         }
 
-        function rotate(component, data) {
+        function rotate(component) {
             if(!component.rotation) {
                 component.rotation = 0;
             }
