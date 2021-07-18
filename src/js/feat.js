@@ -1248,6 +1248,8 @@ const editability = {
             return component.editable && featsContext.canOperateOn(component);
         }
 
+        overlaid.addOverlayItem(component, 'EDIT');
+
         component.el.addEventListener("dblclick", (e) => {
             if (!isEditingPermitted()) {
                 return;
@@ -1347,6 +1349,41 @@ const rotatability = {
     },
     uninstall: function (component) {
     },
+}
+
+
+const overlaid = {
+    install: function (component, data) {
+        if (!overlaid.isEnabled(component, data)) {
+            return;
+        }
+        component.el.addEventListener("mouseover", ( e ) => {
+            component.overlay.select(component, component.overlayItems);
+        });
+        component.el.addEventListener("mouseout", ( e ) => {
+            component.overlay.notifyMouseIsOut(component, e);
+        });
+    },
+    isEnabled: function (component) {
+        return component.overlayItems && component.overlayItems.length > 0;
+    },
+    receiveData: function () {
+    },
+    updateView(component, data) {
+        if(!component.overlay.isSelected(component)) {
+            return;
+        }
+        component.overlay.show(component.overlayItems);
+    },
+    uninstall: function (component) {
+        delete component.overlayItems;
+    },
+    addOverlayItem(component, item) {
+        if(!component.overlayItems) {
+            component.overlayItems = [];
+        }
+        component.overlayItems.push(item);
+    }
 };
 
 
@@ -1422,7 +1459,8 @@ const feats = [
     cardistry,
     counter,
     editability,
-    rotatability
+    rotatability,
+    overlaid  // overlaid must be the last in order
 ];
 
 // dynamic validation
@@ -1452,5 +1490,6 @@ export {
     cardistry,
     counter,
     editability,
-    rotatability
+    rotatability,
+    overlaid
 };

@@ -284,5 +284,13 @@ button#show_performance_recording {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 999999999;
+    z-index: 999999999999;
+}
+
+div.component_overlay {
+    color: red;
+    background-color: black;
+    display: none;
+    position: absolute;
+    z-index: 999999999999;
 }
