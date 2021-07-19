@@ -1284,7 +1284,9 @@ const editability = {
                             startEditing(component);
                         }
                     },
-                    'EDIT');
+                    [
+                        el('img', { src: '/static/images/edit.png'}),
+                    ]);
                 return e;
             }
         });
@@ -1353,7 +1355,9 @@ const rotatability = {
                         rotate(component, data);
                     }
                 },
-                'ROTATE');
+                [
+                    el('img', { src: '/static/images/rotate.png'}),
+                ]);
                 return e;
             }
         });

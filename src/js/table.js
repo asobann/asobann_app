@@ -12,6 +12,11 @@ const Level = {
 
 // Single instance with single HTML Element to show overlay control
 class Overlay {
+    cssParameters = {
+        // These css parameters are used to position elements
+        // The area of padding is covered with box-shadow faintly and is visible
+        padding: 20,
+    };
     selectedComponent = null;
     element = null;
     currentItems = [];
@@ -19,11 +24,25 @@ class Overlay {
     constructor() {
         this.element = el('div.component_overlay',
             [
-                this.itemsContainer = el('div'),
-            ]);
-        this.element.addEventListener('mouseout', () => {
-            this.unselect();
+                this.itemsContainer = el('div.items_container'),
+            ], {
+                style: {
+                    padding: this.cssParameters.padding + 'px',
+                }
+            });
+        this.element.addEventListener('mouseout', (mouseEvent) => {
+            if (!this.isMouseOver(mouseEvent)) {
+                this.unselect();
+            }
         });
+    }
+
+    isMouseOver(mouseEvent) {
+        const rect = this.element.getBoundingClientRect();
+        return (Math.floor(rect.left) <= mouseEvent.clientX
+            && mouseEvent.clientX < Math.floor(rect.left + rect.width)
+            && Math.floor(rect.top) <= mouseEvent.clientY
+            && mouseEvent.clientY < Math.floor(rect.top + rect.height))
     }
 
     isSelected(component) {
@@ -37,14 +56,10 @@ class Overlay {
     }
 
     notifyMouseIsOut(component, mouseEvent) {
-        if(!component || component !== this.selectedComponent) {
+        if (!component || component !== this.selectedComponent) {
             return;
         }
-        const rect = this.element.getBoundingClientRect();
-        if(rect.left <= mouseEvent.clientX && mouseEvent.clientX <= rect.left + rect.width
-            && rect.top <= mouseEvent.clientY && mouseEvent.clientY <= rect.top + rect.height) {
-            return;
-        } else {
+        if (!this.isMouseOver(mouseEvent)) {
             this.unselect();
         }
     }
@@ -55,24 +70,25 @@ class Overlay {
     }
 
     show(itemsToShow) {
-        if(this.selectedComponent == null) {
+        if (this.selectedComponent == null) {
             setStyle(this.element, {
                 display: 'none',
             });
         } else {
             setStyle(this.element, {
-                left: this.selectedComponent.rect.left + this.selectedComponent.rect.width + 'px',
-                top: this.selectedComponent.rect.top + 'px',
+                left: this.selectedComponent.rect.left + this.selectedComponent.rect.width - this.cssParameters.padding + 'px',
+                top: this.selectedComponent.rect.top - this.cssParameters.padding + 'px',
                 display: 'block',
+                zIndex: this.selectedComponent.zIndex - 1,
             });
 
-            while(this.itemsContainer.hasChildNodes()) {
+            while (this.itemsContainer.hasChildNodes()) {
                 unmount(this.itemsContainer, this.itemsContainer.firstChild);
             }
 
-            if(this.currentItems !== itemsToShow) {
-                for(const item of itemsToShow) {
-                    if(item.createElement) {
+            if (this.currentItems !== itemsToShow) {
+                for (const item of itemsToShow) {
+                    if (item.createElement) {
                         mount(this.itemsContainer, item.createElement());
                     } else {
                         mount(this.itemsContainer, el('div', item));
@@ -293,7 +309,7 @@ class Table {
             if (!this.data.components.hasOwnProperty(componentId)) {
                 continue;
             }
-            if(!this.componentsOnTable[componentId]) {
+            if (!this.componentsOnTable[componentId]) {
                 // component is already removed
                 continue;
             }
