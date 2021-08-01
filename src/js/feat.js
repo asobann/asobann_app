@@ -1158,7 +1158,7 @@ const counter = {
             return;
         }
 
-        setAttr(component.el, {className: component.el.getAttribute('class') + " counter_component"});
+        setAttr(component.el, { className: component.el.getAttribute('class') + " counter_component" });
         setStyle(component.el, {
             "display": "flex",
             "flex-direction": "column",
@@ -1279,13 +1279,13 @@ const editability = {
 
         overlaid.addOverlayItem(component, {
             createElement: () => {
-                const e = el('div', {
+                const e = el('div.overlay_button', {
                         onclick: () => {
                             startEditing(component);
                         }
                     },
                     [
-                        el('img', { src: '/static/images/edit.png'}),
+                        el('img', { src: '/static/images/edit.png' }),
                     ]);
                 return e;
             }
@@ -1334,7 +1334,7 @@ const rotatability = {
         }
 
         function rotate(component) {
-            if(!component.rotation) {
+            if (!component.rotation) {
                 component.rotation = 0;
             }
             component.rotation += 45;
@@ -1350,19 +1350,19 @@ const rotatability = {
 
         overlaid.addOverlayItem(component, {
             createElement: () => {
-                const e = el('div', {
-                    onclick: () => {
-                        rotate(component, data);
-                    }
-                },
-                [
-                    el('img', { src: '/static/images/rotate.png'}),
-                ]);
+                const e = el('div.overlay_button', {
+                        onclick: () => {
+                            rotate(component, data);
+                        }
+                    },
+                    [
+                        el('img', { src: '/static/images/rotate.png' }),
+                    ]);
                 return e;
             }
         });
 
-        component.el.addEventListener("dblclick", ( e ) => {
+        component.el.addEventListener("dblclick", (e) => {
             if (!isRotationPermitted()) {
                 return;
             }
@@ -1379,7 +1379,7 @@ const rotatability = {
     },
     updateView(component, data) {
         setStyle(component.el, {
-            transform: "rotate(" + String(data.rotation)+ "deg)",
+            transform: "rotate(" + String(data.rotation) + "deg)",
         });
     },
     uninstall: function (component) {
@@ -1392,10 +1392,10 @@ const overlaid = {
         if (!overlaid.isEnabled(component, data)) {
             return;
         }
-        component.el.addEventListener("mouseover", ( e ) => {
+        component.el.addEventListener("mouseover", (e) => {
             component.overlay.select(component, component.overlayItems);
         });
-        component.el.addEventListener("mouseout", ( e ) => {
+        component.el.addEventListener("mouseout", (e) => {
             component.overlay.notifyMouseIsOut(component, e);
         });
     },
@@ -1405,7 +1405,7 @@ const overlaid = {
     receiveData: function () {
     },
     updateView(component, data) {
-        if(!component.overlay.isSelected(component)) {
+        if (!component.overlay.isSelected(component)) {
             return;
         }
         component.overlay.show(component.overlayItems);
@@ -1414,7 +1414,7 @@ const overlaid = {
         delete component.overlayItems;
     },
     addOverlayItem(component, item) {
-        if(!component.overlayItems) {
+        if (!component.overlayItems) {
             component.overlayItems = [];
         }
         component.overlayItems.push(item);

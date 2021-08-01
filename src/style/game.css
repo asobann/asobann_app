@@ -298,3 +298,7 @@ div.component_overlay div.items_container {
     background-color: forestgreen;
     box-shadow: cornflowerblue 0 0 6px 12px;
 }
+
+div.overlay_button img {
+    width: 60px;
+}
