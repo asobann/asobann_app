@@ -1376,6 +1376,7 @@ const rotatability = {
     },
     receiveData: function (component, data) {
         component.rotatable = data.rotatable;
+        component.rotation = data.rotation;
     },
     updateView(component, data) {
         setStyle(component.el, {
