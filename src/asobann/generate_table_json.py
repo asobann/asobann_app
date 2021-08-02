@@ -268,7 +268,6 @@ def generate_note(reg: ComponentRegistry):
         "rollable": False,
         "ownable": False,
         "editable": True,
-        "rotatable": True,
     })
 
 def generate_dice(reg: ComponentRegistry):
