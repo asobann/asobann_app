@@ -139,6 +139,7 @@ class Menu {
                 const kitData = (await response).json();
                 connector.addNewKit(await kitData);
             }
+
             doOpen();
             return false;
         }
@@ -176,6 +177,9 @@ class Menu {
                     el('div.text',
                         [
                             'リリースノート\n', el('br'),
+                            '\n', el('br'),
+                            '2021.8.2\n', el('br'),
+                            '・カードを回転させる、オーバーレイを追加\n', el('br'),
                             '\n', el('br'),
                             '2020.10.17\n', el('br'),
                             '・大幅な高速化と、4人以上で使うときの遅延と同期ズレを改善\n', el('br'),
