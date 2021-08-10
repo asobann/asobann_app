@@ -353,6 +353,7 @@ class Table {
         unmount(this.list_el, component.el);
         delete component.el;
         delete this.componentsOnTable[componentId];
+        delete this.data.components[componentId];
 
         this.el.dispatchEvent(new Event('tableContentsChanged'));
     }
