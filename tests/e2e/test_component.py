@@ -123,7 +123,7 @@ class TestHandArea:
         host_card = host.component_by_name(C_A)
         host_card_pos = host_card.pos()
         hand_area = host.hand_area(owner="host")
-        host.drag(hand_area, -50, -100)
+        host.drag(hand_area, -50, -100, grab_at=(0, 40))  # avoid overlay buttons
         time.sleep(0.1)  # moving with traylike is Level C user action, so it's safer to wait
         assert host_card_pos.left - 50 == host_card.pos().left
         assert host_card_pos.top - 100 == host_card.pos().top
