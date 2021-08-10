@@ -19,7 +19,6 @@ const CONNECTOR_TEMPLATE = {
     addNewKit: null,
     removeKit: null,
     addNewComponent: null,
-    removeComponent: null,
     removeHandArea: null,
     isPlayerObserver: null,
     isTherePlayersHandArea: null,

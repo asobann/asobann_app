@@ -397,16 +397,12 @@ function removeHandArea() {
     for (const componentId in table.data.components) {
         const cmp = table.data.components[componentId];
         if (cmp.handArea && cmp.owner === getPlayerName()) {
-            removeComponent(componentId);
+            table.removeComponent(componentId);
+            pushRemoveComponent(componentId);
             return false;
         }
     }
     return false;
-}
-
-function removeComponent(componentId) {
-    table.removeComponent(componentId);
-    pushRemoveComponent(componentId);
 }
 
 function getPlayerName() {
@@ -498,7 +494,6 @@ const menuConnector = {
     fireMenuUpdate: () => {
         menu.update(table.data);
     },
-    removeComponent: removeComponent,
     getPlayerName: getPlayerName,
     addNewKit: addNewKit,
     removeKit: removeKit,
