@@ -14,7 +14,6 @@ from selenium.common.exceptions import NoSuchElementException
 
 from .helper import compo_pos, Rect, GameHelper, TOP
 
-
 C_A = 'PlayingCard S_A'
 C_K = 'PlayingCard S_K'
 C_Q = 'PlayingCard S_Q'
@@ -211,6 +210,16 @@ class TestHandArea:
         assert not another.component_by_name(C_A).owner()
         assert not another.component_by_name(C_K).owner()
 
+    def test_adding_and_removing_hand_area_changes_menu(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        prepare_table_with_cards(host)
+
+        host.menu.add_my_hand_area.click()
+        assert not host.menu.add_my_hand_area.is_visible()
+
+        host.menu.remove_my_hand_area.click()
+        assert not host.menu.remove_my_hand_area.is_visible()
+
     def test_areas_boundary_is_correct(self, browser: webdriver.Firefox):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
@@ -377,7 +386,8 @@ class TestCounter:
             player.component_by_name("Counter").element.find_element_by_css_selector("button#addTen").click()
 
             assert counter.element.find_element_by_css_selector(".counterValue").text == "11"
-            assert player.component_by_name("Counter").element.find_element_by_css_selector(".counterValue").text == "11"
+            assert player.component_by_name("Counter").element.find_element_by_css_selector(
+                ".counterValue").text == "11"
 
     class TestOverSession:
         def test_counter_is_retained_between_sessions(self, browser):
@@ -454,7 +464,7 @@ class TestEditable:
         another.go(host.current_url)
         another.menu.join("Player 2")
         another.should_have_text("you are Player 2")
-        
+
         host.double_click(note)
         note.element.find_element_by_css_selector('textarea').send_keys('The Quick Brown Fox Jumps Over A Lazy Dog')
         note.element.find_element_by_css_selector('button').click()
@@ -474,4 +484,3 @@ class TestRotation:
         host.double_click(host.component_by_name(C_A), ['SHIFT'])
         assert '♠A' not in host.component_by_name(C_A).face()
         assert 45 == host.component_by_name(C_A).rotation
-
