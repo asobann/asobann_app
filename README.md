@@ -8,6 +8,6 @@ online card / board game platform
 % cd asobann_app/
 % npm i -d
 % npx webpack
-% docker compose up --build
+% docker-compose up --build
 Access http://localhost:8000/
 ```
