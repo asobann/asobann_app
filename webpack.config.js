@@ -21,10 +21,7 @@ module.exports = {
       },
       {
         test: /\.(png|jpg)$/,
-        loader: 'file-loader',
-        options: {
-          publicPath: '/static',
-        }
+        type: 'asset/resource',
       },
     ],
   },

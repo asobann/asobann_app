@@ -22,7 +22,6 @@
   "devDependencies": {
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "css-loader": "^6.2.0",
-    "file-loader": "^6.2.0",
     "jest": "^27.0.0",
     "style-loader": "^3.2.0",
     "webpack": "^5.50.0",
