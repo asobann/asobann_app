@@ -2,10 +2,7 @@ import {el, list, mount, setAttr, setStyle, unmount} from "redom";
 import {joinTable} from "./sync_table.js";
 import {names} from "./names.js";
 import {_, language} from "./i18n.js";
-
-function baseUrl() {
-    return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
-}
+import {baseUrl} from "./util";
 
 function getPlaceholderName() {
     return names[Math.floor(Math.random() * names.length)];

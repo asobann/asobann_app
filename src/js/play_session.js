@@ -9,6 +9,7 @@ import {
     pushSyncWithMe,
     setTableContext,
 } from "./sync_table.js";
+import {baseUrl} from "./util";
 import {toolbox} from "./toolbox.js"
 import {Menu} from "./menu.js";
 import {dev_inspector} from "./dev_inspector.js"

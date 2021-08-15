@@ -1,6 +1,4 @@
-function baseUrl() {
-    return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
-}
+import {baseUrl} from "./util";
 
 function noop() {
 }
@@ -102,7 +100,7 @@ function setPerformanceRecordingDebugger(uid) {
         const uid = Math.floor(Math.random() * 1000000000);
         const url = baseUrl() + "/debug/setting";
         const response = await fetch(url);
-        if(!response.ok) {
+        if (!response.ok) {
             return;
         }
         const data = response.json();
