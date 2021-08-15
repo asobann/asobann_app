@@ -1,5 +1,7 @@
 import os
 
+import asobann.config_common as common
+
 if 'MONGODB_URI' in os.environ:
     if '?' not in os.environ['MONGODB_URI']:
         MONGO_URI = f'{os.environ["MONGODB_URI"]}/ex2dev?authSource=admin'
@@ -26,20 +28,11 @@ GOOGLE_ANALYTICS_ID = None
 if 'ASOBANN_DEBUG_HANDLER_WAIT' in os.environ:
     DEBUG_HANDLER_WAIT = os.environ['ASOBANN_DEBUG_HANDLER_WAIT']
 
-if 'UPLOADED_IMAGE_STORE' in os.environ:
-    UPLOADED_IMAGE_STORE = os.environ['UPLOADED_IMAGE_STORE']
-else:
-    UPLOADED_IMAGE_STORE = 'local'
-
-use_aws = UPLOADED_IMAGE_STORE.lower() == 's3'
-if use_aws:
-    AWS_KEY = os.environ['AWS_KEY']
-    AWS_SECRET = os.environ['AWS_SECRET']
-    AWS_REGION = os.environ['AWS_REGION']
-    AWS_S3_IMAGE_BUCKET_NAME = os.environ['AWS_S3_IMAGE_BUCKET_NAME']
-else:
-    AWS_KEY = None
-    AWS_SECRET = None
+UPLOADED_IMAGE_STORE = common.UPLOADED_IMAGE_STORE
+AWS_KEY = common.AWS_KEY
+AWS_SECRET = common.AWS_SECRET
+AWS_REGION = common.AWS_REGION
+AWS_S3_IMAGE_BUCKET_NAME = common.AWS_S3_IMAGE_BUCKET_NAME
 
 if 'ASOBANN_DEBUG_OPTS' in os.environ:
     opts = os.environ['ASOBANN_DEBUG_OPTS'].split(',')

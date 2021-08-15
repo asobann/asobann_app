@@ -15,6 +15,7 @@ from .. import socketio
 # prevent 'Too many packets in paylod' error
 # see https://github.com/miguelgrinberg/python-engineio/issues/142
 from engineio.payload import Payload
+
 Payload.max_decode_packets = 1000
 
 dictConfig({
@@ -87,7 +88,7 @@ def configure_app(app, testing):
     if app.config["ENV"] == "test" or testing:
         app.config.from_pyfile(folder / 'config_test.py', silent=True)
     elif app.config["ENV"] == "production":
-        app.config.from_pyfile(folder / 'config.py', silent=True)
+        app.config.from_pyfile(folder / 'config_production.py', silent=True)
     else:
         app.config.from_pyfile(folder / 'config_dev.py', silent=True)
 
