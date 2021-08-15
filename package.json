@@ -28,7 +28,7 @@
     "webpack-cli": "^4.7.2"
   },
   "dependencies": {
-    "amazon-cognito-identity-js": "^5.0.6",
+    "aws-amplify": "^4.2.3",
     "interactjs": "^1.10.11",
     "redom": "^3.27.1",
     "socket.io-client": "^4.1.3"
