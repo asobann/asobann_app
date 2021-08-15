@@ -10,10 +10,7 @@ if 'MONGODB_URI' in os.environ:
 else:
     MONGO_URI = 'mongodb://localhost:27017/ex2dev'
 
-if 'REDIS_URI' in os.environ:
-    REDIS_URI = os.environ['REDIS_URI']
-else:
-    REDIS_URI = None
+REDIS_URI = common.REDIS_URI
 
 if 'PUBLIC_HOSTNAME' in os.environ:
     value = os.environ['PUBLIC_HOSTNAME']
@@ -26,7 +23,7 @@ else:
 GOOGLE_ANALYTICS_ID = None
 
 if 'ASOBANN_DEBUG_HANDLER_WAIT' in os.environ:
-    DEBUG_HANDLER_WAIT = os.environ['ASOBANN_DEBUG_HANDLER_WAIT']
+    DEBUG_HANDLER_WAIT = common.from_env('ASOBANN_DEBUG_HANDLER_WAIT', default=None)
 
 UPLOADED_IMAGE_STORE = common.UPLOADED_IMAGE_STORE
 AWS_KEY = common.AWS_KEY

@@ -1,20 +1,16 @@
-import os
-
 import asobann.config_common as common
 
-if 'REDIS_URI' in os.environ:
-    REDIS_URI = os.environ['REDIS_URI']
-else:
-    REDIS_URI = None
+REDIS_URI = common.REDIS_URI
 
-MONGO_URI = os.environ["MONGODB_URI"] + ('&' if '?' in os.environ["MONGODB_URI"] else '?') + 'retryWrites=false'
+value = common.from_env("MONGODB_URI")
+MONGO_URI = value + ('&' if '?' in value else '?') + 'retryWrites=false'
 
-value = os.environ['PUBLIC_HOSTNAME']
+value = common.from_env('PUBLIC_HOSTNAME')
 if value.startswith('.'):
     value = value[1:]
 BASE_URL = 'https://' + value
 
-GOOGLE_ANALYTICS_ID = os.environ['GOOGLE_ANALYTICS_ID']
+GOOGLE_ANALYTICS_ID = common.from_env('GOOGLE_ANALYTICS_ID')
 
 UPLOADED_IMAGE_STORE = common.UPLOADED_IMAGE_STORE
 AWS_KEY = common.AWS_KEY

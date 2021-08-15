@@ -2,11 +2,7 @@ import os
 
 import asobann.config_common as common
 
-if 'REDIS_URI' in os.environ:
-    REDIS_URI = os.environ['REDIS_URI']
-else:
-    REDIS_URI = None
-
+REDIS_URI = common.REDIS_URI
 MONGO_URI = 'mongodb://localhost:27017/ex2test'
 PORT = 10011
 

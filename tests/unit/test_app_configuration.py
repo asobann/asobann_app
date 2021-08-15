@@ -118,6 +118,8 @@ def test_config(param):
         for key, value in input_['env'].items():
             os.environ[key] = value
         app = Flask(__name__)
+        import importlib
+        importlib.reload(asobann.config_common)  # must be reloaded with new environment
         asobann.app.configure_app(app, testing=input_.get('testing', False))
         for key, value in expected['config'].items():
             assert app.config[key] == value
