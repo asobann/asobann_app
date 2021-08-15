@@ -253,4 +253,14 @@ def create_app(testing=False):
         image_base_path = Path('/tmp/asobann/images')
         return send_file(image_base_path / file_name)
 
+    @app.route('/config', methods=['GET'])
+    def get_config():
+        client_config = {}
+        if 'AWS_COGNITO_USER_POOL_ID' in app.config:
+            client_config['AWS_COGNITO'] = {
+                'UserPoolId': app.config['AWS_COGNITO_USER_POOL_ID'],
+                'ClientId': app.config['AWS_COGNITO_CLIENT_ID'],
+            }
+        return jsonify(client_config)
+
     return app

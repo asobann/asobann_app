@@ -27,3 +27,6 @@ else:
     AWS_SECRET = None
     AWS_REGION = None
     AWS_S3_IMAGE_BUCKET_NAME = None
+
+AWS_COGNITO_USER_POOL_ID = from_env('AWS_COGNITO_USER_POOL_ID', default=None)
+AWS_COGNITO_CLIENT_ID = from_env('AWS_COGNITO_CLIENT_ID', default=None)
