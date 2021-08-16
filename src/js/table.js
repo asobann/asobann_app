@@ -2,6 +2,7 @@ import {el, mount, setStyle, unmount} from "redom";
 import {setFeatsContext, event} from "./feat.js";
 import {dev_inspector} from "./dev_inspector.js"
 import {pushComponentUpdate} from "./sync_table";
+import {auth} from "./auth.js"
 
 const Level = {
     A: 0,

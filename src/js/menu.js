@@ -3,6 +3,7 @@ import {joinTable} from "./sync_table.js";
 import {names} from "./names.js";
 import {_, language} from "./i18n.js";
 import {baseUrl} from "./util";
+import {auth} from "./auth.js"
 
 function getPlaceholderName() {
     return names[Math.floor(Math.random() * names.length)];
@@ -90,6 +91,23 @@ class Menu {
                 ]),
                 menuitem("open_toolbox", _("Open Toolbox"), { href: "", onclick: openToolbox }),
                 menuitem("import_table", _("Import Table"), { href: "", onclick: showImport }),
+                el("div.menuitem", [
+                    el("a", {
+                        href: "#",
+                        onclick: () => {
+                            const state = {
+                                redirectUri: window.location.pathname
+                            }
+                            auth.federatedSignIn({ customState: JSON.stringify(state) });
+                        }
+                    }, _("Sign In"))
+                ]),
+                el("div.menuitem", [
+                    el("a", {
+                        href: "#",
+                        onclick: auth.signOut
+                    }, _("Sign Out"))
+                ]),
                 el("div.menuitem.about", [
                     el("a", {
                         class: 'about',
@@ -105,7 +123,8 @@ class Menu {
                     el("div", { class: 'copyright' }, _("Copyright (C) 2020 Yattom")),
                 ])
             ],
-        );
+        )
+        ;
 
         function addHandArea() {
             const newComponent = {

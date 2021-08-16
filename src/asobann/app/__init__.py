@@ -1,4 +1,6 @@
 from pathlib import Path
+
+import flask
 from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, send_file
 from flask_pymongo import PyMongo
 import logging
@@ -206,6 +208,10 @@ def create_app(testing=False):
         response = make_response(redirect(url_for('tables.play_table', tablename=tablename)))
         return response
 
+    @app.route('/login')
+    def login():
+        return render_template('login.html')
+
     # @app.route('/join_session', methods=["POST"])
     # def join_session():
     #     tablename = request.form.get("tablename")
@@ -257,9 +263,17 @@ def create_app(testing=False):
     def get_config():
         client_config = {}
         if 'AWS_COGNITO_USER_POOL_ID' in app.config:
-            client_config['AWS_COGNITO'] = {
-                'UserPoolId': app.config['AWS_COGNITO_USER_POOL_ID'],
-                'ClientId': app.config['AWS_COGNITO_CLIENT_ID'],
+            client_config['aws'] = {
+                'region': 'us-east-1',
+                'cognito': {
+                    'userPoolId': app.config['AWS_COGNITO_USER_POOL_ID'],
+                    'clientId': app.config['AWS_COGNITO_CLIENT_ID'],
+                    'oauth': {
+                        'domain': 'asobann-localdev-yattom.auth.us-east-1.amazoncognito.com',
+                        'redirectSignIn': 'http://localhost:5000/login',
+                        'redirectSignOut': 'http://localhost:5000/logout',
+                    }
+                }
             }
         return jsonify(client_config)
 

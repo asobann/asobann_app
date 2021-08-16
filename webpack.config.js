@@ -3,6 +3,7 @@ const path = require('path');
 module.exports = {
     entry: {
         main: './src/js/play_session.js',
+        login: './src/js/login.js',
         traces: './src/js/debug/traces.js',
     },
     devtool: 'eval-source-map',
