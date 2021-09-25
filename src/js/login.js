@@ -1,4 +1,4 @@
-import {Amplify, Hub, auth} from "./auth.js"
+import {Hub, auth} from "./auth.js"
 import {baseUrl} from "./util";
 
 Hub.listen("auth", ({ payload: { event, data } }) => {

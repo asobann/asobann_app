@@ -91,8 +91,8 @@ class Menu {
                 ]),
                 menuitem("open_toolbox", _("Open Toolbox"), { href: "", onclick: openToolbox }),
                 menuitem("import_table", _("Import Table"), { href: "", onclick: showImport }),
-                el("div.menuitem", [
-                    el("a", {
+                this.signInItem = menuitem("sign_in", _("Sign In"),
+                    {
                         href: "#",
                         onclick: () => {
                             const state = {
@@ -100,14 +100,12 @@ class Menu {
                             }
                             auth.federatedSignIn({ customState: JSON.stringify(state) });
                         }
-                    }, _("Sign In"))
-                ]),
-                el("div.menuitem", [
-                    el("a", {
+                    }),
+                this.signOutItem = menuitem("sign_out", _("Sign Out"),
+                    {
                         href: "#",
                         onclick: auth.signOut
-                    }, _("Sign Out"))
-                ]),
+                    }),
                 el("div.menuitem.about", [
                     el("a", {
                         class: 'about',
@@ -256,6 +254,14 @@ class Menu {
             setStyle(this.removeHandAreaItem, { display: 'none' });
             return;
         }
+
+        auth.getUser().then(user => {
+            setStyle(this.signInItem, { display: 'none' });
+            setStyle(this.signOutItem, { display: null });
+        }).catch(() => {
+            setStyle(this.signInItem, { display: null });
+            setStyle(this.signOutItem, { display: 'none' });
+        });
 
         setStyle(this.joinItem, { display: 'none' });
         if (tableData.playerName) {

@@ -101,6 +101,10 @@ const auth = {
                 console.log('getUser', auth.userInfo);
             }).catch(e => console.error(e));
     },
+
+    getUser: function () {
+        return Auth.currentAuthenticatedUser();
+    }
 };
 
 export {Amplify, Hub, auth};

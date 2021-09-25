@@ -180,6 +180,14 @@ class GameMenu:
         return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu input#player_name"))
 
     @property
+    def sign_in(self):
+        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu div#sign_in"))
+
+    @property
+    def sign_out(self):
+        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu div#sign_out"))
+
+    @property
     def open_toolbox(self):
         return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu div#open_toolbox"))
 
