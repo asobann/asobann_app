@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 import time
 from typing import Optional, Dict
 
@@ -86,3 +87,36 @@ def server(server_provider: TestServerProvider):
 @pytest.fixture
 def base_url(server):
     return 'http://localhost:10011'
+
+
+@pytest.fixture(scope="session")
+def awscli():
+    class AwsCli:
+        class CognitoIdentity:
+            @staticmethod
+            def admin_create_user(user_pool_id, username, email, nickname):
+                subprocess.run(['/usr/local/bin/aws', 'cognito-idp', 'admin-create-user',
+                                '--user-pool-id', user_pool_id,
+                                '--username', username,
+                                '--user-attributes', f'Name=email,Value="{email}"',
+                                f'Name=nickname,Value="{nickname}"',
+                                '--message-action', 'SUPPRESS'],
+                               stdout=sys.stdout, stderr=sys.stderr)
+
+            @staticmethod
+            def admin_set_user_password(user_pool_id, username, password):
+                subprocess.run(['/usr/local/bin/aws', 'cognito-idp', 'admin-set-user-password',
+                                '--user-pool-id', user_pool_id,
+                                '--username', username,
+                                '--password', password,
+                                '--permanent'],
+                               stdout=sys.stdout, stderr=sys.stderr)
+
+            @staticmethod
+            def admin_delete_user(user_pool_id, username):
+                subprocess.run(['/usr/local/bin/aws', 'cognito-idp', 'admin-delete-user',
+                                '--user-pool-id', user_pool_id,
+                                '--username', username],
+                               stdout=sys.stdout, stderr=sys.stderr)
+
+    return AwsCli
