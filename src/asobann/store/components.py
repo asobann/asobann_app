@@ -47,7 +47,7 @@ def purge_all():
 def create_or_update(data):
     assert 'component' in data
     assert 'name' in data['component']
-    if components.count({"component.name": data['component']['name']}) > 0:
+    if components.count_documents({"component.name": data['component']['name']}) > 0:
         update(data)
     else:
         create(data)

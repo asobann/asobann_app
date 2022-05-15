@@ -28,7 +28,7 @@ def connect(mongo):
 def create_or_update(kit_data):
     assert 'kit' in kit_data
     assert 'name' in kit_data['kit']
-    if kits.count({"kit.name": kit_data['kit']['name']}) > 0:
+    if kits.count_documents({"kit.name": kit_data['kit']['name']}) > 0:
         update(kit_data)
     else:
         create(kit_data)
