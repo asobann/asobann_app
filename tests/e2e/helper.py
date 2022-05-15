@@ -41,7 +41,7 @@ class Component:
         return position of the component relative to table
         :return: Rect(top, left)
         """
-        table = self.helper.browser.find_element_by_css_selector("div.table")
+        table = self.helper.browser.find_element(by=By.CSS_SELECTOR, value="div.table")
         table_loc = table.location
         comp_loc = self.element.location
         return Rect(left=comp_loc["x"] - table_loc["x"], top=comp_loc["y"] - table_loc["y"])
@@ -68,7 +68,7 @@ class Component:
     def face(self):
         result = []
         try:
-            image_url = self.element.find_element_by_tag_name('img').get_attribute('src')
+            image_url = self.element.find_element(by=By.TAG_NAME, value='img').get_attribute('src')
             result.append(f"image_url: {image_url}")
         except NoSuchElementException:
             pass
@@ -116,19 +116,19 @@ class BoxComponent(Component):
 
     @property
     def shuffle(self):
-        return self.element.find_element_by_css_selector('button[data-button-name="shuffle"]')
+        return self.element.find_element(by=By.CSS_SELECTOR, value='button[data-button-name="shuffle"]')
 
     @property
     def spreadOut(self):
-        return self.element.find_element_by_css_selector('button[data-button-name="spread out"]')
+        return self.element.find_element(by=By.CSS_SELECTOR, value='button[data-button-name="spread out"]')
 
     @property
     def collect(self):
-        return self.element.find_element_by_css_selector('button[data-button-name="collect"]')
+        return self.element.find_element(by=By.CSS_SELECTOR, value='button[data-button-name="collect"]')
 
     @property
     def flipAll(self):
-        return self.element.find_element_by_css_selector('button[data-button-name="flip all"]')
+        return self.element.find_element(by=By.CSS_SELECTOR, value='button[data-button-name="flip all"]')
 
 
 class GameMenuItem:
@@ -157,37 +157,37 @@ class GameMenu:
     @property
     def add_kit(self):
         return GameMenuItem(self.browser,
-                            self.browser.find_element_by_css_selector("div.menu div#add_remove_component"))
+                            self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu div#add_remove_component"))
 
     @property
     def add_my_hand_area(self):
-        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu div#add_hand_area"))
+        return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu div#add_hand_area"))
 
     @property
     def remove_my_hand_area(self):
-        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu div#remove_hand_area"))
+        return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu div#remove_hand_area"))
 
     @property
     def copy_invitation_url(self):
-        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu a#copy_invitation_url"))
+        return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu a#copy_invitation_url"))
 
     @property
     def invitation_url(self):
-        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu input#invitation_url"))
+        return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu input#invitation_url"))
 
     @property
     def join_item(self):
-        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu input#player_name"))
+        return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu input#player_name"))
 
     @property
     def open_toolbox(self):
-        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu div#open_toolbox"))
+        return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu div#open_toolbox"))
 
     def join(self, player_name):
         WebDriverWait(self.browser, 5).until(
             expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, "button#join_button")))
-        input_element = self.browser.find_element_by_css_selector("input#player_name")
-        join_button = self.browser.find_element_by_css_selector("button#join_button")
+        input_element = self.browser.find_element(by=By.CSS_SELECTOR, value="input#player_name")
+        join_button = self.browser.find_element(by=By.CSS_SELECTOR, value="button#join_button")
         input_element.clear()
         input_element.send_keys(player_name)
         join_button.click()
@@ -197,19 +197,19 @@ class GameMenu:
     def import_jsonfile(self, filename):
         WebDriverWait(self.browser, 5).until(
             expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, "div.menuitem#import_table")))
-        self.browser.find_element_by_css_selector("div.menuitem#import_table").click()
+        self.browser.find_element(by=By.CSS_SELECTOR, value="div.menuitem#import_table").click()
         WebDriverWait(self.browser, 5).until(
             expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, "div.menu form")))
-        form = self.browser.find_element_by_css_selector("form")
-        form.find_element_by_css_selector("input#file").send_keys(filename)
-        form.find_element_by_css_selector("input#submit").click()
+        form = self.browser.find_element(by=By.CSS_SELECTOR, value="form")
+        form.find_element(by=By.CSS_SELECTOR, value="input#file").send_keys(filename)
+        form.find_element(by=By.CSS_SELECTOR, value="input#submit").click()
 
     def add_kit_from_list(self, kit_name):
         css_selector = f"div.kit_selection div.item[data-kit-name='{kit_name}'"
         WebDriverWait(self.browser, 5).until(
             expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
-        item = self.browser.find_element_by_css_selector(css_selector)
-        item.find_element_by_class_name("add_new_component").click()
+        item = self.browser.find_element(by=By.CSS_SELECTOR, value=css_selector)
+        item.find_element(by=By.CLASS_NAME, value="add_new_component").click()
 
     def should_see_kit(self, kit_name):
         css_selector = f"div.kit_selection div.item[data-kit-name='{kit_name}'"
@@ -232,12 +232,12 @@ class GameMenu:
         css_selector = f"div.kit_selection div.item[data-kit-name='{component_name}'"
         WebDriverWait(self.browser, 5).until(
             expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
-        item = self.browser.find_element_by_css_selector(css_selector)
-        item.find_element_by_class_name("remove_component").click()
+        item = self.browser.find_element(by=By.CSS_SELECTOR, value=css_selector)
+        item.find_element(by=By.CLASS_NAME, value="remove_component").click()
 
     def add_kit_done(self):
         css_selector = f"div.kit_selection button.done"
-        self.browser.find_element_by_css_selector(css_selector).click()
+        self.browser.find_element(by=By.CSS_SELECTOR, value=css_selector).click()
 
 
 class Toolbox:
@@ -246,18 +246,18 @@ class Toolbox:
             self.toolbox = toolbox
 
         def select_json_file(self, filepath):
-            file_input = self.toolbox.browser.find_element_by_css_selector('form input#data')
+            file_input = self.toolbox.browser.find_element(by=By.CSS_SELECTOR, value='form input#data')
             file_input.send_keys(filepath)
 
         def select_image_files(self, filepath):
-            file_input = self.toolbox.browser.find_element_by_css_selector('form input#images')
+            file_input = self.toolbox.browser.find_element(by=By.CSS_SELECTOR, value='form input#images')
             file_input.send_keys(filepath)
 
         def upload(self):
-            self.toolbox.browser.find_element_by_css_selector('form button#upload').click()
+            self.toolbox.browser.find_element(by=By.CSS_SELECTOR, value='form button#upload').click()
 
         def cancel(self):
-            self.toolbox.browser.find_element_by_css_selector('form button#cancel').click()
+            self.toolbox.browser.find_element(by=By.CSS_SELECTOR, value='form button#cancel').click()
 
         def accept_success_alert(self):
             self.toolbox.helper.accept_alert('Upload Success!')
@@ -302,10 +302,10 @@ class GameHelper:
 
     def create_table(self, prepared_table):
         self.go(self.base_url + CUSTOMIZATION)
-        input_element = self.browser.find_element_by_css_selector("input#prepared_table")
+        input_element = self.browser.find_element(by=By.CSS_SELECTOR, value="input#prepared_table")
         input_element.clear()
         input_element.send_keys(str(prepared_table))
-        self.browser.find_element_by_css_selector("input#create").click()
+        self.browser.find_element(by=By.CSS_SELECTOR, value="input#create").click()
 
     @property
     def current_url(self) -> str:
@@ -359,28 +359,28 @@ class GameHelper:
         if wait:
             WebDriverWait(self.browser, 5).until(
                 expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, locator)))
-        return [Component(helper=self, element=e) for e in self.browser.find_elements_by_css_selector(locator)]
+        return [Component(helper=self, element=e) for e in self.browser.find_elements(by=By.CSS_SELECTOR, value=locator)]
 
     def component(self, nth, wait=True) -> "Component":
         locator = f".component:nth-of-type({nth})"
         if wait:
             WebDriverWait(self.browser, 5).until(
                 expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, locator)))
-        return Component(helper=self, element=self.browser.find_element_by_css_selector(locator))
+        return Component(helper=self, element=self.browser.find_element(by=By.CSS_SELECTOR, value=locator))
 
     def component_by_name(self, name, wait=True, factory=Component) -> Union["Component", BoxComponent]:
         selector = f'.component[data-component-name="{name}"]'
         if wait:
             WebDriverWait(self.browser, 5).until(
                 expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, selector)))
-        return factory(helper=self, element=self.browser.find_element_by_css_selector(selector))
+        return factory(helper=self, element=self.browser.find_element(by=By.CSS_SELECTOR, value=selector))
 
     def box_by_name(self, name, wait=True) -> BoxComponent:
         return self.component_by_name(name=name, wait=wait, factory=BoxComponent)
 
     def count_components(self):
         selector = f'.component'
-        return len(self.browser.find_elements_by_css_selector(selector))
+        return len(self.browser.find_elements(by=By.CSS_SELECTOR, value=selector))
 
     def drag(self, component: "Component", x, y, grab_at='center'):
         if grab_at == 'center':
@@ -434,7 +434,7 @@ class GameHelper:
         ActionChains(self.browser).click(component.element.find_element(by, value)).perform()
 
     def hand_area(self, owner):
-        for e in self.browser.find_elements_by_class_name("component"):
+        for e in self.browser.find_elements(by=By.CLASS_NAME, value="component"):
             if e.text == f"{owner}'s hand":
                 return Component(self, e)
         raise NoSuchElementException(msg=f"cannot locate {owner}'s hand area")
@@ -450,7 +450,7 @@ class GameHelper:
         Alert(self.browser).accept()
 
     def view_origin(self):
-        table = self.browser.find_element_by_css_selector('div.table')
+        table = self.browser.find_element(by=By.CSS_SELECTOR, value='div.table')
         style = parse_style(table.get_attribute('style'))
         top = int(style['top'][0:-2])  # remove px
         left = int(style['left'][0:-2])  # remove px
@@ -510,7 +510,7 @@ def compo_pos(browser, element) -> Rect:
     :param element: component to get position
     :return: Rect(top, left)
     """
-    table = browser.find_element_by_css_selector("div.table")
+    table = browser.find_element(by=By.CSS_SELECTOR, value="div.table")
     table_loc = table.location
     comp_loc = element.location
     return Rect(left=comp_loc["x"] - table_loc["x"], top=comp_loc["y"] - table_loc["y"])

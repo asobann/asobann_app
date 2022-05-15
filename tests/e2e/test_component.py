@@ -318,48 +318,48 @@ class TestCounter:
     def test_initial_value(self, browser: webdriver.Firefox):
         host = GameHelper(browser)
         counter = self.place_counter(host)
-        assert counter.element.find_element_by_css_selector(".counterValue").text == "0"
+        assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "0"
 
     class TestCounting:
         def test_add_1(self, browser: webdriver.Firefox):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
-            counter.element.find_element_by_css_selector("button#addOne").click()
-            assert counter.element.find_element_by_css_selector(".counterValue").text == "1"
+            counter.element.find_element(by=By.CSS_SELECTOR, value="button#addOne").click()
+            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "1"
 
         def test_sub_1(self, browser: webdriver.Firefox):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
-            counter.element.find_element_by_css_selector("button#subOne").click()
-            assert counter.element.find_element_by_css_selector(".counterValue").text == "-1"
+            counter.element.find_element(by=By.CSS_SELECTOR, value="button#subOne").click()
+            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "-1"
 
         def test_add_10(self, browser: webdriver.Firefox):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
-            counter.element.find_element_by_css_selector("button#addTen").click()
-            assert counter.element.find_element_by_css_selector(".counterValue").text == "10"
+            counter.element.find_element(by=By.CSS_SELECTOR, value="button#addTen").click()
+            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "10"
 
         def test_sub_10(self, browser: webdriver.Firefox):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
-            counter.element.find_element_by_css_selector("button#subTen").click()
-            assert counter.element.find_element_by_css_selector(".counterValue").text == "-10"
+            counter.element.find_element(by=By.CSS_SELECTOR, value="button#subTen").click()
+            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "-10"
 
         def test_reset(self, browser: webdriver.Firefox):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
-            counter.element.find_element_by_css_selector("button#subOne").click()
-            assert counter.element.find_element_by_css_selector(".counterValue").text == "-1"
-            counter.element.find_element_by_css_selector("button#reset").click()
-            assert counter.element.find_element_by_css_selector(".counterValue").text == "0"
+            counter.element.find_element(by=By.CSS_SELECTOR, value="button#subOne").click()
+            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "-1"
+            counter.element.find_element(by=By.CSS_SELECTOR, value="button#reset").click()
+            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "0"
 
         def test_succession_of_buttons(self, browser: webdriver.Firefox):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
-            counter.element.find_element_by_css_selector("button#addOne").click()
-            counter.element.find_element_by_css_selector("button#addOne").click()
-            counter.element.find_element_by_css_selector("button#addTen").click()
-            assert counter.element.find_element_by_css_selector(".counterValue").text == "12"
+            counter.element.find_element(by=By.CSS_SELECTOR, value="button#addOne").click()
+            counter.element.find_element(by=By.CSS_SELECTOR, value="button#addOne").click()
+            counter.element.find_element(by=By.CSS_SELECTOR, value="button#addTen").click()
+            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "12"
 
     class TestWithOtherPlayers:
         def test_add_1(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
@@ -370,9 +370,9 @@ class TestCounter:
             player.menu.join("Player 2")
             player.should_have_text("you are Player 2")
 
-            counter.element.find_element_by_css_selector("button#addOne").click()
-            assert counter.element.find_element_by_css_selector(".counterValue").text == "1"
-            assert player.component_by_name("Counter").element.find_element_by_css_selector(".counterValue").text == "1"
+            counter.element.find_element(by=By.CSS_SELECTOR, value="button#addOne").click()
+            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "1"
+            assert player.component_by_name("Counter").element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "1"
 
         def test_add_on_both(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
             host = GameHelper(browser)
@@ -382,22 +382,22 @@ class TestCounter:
             player.menu.join("Player 2")
             player.should_have_text("you are Player 2")
 
-            counter.element.find_element_by_css_selector("button#addOne").click()
-            player.component_by_name("Counter").element.find_element_by_css_selector("button#addTen").click()
+            counter.element.find_element(by=By.CSS_SELECTOR, value="button#addOne").click()
+            player.component_by_name("Counter").element.find_element(by=By.CSS_SELECTOR, value="button#addTen").click()
 
-            assert counter.element.find_element_by_css_selector(".counterValue").text == "11"
-            assert player.component_by_name("Counter").element.find_element_by_css_selector(
+            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "11"
+            assert player.component_by_name("Counter").element.find_element(by=By.CSS_SELECTOR, value=
                 ".counterValue").text == "11"
 
     class TestOverSession:
         def test_counter_is_retained_between_sessions(self, browser):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
-            counter.element.find_element_by_css_selector("button#addOne").click()
+            counter.element.find_element(by=By.CSS_SELECTOR, value="button#addOne").click()
             url = host.current_url
 
             host.go(url)
-            assert host.component_by_name("Counter").element.find_element_by_css_selector(".counterValue").text == "1"
+            assert host.component_by_name("Counter").element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "1"
 
 
 def test_unmovable_component_can_be_dragged_to_scroll(server, browser):
@@ -452,8 +452,8 @@ class TestEditable:
         host = GameHelper(browser)
         note = self.place_note(host)
         host.double_click(note)
-        note.element.find_element_by_css_selector('textarea').send_keys('The Quick Brown Fox Jumps Over A Lazy Dog')
-        note.element.find_element_by_css_selector('button').click()
+        note.element.find_element(by=By.CSS_SELECTOR, value='textarea').send_keys('The Quick Brown Fox Jumps Over A Lazy Dog')
+        note.element.find_element(by=By.CSS_SELECTOR, value='button').click()
         assert 'The Quick Brown Fox Jumps Over A Lazy Dog' in note.face()
 
     def test_editing_is_shared(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
@@ -466,8 +466,8 @@ class TestEditable:
         another.should_have_text("you are Player 2")
 
         host.double_click(note)
-        note.element.find_element_by_css_selector('textarea').send_keys('The Quick Brown Fox Jumps Over A Lazy Dog')
-        note.element.find_element_by_css_selector('button').click()
+        note.element.find_element(by=By.CSS_SELECTOR, value='textarea').send_keys('The Quick Brown Fox Jumps Over A Lazy Dog')
+        note.element.find_element(by=By.CSS_SELECTOR, value='button').click()
 
         note_on_another = another.component_by_name('Note')
         assert 'The Quick Brown Fox Jumps Over A Lazy Dog' in note_on_another.face()

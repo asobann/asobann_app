@@ -60,10 +60,10 @@ def test_load_and_remove_playing_card_kit(server, browser: webdriver.Firefox):
 def test_load_playing_card_kit_on_staging(server, browser: webdriver.Firefox):
     host = GameHelper(browser)
     host.go(STAGING_TOP + "/customize")
-    input_element = host.browser.find_element_by_css_selector("input#prepared_table")
+    input_element = host.browser.find_element(by=By.CSS_SELECTOR, value="input#prepared_table")
     input_element.clear()
     input_element.send_keys("0")
-    host.browser.find_element_by_css_selector("input#create").click()
+    host.browser.find_element(by=By.CSS_SELECTOR, value="input#create").click()
 
     host.should_have_text("you are host")
 
