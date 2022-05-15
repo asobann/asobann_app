@@ -1,9 +1,9 @@
 # basic setup
-FROM ubuntu:18.04
+FROM python:3.10-bullseye
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 RUN apt-get -y update
-RUN apt-get install -y python3 python3-pip
+RUN apt-get -y upgrade
 
 # application specific configuration
 EXPOSE 5000
