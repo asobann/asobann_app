@@ -22,7 +22,7 @@ def client(app):
 def test_index(client):
     resp = client.get('/')
     assert "302 FOUND" == resp.status
-    assert "http://localhost/tables/" in resp.headers["Location"]
+    assert "/tables/" in resp.headers["Location"]
 
 
 def test_googleanalytics_unavailable_in_dev(client):
