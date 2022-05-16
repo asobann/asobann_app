@@ -181,7 +181,7 @@ class GameMenu:
 
     @property
     def sign_in(self):
-        return GameMenuItem(self.browser, self.browser.find_element_by_css_selector("div.menu div#sign_in"))
+        return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu div#sign_in"))
 
     @property
     def sign_out(self):
