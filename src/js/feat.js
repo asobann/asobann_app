@@ -66,13 +66,13 @@ const basic = {
         component.zIndex = data.zIndex;
     },
     updateView(component, data) {
-        if (data.showImage) {
+        function updateImageContent(component, data) {
             if (component.imageEl.src !== data.image) {
                 setAttr(component.imageEl, { src: data.image });
             }
         }
 
-        if (component.textEl == null) {
+        function buildTextContent(component, data) {
             if (data.toolboxFunction) {
                 component.textEl = el("button.component_text", {
                     onclick: () => {
@@ -93,17 +93,20 @@ const basic = {
                 }
             }
         }
-        if (data.text) {
+
+        function updateTextContent(component, data) {
             if (data["text_" + language]) {
                 component.textEl.innerText = data["text_" + language];
             } else {
                 component.textEl.innerText = data.text;
             }
         }
-        if (data.textColor) {
+
+        function updateTextColor(component, data) {
             setStyle(component.textEl, { color: data.textColor });
         }
-        if (data.textAlign) {
+
+        function updateTextAlign(component, data) {
             switch (data.textAlign.trim()) {
                 case 'center':
                     setStyle(component.textEl, {
@@ -122,18 +125,43 @@ const basic = {
             }
         }
 
-        setAttr(component.el, {
-            'data-component-name': data.name,
-        });
+        function updateName(component, data) {
+            setAttr(component.el, {
+                'data-component-name': data.name,
+            });
+        }
 
-        setStyle(component.el, {
-            left: parseFloat(data.left) + "px",
-            top: parseFloat(data.top) + "px",
-            width: parseFloat(data.width) + "px",
-            height: parseFloat(data.height) + "px",
-            backgroundColor: data.color,
-            zIndex: component.zIndex,
-        });
+        function updatePosition(component, data) {
+            setStyle(component.el, {
+                left: parseFloat(data.left) + "px",
+                top: parseFloat(data.top) + "px",
+                width: parseFloat(data.width) + "px",
+                height: parseFloat(data.height) + "px",
+                backgroundColor: data.color,
+                zIndex: component.zIndex,
+            });
+        }
+
+        if (data.showImage) {
+            updateImageContent(component, data);
+        }
+
+        if (component.textEl == null) {
+            buildTextContent(component, data);
+        }
+        if (data.text) {
+            updateTextContent(component, data);
+        }
+        if (data.textColor) {
+            updateTextColor(component, data);
+        }
+        if (data.textAlign) {
+            updateTextAlign(component, data);
+        }
+
+        updateName(component, data);
+
+        updatePosition(component, data);
     },
     uninstall: function () {
     },
