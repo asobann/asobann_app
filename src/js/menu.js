@@ -1,6 +1,7 @@
 import {el, list, mount, setAttr, setStyle, unmount} from "redom";
 import {joinTable} from "./sync_table.js";
 import {names} from "./names.js";
+import {getCraftBoxKit} from "./craft_box";
 import {_, language} from "./i18n.js";
 
 function baseUrl() {
@@ -133,13 +134,11 @@ class Menu {
 
         function openToolbox() {
             async function doOpen() {
-                const url = baseUrl() + "kits/Toolbox";
-                const response = await fetch(url);
-                const kitData = (await response).json();
+                const kitData = await getCraftBoxKit(baseUrl());
                 connector.addNewKit(await kitData);
             }
 
-            doOpen();
+            doOpen().then(/* do nothing */);
             return false;
         }
 

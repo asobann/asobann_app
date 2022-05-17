@@ -2,7 +2,7 @@ import {el, mount, setAttr, setStyle, unmount} from "redom";
 import {allCardistry} from "./cardistry.js";
 import {_, language} from "./i18n.js";
 import {dev_inspector} from "./dev_inspector.js"
-import {toolbox} from "./toolbox.js";
+import {craft_box} from "./craft_box.js";
 
 import interact from 'interactjs';
 import {Level} from "./table";
@@ -76,7 +76,7 @@ const basic = {
             if (data.toolboxFunction) {
                 component.textEl = el("button.component_text", {
                     onclick: () => {
-                        toolbox.use(data.toolboxFunction);
+                        craft_box.use(data.toolboxFunction);
                     }
                 });
                 if (component.el.children.length > 0) {

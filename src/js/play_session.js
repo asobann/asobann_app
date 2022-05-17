@@ -9,7 +9,7 @@ import {
     pushSyncWithMe,
     setTableContext,
 } from "./sync_table.js";
-import {toolbox} from "./toolbox.js"
+import {craft_box} from "./craft_box.js"
 import {Menu} from "./menu.js";
 import {dev_inspector} from "./dev_inspector.js"
 import interact from 'interactjs';
@@ -438,7 +438,7 @@ function setPlayerIsJoined() {
 }
 
 const tablename = location.pathname.split("/")[2];
-toolbox.setTableName(tablename);
+craft_box.setTableName(tablename);
 document.title = tablename + " on asobann";
 const container = el("div.container");
 mount(document.body, container);

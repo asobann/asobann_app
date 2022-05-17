@@ -1,16 +1,16 @@
 import {el, mount, unmount} from "redom";
 import {_} from "./i18n.js";
 
-const toolbox = {
+const craft_box = {
     map: {
         'export table': "exportTable",
         'upload kit': "uploadKit",
     },
     use: (funcationName) => {
-        toolbox[toolbox.map[funcationName]]();
+        craft_box[craft_box.map[funcationName]]();
     },
     exportTable: function () {
-        location.assign("/export?tablename=" + toolbox.context.tablename);
+        location.assign("/export?tablename=" + craft_box.context.tablename);
     },
     uploadKit: function () {
         const background = el('div.modal_background');
@@ -94,9 +94,15 @@ const toolbox = {
         }
     },
     setTableName: function(tablename) {
-        toolbox.context.tablename = tablename;
+        craft_box.context.tablename = tablename;
     },
     context: {}
 };
 
-export {toolbox};
+async function getCraftBoxKit(baseUrl) {
+    const url = baseUrl + "kits/Toolbox";
+    const response = await fetch(url);
+    return (await response).json();
+}
+
+export {craft_box, getCraftBoxKit};
