@@ -16,6 +16,7 @@ import interact from 'interactjs';
 
 import '../style/game.css';
 import {feats} from "./feat";
+import "./feats/overlaid_controls";
 
 function baseUrl() {
     return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
