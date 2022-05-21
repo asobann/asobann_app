@@ -167,6 +167,16 @@ function generateComponentId() {
     });
 }
 
+function createComponentWithinKit(kitId, componentData) {
+    const newComponentData = Object.assign({}, componentData);
+    newComponentData.kitId = kitId;
+    const componentId = generateComponentId();
+    newComponentData.componentId = componentId;
+
+    return newComponentData;
+}
+
+
 function addNewKit(kitData) {
     const kitName = kitData.kit.name;
     const kitId = 'xxxxxxxxxxxx'.replace(/[x]/g, function (/*c*/) {
@@ -194,12 +204,8 @@ function addNewKit(kitData) {
         }
 
         function createComponent(name) {
-            const newComponentData = Object.assign({}, componentDataMap[name].component);
-            newComponentData.kitId = kitId;
-            const componentId = generateComponentId();
-            newComponentData.componentId = componentId;
-            newComponents[componentId] = newComponentData;
-
+            const newComponentData = createComponentWithinKit(kitId, componentDataMap[name].component);
+            newComponents[newComponentData.componentId] = newComponentData;
             return newComponentData;
         }
 

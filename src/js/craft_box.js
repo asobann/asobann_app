@@ -45,7 +45,7 @@ const craft_box = {
                 }
 
                 const jsonFile = document.getElementById('data').files[0];
-                if(!jsonFile) {
+                if (!jsonFile) {
                     alert('Upload Failed: please select Kit JSON File');
                     unmount(document.body, background);
                     return;
@@ -93,16 +93,25 @@ const craft_box = {
             return false;
         }
     },
-    setTableName: function(tablename) {
+    setTableName: function (tablename) {
         craft_box.context.tablename = tablename;
     },
     context: {}
 };
 
-async function getCraftBoxKit(baseUrl) {
-    const url = baseUrl + "kits/Toolbox";
-    const response = await fetch(url);
-    return (await response).json();
+function getCraftBoxKit(baseUrl) {
+    const kit = {
+        "kit": {
+            "boxAndComponents": { "Toolbox": ["Export Table", "Upload Kit"] },
+            "height": "300px",
+            "label": "Toolbox",
+            "label_ja": "\u9053\u5177\u7bb1",
+            "name": "Toolbox",
+            "usedComponentNames": ["Export Table", "Toolbox", "Upload Kit"],
+            "width": "400px"
+        }
+    }
+    return kit;
 }
 
 export {craft_box, getCraftBoxKit};
