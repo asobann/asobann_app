@@ -199,7 +199,7 @@ class Menu {
                         "zIndex": 99
                     }, kitId);
                 pushNewKitAndComponents({
-                    kit: { name: kitData.name, kitId: kitId },
+                    kit: { name: kitData.kit.name, kitId: kitId },
                 }, {});
             }
 
