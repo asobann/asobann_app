@@ -1,5 +1,5 @@
 import {el, list, mount, setAttr, setStyle, unmount} from "redom";
-import {joinTable} from "./sync_table.js";
+import {joinTable, pushNewKitAndComponents} from "./sync_table.js";
 import {names} from "./names.js";
 import {getCraftBoxKit} from "./craft_box";
 import {_, language} from "./i18n.js";
@@ -20,6 +20,7 @@ const CONNECTOR_TEMPLATE = {
     addNewKit: null,
     removeKit: null,
     addNewComponent: null,
+    addNewComponentWithinKit: null,
     removeHandArea: null,
     isPlayerObserver: null,
     isTherePlayersHandArea: null,
@@ -134,8 +135,72 @@ class Menu {
 
         function openToolbox() {
             async function doOpen() {
-                const kitData = await getCraftBoxKit(baseUrl());
-                connector.addNewKit(await kitData);
+                const kitData = getCraftBoxKit(baseUrl());
+                const kitId = 'xxxxxxxxxxxx'.replace(/[x]/g, function (/*c*/) {
+                    return (Math.random() * 16 | 0).toString(16);
+                });
+
+                connector.addNewComponentWithinKit(
+                    {
+                        "boxOfComponents": true,
+                        "cardistry": [
+                            "collect"
+                        ],
+                        "color": "darkgray",
+                        "draggable": true,
+                        "flippable": false,
+                        "handArea": false,
+                        "height": "300px",
+                        "left": "0px",
+                        "name": "Toolbox",
+                        "ownable": false,
+                        "resizable": true,
+                        "rollable": false,
+                        "showImage": false,
+                        "text": "Toolbox",
+                        "text_ja": "道具箱",
+                        "top": "0px",
+                        "traylike": true,
+                        "width": "460px",
+                        "zIndex": 1
+                    }, kitId);
+                connector.addNewComponentWithinKit(
+                    {
+                        "color": "cyan",
+                        "draggable": true,
+                        "flippable": false,
+                        "height": "100px",
+                        "left": "60px",
+                        "name": "Export Table",
+                        "ownable": false,
+                        "resizable": true,
+                        "text": "Export Table",
+                        "textColor": "black",
+                        "toolboxFunction": "export table",
+                        "top": "0px",
+                        "width": "125px",
+                        "zIndex": 100
+                    }, kitId);
+                connector.addNewComponentWithinKit(
+                    {
+                        "color": "cyan",
+                        "draggable": true,
+                        "flippable": false,
+                        "height": "100px",
+                        "left": "195px",
+                        "name": "Upload Kit",
+                        "ownable": false,
+                        "resizable": true,
+                        "text": "Upload Kit",
+                        "textColor": "black",
+                        "toolboxFunction": "upload kit",
+                        "top": "0px",
+                        "width": "125px",
+                        "zIndex": 99
+                    }, kitId);
+                pushNewKitAndComponents({
+                    kit: { name: kitData.name, kitId: kitId },
+                }, {});
             }
 
             doOpen().then(/* do nothing */);

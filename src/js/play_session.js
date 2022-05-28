@@ -177,169 +177,133 @@ function createComponentWithinKit(kitId, componentData) {
 }
 
 
-function addNewKit(kitData) {
+async function addNewKit(kitData) {
     const kitName = kitData.kit.name;
     const kitId = 'xxxxxxxxxxxx'.replace(/[x]/g, function (/*c*/) {
         return (Math.random() * 16 | 0).toString(16);
     });
 
     const baseZIndex = table.getNextZIndex();
-    (async () => {
-        const newComponents = {};
-        const usedComponentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitName))).json();
-        const layouter = kitLayouter(kitData.kit.positionOfKitContents);
-        const componentDataMap = {};
-        for (const cmp of usedComponentsData) {
-            componentDataMap[cmp['component']['name']] = cmp;
+    const newComponents = {};
+    const usedComponentsData = await (await fetch(encodeURI(baseUrl() + "components?kit_name=" + kitName))).json();
+    const layouter = kitLayouter(kitData.kit.positionOfKitContents);
+    const componentDataMap = {};
+    for (const cmp of usedComponentsData) {
+        componentDataMap[cmp['component']['name']] = cmp;
+    }
+
+    layouter();
+
+    pushNewKitAndComponents({
+        kit: { name: kitName, kitId: kitId },
+    }, newComponents);
+    for (const componentId in newComponents) {
+        const newComponentData = newComponents[componentId];
+        table.addComponent(newComponentData);
+    }
+    return kitId;
+
+    function createComponent(name) {
+        const newComponentData = createComponentWithinKit(kitId, componentDataMap[name].component);
+        newComponents[newComponentData.componentId] = newComponentData;
+        return newComponentData;
+    }
+
+    function createContentsOfBox(boxData, contentNames) {
+        boxData.componentsInBox = {};
+        for (const name of contentNames) {
+            const boxOrComponentData = createComponent(name);
+            const componentId = boxOrComponentData.componentId;
+
+            boxData.componentsInBox[componentId] = true;
         }
 
-        layouter();
+        switch (boxData.positionOfBoxContents) {
+            case "random":
+                for (const contentId in boxData.componentsInBox) {
+                    const contentData = newComponents[contentId];
+                    layoutRandomly(contentData, boxData);
+                }
+                break;
+            default:
+                for (const contentId in boxData.componentsInBox) {
+                    const contentData = newComponents[contentId];
+                    layoutRelativelyAsDefined(contentData, boxData);
+                }
+        }
+    }
 
-        pushNewKitAndComponents({
-            kit: { name: kitName, kitId: kitId },
-        }, newComponents);
-        for (const componentId in newComponents) {
-            const newComponentData = newComponents[componentId];
-            table.addComponent(newComponentData);
+    function layoutRandomly(newComponentData, baseRect) {
+        newComponentData.left = Math.floor(parseFloat(baseRect.left) +
+            (Math.random() * (parseFloat(baseRect.width) - parseFloat(newComponentData.width))));
+        newComponentData.top = Math.floor(parseFloat(baseRect.top) +
+            (Math.random() * (parseFloat(baseRect.height) - parseFloat(newComponentData.height))));
+        if (newComponentData.zIndex) {
+            newComponentData.zIndex += baseZIndex;
+        } else {
+            newComponentData.zIndex = baseZIndex;
         }
 
-        function createComponent(name) {
-            const newComponentData = createComponentWithinKit(kitId, componentDataMap[name].component);
-            newComponents[newComponentData.componentId] = newComponentData;
-            return newComponentData;
+    }
+
+    function layoutRelativelyAsDefined(newComponentData, baseRect) {
+        newComponentData.left = parseFloat(newComponentData.left) + parseFloat(baseRect.left);
+        newComponentData.top = parseFloat(newComponentData.top) + parseFloat(baseRect.top);
+        if (newComponentData.zIndex) {
+            newComponentData.zIndex += baseZIndex;
+        } else {
+            newComponentData.zIndex = baseZIndex;
+        }
+        if (newComponentData.onAdd) {
+            Function('"use strict"; return ' + newComponentData.onAdd)()(newComponentData);
+        }
+    }
+
+    function layoutInHandArea(componentsInHandArea, handAreaData) {
+        const horizontalStart = parseFloat(handAreaData.left) + 1;
+        const width = parseFloat(handAreaData.width) - 2;
+        const verticalStart = parseFloat(handAreaData.top) + 1;
+        const height = parseFloat(handAreaData.height) - 2;
+
+        const count = componentsInHandArea.length;
+        componentsInHandArea.sort((a, b) => b.zIndex - a.zIndex);
+        let index = 0;
+        for (const cmp of componentsInHandArea) {
+            cmp.left = horizontalStart + ((width - parseFloat(cmp.width)) / count) * index;
+            cmp.top = verticalStart + ((height - parseFloat(cmp.height)) / count) * index;
+            index += 1;
         }
 
-        function createContentsOfBox(boxData, contentNames) {
-            boxData.componentsInBox = {};
-            for (const name of contentNames) {
-                const boxOrComponentData = createComponent(name);
-                const componentId = boxOrComponentData.componentId;
+    }
 
-                boxData.componentsInBox[componentId] = true;
-            }
-
-            switch (boxData.positionOfBoxContents) {
-                case "random":
-                    for (const contentId in boxData.componentsInBox) {
-                        const contentData = newComponents[contentId];
-                        layoutRandomly(contentData, boxData);
-                    }
-                    break;
-                default:
-                    for (const contentId in boxData.componentsInBox) {
-                        const contentData = newComponents[contentId];
-                        layoutRelativelyAsDefined(contentData, boxData);
-                    }
-            }
-        }
-
-        function layoutRandomly(newComponentData, baseRect) {
-            newComponentData.left = Math.floor(parseFloat(baseRect.left) +
-                (Math.random() * (parseFloat(baseRect.width) - parseFloat(newComponentData.width))));
-            newComponentData.top = Math.floor(parseFloat(baseRect.top) +
-                (Math.random() * (parseFloat(baseRect.height) - parseFloat(newComponentData.height))));
-            if (newComponentData.zIndex) {
-                newComponentData.zIndex += baseZIndex;
-            } else {
-                newComponentData.zIndex = baseZIndex;
-            }
-
-        }
-
-        function layoutRelativelyAsDefined(newComponentData, baseRect) {
-            newComponentData.left = parseFloat(newComponentData.left) + parseFloat(baseRect.left);
-            newComponentData.top = parseFloat(newComponentData.top) + parseFloat(baseRect.top);
-            if (newComponentData.zIndex) {
-                newComponentData.zIndex += baseZIndex;
-            } else {
-                newComponentData.zIndex = baseZIndex;
-            }
-            if (newComponentData.onAdd) {
-                Function('"use strict"; return ' + newComponentData.onAdd)()(newComponentData);
-            }
-        }
-
-        function layoutInHandArea(componentsInHandArea, handAreaData) {
-            const horizontalStart = parseFloat(handAreaData.left) + 1;
-            const width = parseFloat(handAreaData.width) - 2;
-            const verticalStart = parseFloat(handAreaData.top) + 1;
-            const height = parseFloat(handAreaData.height) - 2;
-
-            const count = componentsInHandArea.length;
-            componentsInHandArea.sort((a, b) => b.zIndex - a.zIndex);
-            let index = 0;
-            for (const cmp of componentsInHandArea) {
-                cmp.left = horizontalStart + ((width - parseFloat(cmp.width)) / count) * index;
-                cmp.top = verticalStart + ((height - parseFloat(cmp.height)) / count) * index;
-                index += 1;
-            }
-
-        }
-
-        function kitLayouter(name) {
-            switch (name) {
-                case "on all hand areas":
-                    return function () {
-                        const handAreasData = table.getAllHandAreas();
-                        if (handAreasData.length > 0) {
-                            for (const handAreaData of handAreasData) {
-                                const componentsInHandArea = [];
-                                for (const name in kitData.kit.boxAndComponents) {
-                                    if (!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
-                                        continue;
-                                    }
-                                    const boxOrComponentData = createComponent(name);
-                                    if (boxOrComponentData.zIndex) {
-                                        boxOrComponentData.zIndex += baseZIndex;
-                                    } else {
-                                        boxOrComponentData.zIndex = baseZIndex;
-                                    }
-                                    componentsInHandArea.push(boxOrComponentData);
-                                }
-                                layoutInHandArea(componentsInHandArea, handAreaData);
-
-                                const contents = kitData.kit.boxAndComponents[name];
-                                if (contents) {
-                                    createContentsOfBox(boxOrComponentData, contents);
-                                }
-                            }
-                        } else {
-                            const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
-
+    function kitLayouter(name) {
+        switch (name) {
+            case "on all hand areas":
+                return function () {
+                    const handAreasData = table.getAllHandAreas();
+                    if (handAreasData.length > 0) {
+                        for (const handAreaData of handAreasData) {
+                            const componentsInHandArea = [];
                             for (const name in kitData.kit.boxAndComponents) {
                                 if (!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
                                     continue;
                                 }
                                 const boxOrComponentData = createComponent(name);
-                                layoutRelativelyAsDefined(boxOrComponentData, emptySpaceRect);
-
-                                const contents = kitData.kit.boxAndComponents[name];
-                                if (contents) {
-                                    createContentsOfBox(boxOrComponentData, contents);
+                                if (boxOrComponentData.zIndex) {
+                                    boxOrComponentData.zIndex += baseZIndex;
+                                } else {
+                                    boxOrComponentData.zIndex = baseZIndex;
                                 }
+                                componentsInHandArea.push(boxOrComponentData);
                             }
-                        }
-                    };
-                case "random":
-                    return function () {
-                        const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
-
-                        for (const name in kitData.kit.boxAndComponents) {
-                            if (!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
-                                continue;
-                            }
-                            const boxOrComponentData = createComponent(name);
-                            layoutRandomly(boxOrComponentData, emptySpaceRect);
+                            layoutInHandArea(componentsInHandArea, handAreaData);
 
                             const contents = kitData.kit.boxAndComponents[name];
                             if (contents) {
                                 createContentsOfBox(boxOrComponentData, contents);
                             }
                         }
-                    };
-
-                default:
-                    return function () {
+                    } else {
                         const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
 
                         for (const name in kitData.kit.boxAndComponents) {
@@ -354,10 +318,45 @@ function addNewKit(kitData) {
                                 createContentsOfBox(boxOrComponentData, contents);
                             }
                         }
-                    };
-            }
+                    }
+                };
+            case "random":
+                return function () {
+                    const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
+
+                    for (const name in kitData.kit.boxAndComponents) {
+                        if (!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                            continue;
+                        }
+                        const boxOrComponentData = createComponent(name);
+                        layoutRandomly(boxOrComponentData, emptySpaceRect);
+
+                        const contents = kitData.kit.boxAndComponents[name];
+                        if (contents) {
+                            createContentsOfBox(boxOrComponentData, contents);
+                        }
+                    }
+                };
+
+            default:
+                return function () {
+                    const emptySpaceRect = table.findEmptySpace(kitData.kit.width, kitData.kit.height);
+
+                    for (const name in kitData.kit.boxAndComponents) {
+                        if (!kitData.kit.boxAndComponents.hasOwnProperty(name)) {
+                            continue;
+                        }
+                        const boxOrComponentData = createComponent(name);
+                        layoutRelativelyAsDefined(boxOrComponentData, emptySpaceRect);
+
+                        const contents = kitData.kit.boxAndComponents[name];
+                        if (contents) {
+                            createContentsOfBox(boxOrComponentData, contents);
+                        }
+                    }
+                };
         }
-    })();
+    }
 }
 
 function removeKit(kitId) {
@@ -394,6 +393,15 @@ function placeNewComponent(newComponent, baseZIndex) {
 
 function addNewComponent(newComponentData) {
     newComponentData.componentId = generateComponentId();
+    placeNewComponent(newComponentData);
+    table.addComponent(newComponentData);
+    pushNewComponent(newComponentData);
+    return false;
+}
+
+function addNewComponentWithinKit(newComponentData, kitId) {
+    newComponentData.componentId = generateComponentId();
+    newComponentData.kitId = kitId;
     placeNewComponent(newComponentData);
     table.addComponent(newComponentData);
     pushNewComponent(newComponentData);
@@ -505,6 +513,7 @@ const menuConnector = {
     addNewKit: addNewKit,
     removeKit: removeKit,
     addNewComponent: addNewComponent,
+    addNewComponentWithinKit: addNewComponentWithinKit,
     removeHandArea: removeHandArea,
     isPlayerObserver: isPlayerObserver,
     isTherePlayersHandArea: isTherePlayersHandArea,
