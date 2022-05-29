@@ -1,7 +1,6 @@
 import {el, list, mount, setAttr, setStyle, unmount} from "redom";
 import {joinTable, pushNewKitAndComponents} from "./sync_table.js";
 import {names} from "./names.js";
-import {getCraftBoxKit} from "./craft_box";
 import {_, language} from "./i18n.js";
 
 function baseUrl() {
@@ -12,7 +11,7 @@ function getPlaceholderName() {
     return names[Math.floor(Math.random() * names.length)];
 }
 
-const CONNECTOR_TEMPLATE = {
+const MENU_CONNECTOR_DEFINITION = {
     tablename: null,
     getTableData: null,
     fireMenuUpdate: null,
@@ -24,17 +23,25 @@ const CONNECTOR_TEMPLATE = {
     removeHandArea: null,
     isPlayerObserver: null,
     isTherePlayersHandArea: null,
+    openCraftBox: null,
 };
+
+class MenuConnector {
+    constructor(connector) {
+        for (const key in MENU_CONNECTOR_DEFINITION) {
+            if (!connector[key]) {
+                console.debug(`MenuConnector connector must have ${key}`);
+            }
+        }
+        this.connector = connector;
+    }
+}
+
 
 class Menu {
     constructor(connector) {
-        for (const key in CONNECTOR_TEMPLATE) {
-            if (!connector[key]) {
-                console.debug(`menu connector must have ${key}`);
-            }
-        }
         const self = this;
-        this.connector = connector;
+        this.connector = connector.connector;
         this.playerStatusEl = el("span", this.connector.getPlayerName());
 
         function menuitem(id, label, attrs) {
@@ -93,7 +100,7 @@ class Menu {
                         }
                     }, _("copy")),
                 ]),
-                menuitem("open_toolbox", _("Open Toolbox"), { href: "", onclick: openToolbox }),
+                menuitem("open_toolbox", _("Open Toolbox"), { href: "", onclick: openCraftBox }),
                 menuitem("import_table", _("Import Table"), { href: "", onclick: showImport }),
                 el("div.menuitem.about", [
                     el("a", {
@@ -133,77 +140,9 @@ class Menu {
             return false;
         }
 
-        function openToolbox() {
-            async function doOpen() {
-                const kitData = getCraftBoxKit(baseUrl());
-                const kitId = 'xxxxxxxxxxxx'.replace(/[x]/g, function (/*c*/) {
-                    return (Math.random() * 16 | 0).toString(16);
-                });
 
-                connector.addNewComponentWithinKit(
-                    {
-                        "boxOfComponents": true,
-                        "cardistry": [
-                            "collect"
-                        ],
-                        "color": "darkgray",
-                        "draggable": true,
-                        "flippable": false,
-                        "handArea": false,
-                        "height": "300px",
-                        "left": "0px",
-                        "name": "Toolbox",
-                        "ownable": false,
-                        "resizable": true,
-                        "rollable": false,
-                        "showImage": false,
-                        "text": "Toolbox",
-                        "text_ja": "道具箱",
-                        "top": "0px",
-                        "traylike": true,
-                        "width": "460px",
-                        "zIndex": 1
-                    }, kitId);
-                connector.addNewComponentWithinKit(
-                    {
-                        "color": "cyan",
-                        "draggable": true,
-                        "flippable": false,
-                        "height": "100px",
-                        "left": "60px",
-                        "name": "Export Table",
-                        "ownable": false,
-                        "resizable": true,
-                        "text": "Export Table",
-                        "textColor": "black",
-                        "toolboxFunction": "export table",
-                        "top": "0px",
-                        "width": "125px",
-                        "zIndex": 100
-                    }, kitId);
-                connector.addNewComponentWithinKit(
-                    {
-                        "color": "cyan",
-                        "draggable": true,
-                        "flippable": false,
-                        "height": "100px",
-                        "left": "195px",
-                        "name": "Upload Kit",
-                        "ownable": false,
-                        "resizable": true,
-                        "text": "Upload Kit",
-                        "textColor": "black",
-                        "toolboxFunction": "upload kit",
-                        "top": "0px",
-                        "width": "125px",
-                        "zIndex": 99
-                    }, kitId);
-                pushNewKitAndComponents({
-                    kit: { name: kitData.kit.name, kitId: kitId },
-                }, {});
-            }
-
-            doOpen().then(/* do nothing */);
+        function openCraftBox() {
+            self.connector.openCraftBox();
             return false;
         }
 
@@ -230,7 +169,7 @@ class Menu {
         function showAddRemoveKitsMenu() {
             self.componentMenu = createAddRemoveKitsMenu(self.addRemoveComponentItem, self.connector);
             mount(self.addRemoveComponentItem, self.componentMenu.el);
-            connector.fireMenuUpdate();
+            self.connector.fireMenuUpdate();
             return false;
         }
 
@@ -428,4 +367,4 @@ function createAddRemoveKitsMenu(parent, connector) {
     return new KitsMenu();
 }
 
-export {Menu};
+export {Menu, MenuConnector};

@@ -10,7 +10,8 @@ import {
     setTableContext,
 } from "./sync_table.js";
 import {craft_box} from "./craft_box.js"
-import {Menu} from "./menu.js";
+import {Menu, MenuConnector} from "./menu.js";
+import {CraftBox, CraftBoxConnector} from "./craft_box.js";
 import {dev_inspector} from "./dev_inspector.js"
 import interact from 'interactjs';
 
@@ -501,25 +502,32 @@ function isTherePlayersHandArea(playerName) {
 
 setTableContext(tablename, syncTableConnector);
 
-const menuConnector = {
-    tablename: tablename,
-    getTableData: () => {
-        return table.data;
-    },
-    fireMenuUpdate: () => {
-        menu.update(table.data);
-    },
-    getPlayerName: getPlayerName,
-    addNewKit: addNewKit,
-    removeKit: removeKit,
-    addNewComponent: addNewComponent,
-    addNewComponentWithinKit: addNewComponentWithinKit,
-    removeHandArea: removeHandArea,
-    isPlayerObserver: isPlayerObserver,
-    isTherePlayersHandArea: isTherePlayersHandArea,
-};
+const craftBox = new CraftBox(
+    new CraftBoxConnector({
+        addNewComponentWithinKit: addNewComponentWithinKit,
+        pushNewKitAndComponents: pushNewKitAndComponents,
+    })
+);
 
-const menu = new Menu(menuConnector);
+const menu = new Menu(
+    new MenuConnector({
+        tablename: tablename,
+        getTableData: () => {
+            return table.data;
+        },
+        fireMenuUpdate: () => {
+            menu.update(table.data);
+        },
+        getPlayerName: getPlayerName,
+        addNewKit: addNewKit,
+        removeKit: removeKit,
+        addNewComponent: addNewComponent,
+        addNewComponentWithinKit: addNewComponentWithinKit,
+        removeHandArea: removeHandArea,
+        isPlayerObserver: isPlayerObserver,
+        isTherePlayersHandArea: isTherePlayersHandArea,
+        openCraftBox: () => {craftBox.open();},
+    }));
 mount(container, menu.el);
 
 tableContainer.addEventListener("mousemove", (event) => {

@@ -183,6 +183,10 @@ class GameMenu:
     def open_toolbox(self):
         return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu div#open_toolbox"))
 
+    @property
+    def close_toolbox(self):
+        return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu div#close_toolbox"))
+
     def join(self, player_name):
         WebDriverWait(self.browser, 5).until(
             expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, "button#join_button")))
@@ -273,9 +277,9 @@ class Toolbox:
 
     def use(self, tool):
         if tool == self.upload_kit:
-            self.helper.click_at(self.helper.component_by_name('Upload Kit'), By.CSS_SELECTOR, 'button')
+            self.helper.click_at(self.helper.component_by_name('Toolbox'), By.CSS_SELECTOR, 'button#upload_kit')
         elif tool == self.export_table:
-            self.helper.click_at(self.helper.component_by_name('Export Table'), By.CSS_SELECTOR, 'button')
+            self.helper.click_at(self.helper.component_by_name('Toolbox'), By.CSS_SELECTOR, 'button#export_table')
         else:
             raise ValueError(f'tool {tool} is not supported')
 

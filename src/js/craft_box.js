@@ -1,6 +1,98 @@
 import {el, mount, unmount} from "redom";
 import {_} from "./i18n.js";
 
+const CRAFT_BOX_CONNECTOR_DEFINITION = {
+    addNewComponentWithinKit: null,
+    pushNewKitAndComponents: null,
+};
+
+class CraftBoxConnector {
+    constructor(connector) {
+        for (const key in CRAFT_BOX_CONNECTOR_DEFINITION) {
+            if (!connector[key]) {
+                console.debug(`CaftBoxConnector connector must have ${key}`);
+            }
+        }
+        this.connector = connector;
+    }
+}
+
+class CraftBox {
+    constructor(connector) {
+        this.connector = connector.connector;
+    }
+
+    open() {
+        const kitData = getCraftBoxKit();
+        const kitId = 'xxxxxxxxxxxx'.replace(/[x]/g, function (/*c*/) {
+            return (Math.random() * 16 | 0).toString(16);
+        });
+
+        this.connector.addNewComponentWithinKit(
+            {
+                "boxOfComponents": true,
+                "cardistry": [
+                    "collect"
+                ],
+                "color": "darkgray",
+                "draggable": true,
+                "flippable": false,
+                "handArea": false,
+                "height": "300px",
+                "left": "0px",
+                "name": "Toolbox",
+                "ownable": false,
+                "resizable": true,
+                "rollable": false,
+                "showImage": false,
+                "text": "Toolbox",
+                "text_ja": "道具箱",
+                "top": "0px",
+                "traylike": true,
+                "width": "460px",
+                "zIndex": 1
+            }, kitId);
+        this.connector.addNewComponentWithinKit(
+            {
+                "color": "cyan",
+                "draggable": true,
+                "flippable": false,
+                "height": "100px",
+                "left": "60px",
+                "name": "Export Table",
+                "ownable": false,
+                "resizable": true,
+                "text": "Export Table",
+                "textColor": "black",
+                "toolboxFunction": "export table",
+                "top": "0px",
+                "width": "125px",
+                "zIndex": 100
+            }, kitId);
+        this.connector.addNewComponentWithinKit(
+            {
+                "color": "cyan",
+                "draggable": true,
+                "flippable": false,
+                "height": "100px",
+                "left": "195px",
+                "name": "Upload Kit",
+                "ownable": false,
+                "resizable": true,
+                "text": "Upload Kit",
+                "textColor": "black",
+                "toolboxFunction": "upload kit",
+                "top": "0px",
+                "width": "125px",
+                "zIndex": 99
+            }, kitId);
+        this.connector.pushNewKitAndComponents({
+                kit: { name: kitData.kit.name, kitId: kitId },
+            }, {}
+        );
+    }
+}
+
 const craft_box = {
     map: {
         'export table': "exportTable",
@@ -99,7 +191,7 @@ const craft_box = {
     context: {}
 };
 
-function getCraftBoxKit(baseUrl) {
+function getCraftBoxKit() {
     const kit = {
         "kit": {
             "boxAndComponents": { "Toolbox": ["Export Table", "Upload Kit"] },
@@ -114,4 +206,5 @@ function getCraftBoxKit(baseUrl) {
     return kit;
 }
 
-export {craft_box, getCraftBoxKit};
+
+export {craft_box, getCraftBoxKit, CraftBox, CraftBoxConnector};

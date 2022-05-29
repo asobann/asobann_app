@@ -14,6 +14,13 @@ class TestToolbox:
         host.menu.open_toolbox.execute()
         host.should_see_component('Toolbox')
 
+    def test_close(self, browser: webdriver.Firefox):
+        host = GameHelper.player(browser)
+
+        host.menu.open_toolbox.execute()
+        host.menu.close_toolbox.execute()
+        host.should_not_see_component('Toolbox')
+
     def test_use_export_table(self, browser: webdriver.Firefox):
         host = GameHelper.player(browser)
 
