@@ -180,12 +180,12 @@ class GameMenu:
         return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu input#player_name"))
 
     @property
-    def open_toolbox(self):
-        return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu div#open_toolbox"))
+    def open_craft_box(self):
+        return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu div#open_craft_box"))
 
     @property
-    def close_toolbox(self):
-        return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu div#close_toolbox"))
+    def close_craft_box(self):
+        return GameMenuItem(self.browser, self.browser.find_element(by=By.CSS_SELECTOR, value="div.menu div#close_craft_box"))
 
     def join(self, player_name):
         WebDriverWait(self.browser, 5).until(
@@ -244,42 +244,42 @@ class GameMenu:
         self.browser.find_element(by=By.CSS_SELECTOR, value=css_selector).click()
 
 
-class Toolbox:
+class CraftBox:
     class UploadKit:
-        def __init__(self, toolbox: 'Toolbox'):
-            self.toolbox = toolbox
+        def __init__(self, craft_box: 'CraftBox'):
+            self.craft_box = craft_box
 
         def select_json_file(self, filepath):
-            file_input = self.toolbox.browser.find_element(by=By.CSS_SELECTOR, value='form input#data')
+            file_input = self.craft_box.browser.find_element(by=By.CSS_SELECTOR, value='form input#data')
             file_input.send_keys(filepath)
 
         def select_image_files(self, filepath):
-            file_input = self.toolbox.browser.find_element(by=By.CSS_SELECTOR, value='form input#images')
+            file_input = self.craft_box.browser.find_element(by=By.CSS_SELECTOR, value='form input#images')
             file_input.send_keys(filepath)
 
         def upload(self):
-            self.toolbox.browser.find_element(by=By.CSS_SELECTOR, value='form button#upload').click()
+            self.craft_box.browser.find_element(by=By.CSS_SELECTOR, value='form button#upload').click()
 
         def cancel(self):
-            self.toolbox.browser.find_element(by=By.CSS_SELECTOR, value='form button#cancel').click()
+            self.craft_box.browser.find_element(by=By.CSS_SELECTOR, value='form button#cancel').click()
 
         def accept_success_alert(self):
-            self.toolbox.helper.accept_alert('Upload Success!')
+            self.craft_box.helper.accept_alert('Upload Success!')
 
         def accept_failure_alert(self):
-            self.toolbox.helper.accept_alert('^Upload Failed:.*', regex_match=True)
+            self.craft_box.helper.accept_alert('^Upload Failed:.*', regex_match=True)
 
     def __init__(self, browser: WebDriver, helper: 'GameHelper'):
         self.browser = browser
         self.helper = helper
-        self.upload_kit: 'Toolbox.UploadKit' = Toolbox.UploadKit(self)
+        self.upload_kit: 'CraftBox.UploadKit' = CraftBox.UploadKit(self)
         self.export_table = object()
 
     def use(self, tool):
         if tool == self.upload_kit:
-            self.helper.click_at(self.helper.component_by_name('Toolbox'), By.CSS_SELECTOR, 'button#upload_kit')
+            self.helper.click_at(self.helper.component_by_name('CraftBox'), By.CSS_SELECTOR, 'button#upload_kit')
         elif tool == self.export_table:
-            self.helper.click_at(self.helper.component_by_name('Toolbox'), By.CSS_SELECTOR, 'button#export_table')
+            self.helper.click_at(self.helper.component_by_name('CraftBox'), By.CSS_SELECTOR, 'button#export_table')
         else:
             raise ValueError(f'tool {tool} is not supported')
 
@@ -287,12 +287,12 @@ class Toolbox:
 class GameHelper:
     def __init__(self, browser: WebDriver, base_url=TOP):
         self.menu: GameMenu = GameMenu(browser)
-        self.toolbox: Toolbox = Toolbox(browser, self)
+        self.craft_box: CraftBox = CraftBox(browser, self)
         self.browser: WebDriver = browser
         self.base_url = base_url
 
     @staticmethod
-    def player(browser, as_host=True):
+    def player(browser, as_host=True) -> "GameHelper":
         player = GameHelper(browser)
         if as_host:
             player.go(TOP)

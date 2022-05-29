@@ -7,25 +7,25 @@ from .helper import GameHelper, TOP
 
 
 @pytest.mark.usefixtures("server")
-class TestToolbox:
+class TestCraftBox:
     def test_open(self, browser: webdriver.Firefox):
         host = GameHelper.player(browser)
 
-        host.menu.open_toolbox.execute()
-        host.should_see_component('Toolbox')
+        host.menu.open_craft_box.execute()
+        host.should_see_component('CraftBox')
 
     def test_close(self, browser: webdriver.Firefox):
         host = GameHelper.player(browser)
 
-        host.menu.open_toolbox.execute()
-        host.menu.close_toolbox.execute()
-        host.should_not_see_component('Toolbox')
+        host.menu.open_craft_box.execute()
+        host.menu.close_craft_box.execute()
+        host.should_not_see_component('CraftBox')
 
     def test_use_export_table(self, browser: webdriver.Firefox):
         host = GameHelper.player(browser)
 
-        host.menu.open_toolbox.execute()
-        host.toolbox.use(host.toolbox.export_table)
+        host.menu.open_craft_box.execute()
+        host.craft_box.use(host.toolbox.export_table)
         sleep(0.1)
         assert 'export?tablename' in host.current_url
 

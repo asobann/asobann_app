@@ -41,7 +41,7 @@ ATTRS_IN_ORDER = [
     'positionOfBoxContents',
     'stowage',
     "onAdd",
-    'toolboxFunction',
+    'craftBoxFunction',
     'editable',
     'rotatable',
 
@@ -166,78 +166,6 @@ class ComponentRegistry:
             kit_data['usedComponentNames'] = sorted(list(used_component_names))  # sort for stabilize test
 
         return data_for_deploy
-
-
-def generate_toolbox(reg: ComponentRegistry):
-    kit = reg.kit()
-
-    kit.description = {
-        "name": "Toolbox",
-        "label": "Toolbox",
-        "label_ja": "道具箱",
-        "width": "400px",
-        "height": "300px"
-    }
-
-    box = kit.box({
-        "name": "Toolbox",
-        "text": "Toolbox",
-        "text_ja": "道具箱",
-        "handArea": False,
-        "top": "0px",
-        "left": "0px",
-        "height": "300px",
-        "width": "460px",
-        "color": "darkgray",
-        "showImage": False,
-        "draggable": True,
-        "flippable": False,
-        "resizable": True,
-        "rollable": False,
-        "ownable": False,
-        "traylike": True,
-        "boxOfComponents": True,
-        "cardistry": ["collect"],
-        "zIndex": 1,
-    })
-
-    template = {
-        "height": "100px",
-        "width": "125px",
-        "draggable": True,
-        "flippable": False,
-        "ownable": False,
-        "resizable": True,
-        "color": "cyan",
-        "textColor": "black",
-    }
-
-    z_index = 100
-    offset = 0
-
-    card = {
-        "name": "Export Table",
-        "top": f"{int(offset / 3) * 110}px",
-        "left": f"{(offset % 3) * 135 + 60}px",
-        "text": "Export Table",
-        "toolboxFunction": "export table",
-        "zIndex": z_index,
-    }
-    box.add_component(card, template=template)
-    z_index -= 1
-    offset += 1
-
-    card = {
-        "name": "Upload Kit",
-        "top": f"{int(offset / 3) * 110}px",
-        "left": f"{(offset % 3) * 135 + 60}px",
-        "text": "Upload Kit",
-        "toolboxFunction": "upload kit",
-        "zIndex": z_index,
-    }
-    box.add_component(card, template=template)
-    z_index -= 1
-    offset += 1
 
 
 def generate_note(reg: ComponentRegistry):
@@ -820,7 +748,6 @@ def write_default_table_json():
 
 def write_initial_deploy_data_json():
     registry = ComponentRegistry()
-    generate_toolbox(registry)
     generate_note(registry)
     generate_dice(registry)
     generate_playing_card(registry)

@@ -73,10 +73,10 @@ const basic = {
         }
 
         function buildTextContent(component, data) {
-            if (data.toolboxFunction) {
+            if (data.craftBoxFunction) {
                 component.textEl = el("button.component_text", {
                     onclick: () => {
-                        craft_box.use(data.toolboxFunction);
+                        craft_box.use(data.craftBoxFunction);
                     }
                 });
                 if (component.el.children.length > 0) {

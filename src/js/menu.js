@@ -100,7 +100,7 @@ class Menu {
                         }
                     }, _("copy")),
                 ]),
-                menuitem("open_toolbox", _("Open Toolbox"), { href: "", onclick: openCraftBox }),
+                menuitem("open_craft_box", _("Open CraftBox"), { href: "", onclick: openCraftBox }),
                 menuitem("import_table", _("Import Table"), { href: "", onclick: showImport }),
                 el("div.menuitem.about", [
                     el("a", {

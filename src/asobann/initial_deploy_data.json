@@ -2,67 +2,6 @@
   "components": [
     {
       "component": {
-        "name": "Toolbox",
-        "top": "0px",
-        "left": "0px",
-        "height": "300px",
-        "width": "460px",
-        "color": "darkgray",
-        "showImage": false,
-        "text": "Toolbox",
-        "text_ja": "\u9053\u5177\u7bb1",
-        "handArea": false,
-        "draggable": true,
-        "flippable": false,
-        "ownable": false,
-        "resizable": true,
-        "rollable": false,
-        "traylike": true,
-        "boxOfComponents": true,
-        "cardistry": [
-          "collect"
-        ],
-        "zIndex": 1
-      }
-    },
-    {
-      "component": {
-        "name": "Export Table",
-        "top": "0px",
-        "left": "60px",
-        "height": "100px",
-        "width": "125px",
-        "color": "cyan",
-        "textColor": "black",
-        "text": "Export Table",
-        "draggable": true,
-        "flippable": false,
-        "ownable": false,
-        "resizable": true,
-        "toolboxFunction": "export table",
-        "zIndex": 100
-      }
-    },
-    {
-      "component": {
-        "name": "Upload Kit",
-        "top": "0px",
-        "left": "195px",
-        "height": "100px",
-        "width": "125px",
-        "color": "cyan",
-        "textColor": "black",
-        "text": "Upload Kit",
-        "draggable": true,
-        "flippable": false,
-        "ownable": false,
-        "resizable": true,
-        "toolboxFunction": "upload kit",
-        "zIndex": 99
-      }
-    },
-    {
-      "component": {
         "name": "Note",
         "top": "0px",
         "left": "0px",
@@ -3447,26 +3386,6 @@
     }
   ],
   "kits": [
-    {
-      "kit": {
-        "name": "Toolbox",
-        "label": "Toolbox",
-        "label_ja": "\u9053\u5177\u7bb1",
-        "width": "400px",
-        "height": "300px",
-        "boxAndComponents": {
-          "Toolbox": [
-            "Export Table",
-            "Upload Kit"
-          ]
-        },
-        "usedComponentNames": [
-          "Export Table",
-          "Toolbox",
-          "Upload Kit"
-        ]
-      }
-    },
     {
       "kit": {
         "name": "Note",

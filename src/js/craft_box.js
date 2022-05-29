@@ -40,12 +40,12 @@ class CraftBox {
                 "handArea": false,
                 "height": "300px",
                 "left": "0px",
-                "name": "Toolbox",
+                "name": "CraftBox",
                 "ownable": false,
                 "resizable": true,
                 "rollable": false,
                 "showImage": false,
-                "text": "Toolbox",
+                "text": "CraftBox",
                 "text_ja": "道具箱",
                 "top": "0px",
                 "traylike": true,
@@ -64,7 +64,7 @@ class CraftBox {
                 "resizable": true,
                 "text": "Export Table",
                 "textColor": "black",
-                "toolboxFunction": "export table",
+                "craftBoxFunction": "export table",
                 "top": "0px",
                 "width": "125px",
                 "zIndex": 100
@@ -81,7 +81,7 @@ class CraftBox {
                 "resizable": true,
                 "text": "Upload Kit",
                 "textColor": "black",
-                "toolboxFunction": "upload kit",
+                "craftBoxFunction": "upload kit",
                 "top": "0px",
                 "width": "125px",
                 "zIndex": 99
@@ -194,12 +194,12 @@ const craft_box = {
 function getCraftBoxKit() {
     const kit = {
         "kit": {
-            "boxAndComponents": { "Toolbox": ["Export Table", "Upload Kit"] },
+            "boxAndComponents": { "CraftBox": ["Export Table", "Upload Kit"] },
             "height": "300px",
-            "label": "Toolbox",
+            "label": "CraftBox",
             "label_ja": "\u9053\u5177\u7bb1",
-            "name": "Toolbox",
-            "usedComponentNames": ["Export Table", "Toolbox", "Upload Kit"],
+            "name": "CraftBox",
+            "usedComponentNames": ["Export Table", "CraftBox", "Upload Kit"],
             "width": "400px"
         }
     }
