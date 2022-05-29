@@ -8,7 +8,7 @@ beforeEach(() => {
     table = new Table({
         getPlayerName: () => 'player',
         isPlayerObserver: () => false,
-        feats_to_use: []
+        available_feats: []
     });
     table.receiveData({
         components: {

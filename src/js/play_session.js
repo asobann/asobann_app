@@ -457,7 +457,7 @@ craft_box.setTableName(tablename);
 document.title = tablename + " on asobann";
 const container = el("div.container");
 mount(document.body, container);
-const table = new Table({ getPlayerName, isPlayerObserver, feats_to_use: feats });
+const table = new Table({ getPlayerName, isPlayerObserver, available_feats: feats });
 table.el.addEventListener('tableContentsChanged', () => {
     menu.update(table.data);
 });

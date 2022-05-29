@@ -34,7 +34,7 @@ describe('3 levels of user action', () => {
         table = new Table({
             getPlayerName: () => 'player',
             isPlayerObserver: () => false,
-            feats_to_use: [feat_for_test]
+            available_feats: [feat_for_test]
         });
         feat_for_test.updateView = jest.fn();
         table.receiveData({

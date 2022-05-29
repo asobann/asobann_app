@@ -101,10 +101,10 @@ class Overlay {
 
 
 class Component {
-    constructor(table, data, feats_to_use, overlay) {
+    constructor(table, data, available_feats, overlay) {
         this.table = table;
         this.el = el(".component");
-        this.feats = feats_to_use;
+        this.feats = available_feats;
         this.overlay = overlay;
         for (const ability of this.feats) {
             ability.install(this, data);
@@ -242,10 +242,10 @@ class QueueForUpdatingView {
 }
 
 class Table {
-    constructor({ getPlayerName, isPlayerObserver, feats_to_use }) {
+    constructor({ getPlayerName, isPlayerObserver, available_feats }) {
         this.getPlayerName = getPlayerName;
         this.isPlayerObserver = isPlayerObserver;
-        this.feats = feats_to_use;
+        this.feats = available_feats;
         this.overlay = new Overlay();
         setFeatsContext(this.getPlayerName, this.isPlayerObserver, this);
         console.log("new Table");
@@ -326,6 +326,21 @@ class Table {
         this.receiveData(data);
         this.updateView();
         dev_inspector.tracePoint('finish updating table');
+    }
+
+    addCraftBoxComponent(componentData) {
+        // This is called when a component is added ON THIS BROWSER.
+        this.data.components[componentData.componentId] = componentData;
+        this.componentsOnTable[componentData.componentId] = new Component(this, componentData, this.feats, this.overlay);
+        mount(this.list_el, this.componentsOnTable[componentData.componentId].el);
+        this.componentsOnTable[componentData.componentId].update(componentData, componentData.componentId);
+        event.fireEvent(this.componentsOnTable[componentData.componentId], event.events.onPositionChanged,
+            {
+                left: parseFloat(componentData.left),
+                top: parseFloat(componentData.top),
+                width: parseFloat(componentData.width),
+                height: parseFloat(componentData.height),
+            });
     }
 
     addComponent(componentData) {
