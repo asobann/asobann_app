@@ -22,10 +22,10 @@ class TestCraftBox:
         host.should_not_see_component('CraftBox')
 
     def test_use_export_table(self, browser: webdriver.Firefox):
-        host = GameHelper.player(browser)
+        host: GameHelper = GameHelper.player(browser)
 
         host.menu.open_craft_box.execute()
-        host.craft_box.use(host.toolbox.export_table)
+        host.craft_box.use(host.craft_box.export_table)
         sleep(0.1)
         assert 'export?tablename' in host.current_url
 

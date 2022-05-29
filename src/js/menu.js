@@ -19,7 +19,6 @@ const MENU_CONNECTOR_DEFINITION = {
     addNewKit: null,
     removeKit: null,
     addNewComponent: null,
-    addNewComponentWithinKit: null,
     removeHandArea: null,
     isPlayerObserver: null,
     isTherePlayersHandArea: null,

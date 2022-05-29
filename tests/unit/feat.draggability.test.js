@@ -13,7 +13,7 @@ beforeEach(() => {
         {
             getPlayerName: () => 'player',
             isPlayerObserver: () => false,
-            available_feats: feats
+            availableFeats: feats
         });
     setFeatsContext(() => 'player', () => false, table);
 });

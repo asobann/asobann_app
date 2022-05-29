@@ -1,9 +1,8 @@
-import {el, mount, unmount} from "redom";
-import {_} from "./i18n.js";
+import {el, mount, setAttr, setStyle, unmount} from "redom";
+import {_, language} from "./i18n.js";
 
 const CRAFT_BOX_CONNECTOR_DEFINITION = {
-    addNewComponentWithinKit: null,
-    pushNewKitAndComponents: null,
+    addNewCraftBoxComponent: null, pushNewKitAndComponents: null,
 };
 
 class CraftBoxConnector {
@@ -28,79 +27,38 @@ class CraftBox {
             return (Math.random() * 16 | 0).toString(16);
         });
 
-        this.connector.addNewComponentWithinKit(
-            {
-                "boxOfComponents": true,
-                "cardistry": [
-                    "collect"
-                ],
-                "color": "darkgray",
-                "draggable": true,
-                "flippable": false,
-                "handArea": false,
-                "height": "300px",
-                "left": "0px",
-                "name": "CraftBox",
-                "ownable": false,
-                "resizable": true,
-                "rollable": false,
-                "showImage": false,
-                "text": "CraftBox",
-                "text_ja": "道具箱",
-                "top": "0px",
-                "traylike": true,
-                "width": "460px",
-                "zIndex": 1
-            }, kitId);
-        this.connector.addNewComponentWithinKit(
-            {
-                "color": "cyan",
-                "draggable": true,
-                "flippable": false,
-                "height": "100px",
-                "left": "60px",
-                "name": "Export Table",
-                "ownable": false,
-                "resizable": true,
-                "text": "Export Table",
-                "textColor": "black",
-                "craftBoxFunction": "export table",
-                "top": "0px",
-                "width": "125px",
-                "zIndex": 100
-            }, kitId);
-        this.connector.addNewComponentWithinKit(
-            {
-                "color": "cyan",
-                "draggable": true,
-                "flippable": false,
-                "height": "100px",
-                "left": "195px",
-                "name": "Upload Kit",
-                "ownable": false,
-                "resizable": true,
-                "text": "Upload Kit",
-                "textColor": "black",
-                "craftBoxFunction": "upload kit",
-                "top": "0px",
-                "width": "125px",
-                "zIndex": 99
-            }, kitId);
         this.connector.pushNewKitAndComponents({
-                kit: { name: kitData.kit.name, kitId: kitId },
-            }, {}
-        );
+            kit: { name: kitData.kit.name, kitId: kitId },
+        }, {});
+        this.connector.addNewCraftBoxComponent({
+            "craftBox": true,
+            "boxOfComponents": true,
+            "color": "darkgray",
+            "draggable": true,
+            "flippable": false,
+            "handArea": false,
+            "height": "300px",
+            "left": "0px",
+            "name": "CraftBox",
+            "ownable": false,
+            "resizable": true,
+            "rollable": false,
+            "showImage": false,
+            "text": "CraftBox",
+            "text_ja": "道具箱",
+            "top": "0px",
+            "traylike": true,
+            "width": "460px",
+            "zIndex": 1
+        }, kitId);
+    }
+
+    setTableName(tablename) {
+        craft_box.context.tablename = tablename;
     }
 }
 
 const craft_box = {
-    map: {
-        'export table': "exportTable",
-        'upload kit': "uploadKit",
-    },
-    use: (funcationName) => {
-        craft_box[craft_box.map[funcationName]]();
-    },
     exportTable: function () {
         location.assign("/export?tablename=" + craft_box.context.tablename);
     },
@@ -109,18 +67,23 @@ const craft_box = {
         mount(document.body, background);
         const contents = el('div.modal_contents');
         mount(background, contents);
-        const form = el('form', { method: 'POST', action: '/kits/create', enctype: 'multipart/form-data' },
-            [
-                el('label', { 'for': 'data' }, _('Kit JSON File')),
-                el('input', { 'type': 'file', 'name': 'data', 'id': 'data' }),
-                el('br'),
-                el('label', { 'for': 'images' }, _('Image Files')),
-                el('input', { 'type': 'file', 'name': 'images', 'id': 'images', 'multiple': true }),
-                el('br'),
-                el('button', { onclick: submitUploadKitForm, id: 'upload' }, _('Upload Kit')),
-                el('br'),
-                el('button', { onclick: cancelForm, id: 'cancel' }, _('Cancel')),
-            ]);
+        const form = el('form', {
+            method: 'POST',
+            action: '/kits/create',
+            enctype: 'multipart/form-data'
+        }, [el('label', { 'for': 'data' }, _('Kit JSON File')), el('input', {
+            'type': 'file',
+            'name': 'data',
+            'id': 'data'
+        }), el('br'), el('label', { 'for': 'images' }, _('Image Files')), el('input', {
+            'type': 'file',
+            'name': 'images',
+            'id': 'images',
+            'multiple': true
+        }), el('br'), el('button', {
+            onclick: submitUploadKitForm,
+            id: 'upload'
+        }, _('Upload Kit')), el('br'), el('button', { onclick: cancelForm, id: 'cancel' }, _('Cancel')),]);
         mount(contents, form);
 
 
@@ -206,5 +169,39 @@ function getCraftBoxKit() {
     return kit;
 }
 
+const basicCraftBox = {
+    install: function (component, data) {
+        if(!this.isEnabled(component, data)) {
+            return;
+        }
+        mount(component.el,
+            el('div', [
+                el("button.component_text#upload_kit", {
+                    onclick: () => { craft_box.uploadKit(); }
+                }, [_('Upload Kit')])
+            ])
+        );
+        mount(component.el,
+            el('div', [
+                el("button.component_text#export_table", {
+                    onclick: () => { craft_box.exportTable(); }
+                }, [_('Export Table')])
+            ])
+        );
+    },
+    isEnabled: function (component, data) {
+        return data.craftBox === true;
+    },
+    receiveData(component, data) {
+    },
+    updateView(component, data) {
+    },
+    uninstall: function () {
+    },
+}
 
-export {craft_box, getCraftBoxKit, CraftBox, CraftBoxConnector};
+const feats = [
+    basicCraftBox,
+];
+
+export {CraftBox, CraftBoxConnector, feats};

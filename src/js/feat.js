@@ -73,24 +73,11 @@ const basic = {
         }
 
         function buildTextContent(component, data) {
-            if (data.craftBoxFunction) {
-                component.textEl = el("button.component_text", {
-                    onclick: () => {
-                        craft_box.use(data.craftBoxFunction);
-                    }
-                });
-                if (component.el.children.length > 0) {
-                    mount(component.el, el('div', [component.textEl]), component.el.children[0]);
-                } else {
-                    mount(component.el, el('div', [component.textEl]));
-                }
+            component.textEl = el("span.component_text");
+            if (component.el.children.length > 0 && component.el.children[0].tagName !== 'IMG') {
+                mount(component.el, el('div', [component.textEl]), component.el.children[0]);
             } else {
-                component.textEl = el("span.component_text");
-                if (component.el.children.length > 0 && component.el.children[0].tagName !== 'IMG') {
-                    mount(component.el, el('div', [component.textEl]), component.el.children[0]);
-                } else {
-                    mount(component.el, el('div', [component.textEl]));
-                }
+                mount(component.el, el('div', [component.textEl]));
             }
         }
 
@@ -1287,7 +1274,7 @@ const featsContext = {
         if (!eventName) {
             throw `fireEvent: eventName must be specified but was ${eventName}`
         }
-        if (!component.featEventListeners[eventName]) {
+        if (!component.featEventListeners || !component.featEventListeners[eventName]) {
             return;
         }
         for (const entry of component.featEventListeners[eventName]) {

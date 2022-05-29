@@ -9,16 +9,16 @@ import {
     pushSyncWithMe,
     setTableContext,
 } from "./sync_table.js";
-import {craft_box} from "./craft_box.js"
 import {Menu, MenuConnector} from "./menu.js";
-import {CraftBox, CraftBoxConnector} from "./craft_box.js";
+import {CraftBox, CraftBoxConnector, feats as featsForCraftBox} from "./craft_box.js";
 import {dev_inspector} from "./dev_inspector.js"
 import interact from 'interactjs';
 
 import '../style/game.css';
-import {feats} from "./feat";
+import {basic, feats as basicFeats} from "./feat";
 import "./feats/overlaid_controls";
 
+const feats = basicFeats.concat(featsForCraftBox);
 function baseUrl() {
     return location.protocol + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/";
 }
@@ -400,7 +400,7 @@ function addNewComponent(newComponentData) {
     return false;
 }
 
-function addNewComponentWithinKit(newComponentData, kitId) {
+function addNewCraftBoxComponent(newComponentData, kitId) {
     newComponentData.componentId = generateComponentId();
     newComponentData.kitId = kitId;
     placeNewComponent(newComponentData);
@@ -453,11 +453,13 @@ function setPlayerIsJoined() {
 }
 
 const tablename = location.pathname.split("/")[2];
-craft_box.setTableName(tablename);
 document.title = tablename + " on asobann";
 const container = el("div.container");
 mount(document.body, container);
-const table = new Table({ getPlayerName, isPlayerObserver, available_feats: feats });
+const table = new Table({
+    getPlayerName,
+    isPlayerObserver,
+    availableFeats: feats});
 table.el.addEventListener('tableContentsChanged', () => {
     menu.update(table.data);
 });
@@ -504,10 +506,11 @@ setTableContext(tablename, syncTableConnector);
 
 const craftBox = new CraftBox(
     new CraftBoxConnector({
-        addNewComponentWithinKit: addNewComponentWithinKit,
+        addNewCraftBoxComponent: addNewCraftBoxComponent,
         pushNewKitAndComponents: pushNewKitAndComponents,
     })
 );
+craftBox.setTableName(tablename);
 
 const menu = new Menu(
     new MenuConnector({
@@ -522,7 +525,6 @@ const menu = new Menu(
         addNewKit: addNewKit,
         removeKit: removeKit,
         addNewComponent: addNewComponent,
-        addNewComponentWithinKit: addNewComponentWithinKit,
         removeHandArea: removeHandArea,
         isPlayerObserver: isPlayerObserver,
         isTherePlayersHandArea: isTherePlayersHandArea,
