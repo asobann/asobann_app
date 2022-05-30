@@ -122,7 +122,10 @@ def handle_add_component(json):
 def handle_add_kit(json):
     current_app.logger.info(f'add kit')
     current_app.logger.debug(f'add kit: {json}')
-    tables.add_new_kit_and_components(json['tablename'], json['kitData']['kit'], json['newComponents'])
+    tables.add_new_kit_and_components(
+        tablename=json['tablename'],
+        kitData=json['kitData']['kit'],
+        components=json['newComponents'])
     emit('add kit',
          {"tablename": json["tablename"],
           "kit": json["kitData"]["kit"],

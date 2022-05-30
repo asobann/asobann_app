@@ -115,12 +115,15 @@ def update_components(tablename, diff_of_components):
     tables.update_one({"tablename": tablename}, {"$set": modification})
 
 
-def add_new_kit_and_components(tablename, kit, components):
-    tables.update_one({"tablename": tablename}, {"$push": {"table.kits": kit}})
+def add_new_kit_and_components(tablename, kitData, components):
+    tables.update_one({"tablename": tablename}, {"$push": {"table.kits": kitData}})
     modification = {}
     for component_id in components.keys():
         mod_key = f'table.components.{component_id}'
         modification[mod_key] = components[component_id]
+    if not modification:
+        # update_one() will fail if $set is empty
+        return
     tables.update_one({"tablename": tablename}, {"$set": modification})
 
 
