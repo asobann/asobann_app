@@ -23,6 +23,7 @@ const MENU_CONNECTOR_DEFINITION = {
     isPlayerObserver: null,
     isTherePlayersHandArea: null,
     openCraftBox: null,
+    isCraftBoxOpen: null,
 };
 
 class MenuConnector {
@@ -99,7 +100,8 @@ class Menu {
                         }
                     }, _("copy")),
                 ]),
-                menuitem("open_craft_box", _("Open CraftBox"), { href: "", onclick: openCraftBox }),
+                this.openCraftBoxItem = menuitem("open_craft_box", _("Open CraftBox"), { href: "", onclick: openCraftBox }),
+                this.closeCraftBoxItem = menuitem("close_craft_box", _("Close CraftBox"), { href: "", onclick: closeCraftBox }),
                 menuitem("import_table", _("Import Table"), { href: "", onclick: showImport }),
                 el("div.menuitem.about", [
                     el("a", {
@@ -142,6 +144,11 @@ class Menu {
 
         function openCraftBox() {
             self.connector.openCraftBox();
+            return false;
+        }
+
+        function closeCraftBox() {
+            self.connector.closeCraftBox();
             return false;
         }
 
@@ -240,6 +247,8 @@ class Menu {
             this.playerStatusEl.innerText = _("observing");
             setStyle(this.addHandAreaItem, { display: 'none' });
             setStyle(this.removeHandAreaItem, { display: 'none' });
+            setStyle(this.openCraftBoxItem, { display: 'none' });
+            setStyle(this.closeCraftBoxItem, { display: 'none' });
             return;
         }
 
@@ -254,6 +263,14 @@ class Menu {
         } else {
             setStyle(this.addHandAreaItem, { display: null });
             setStyle(this.removeHandAreaItem, { display: 'none' });
+        }
+
+        if (this.connector.isCraftBoxOpen()) {
+            setStyle(this.openCraftBoxItem, { display: 'none' });
+            setStyle(this.closeCraftBoxItem, { display: null });
+        } else {
+            setStyle(this.openCraftBoxItem, { display: null });
+            setStyle(this.closeCraftBoxItem, { display: 'none' });
         }
 
         if (this.componentMenu) {

@@ -508,6 +508,9 @@ const craftBox = new CraftBox(
     new CraftBoxConnector({
         addNewCraftBoxComponent: addNewCraftBoxComponent,
         pushNewKitAndComponents: pushNewKitAndComponents,
+        isKitOnTable: (kitName) => { return table.isKitOnTable(kitName); },
+        getKitIdByName: (kitName) => { return table.getKitIdByName(kitName); },
+        removeKit: removeKit,
     })
 );
 craftBox.setTableName(tablename);
@@ -528,7 +531,15 @@ const menu = new Menu(
         removeHandArea: removeHandArea,
         isPlayerObserver: isPlayerObserver,
         isTherePlayersHandArea: isTherePlayersHandArea,
-        openCraftBox: () => {craftBox.open();},
+        openCraftBox: () => {
+            craftBox.open();
+            menu.update({});
+        },
+        closeCraftBox: () => {
+            craftBox.close();
+            menu.update({});
+        },
+        isCraftBoxOpen: () => { return craftBox.isOpen(); },
     }));
 mount(container, menu.el);
 

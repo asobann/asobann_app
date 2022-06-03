@@ -1,8 +1,13 @@
 import {el, mount, setAttr, setStyle, unmount} from "redom";
 import {_, language} from "./i18n.js";
 
+const CRAFT_BOX_KIT_NAME = "asobann/CraftBox"
+
 const CRAFT_BOX_CONNECTOR_DEFINITION = {
-    addNewCraftBoxComponent: null, pushNewKitAndComponents: null,
+    addNewCraftBoxComponent: null,
+    pushNewKitAndComponents: null,
+    isKitOnTable: null,
+    getKitIdbyName: null,
 };
 
 class CraftBoxConnector {
@@ -10,6 +15,11 @@ class CraftBoxConnector {
         for (const key in CRAFT_BOX_CONNECTOR_DEFINITION) {
             if (!connector[key]) {
                 console.debug(`CaftBoxConnector connector must have ${key}`);
+            }
+        }
+        for (const key in connector) {
+            if (CRAFT_BOX_CONNECTOR_DEFINITION[key] === undefined) {
+                console.debug(`CaftBoxConnector has undefined entry ${key}`);
             }
         }
         this.connector = connector;
@@ -53,6 +63,13 @@ class CraftBox {
         }, kitId);
     }
 
+    close() {
+        this.connector.removeKit(this.connector.getKitIdByName(CRAFT_BOX_KIT_NAME));
+    }
+
+    isOpen() {
+        return this.connector.isKitOnTable(CRAFT_BOX_KIT_NAME);
+    }
     setTableName(tablename) {
         craft_box.context.tablename = tablename;
     }
@@ -161,7 +178,7 @@ function getCraftBoxKit() {
             "height": "300px",
             "label": "CraftBox",
             "label_ja": "\u9053\u5177\u7bb1",
-            "name": "CraftBox",
+            "name": CRAFT_BOX_KIT_NAME,
             "usedComponentNames": ["Export Table", "CraftBox", "Upload Kit"],
             "width": "400px"
         }

@@ -29,3 +29,28 @@ class TestCraftBox:
         sleep(0.1)
         assert 'export?tablename' in host.current_url
 
+
+@pytest.mark.usefixtures("server")
+class TestCraftBoxWithOtherPlayers:
+    def test_open_is_sync(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+        host = GameHelper.player(browser)
+
+        another = GameHelper.player(another_browser)
+        another.go(host.current_url)
+        another.menu.join("Player 2")
+
+        host.menu.open_craft_box.execute()
+        host.should_see_component('CraftBox')
+        another.should_see_component('CraftBox')
+
+    def test_close_by_another(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+        host = GameHelper.player(browser)
+
+        another = GameHelper.player(another_browser)
+        another.go(host.current_url)
+        another.menu.join("Player 2")
+
+        host.menu.open_craft_box.execute()
+        another.menu.close_craft_box.execute()
+        host.should_not_see_component('CraftBox')
+        another.should_not_see_component('CraftBox')

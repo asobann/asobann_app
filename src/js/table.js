@@ -426,6 +426,19 @@ class Table {
         }
         return handAreasData;
     }
+
+    getKitIdByName(kitName) {
+        for (const existKit of this.data.kits) {
+            if (existKit.name === kitName) {
+                return existKit.kitId;
+            }
+        }
+        return null;
+    }
+
+    isKitOnTable(kitName) {
+        return this.getKitIdByName(kitName) != null;
+    }
 }
 
 export {
