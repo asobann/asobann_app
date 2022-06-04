@@ -7,7 +7,8 @@ const CRAFT_BOX_CONNECTOR_DEFINITION = {
     addNewCraftBoxComponent: null,
     pushNewKitAndComponents: null,
     isKitOnTable: null,
-    getKitIdbyName: null,
+    getKitIdByName: null,
+    removeKit: null,
 };
 
 class CraftBoxConnector {

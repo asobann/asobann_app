@@ -29,6 +29,18 @@ class TestCraftBox:
         sleep(0.1)
         assert 'export?tablename' in host.current_url
 
+    def test_crafting_kit_with_new_kit(self, browser: webdriver.Firefox):
+        host: GameHelper = GameHelper.player(browser)
+
+        host.menu.open_craft_box.execute()
+        host.craft_box.use(host.craft_box.craft_kit)
+        host.craft_box.use(host.craft_box.kit_box.create_new)
+        new_kit_json = host.craft_box.kit_box.raw_kit_json
+        assert new_kit_json == {
+            "kit": {},
+            "components": [],
+        }
+
 
 @pytest.mark.usefixtures("server")
 class TestCraftBoxWithOtherPlayers:

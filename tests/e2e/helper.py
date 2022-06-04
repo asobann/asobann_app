@@ -274,14 +274,19 @@ class CraftBox:
         self.helper = helper
         self.upload_kit: 'CraftBox.UploadKit' = CraftBox.UploadKit(self)
         self.export_table = object()
+        self.craft_kit = object()
+        self.kit_box = object()
 
     def use(self, tool):
-        if tool == self.upload_kit:
-            self.helper.click_at(self.helper.component_by_name('CraftBox'), By.CSS_SELECTOR, 'button#upload_kit')
-        elif tool == self.export_table:
-            self.helper.click_at(self.helper.component_by_name('CraftBox'), By.CSS_SELECTOR, 'button#export_table')
-        else:
-            raise ValueError(f'tool {tool} is not supported')
+        match tool:
+            case self.upload_kit:
+                self.helper.click_at(self.helper.component_by_name('CraftBox'), By.CSS_SELECTOR, 'button#upload_kit')
+            case self.export_table:
+                self.helper.click_at(self.helper.component_by_name('CraftBox'), By.CSS_SELECTOR, 'button#export_table')
+            case self.craft_kit:
+                self.helper.click_at(self.helper.component_by_name('CraftBox'), By.CSS_SELECTOR, 'button#craft_kit')
+            case _:
+                raise ValueError(f'tool {tool} is not supported')
 
 
 class GameHelper:
