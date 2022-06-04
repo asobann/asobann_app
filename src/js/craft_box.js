@@ -27,7 +27,8 @@ class CraftBoxConnector {
 }
 
 class CraftBox {
-    constructor(connector) {
+    constructor(tablename, connector) {
+        craft_box.context.tablename = tablename;
         this.connector = connector.connector;
     }
 
@@ -69,9 +70,6 @@ class CraftBox {
 
     isOpen() {
         return this.connector.isKitOnTable(CRAFT_BOX_KIT_NAME);
-    }
-    setTableName(tablename) {
-        craft_box.context.tablename = tablename;
     }
 }
 
@@ -164,9 +162,6 @@ const craft_box = {
             unmount(document.body, background);
             return false;
         }
-    },
-    setTableName: function (tablename) {
-        craft_box.context.tablename = tablename;
     },
     context: {}
 };

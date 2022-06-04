@@ -505,6 +505,7 @@ function isTherePlayersHandArea(playerName) {
 setTableContext(tablename, syncTableConnector);
 
 const craftBox = new CraftBox(
+    tablename,
     new CraftBoxConnector({
         addNewCraftBoxComponent: addNewCraftBoxComponent,
         pushNewKitAndComponents: pushNewKitAndComponents,
@@ -513,7 +514,6 @@ const craftBox = new CraftBox(
         removeKit: removeKit,
     })
 );
-craftBox.setTableName(tablename);
 
 const menu = new Menu(
     new MenuConnector({
