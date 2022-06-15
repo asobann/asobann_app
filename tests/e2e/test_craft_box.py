@@ -42,6 +42,10 @@ class TestCraftBox:
             "components": [],
         }
 
+    # TODO
+    @pytest.mark.skip
+    def test_drag_textarea(self, browser: webdriver.Firefox):
+        pass
 
 @pytest.mark.usefixtures("server")
 class TestCraftBoxWithOtherPlayers:

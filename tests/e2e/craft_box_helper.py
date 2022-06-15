@@ -37,7 +37,7 @@ class CraftBox:
         def raw_kit_json(self):
             browser: WebDriver = self.craft_box.helper.browser
             el: WebElement = self.craft_box.helper.browser.find_element(by=By.CSS_SELECTOR, value="textarea#kit_json")
-            return json.loads(el.text)
+            return json.loads(el.get_attribute('value'))
 
     def __init__(self, browser: WebDriver, helper: 'GameHelper'):
         self.browser = browser

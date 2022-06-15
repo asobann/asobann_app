@@ -206,3 +206,8 @@ class TestFlipAll:
         assert 'card_back' in host.component_by_name('PlayingCard S_A').face()
         assert 'card_up' in host.component_by_name('PlayingCard S_K').face()
 
+
+# TODO
+@pytest.mark.skip
+def test_drag_button_textarea(self, server, browser: webdriver.Firefox):
+    pass
