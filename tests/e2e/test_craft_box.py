@@ -4,6 +4,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from .helper import GameHelper, TOP
+from .craft_box_helper import CraftBox
 
 
 @pytest.mark.usefixtures("server")
@@ -33,7 +34,7 @@ class TestCraftBox:
         host: GameHelper = GameHelper.player(browser)
 
         host.menu.open_craft_box.execute()
-        host.craft_box.use(host.craft_box.craft_kit)
+        host.craft_box.use(host.craft_box.open_kit_box)
         host.craft_box.use(host.craft_box.kit_box.create_new)
         new_kit_json = host.craft_box.kit_box.raw_kit_json
         assert new_kit_json == {

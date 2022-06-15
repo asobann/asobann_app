@@ -15,6 +15,8 @@ from selenium.webdriver.common.keys import Keys
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
+from .craft_box_helper import CraftBox
+
 TOP = "http://localhost:10011/"
 CUSTOMIZATION = "/customize"
 STAGING_TOP = "https://fast-dusk-61776.herokuapp.com/"
@@ -242,51 +244,6 @@ class GameMenu:
     def add_kit_done(self):
         css_selector = f"div.kit_selection button.done"
         self.browser.find_element(by=By.CSS_SELECTOR, value=css_selector).click()
-
-
-class CraftBox:
-    class UploadKit:
-        def __init__(self, craft_box: 'CraftBox'):
-            self.craft_box = craft_box
-
-        def select_json_file(self, filepath):
-            file_input = self.craft_box.browser.find_element(by=By.CSS_SELECTOR, value='form input#data')
-            file_input.send_keys(filepath)
-
-        def select_image_files(self, filepath):
-            file_input = self.craft_box.browser.find_element(by=By.CSS_SELECTOR, value='form input#images')
-            file_input.send_keys(filepath)
-
-        def upload(self):
-            self.craft_box.browser.find_element(by=By.CSS_SELECTOR, value='form button#upload').click()
-
-        def cancel(self):
-            self.craft_box.browser.find_element(by=By.CSS_SELECTOR, value='form button#cancel').click()
-
-        def accept_success_alert(self):
-            self.craft_box.helper.accept_alert('Upload Success!')
-
-        def accept_failure_alert(self):
-            self.craft_box.helper.accept_alert('^Upload Failed:.*', regex_match=True)
-
-    def __init__(self, browser: WebDriver, helper: 'GameHelper'):
-        self.browser = browser
-        self.helper = helper
-        self.upload_kit: 'CraftBox.UploadKit' = CraftBox.UploadKit(self)
-        self.export_table = object()
-        self.craft_kit = object()
-        self.kit_box = object()
-
-    def use(self, tool):
-        match tool:
-            case self.upload_kit:
-                self.helper.click_at(self.helper.component_by_name('CraftBox'), By.CSS_SELECTOR, 'button#upload_kit')
-            case self.export_table:
-                self.helper.click_at(self.helper.component_by_name('CraftBox'), By.CSS_SELECTOR, 'button#export_table')
-            case self.craft_kit:
-                self.helper.click_at(self.helper.component_by_name('CraftBox'), By.CSS_SELECTOR, 'button#craft_kit')
-            case _:
-                raise ValueError(f'tool {tool} is not supported')
 
 
 class GameHelper:

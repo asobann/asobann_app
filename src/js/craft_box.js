@@ -11,6 +11,8 @@ const CRAFT_BOX_CONNECTOR_DEFINITION = {
     removeKit: null,
 };
 
+const connector = {};
+
 class CraftBoxConnector {
     constructor(connector) {
         for (const key in CRAFT_BOX_CONNECTOR_DEFINITION) {
@@ -28,22 +30,22 @@ class CraftBoxConnector {
 }
 
 class CraftBox {
-    constructor(tablename, connector) {
-        craft_box.context.tablename = tablename;
-        this.connector = connector.connector;
+    constructor(tablename, connector_) {
+        craftBoxActions.context.tablename = tablename;
+        Object.assign(connector, connector_.connector);
     }
 
     open() {
         const kitData = getCraftBoxKit();
-        const kitId = 'xxxxxxxxxxxx'.replace(/[x]/g, function (/*c*/) {
+        this.kitId = 'xxxxxxxxxxxx'.replace(/[x]/g, function (/*c*/) {
             return (Math.random() * 16 | 0).toString(16);
         });
 
-        this.connector.pushNewKitAndComponents({
-            kit: { name: kitData.kit.name, kitId: kitId },
+        connector.pushNewKitAndComponents({
+            kit: { name: kitData.kit.name, kitId: this.kitId },
         }, {});
-        this.connector.addNewCraftBoxComponent({
-            "craftBox": true,
+        connector.addNewCraftBoxComponent({
+            "craftBox": 'main',
             "boxOfComponents": true,
             "color": "darkgray",
             "draggable": true,
@@ -62,21 +64,22 @@ class CraftBox {
             "traylike": true,
             "width": "460px",
             "zIndex": 1
-        }, kitId);
+        }, this.kitId);
     }
 
     close() {
-        this.connector.removeKit(this.connector.getKitIdByName(CRAFT_BOX_KIT_NAME));
+        connector.removeKit(connector.getKitIdByName(CRAFT_BOX_KIT_NAME));
     }
 
     isOpen() {
-        return this.connector.isKitOnTable(CRAFT_BOX_KIT_NAME);
+        return connector.isKitOnTable(CRAFT_BOX_KIT_NAME);
     }
+
 }
 
-const craft_box = {
+const craftBoxActions = {
     exportTable: function () {
-        location.assign("/export?tablename=" + craft_box.context.tablename);
+        location.assign("/export?tablename=" + craftBoxActions.context.tablename);
     },
     uploadKit: function () {
         const background = el('div.modal_background');
@@ -164,6 +167,30 @@ const craft_box = {
             return false;
         }
     },
+    openKitBox: function () {
+        connector.addNewCraftBoxComponent({
+            "craftBox": 'kit_box',
+            "boxOfComponents": false,
+            "color": "lightblue",
+            "draggable": true,
+            "flippable": false,
+            "handArea": false,
+            "height": "300px",
+            "left": "0px",
+            "name": "KitBox",
+            "ownable": false,
+            "resizable": true,
+            "rollable": false,
+            "showImage": false,
+            "text": "KitBox",
+            "text_ja": "キット制作",
+            "top": "0px",
+            "traylike": true,
+            "width": "460px",
+            "zIndex": 1
+        }, this.kitId);
+
+    },
     context: {}
 };
 
@@ -182,28 +209,66 @@ function getCraftBoxKit() {
     return kit;
 }
 
-const basicCraftBox = {
+function button(id, onClick, text) {
+    return el('div', [
+        el("button.component_text#" + id, {
+            onclick: onClick
+        }, [text])
+    ]);
+}
+
+const mainCraftBox = {
     install: function (component, data) {
-        if(!this.isEnabled(component, data)) {
+        if (!this.isEnabled(component, data)) {
             return;
         }
         mount(component.el,
-            el('div', [
-                el("button.component_text#upload_kit", {
-                    onclick: () => { craft_box.uploadKit(); }
-                }, [_('Upload Kit')])
-            ])
-        );
+            button(
+                "upload_kit",
+                craftBoxActions.uploadKit,
+                _('Upload Kit')));
         mount(component.el,
-            el('div', [
-                el("button.component_text#export_table", {
-                    onclick: () => { craft_box.exportTable(); }
-                }, [_('Export Table')])
-            ])
-        );
+            button(
+                "export_table",
+                craftBoxActions.exportTable,
+                _('Export Table')));
+        mount(component.el,
+            button(
+                "open_kit_box",
+                craftBoxActions.openKitBox,
+                _('Open Kit Box')));
     },
     isEnabled: function (component, data) {
-        return data.craftBox === true;
+        return data.craftBox === 'main';
+    },
+    receiveData(component, data) {
+    },
+    updateView(component, data) {
+    },
+    uninstall: function () {
+    },
+}
+
+const kitCraftBox = {
+    install: function (component, data) {
+        if (!this.isEnabled(component, data)) {
+            return;
+        }
+        mount(component.el,
+            button(
+                "create_new",
+                () => {
+                    const emptyKit = {
+                        'kit': {},
+                        'components': [],
+                    }
+                    this.kitJsonEl.textContent = JSON.stringify(emptyKit, null, 4);
+                },
+                _('Create Kit Box')));
+        mount(component.el, this.kitJsonEl = el('textarea.kit_json#kit_json', [], '{}'));
+    },
+    isEnabled: function (component, data) {
+        return data.craftBox === 'kit_box';
     },
     receiveData(component, data) {
     },
@@ -214,7 +279,8 @@ const basicCraftBox = {
 }
 
 const feats = [
-    basicCraftBox,
+    mainCraftBox,
+    kitCraftBox,
 ];
 
 export {CraftBox, CraftBoxConnector, feats};
