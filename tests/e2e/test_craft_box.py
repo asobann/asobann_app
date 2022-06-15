@@ -84,6 +84,8 @@ class TestCraftBoxWithOtherPlayers:
             "components": [],
         }
 
+        host.click(host.component(1))  # lose focus from textarea
+        sleep(0.1)  # should_have_text() does not work with textarea somehow
         assert another_player.craft_box.kit_box.raw_kit_json == {
             "dummy": "This is test",
             "kit": {},

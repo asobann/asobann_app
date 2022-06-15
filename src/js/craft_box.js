@@ -1,6 +1,9 @@
 import {el, mount, setAttr, setStyle, unmount} from "redom";
 import interact from 'interactjs';
 import {_, language} from "./i18n.js";
+import {Level} from "./table";
+import {dev_inspector} from "./dev_inspector";
+import {featsContext} from "./feat";
 
 const CRAFT_BOX_KIT_NAME = "asobann/CraftBox"
 
@@ -184,7 +187,8 @@ const craftBoxActions = {
             "rollable": false,
             "showImage": false,
             "top": "0px",
-            "traylike": true,
+            "traylike": false,
+            "kitJson": "{}",
             "width": "460px",
             "zIndex": 1
         }, this.kitId);
@@ -263,9 +267,21 @@ const kitCraftBox = {
                         'components': [],
                     }
                     this.kitJsonEl.value = JSON.stringify(emptyKit, null, 4);
+                    processJsonUpdate();
                 },
                 _('Create Kit Box')))
         mount(this.bodyEl, this.kitJsonEl = el('textarea.kit_json#kit_json', {}, '{}'));
+        const self = this;
+        this.kitJsonEl.addEventListener("change", (e) => {
+            processJsonUpdate();
+        });
+
+        function processJsonUpdate() {
+            component.applyUserAction(Level.C, () => {
+                const diff = { 'kitJson': self.kitJsonEl.value };
+                component.propagate(diff);
+            });
+        }
     },
     isEnabled: function (component, data) {
         return data.craftBox === 'kit_box';
@@ -273,6 +289,9 @@ const kitCraftBox = {
     receiveData(component, data) {
     },
     updateView(component, data) {
+        if (typeof (data.kitJson) === 'string') {
+            this.kitJsonEl.value = data.kitJson;
+        }
     },
     uninstall: function () {
     },
