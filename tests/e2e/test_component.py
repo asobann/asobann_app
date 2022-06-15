@@ -429,6 +429,26 @@ def test_moving_box_does_not_lose_things_within(server, browser: webdriver.Firef
         assert box_rect.top <= card.rect().top and card.rect().bottom <= box_rect.bottom
 
 
+def test_dragging_button_does_not_move_component(server, browser: webdriver.Firefox):
+    host = GameHelper(browser)
+    prepare_table_with_cards(host)
+
+    left_before = host.component_by_name('Playing Card Box').rect().left
+    host.drag(host.component_by_name('Playing Card Box'), 50, 50, grab_at='top left')
+    left_after = host.component_by_name('Playing Card Box').rect().left
+    assert left_before == left_after
+
+
+def test_dragging_button_does_not_scroll(server, browser: webdriver.Firefox):
+    host = GameHelper(browser)
+    prepare_table_with_cards(host)
+
+    left_before = host.component_by_name('Playing Card Box').element.location['x']
+    host.drag(host.component_by_name('Playing Card Box'), 50, 50, grab_at='top left')
+    left_after = host.component_by_name('Playing Card Box').element.location['x']
+    assert left_before == left_after
+
+
 @pytest.mark.usefixtures("server")
 class TestEditable:
     @staticmethod

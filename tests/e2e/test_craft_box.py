@@ -42,10 +42,28 @@ class TestCraftBox:
             "components": [],
         }
 
-    # TODO
-    @pytest.mark.skip
-    def test_drag_textarea(self, browser: webdriver.Firefox):
-        pass
+    def test_dragging_textarea_does_not_move_component(self, browser: webdriver.Firefox):
+        host: GameHelper = GameHelper.player(browser)
+
+        host.menu.open_craft_box.execute()
+        host.craft_box.use(host.craft_box.open_kit_box)
+
+        left_before = host.component_by_name('KitBox').rect().left
+        host.drag(host.component_by_name('KitBox'), 50, 50, grab_at='center')
+        left_after = host.component_by_name('KitBox').rect().left
+        assert left_before == left_after
+
+    def test_dragging_textarea_does_not_scroll(self, browser: webdriver.Firefox):
+        host: GameHelper = GameHelper.player(browser)
+
+        host.menu.open_craft_box.execute()
+        host.craft_box.use(host.craft_box.open_kit_box)
+
+        left_before = host.component_by_name('KitBox').element.location['x']
+        host.drag(host.component_by_name('KitBox'), 50, 50, grab_at='center')
+        left_after = host.component_by_name('KitBox').element.location['x']
+        assert left_before == left_after
+
 
 @pytest.mark.usefixtures("server")
 class TestCraftBoxWithOtherPlayers:
