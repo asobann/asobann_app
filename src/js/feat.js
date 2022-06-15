@@ -210,7 +210,8 @@ const draggability = {
                     draggability.end(component, data, event);
                     dev_inspector.tracePoint('event listener');
                 }
-            }
+            },
+            ignoreFrom: 'textarea, button'
         });
 
         featsContext.addEventListener(component, draggability.events.onMoving, (e) => {

@@ -1,4 +1,5 @@
 import {el, mount, setAttr, setStyle, unmount} from "redom";
+import interact from 'interactjs';
 import {_, language} from "./i18n.js";
 
 const CRAFT_BOX_KIT_NAME = "asobann/CraftBox"
@@ -182,8 +183,6 @@ const craftBoxActions = {
             "resizable": true,
             "rollable": false,
             "showImage": false,
-            "text": "KitBox",
-            "text_ja": "キット制作",
             "top": "0px",
             "traylike": true,
             "width": "460px",
@@ -254,7 +253,8 @@ const kitCraftBox = {
         if (!this.isEnabled(component, data)) {
             return;
         }
-        mount(component.el,
+        mount(component.el, this.bodyEl = el('div', { id: 'kit_box_body' }));
+        mount(this.bodyEl,
             button(
                 "create_new",
                 () => {
@@ -262,10 +262,10 @@ const kitCraftBox = {
                         'kit': {},
                         'components': [],
                     }
-                    this.kitJsonEl.textContent = JSON.stringify(emptyKit, null, 4);
+                    this.kitJsonEl.value = JSON.stringify(emptyKit, null, 4);
                 },
-                _('Create Kit Box')));
-        mount(component.el, this.kitJsonEl = el('textarea.kit_json#kit_json', [], '{}'));
+                _('Create Kit Box')))
+        mount(this.bodyEl, this.kitJsonEl = el('textarea.kit_json#kit_json', {}, '{}'));
     },
     isEnabled: function (component, data) {
         return data.craftBox === 'kit_box';

@@ -487,6 +487,7 @@ interact("div.table_container").draggable({
             tableContainer.style.backgroundPositionY = top + "px";
         },
     },
+    ignoreFrom: 'textarea,button',
 });
 
 

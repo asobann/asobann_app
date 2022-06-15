@@ -302,3 +302,13 @@ div.component_overlay div.items_container {
 div.overlay_button img {
     width: 60px;
 }
+
+div.component div#kit_box_body {
+    width: 90%;
+    height: 90%;
+}
+
+div.component textarea#kit_json {
+    width: 90%;
+    height: 90%;
+}
