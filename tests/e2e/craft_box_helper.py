@@ -36,8 +36,14 @@ class CraftBox:
         @property
         def raw_kit_json(self):
             browser: WebDriver = self.craft_box.helper.browser
-            el: WebElement = self.craft_box.helper.browser.find_element(by=By.CSS_SELECTOR, value="textarea#kit_json")
+            el: WebElement = browser.find_element(by=By.CSS_SELECTOR, value="textarea#kit_json")
             return json.loads(el.get_attribute('value'))
+
+        def send_keys_to_editor(self, strokes):
+            browser: WebDriver = self.craft_box.helper.browser
+            el: WebElement = browser.find_element(by=By.CSS_SELECTOR, value="textarea#kit_json")
+            for stroke in strokes:
+                el.send_keys(stroke)
 
     def __init__(self, browser: WebDriver, helper: 'GameHelper'):
         self.browser = browser

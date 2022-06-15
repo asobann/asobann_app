@@ -6,6 +6,8 @@ from selenium.webdriver.firefox.options import Options
 
 import pytest
 
+from .helper import GameHelper
+
 firefox_options = Options()
 
 
@@ -41,6 +43,11 @@ def browser(browser_window):
     return browser_window
 
 
+@pytest.fixture
+def host(browser):
+    return GameHelper.player(browser)
+
+
 def browser_func(headless=False):
     firefox_options.headless = headless
     browser = webdriver.Firefox(options=firefox_options)
@@ -60,6 +67,11 @@ def another_browser_window(firefox_driver):
 def another_browser(another_browser_window):
     another_browser_window.delete_all_cookies()
     yield another_browser_window
+
+
+@pytest.fixture
+def another_player(another_browser):
+    return GameHelper.player(another_browser)
 
 
 @pytest.fixture
