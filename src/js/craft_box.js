@@ -283,16 +283,16 @@ const kitCraftBox = {
                         'components': [],
                     }
                     this.kitJsonEl.value = JSON.stringify(emptyKit, null, 4);
-                    processJsonUpdate();
+                    propagateJsonUpdate();
                 },
                 _('Create New Kit')))
         mount(this.bodyEl, this.kitJsonEl = el('textarea.kit_json#kit_json', {}, '{}'));
         const self = this;
         this.kitJsonEl.addEventListener("change", (e) => {
-            processJsonUpdate();
+            propagateJsonUpdate();
         });
 
-        function processJsonUpdate() {
+        function propagateJsonUpdate() {
             component.applyUserAction(Level.C, () => {
                 const diff = { 'kitJson': self.kitJsonEl.value };
                 component.propagate(diff);
