@@ -504,3 +504,16 @@ class TestRotation:
         host.double_click(host.component_by_name(C_A), ['SHIFT'])
         assert '♠A' not in host.component_by_name(C_A).face()
         assert 45 == host.component_by_name(C_A).rotation
+
+
+@pytest.mark.usefixtures("server")
+class TestGlued:
+    def test_glued_component(self, browser: webdriver.Firefox):
+        host = GameHelper(browser)
+        prepare_table_with_cards(host)
+
+        host.menu.add_my_hand_area.click()
+        host.move_card_to_hand_area(host.component_by_name(C_A), 'host')
+        host.double_click(host.component_by_name(C_A), ['SHIFT'])
+        assert '♠A' not in host.component_by_name(C_A).face()
+        assert 45 == host.component_by_name(C_A).rotation
