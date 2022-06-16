@@ -285,7 +285,7 @@ const kitCraftBox = {
                     this.kitJsonEl.value = JSON.stringify(emptyKit, null, 4);
                     processJsonUpdate();
                 },
-                _('Create Kit Box')))
+                _('Create New Kit')))
         mount(this.bodyEl, this.kitJsonEl = el('textarea.kit_json#kit_json', {}, '{}'));
         const self = this;
         this.kitJsonEl.addEventListener("change", (e) => {
