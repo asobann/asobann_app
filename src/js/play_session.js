@@ -406,7 +406,7 @@ function addNewCraftBoxComponent(newComponentData, kitId) {
     placeNewComponent(newComponentData);
     table.addComponent(newComponentData);
     pushNewComponent(newComponentData);
-    return false;
+    return newComponentData.componentId;
 }
 
 function removeHandArea() {

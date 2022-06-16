@@ -172,7 +172,7 @@ const craftBoxActions = {
         }
     },
     openKitBox: function () {
-        connector.addNewCraftBoxComponent({
+        const componentId = connector.addNewCraftBoxComponent({
             "craftBox": 'kit_box',
             "boxOfComponents": false,
             "color": "lightblue",
@@ -192,7 +192,7 @@ const craftBoxActions = {
             "width": "460px",
             "zIndex": 1
         }, this.kitId);
-
+        return componentId;
     },
     context: {}
 };
@@ -235,11 +235,16 @@ const mainCraftBox = {
                 "export_table",
                 craftBoxActions.exportTable,
                 _('Export Table')));
+        let openKitBoxButtonDiv;
         mount(component.el,
-            button(
+            openKitBoxButtonDiv = button(
                 "open_kit_box",
-                craftBoxActions.openKitBox,
+                () => {
+                    const componentId = craftBoxActions.openKitBox();
+                    component.propagate({ kitBoxComponentId: componentId });
+                },
                 _('Open Kit Box')));
+        this.openKitBoxButtonEl = openKitBoxButtonDiv.firstElementChild;
     },
     isEnabled: function (component, data) {
         return data.craftBox === 'main';
@@ -247,6 +252,17 @@ const mainCraftBox = {
     receiveData(component, data) {
     },
     updateView(component, data) {
+        function toggleButtonState(buttonEl, disable) {
+            if(disable) {
+                setAttr(buttonEl, "disabled", true);
+            } else {
+                setAttr(buttonEl, "disabled", null);
+            }
+        }
+        if (component.kitBoxComponentId !== data.kitBoxComponentId) {
+            component.kitBoxComponentId = data.kitBoxComponentId;
+            toggleButtonState(this.openKitBoxButtonEl, component.kitBoxComponentId);
+        }
     },
     uninstall: function () {
     },
