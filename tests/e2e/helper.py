@@ -1,5 +1,7 @@
 from typing import Union
 import re
+import json
+import requests
 from selenium import webdriver
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
@@ -491,3 +493,25 @@ def compo_size(browser, element: WebElement) -> Rect:
     """
     comp_size = element.size
     return Rect(height=comp_size["height"], width=comp_size["width"])
+
+
+class Uploader:
+    def __init__(self, test_file_dir, base_url):
+        self.test_file_dir = test_file_dir
+        self.base_url = base_url
+
+    def upload_kit_from_file_with_craft_box(self, player: GameHelper, filename, image_filenames=[]):
+        player.menu.open_craft_box.execute()
+        player.craft_box.use(player.craft_box.upload_kit)
+        player.craft_box.upload_kit.select_json_file(str(self.test_file_dir / filename))
+        if image_filenames:
+            image_paths = [str(self.test_file_dir / fn) for fn in image_filenames]
+            player.craft_box.upload_kit.select_image_files('\n'.join(image_paths))
+        player.craft_box.upload_kit.upload()
+        player.craft_box.upload_kit.accept_success_alert()
+
+    def upload_kit_from_dict_with_api(self, kit_data):
+        files = {'data': json.dumps(kit_data)}
+        res = requests.post(self.base_url + '/kits/create', files=files)
+        assert res.status_code == 200
+

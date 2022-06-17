@@ -220,6 +220,7 @@ function button(id, onClick, text) {
     ]);
 }
 
+// TODO: change this->component
 const mainCraftBox = {
     install: function (component, data) {
         if (!this.isEnabled(component, data)) {

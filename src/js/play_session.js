@@ -16,6 +16,7 @@ import interact from 'interactjs';
 
 import '../style/game.css';
 import {basic, feats as basicFeats} from "./feat";
+import "./feats/glued";
 import "./feats/overlaid_controls";
 
 const feats = basicFeats.concat(featsForCraftBox);

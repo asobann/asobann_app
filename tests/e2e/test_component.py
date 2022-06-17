@@ -12,7 +12,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 from selenium.common.exceptions import NoSuchElementException
 
-from .helper import compo_pos, Rect, GameHelper, TOP
+from .helper import compo_pos, Rect, GameHelper, TOP, Uploader
 
 C_A = 'PlayingCard S_A'
 C_K = 'PlayingCard S_K'
@@ -506,14 +506,96 @@ class TestRotation:
         assert 45 == host.component_by_name(C_A).rotation
 
 
-@pytest.mark.usefixtures("server")
+@pytest.mark.usefixtures("server", "kit_with_glued_component")
 class TestGlued:
-    def test_glued_component(self, browser: webdriver.Firefox):
-        host = GameHelper(browser)
-        prepare_table_with_cards(host)
+    kit_data = {
+        'kit': {
+            'name': 'test kit for glued component',
+            'label': 'test kit for glued component',
+            'label_ja': 'test kit for glued component',
+            'height': '128px',
+            'width': '128px',
+            'boxAndComponents': {
+                'test glued component 01': None,
+                'test glued component 02': None
+            },
+            'usedComponentNames': [
+                'test glued component 01',
+                'test glued component 02'
+            ]
+        },
+        'components': [
+            {
+                'name': 'test glued component 01',
+                'color': 'blue',
+                'handArea': False,
+                'top': '0px',
+                'left': '0px',
+                'height': '64px',
+                'width': '64px',
+                'showImage': False,
+                'draggable': True,
+                'flippable': True,
+                'resizable': False,
+                'rollable': False,
+                'ownable': True,
+                'glued': [
+                    {
+                        'top': '0px',
+                        'left': '16px',
+                        'height': '32px',
+                        'width': '32px',
+                        'text': 'U',
+                    },
+                    {
+                        'top': '16px',
+                        'left': '0px',
+                        'height': '32px',
+                        'width': '32px',
+                        'text': 'L',
+                    },
+                    {
+                        'top': '16px',
+                        'left': '16px',
+                        'height': '32px',
+                        'width': '32px',
+                        'text': 'GLUED',
+                    },
+                    {
+                        'top': '32px',
+                        'left': '32px',
+                        'height': '32px',
+                        'width': '32px',
+                        'text': 'BR',
+                    },
+                ]
+            },
+            {
+                'name': 'test glued component 02',
+                'color': 'green',
+                'handArea': False,
+                'top': '64px',
+                'left': '64px',
+                'height': '64px',
+                'width': '64px',
+                'showImage': False,
+                'draggable': True,
+                'flippable': True,
+                'resizable': False,
+                'rollable': False,
+                'ownable': True
+            }
+        ]
+    }
 
-        host.menu.add_my_hand_area.click()
-        host.move_card_to_hand_area(host.component_by_name(C_A), 'host')
-        host.double_click(host.component_by_name(C_A), ['SHIFT'])
-        assert '♠A' not in host.component_by_name(C_A).face()
-        assert 45 == host.component_by_name(C_A).rotation
+    @pytest.fixture
+    def kit_with_glued_component(self, uploader: Uploader):
+        uploader.upload_kit_from_dict_with_api(TestGlued.kit_data)
+
+    def test_glued_component(self, host: GameHelper):
+        host.menu.add_kit.execute()
+        host.menu.add_kit_from_list("test kit for glued component")
+        host.menu.add_kit_done()
+
+        host.should_have_text("GLUED")
+

@@ -312,3 +312,7 @@ div.component textarea#kit_json {
     width: 90%;
     height: 90%;
 }
+
+div.component div.glued {
+    position: absolute;
+}

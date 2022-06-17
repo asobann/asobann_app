@@ -7,7 +7,7 @@ from selenium.webdriver.firefox.options import Options
 
 import pytest
 
-from .helper import GameHelper
+from .helper import GameHelper, Uploader
 
 firefox_options = Options()
 
@@ -106,23 +106,8 @@ def default_kits_and_components(deploy_data):
     pass
 
 
-class Uploader:
-    def __init__(self, test_file_dir):
-        self.test_file_dir = test_file_dir
-
-    def upload_kit_from_file_with_craft_box(self, player: GameHelper, filename, image_filenames=[]):
-        player.menu.open_craft_box.execute()
-        player.craft_box.use(player.craft_box.upload_kit)
-        player.craft_box.upload_kit.select_json_file(str(self.test_file_dir / filename))
-        if image_filenames:
-            image_paths = [str(self.test_file_dir / fn) for fn in image_filenames]
-            player.craft_box.upload_kit.select_image_files('\n'.join(image_paths))
-        player.craft_box.upload_kit.upload()
-        player.craft_box.upload_kit.accept_success_alert()
-
-
 @pytest.fixture
-def uploader(request):
-    return Uploader(Path(request.module.__file__).parent)
+def uploader(request, base_url):
+    return Uploader(test_file_dir=Path(request.module.__file__).parent, base_url=base_url)
 
 

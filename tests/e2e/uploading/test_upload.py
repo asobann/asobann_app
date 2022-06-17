@@ -1,13 +1,13 @@
 from pathlib import Path
 import pytest
 from selenium import webdriver
-from ..helper import GameHelper
+from ..helper import GameHelper, Uploader
 
 
 @pytest.mark.usefixtures("server")
 @pytest.mark.usefixtures("default_kits_and_components")
 class TestUploadKit:
-    def test_success(self, browser: webdriver.Firefox, uploader: 'Uploader'):
+    def test_success(self, browser: webdriver.Firefox, uploader: Uploader):
         host = GameHelper.player(browser)
         uploader.upload_kit_from_file_with_craft_box(host, 'test_menu_kit.json')
 
@@ -36,7 +36,7 @@ class TestUploadKit:
         host.menu.should_not_see_kit("Test Kit")
 
     class TestUploadImage:
-        def test_one_image(self, browser: webdriver.Firefox, uploader: 'Uploader'):
+        def test_one_image(self, browser: webdriver.Firefox, uploader: Uploader):
             host = GameHelper.player(browser)
             uploader.upload_kit_from_file_with_craft_box(host, 'test_menu_kit_with_one_image.json', ['example.png'])
 
@@ -65,7 +65,7 @@ class TestUploadKit:
 
 @pytest.mark.usefixtures("server")
 class TestCounterKit:
-    def test_upload_and_use(self, browser: webdriver.Firefox, uploader: 'Uploader'):
+    def test_upload_and_use(self, browser: webdriver.Firefox, uploader: Uploader):
         host = GameHelper.player(browser)
         uploader.upload_kit_from_file_with_craft_box(host, 'test_counter_kit.json')
 

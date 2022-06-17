@@ -133,7 +133,7 @@ const basic = {
             updateImageContent(component, data);
         }
 
-        if (component.textEl == null) {
+        if (component.textEl == null) {  // TODO: this if should be in if(data.text) clause, but flippable complains
             buildTextContent(component, data);
         }
         if (data.text) {
@@ -319,7 +319,9 @@ const flippability = {
                         component.textEl.innerText = data.faceupText;
                     }
                 } else {
-                    component.textEl.innerText = '';
+                    if(component.textEl) {
+                        component.textEl.innerText = '';
+                    }
                 }
             } else {
                 if (data.showImage) {
@@ -334,7 +336,9 @@ const flippability = {
                         component.textEl.innerText = data.facedownText;
                     }
                 } else {
-                    component.textEl.innerText = '';
+                    if(component.textEl) {
+                        component.textEl.innerText = '';
+                    }
                 }
             }
         } else {
@@ -350,7 +354,9 @@ const flippability = {
                     component.textEl.innerText = data.facedownText;
                 }
             } else {
-                component.textEl.innerText = '';
+                if(component.textEl) {
+                    component.textEl.innerText = '';
+                }
             }
         }
 
