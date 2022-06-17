@@ -36,7 +36,12 @@ const glued = {
                     backgroundColor: fragment.color,
                 });
             }
-            fragmentEl.innerText = fragment.text;
+            if(component.flippable && component.faceup === false) {
+                // Glued fragment is not on the facedown side
+                fragmentEl.innerText = '';
+            } else {
+                fragmentEl.innerText = fragment.text;
+            }
             i += 1;
         }
     },

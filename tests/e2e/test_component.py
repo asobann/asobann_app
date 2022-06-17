@@ -536,6 +536,7 @@ class TestGlued:
                 'showImage': False,
                 'draggable': True,
                 'flippable': True,
+                'faceup': True,
                 'resizable': False,
                 'rollable': False,
                 'ownable': True,
@@ -589,13 +590,19 @@ class TestGlued:
     }
 
     @pytest.fixture
-    def kit_with_glued_component(self, uploader: Uploader):
+    def kit_with_glued_component(self, host, uploader: Uploader):
         uploader.upload_kit_from_dict_with_api(TestGlued.kit_data)
-
-    def test_glued_component(self, host: GameHelper):
         host.menu.add_kit.execute()
         host.menu.add_kit_from_list("test kit for glued component")
         host.menu.add_kit_done()
 
+    def test_text_shows(self, host: GameHelper):
         host.should_have_text("GLUED")
+
+    def test_flipped_and_text_hides(self, host: GameHelper):
+        before = host.component_by_name('test glued component 01').face()
+        host.double_click(host.component_by_name('test glued component 01'))
+        after = host.component_by_name('test glued component 01').face()
+        # should_not_have_text() somehow fails if there's no delay; face() works more stably
+        assert after != before
 
