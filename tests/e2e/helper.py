@@ -515,3 +515,8 @@ class Uploader:
         res = requests.post(self.base_url + '/kits/create', files=files)
         assert res.status_code == 200
 
+    def upload_image(self, image_path):
+        files = {'image': open(str(self.test_file_dir / image_path), 'rb')}
+        res = requests.post(self.base_url + '/dummy', files=files)
+        assert res.status_code == 200
+        return json.loads(res.content)

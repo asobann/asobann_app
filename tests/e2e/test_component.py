@@ -579,18 +579,37 @@ class TestGlued:
                 'left': '64px',
                 'height': '64px',
                 'width': '64px',
-                'showImage': False,
+                'showImage': True,
                 'draggable': True,
                 'flippable': True,
+                'faceup': False,
                 'resizable': False,
                 'rollable': False,
-                'ownable': True
+                'ownable': True,
+                'glued': [
+                    {
+                        'top': '0px',
+                        'left': '0px',
+                        'height': '32px',
+                        'width': '64px',
+                        'text': 'UPPER',
+                    },
+                    {
+                        'top': '44px',
+                        'left': '0px',
+                        'height': '32px',
+                        'width': '64px',
+                        'text': 'LOWER',
+                    },
+                ]
             }
         ]
     }
 
     @pytest.fixture
     def kit_with_glued_component(self, host, uploader: Uploader):
+        TestGlued.kit_data['components'][1]['faceupImage'] = uploader.upload_image('64x64bg.png')['imageUrl']
+        TestGlued.kit_data['components'][1]['facedownImage'] = uploader.upload_image('64x64down.png')['imageUrl']
         uploader.upload_kit_from_dict_with_api(TestGlued.kit_data)
         host.menu.add_kit.execute()
         host.menu.add_kit_from_list("test kit for glued component")
@@ -605,4 +624,9 @@ class TestGlued:
         after = host.component_by_name('test glued component 01').face()
         # should_not_have_text() somehow fails if there's no delay; face() works more stably
         assert after != before
+
+    def test_flipped_and_image_change(self, host: GameHelper):
+        assert '64x64down' in host.component_by_name('test glued component 02').face()
+        host.double_click(host.component_by_name('test glued component 02'))
+        assert '64x64bg' in host.component_by_name('test glued component 02').face()
 
