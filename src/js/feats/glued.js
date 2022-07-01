@@ -3,6 +3,33 @@ import {el, mount, setStyle, unmount} from "redom";
 import {_} from "../i18n";
 import {addFeat, featsContext} from "../feat";
 
+// Glued feat is used to put (glue) simple fragments together on a component.
+// Glued fragments are only on faceup side (current limitation.)
+// Component with glued feat is defined as below:
+// "components": [
+// {
+//     "name": "Card 01",
+//     ...
+//     "glued": [
+//        {
+//            "top": "5px",
+//            "left": "27px",
+//            "height": "14px",
+//            "width": "12px",
+//            "text": "Text 1"
+//        },
+//         {
+//             "top": "5px",
+//             "left": "56px",
+//             "height": "14px",
+//             "width": "12px",
+//             "text": "Text 2"
+//         },
+//      ],
+//     ...
+//
+// Glued fragments are text only (current limitation.)
+
 const glued = {
     install: function (component, data) {
         if (!glued.isEnabled(component, data)) {

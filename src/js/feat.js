@@ -305,61 +305,43 @@ const flippability = {
         component.faceup = data.faceup;
     },
     updateView(component, data) {
-        if (component.faceup) {
-            if (!component.owner || component.owner === featsContext.getPlayerName()) {
-                if (data.showImage) {
-                    if (component.imageEl.src !== data.faceupImage) {
-                        setAttr(component.imageEl, { src: data.faceupImage });
-                    }
-                }
-                if (data.faceupText) {
-                    if (data["faceupText_" + language]) {
-                        component.textEl.innerText = data["faceupText_" + language];
-                    } else {
-                        component.textEl.innerText = data.faceupText;
-                    }
-                } else {
-                    if(component.textEl) {
-                        component.textEl.innerText = '';
-                    }
-                }
-            } else {
-                if (data.showImage) {
-                    if (component.imageEl.src !== data.facedownImage) {
-                        setAttr(component.imageEl, { src: data.facedownImage });
-                    }
-                }
-                if (data.facedownText) {
-                    if (data["facedownText_" + language]) {
-                        component.textEl.innerText = data["facedownText_" + language];
-                    } else {
-                        component.textEl.innerText = data.facedownText;
-                    }
-                } else {
-                    if(component.textEl) {
-                        component.textEl.innerText = '';
-                    }
-                }
-            }
+        if (component.faceup && (isPublic() || isMyCard())) {
+            showImage("faceupImage");
+            showText("faceupText");
         } else {
-            if (data.showImage) {
-                if (component.imageEl.src !== data.facedownImage) {
-                    setAttr(component.imageEl, { src: data.facedownImage });
-                }
-            }
-            if (data.facedownText) {
-                if (data["facedownText_" + language]) {
-                    component.textEl.innerText = data["facedownText_" + language];
+            showImage("facedownImage");
+            showText("facedownText");
+        }
+
+        function showText(prop) {
+            if (data[prop]) {
+                if (data[prop + "_" + language]) {
+                    component.textEl.innerText = data[prop + "_" + language];
                 } else {
-                    component.textEl.innerText = data.facedownText;
+                    component.textEl.innerText = data[prop];
                 }
             } else {
-                if(component.textEl) {
+                if (component.textEl) {
                     component.textEl.innerText = '';
                 }
             }
         }
 
+        function showImage(prop) {
+            if (data.showImage) {
+                if (component.imageEl.src !== data[prop]) {
+                    setAttr(component.imageEl, { src: data[prop] });
+                }
+            }
+        }
+
+        function isPublic() {
+            return !component.owner;
+        }
+
+        function isMyCard() {
+            return component.owner === featsContext.getPlayerName();
+        }
     },
     uninstall: function (component) {
     },
