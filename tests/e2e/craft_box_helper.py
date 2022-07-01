@@ -1,6 +1,8 @@
 import json
 from selenium.webdriver.remote.webdriver import WebDriver, WebElement
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 
 
 class CraftBox:
@@ -39,11 +41,16 @@ class CraftBox:
             el: WebElement = browser.find_element(by=By.CSS_SELECTOR, value="textarea#kit_json")
             return json.loads(el.get_attribute('value'))
 
-        def send_keys_to_editor(self, strokes):
+        def replace_text_in_editor(self, strokes):
             browser: WebDriver = self.craft_box.helper.browser
             el: WebElement = browser.find_element(by=By.CSS_SELECTOR, value="textarea#kit_json")
-            for stroke in strokes:
-                el.send_keys(stroke)
+            action = ActionChains(browser)
+            action.click(el)
+            action.key_down(Keys.CONTROL).key_down('a').key_up('a').key_up(Keys.CONTROL)
+            for s in strokes:
+                for c in s:
+                    action.key_down(c).key_up(c)
+            action.perform()
 
     def __init__(self, browser: WebDriver, helper: 'GameHelper'):
         self.browser = browser

@@ -77,18 +77,16 @@ class TestCraftBoxWithOtherPlayers:
         host.menu.open_craft_box.execute()
         host.craft_box.use(host.craft_box.open_kit_box)
         host.craft_box.use(host.craft_box.kit_box.create_new)
-        host.craft_box.kit_box.send_keys_to_editor([Keys.ARROW_UP, '"dummy": "This is test",', Keys.RETURN])
+        host.craft_box.kit_box.replace_text_in_editor(
+            ['{"dummy": "This is test"}',
+             Keys.RETURN])
         assert host.craft_box.kit_box.raw_kit_json == {
             "dummy": "This is test",
-            "kit": {},
-            "components": [],
         }
 
         host.click(host.component(1))  # lose focus from textarea
         sleep(0.1)  # should_have_text() does not work with textarea somehow
         assert another_player.craft_box.kit_box.raw_kit_json == {
             "dummy": "This is test",
-            "kit": {},
-            "components": [],
         }
 
