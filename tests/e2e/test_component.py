@@ -633,8 +633,6 @@ class TestGlued:
     def test_put_in_hand_area_and_text_hides(self, host: GameHelper, another_player: GameHelper):
         before = host.component_by_name('test glued component 01').face()
 
-        another_player.go(host.current_url)
-        another_player.menu.join("Player 2")
         another_player.should_have_text("you are Player 2")
         another_player.menu.add_my_hand_area.click()
         another_player.move_card_to_hand_area(another_player.component_by_name('test glued component 01'), 'Player 2', (100, 0))

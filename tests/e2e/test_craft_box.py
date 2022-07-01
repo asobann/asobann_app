@@ -54,26 +54,17 @@ class TestCraftBox:
 @pytest.mark.usefixtures("server")
 class TestCraftBoxWithOtherPlayers:
     def test_open_is_sync(self, host: GameHelper, another_player: GameHelper):
-        another_player.go(host.current_url)
-        another_player.menu.join("Player 2")
-
         host.menu.open_craft_box.execute()
         host.should_see_component('CraftBox')
         another_player.should_see_component('CraftBox')
 
     def test_close_by_another(self, host: GameHelper, another_player: GameHelper):
-        another_player.go(host.current_url)
-        another_player.menu.join("Player 2")
-
         host.menu.open_craft_box.execute()
         another_player.menu.close_craft_box.execute()
         host.should_not_see_component('CraftBox')
         another_player.should_not_see_component('CraftBox')
 
     def test_editing_json_is_sync(self, host: GameHelper, another_player: GameHelper):
-        another_player.go(host.current_url)
-        another_player.menu.join("Player 2")
-
         host.menu.open_craft_box.execute()
         host.craft_box.use(host.craft_box.open_kit_box)
         host.craft_box.use(host.craft_box.kit_box.create_new)

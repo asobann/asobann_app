@@ -71,8 +71,11 @@ def another_browser(another_browser_window):
 
 
 @pytest.fixture
-def another_player(another_browser):
-    return GameHelper.player(another_browser)
+def another_player(another_browser, host):
+    another_player = GameHelper.player(another_browser)
+    another_player.go(host.current_url)
+    another_player.menu.join("Player 2")
+    return another_player
 
 
 @pytest.fixture
