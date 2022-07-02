@@ -1155,14 +1155,6 @@ const counter = {
         }
 
         setAttr(component.el, { className: component.el.getAttribute('class') + " counter_component" });
-        setStyle(component.el, {
-            "display": "flex",
-            "flex-direction": "column",
-            "flex-wrap": "nowrap",
-            "justify-content": "flex-start",
-            "align-items": "stretch",
-            "align-content": "stretch",
-        });
 
         if (!data.hasOwnProperty("counterValue")) {
             data.counterValue = 0;
@@ -1174,31 +1166,43 @@ const counter = {
                     component.valueEl = el('div.counterValue', {}, counterValue)
                 ]),
                 el('div.buttons', [
-                    el('button#subTen', {
-                        onclick: (() => {
-                            count((v) => v - 10)
-                        })
-                    }, '-10'),
-                    el('button#subOne', {
-                        onclick: (() => {
-                            count((v) => v - 1)
-                        })
-                    }, '-1'),
-                    el('button#reset', {
-                        onclick: (() => {
-                            count((/* v */) => 0)
-                        })
-                    }, '0'),
-                    el('button#addOne', {
-                        onclick: (() => {
-                            count((v) => v + 1)
-                        })
-                    }, '+1'),
-                    el('button#addTen', {
-                        onclick: (() => {
-                            count((v) => v + 10)
-                        })
-                    }, '+10'),
+                    el('div.button', [
+                        el('button#subTen', {
+                            onclick: (() => {
+                                count((v) => v - 10)
+                            })
+                        }, '-10'),
+                    ]),
+                    el('div.button', [
+                        el('button#subOne', {
+                            onclick: (() => {
+                                count((v) => v - 1)
+                            })
+                        }, '-1'),
+                    ]),
+                    el('div.button', [
+                        el('button#addOne', {
+                            onclick: (() => {
+                                count((v) => v + 1)
+                            })
+                        }, '+1'),
+                    ]),
+                    el('div.button', [
+                        el('button#addTen', {
+                            onclick: (() => {
+                                count((v) => v + 10)
+                            })
+                        }, '+10'),
+                    ]),
+                ]),
+                el('div.buttons', [
+                    el('div.button.reset', [
+                        el('button.reset#reset', {
+                            onclick: (() => {
+                                count((/* v */) => 0)
+                            })
+                        }, 'RESET'),
+                    ]),
                 ]),
             ])
         );

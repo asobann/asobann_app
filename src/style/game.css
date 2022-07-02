@@ -124,6 +124,12 @@ body {
 
 .counter_component {
     background-color: rgba(47, 79, 63, 0.5);
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
+    align-content: stretch;
 }
 
 .component .counter {
@@ -146,17 +152,36 @@ body {
 
 .component .counter .buttons {
     flex: 1;
+    display: flex;
+    flex-flow: row;
     position: relative;
     width: 100%;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
+}
+
+.component .counter .buttons div.button {
+    flex: auto;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.component .counter .buttons div.button.reset {
+    flex: initial;
+    padding: 2px;
 }
 
 .component .counter .buttons button {
-    width: 20%;
+    width: 100%;
     height: 100%;
     font-size: xx-small;
-    margin: 0;
-    padding: 0;
+}
+
+.component .counter .buttons button.reset {
+    background-color: pink;
+}
+
+.component .counter .buttons button.reset:hover {
+    background-color: hotpink;
 }
 
 div.others_mouse_cursor {
