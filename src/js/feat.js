@@ -30,6 +30,14 @@ function toRect(c) {
     throw 'Cannot detect rect';
 }
 
+function text(data, propName) {
+    if (data[propName + "_" + language]) {
+        return data[propName + "_" + language];
+    } else {
+        return data[propName];
+    }
+}
+
 const basic = {
     install: function (component, data) {
         if (data.showImage) {
@@ -82,11 +90,7 @@ const basic = {
         }
 
         function updateTextContent(component, data) {
-            if (data["text_" + language]) {
-                component.textEl.innerText = data["text_" + language];
-            } else {
-                component.textEl.innerText = data.text;
-            }
+            component.textEl.innerText = text(data, "text");
         }
 
         function updateTextColor(component, data) {
@@ -305,7 +309,7 @@ const flippability = {
         component.faceup = data.faceup;
     },
     updateView(component, data) {
-        if (component.faceup && (isPublic() || isMyCard())) {
+        if (featsContext.shouldShowFaceup(component)) {
             showImage("faceupImage");
             showText("faceupText");
         } else {
@@ -314,14 +318,10 @@ const flippability = {
         }
 
         function showText(prop) {
-            if (data[prop]) {
-                if (data[prop + "_" + language]) {
-                    component.textEl.innerText = data[prop + "_" + language];
+            if (component.textEl) {
+                if (data[prop]) {
+                    component.textEl.innerText = text(data, prop);
                 } else {
-                    component.textEl.innerText = data[prop];
-                }
-            } else {
-                if (component.textEl) {
                     component.textEl.innerText = '';
                 }
             }
@@ -333,14 +333,6 @@ const flippability = {
                     setAttr(component.imageEl, { src: data[prop] });
                 }
             }
-        }
-
-        function isPublic() {
-            return !component.owner;
-        }
-
-        function isMyCard() {
-            return component.owner === featsContext.getPlayerName();
         }
     },
     uninstall: function (component) {
@@ -1247,6 +1239,16 @@ const featsContext = {
         return ((!component.owner || component.owner === featsContext.getPlayerName())
             && !featsContext.isPlayerObserver());
     },
+    shouldShowFaceup: function (component) {
+        return !component.flippable ||
+            (component.faceup && (featsContext.isPublic(component) || featsContext.isMyCard(component)));
+    },
+    isPublic: function (component) {
+        return !component.owner;
+    },
+    isMyCard: function (component) {
+        return component.owner === featsContext.getPlayerName();
+    },
     addEventListener: function (component, eventName, handler) {
         if (!eventName) {
             throw `addEventListener: eventName must be specified but was ${eventName}`
@@ -1283,7 +1285,10 @@ const featsContext = {
             moving: true if in transition (being dragged)
          */
         onPositionChanged: 'onPositionChanged',
-    }
+    },
+    getPlayerName: null,
+    isPlayerObserver: null,
+    table: null,
 };
 
 function setFeatsContext(getPlayerName, isPlayerObserver, table) {

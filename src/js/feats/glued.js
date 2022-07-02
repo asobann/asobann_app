@@ -51,7 +51,7 @@ const glued = {
         let i = 0;
         for (const fragment of data.glued) {
             const fragmentEl = component.gluedComponents[i];
-            if (shouldShowFaceup()) {
+            if (featsContext.shouldShowFaceup(component)) {
                 setStyle(fragmentEl, {
                     display: null,
                 });
@@ -80,18 +80,6 @@ const glued = {
                 });
             }
             i += 1;
-        }
-
-        function shouldShowFaceup() {
-            return !component.flippable || (component.faceup && (isPublic() || isMyCard()));
-        }
-
-        function isPublic() {
-            return !component.owner;
-        }
-
-        function isMyCard() {
-            return component.owner === featsContext.getPlayerName();
         }
     },
     uninstall: function (component) {
