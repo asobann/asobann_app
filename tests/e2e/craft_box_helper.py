@@ -47,6 +47,8 @@ class CraftBox:
             action = ActionChains(browser)
             action.click(el)
             action.key_down(Keys.CONTROL).key_down('a').key_up('a').key_up(Keys.CONTROL)
+            action.key_down(Keys.BACKSPACE).key_up(Keys.BACKSPACE)
+            action.perform()
             for s in strokes:
                 for c in s:
                     action.key_down(c).key_up(c)
