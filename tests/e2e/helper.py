@@ -71,13 +71,22 @@ class Component:
 
     def face(self):
         result = []
-        try:
-            image_url = self.element.find_element(by=By.TAG_NAME, value='img').get_attribute('src')
-            result.append(f"image_url: {image_url}")
-        except NoSuchElementException:
-            pass
+        # gather text
         if self.element.text:
             result.append(f"text: {self.element.text}")
+
+        # gather image urls
+        elements = [self.element] + self.element.find_elements(By.TAG_NAME, 'div')
+        while elements:
+            target = elements.pop()
+            try:
+                image_url = target.find_element(by=By.TAG_NAME, value='img').get_attribute('src')
+                result.append(f"image_url: {image_url}")
+            except NoSuchElementException:
+                pass
+            if 'background-image' in target.get_attribute('style'):
+                style = parse_style(target.get_attribute('style'))
+                result.append(f"image_url: {style['background-image']}")
 
         return ",".join(result) or "not implemented"
 

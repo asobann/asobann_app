@@ -18,28 +18,28 @@ import {addFeat, featsContext} from "../feat";
 //            "width": "12px",
 //            "text": "Text 1"
 //        },
-//         {
-//             "top": "5px",
-//             "left": "56px",
-//             "height": "14px",
-//             "width": "12px",
-//             "text": "Text 2"
-//         },
-//      ],
+//        {
+//            "top": "5px",
+//            "left": "56px",
+//            "height": "14px",
+//            "width": "12px",
+//            "image": "path/to/image.png",
+//            "text": ""
+//        },
+//     ],
 //     ...
 //
-// Glued fragments are text only (current limitation.)
 
 const glued = {
     install: function (component, data) {
         if (!glued.isEnabled(component, data)) {
             return;
         }
-        component.gluedComponents = [];
+        component.gluedFragments = [];
         for (const fragment of data.glued) {
             const fragmentEl = el('div', { 'class': 'glued' });
             mount(component.el, fragmentEl);
-            component.gluedComponents.push(fragmentEl);
+            component.gluedFragments.push(fragmentEl);
         }
     },
     isEnabled: function (component, data) {
@@ -50,7 +50,7 @@ const glued = {
     updateView(component, data) {
         let i = 0;
         for (const fragment of data.glued) {
-            const fragmentEl = component.gluedComponents[i];
+            const fragmentEl = component.gluedFragments[i];
             if (featsContext.shouldShowFaceup(component)) {
                 setStyle(fragmentEl, {
                     display: null,
@@ -67,7 +67,11 @@ const glued = {
                         color: fragment.textColor,
                     });
                 }
-                if (fragment.color) {
+                if(fragment.image) {
+                    setStyle(fragmentEl, {
+                        'background-image': 'url(' + fragment.image + ')',
+                    });
+                } else if (fragment.color) {
                     setStyle(fragmentEl, {
                         backgroundColor: fragment.color,
                     });
@@ -83,7 +87,7 @@ const glued = {
         }
     },
     uninstall: function (component) {
-        delete component.gluedComponents;
+        delete component.gluedFragments;
     },
 };
 
