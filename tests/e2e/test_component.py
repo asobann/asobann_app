@@ -517,11 +517,13 @@ class TestGlued:
             'width': '128px',
             'boxAndComponents': {
                 'test glued component 01': None,
-                'test glued component 02': None
+                'test glued component 02': None,
+                'test glued component 03': None,
             },
             'usedComponentNames': [
                 'test glued component 01',
-                'test glued component 02'
+                'test glued component 02',
+                'test glued component 03',
             ]
         },
         'components': [
@@ -593,6 +595,7 @@ class TestGlued:
                         'height': '32px',
                         'width': '64px',
                         'text': 'UPPER',
+                        'color': 'yellow',
                     },
                     {
                         'top': '44px',
@@ -600,6 +603,42 @@ class TestGlued:
                         'height': '32px',
                         'width': '64px',
                         'text': 'LOWER',
+                        'color': 'green',
+                    },
+                ]
+            },
+            {
+                'name': 'test glued component 03',
+                'color': 'green',
+                'handArea': False,
+                'top': '64px',
+                'left': '144px',
+                'height': '64px',
+                'width': '64px',
+                'showImage': True,
+                'draggable': True,
+                'flippable': False,
+                'resizable': False,
+                'rollable': False,
+                'ownable': True,
+                'glued': [
+                    {
+                        'top': '0px',
+                        'left': '0px',
+                        'height': '32px',
+                        'width': '64px',
+                        'text': 'NONFLIP1',
+                        'textColor': 'white',
+                        'color': 'blue',
+                    },
+                    {
+                        'top': '44px',
+                        'left': '0px',
+                        'height': '32px',
+                        'width': '64px',
+                        'text': 'NONFLIP2',
+                        'textColor': 'black',
+                        'color': 'cyan',
                     },
                 ]
             }
@@ -618,6 +657,10 @@ class TestGlued:
     def test_text_shows(self, host: GameHelper):
         host.should_have_text("GLUED")
 
+    def test_text_shows_non_flippable(self, host: GameHelper):
+        host.should_have_text("NONFLIP1")
+        host.should_have_text("NONFLIP2")
+
     def test_flipped_and_text_hides(self, host: GameHelper):
         before = host.component_by_name('test glued component 01').face()
         host.double_click(host.component_by_name('test glued component 01'))
@@ -633,7 +676,6 @@ class TestGlued:
     def test_put_in_hand_area_and_text_hides(self, host: GameHelper, another_player: GameHelper):
         before = host.component_by_name('test glued component 01').face()
 
-        another_player.should_have_text("you are Player 2")
         another_player.menu.add_my_hand_area.click()
         another_player.move_card_to_hand_area(another_player.component_by_name('test glued component 01'), 'Player 2', (100, 0))
 

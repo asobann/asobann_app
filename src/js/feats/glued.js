@@ -36,8 +36,8 @@ const glued = {
             return;
         }
         component.gluedComponents = [];
-        for(const fragment of data.glued) {
-            const fragmentEl = el('div', {'class': 'glued'});
+        for (const fragment of data.glued) {
+            const fragmentEl = el('div', { 'class': 'glued' });
             mount(component.el, fragmentEl);
             component.gluedComponents.push(fragmentEl);
         }
@@ -49,27 +49,49 @@ const glued = {
     },
     updateView(component, data) {
         let i = 0;
-        for(const fragment of data.glued) {
+        for (const fragment of data.glued) {
             const fragmentEl = component.gluedComponents[i];
-            setStyle(fragmentEl, {
-                left: parseFloat(fragment.left) + "px",
-                top: parseFloat(fragment.top) + "px",
-                width: parseFloat(fragment.width) + "px",
-                height: parseFloat(fragment.height) + "px",
-                zIndex: component.zIndex,
-            });
-            if(fragment.color) {
+            if (shouldShowFaceup()) {
                 setStyle(fragmentEl, {
-                    backgroundColor: fragment.color,
+                    display: null,
+                });
+                setStyle(fragmentEl, {
+                    left: parseFloat(fragment.left) + "px",
+                    top: parseFloat(fragment.top) + "px",
+                    width: parseFloat(fragment.width) + "px",
+                    height: parseFloat(fragment.height) + "px",
+                    zIndex: component.zIndex,
+                });
+                if (fragment.textColor) {
+                    setStyle(fragmentEl, {
+                        color: fragment.textColor,
+                    });
+                }
+                if (fragment.color) {
+                    setStyle(fragmentEl, {
+                        backgroundColor: fragment.color,
+                    });
+                }
+                fragmentEl.innerText = fragment.text;
+            } else {
+                // Glued fragment is not on the facedown side
+                setStyle(fragmentEl, {
+                    display: 'none',
                 });
             }
-            if(component.flippable && component.faceup === false) {
-                // Glued fragment is not on the facedown side
-                fragmentEl.innerText = '';
-            } else {
-                fragmentEl.innerText = fragment.text;
-            }
             i += 1;
+        }
+
+        function shouldShowFaceup() {
+            return !component.flippable || (component.faceup && (isPublic() || isMyCard()));
+        }
+
+        function isPublic() {
+            return !component.owner;
+        }
+
+        function isMyCard() {
+            return component.owner === featsContext.getPlayerName();
         }
     },
     uninstall: function (component) {
