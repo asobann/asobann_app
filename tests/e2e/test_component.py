@@ -519,11 +519,13 @@ class TestGlued:
                 'test glued component 01': None,
                 'test glued component 02': None,
                 'test glued component 03': None,
+                'test glued component 04': None,
             },
             'usedComponentNames': [
                 'test glued component 01',
                 'test glued component 02',
                 'test glued component 03',
+                'test glued component 04',
             ]
         },
         'components': [
@@ -641,7 +643,42 @@ class TestGlued:
                         'color': 'cyan',
                     },
                 ]
-            }
+            },
+            {
+                'name': 'test glued component 04',
+                'color': 'darkgrey',
+                'handArea': False,
+                'top': '144px',
+                'left': '144px',
+                'height': '64px',
+                'width': '64px',
+                'showImage': False,
+                'draggable': True,
+                'flippable': False,
+                'resizable': False,
+                'rollable': False,
+                'ownable': True,
+                'glued': [
+                    {
+                        'top': '24px',
+                        'left': '0px',
+                        'height': '64px',
+                        'width': '32px',
+                        'text': 'Image',
+                        'textColor': 'white',
+                        'color': 'blue',
+                    },
+                    {
+                        'top': '0px',
+                        'left': '32px',
+                        'height': '25px',
+                        'width': '19px',
+                        'text': '',
+                        'image': '19x25img',
+                        'color': 'cyan',
+                    },
+                ]
+            },
         ]
     }
 
@@ -649,6 +686,7 @@ class TestGlued:
     def kit_with_glued_component(self, host, uploader: Uploader):
         TestGlued.kit_data['components'][1]['faceupImage'] = uploader.upload_image('64x64bg.png')['imageUrl']
         TestGlued.kit_data['components'][1]['facedownImage'] = uploader.upload_image('64x64down.png')['imageUrl']
+        TestGlued.kit_data['components'][3]['glued'][1]['image'] = uploader.upload_image('19x25img.png')['imageUrl']
         uploader.upload_kit_from_dict_with_api(TestGlued.kit_data)
         host.menu.add_kit.execute()
         host.menu.add_kit_from_list("test kit for glued component")
@@ -656,6 +694,9 @@ class TestGlued:
 
     def test_text_shows(self, host: GameHelper):
         host.should_have_text("GLUED")
+
+    def test_image_shows(self, host: GameHelper):
+        assert '19x25img' in host.component_by_name('test glued component 04').face()
 
     def test_text_shows_non_flippable(self, host: GameHelper):
         host.should_have_text("NONFLIP1")
