@@ -72,6 +72,7 @@ const glued = {
                 if(fragment.image) {
                     setStyle(fragmentEl, {
                         'background-image': 'url(' + fragment.image + ')',
+                        'background-size': 'cover',
                     });
                 } else if (fragment.color) {
                     setStyle(fragmentEl, {

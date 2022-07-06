@@ -63,7 +63,6 @@ class TestUploadImage:
         data = get_image(base_url, resp['imageUrl'])
         assert local_image == data
 
-
 @pytest.mark.usefixtures("server")
 @pytest.mark.usefixtures("no_kits_and_components")
 class TestUploadKits:
@@ -150,6 +149,7 @@ class TestUploadKits:
         res = requests.get(f'{base_url}/components?kit_name={received_data["kit"]["name"]}')
         components_data = json.loads(res.text)
         assert image_url == components_data[0]['component']['faceupImage']
+
 
     @pytest.mark.skip
     def test_uploaded_image_has_meta_data(self, base_url):

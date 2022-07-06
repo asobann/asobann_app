@@ -141,6 +141,16 @@ const craftBoxActions = {
                                     cmp[key] = imageUrls[cmp[key]];
                                 }
                             }
+                            if(cmp.hasOwnProperty('glued')) {
+                                for(const fragment of cmp.glued) {
+                                    if(!fragment.hasOwnProperty('image')) {
+                                        continue;
+                                    }
+                                    if (imageUrls.hasOwnProperty(fragment['image'])) {
+                                        fragment['image'] = imageUrls[fragment['image']];
+                                    }
+                                }
+                            }
                         }
 
                         const jsonFormData = new FormData();

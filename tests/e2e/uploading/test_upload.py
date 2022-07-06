@@ -46,6 +46,16 @@ class TestUploadKit:
 
             assert '/images/uploaded/example.png' in host.component_by_name('Test Component').face()
 
+        def test_one_glued_image_fragment(self, browser: webdriver.Firefox, uploader: Uploader):
+            host = GameHelper.player(browser)
+            uploader.upload_kit_from_file_with_craft_box(host, 'test_menu_kit_with_glued_image_fragment.json', ['example.png'])
+
+            host.menu.add_kit.execute()
+            host.menu.add_kit_from_list("Test Kit")
+            host.menu.add_kit_done()
+
+            assert '/images/uploaded/example.png' in host.component_by_name('Test Component').face()
+
         @pytest.mark.skip
         def test_image(self, browser: webdriver.Firefox):
             pass

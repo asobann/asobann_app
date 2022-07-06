@@ -1,0 +1,37 @@
+{
+  "kit": {
+    "name": "Test Kit",
+    "label": "Test Kit",
+    "label_ja": "Test Kit",
+    "height": "64px",
+    "width": "64px",
+    "boxAndComponents": {
+      "Test Component": null
+    },
+    "usedComponentNames": [
+      "Test Component"
+    ]
+  },
+  "components": [
+    {
+      "name": "Test Component",
+      "text": "Test Component",
+      "glued": [
+        {
+          "image": "example.png"
+        }
+      ],
+      "handArea": false,
+      "top": "0px",
+      "left": "0px",
+      "height": "64px",
+      "width": "64px",
+      "showImage": false,
+      "draggable": true,
+      "flippable": false,
+      "resizable": false,
+      "rollable": true,
+      "ownable": false
+    }
+  ]
+}
