@@ -18,7 +18,14 @@ const counter = {
         component.el.appendChild(
             el('div.counter', [
                 el('div.valueContainer', [
-                    component.valueEl = el('div.counterValue', {}, counterValue)
+                    component.valueEl = el('div.counterValue', {}, counterValue),
+                    el('div.button.reset', [
+                        el('button.reset#reset', {
+                            onclick: (() => {
+                                count((/* v */) => 0)
+                            })
+                        }, 'RESET'),
+                    ]),
                 ]),
                 el('div.buttons', [
                     el('div.button', [
@@ -48,15 +55,6 @@ const counter = {
                                 count((v) => v + 10)
                             })
                         }, '+10'),
-                    ]),
-                ]),
-                el('div.buttons', [
-                    el('div.button.reset', [
-                        el('button.reset#reset', {
-                            onclick: (() => {
-                                count((/* v */) => 0)
-                            })
-                        }, 'RESET'),
                     ]),
                 ]),
             ])
