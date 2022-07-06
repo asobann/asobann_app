@@ -38,6 +38,19 @@ function text(data, propName) {
     }
 }
 
+function shrinkFontSizeToFit(divEl, boundingRect) {
+    // tweak font size so that all text fit in the component
+    var size = 100;
+    setStyle(divEl, "font-size", size + "%");
+    while (divEl.clientHeight > boundingRect.height || divEl.clientWidth > boundingRect.width) {
+        size -= 10;
+        if (size <= 10) {
+            break;
+        }
+        setStyle(divEl, "font-size", size + "%");
+    }
+}
+
 const basic = {
     install: function (component, data) {
         if (data.showImage) {
@@ -74,6 +87,27 @@ const basic = {
         component.zIndex = data.zIndex;
     },
     updateView(component, data) {
+        if (data.showImage) {
+            updateImageContent(component, data);
+        }
+
+        if (component.textEl == null) {  // TODO: this if should be in if(data.text) clause, but flippable complains
+            buildTextContent(component, data);
+        }
+        if (data.text) {
+            updateTextContent(component, data);
+        }
+        if (data.textColor) {
+            updateTextColor(component, data);
+        }
+        if (data.textAlign) {
+            updateTextAlign(component, data);
+        }
+
+        updateName(component, data);
+        updatePosition(component, data);
+        return;
+
         function updateImageContent(component, data) {
             if (component.imageEl.src !== data.image) {
                 setAttr(component.imageEl, { src: data.image });
@@ -91,6 +125,7 @@ const basic = {
 
         function updateTextContent(component, data) {
             component.textEl.innerText = text(data, "text");
+            shrinkFontSizeToFit(component.textEl.parentElement, component.el.getBoundingClientRect());
         }
 
         function updateTextColor(component, data) {
@@ -133,26 +168,6 @@ const basic = {
             });
         }
 
-        if (data.showImage) {
-            updateImageContent(component, data);
-        }
-
-        if (component.textEl == null) {  // TODO: this if should be in if(data.text) clause, but flippable complains
-            buildTextContent(component, data);
-        }
-        if (data.text) {
-            updateTextContent(component, data);
-        }
-        if (data.textColor) {
-            updateTextColor(component, data);
-        }
-        if (data.textAlign) {
-            updateTextAlign(component, data);
-        }
-
-        updateName(component, data);
-
-        updatePosition(component, data);
     },
     uninstall: function () {
     },
@@ -321,6 +336,7 @@ const flippability = {
             if (component.textEl) {
                 if (data[prop]) {
                     component.textEl.innerText = text(data, prop);
+                    shrinkFontSizeToFit(component.textEl.parentElement, component.el.getBoundingClientRect());
                 } else {
                     component.textEl.innerText = '';
                 }
@@ -1248,7 +1264,7 @@ for (const feat of feats) {
 }
 
 export {
-    setFeatsContext, feats, event, addFeat, featsContext,
+    setFeatsContext, feats, event, addFeat, featsContext, shrinkFontSizeToFit,
 
     // exported for testing only (probably)
     basic,
