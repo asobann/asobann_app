@@ -58,7 +58,7 @@ def get_log_of_updates():
     return jsonify(debug_tools.log_of_updates)
 
 
-@blueprint.route('get_log_of_updates', methods=['GET'])
+@blueprint.route('clear_log_of_updates', methods=['GET'])
 def clear_log_of_updates():
     debug_tools.clear_log_of_updates()
     return '{}'
