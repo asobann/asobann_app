@@ -39,7 +39,8 @@ class TestServerProvider:
 
     def start_server(self, env):
         do_deploy_data()
-        self.proc = subprocess.Popen(["/usr/local/bin/pipenv", "run", "python", "-m", "asobann.wsgi"], env=env)
+        # self.proc = subprocess.Popen(["/usr/local/bin/pipenv", "run", "python", "-m", "asobann.wsgi"], env=env)
+        self.proc = subprocess.Popen(["/usr/local/bin/python", "-m", "asobann.wsgi"], env=env)
         self.current_server_environ = env
         time.sleep(1)
 
@@ -70,7 +71,8 @@ def debug_order_of_updates():
 
 def do_deploy_data():
     server_environ = provider.get_env_to_run()
-    subprocess.run(["/usr/local/bin/pipenv", "run", "python", "-m", "asobann.deploy"], env=server_environ)
+    # subprocess.run(["/usr/local/bin/pipenv", "run", "python", "-m", "asobann.deploy"], env=server_environ)
+    subprocess.run(["/usr/local/bin/python", "-m", "asobann.deploy"], env=server_environ)
 
 
 @pytest.fixture

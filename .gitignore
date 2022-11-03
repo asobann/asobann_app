@@ -3,6 +3,7 @@ env
 requirements.txt
 # to let using different version of Python
 Pipfile.lock
+tests/geckodriver
 
 
 # webpack generates these files

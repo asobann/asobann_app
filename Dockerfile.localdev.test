@@ -1,0 +1,18 @@
+# basic setup
+FROM python:3.10-bullseye
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get -y install xvfb firefox-esr
+
+VOLUME ["/app"]
+WORKDIR /init
+COPY requirements-dev.txt /init
+RUN pip3 install -r requirements-dev.txt
+WORKDIR /app
+ENV PYTHONPATH=/app/src:/app
+ENV PATH=$PATH:./tests
+ENV DISPLAY=:99
+CMD ./tests/entry_for_test_container.sh
+
