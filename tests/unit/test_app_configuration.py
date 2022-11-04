@@ -63,7 +63,7 @@ PARAMS = [
         'expected': {
             'config': {
                 'REDIS_URI': None,
-                'MONGO_URI': 'mongodb://localhost:27017/ex2test',
+                'MONGO_URI': 'mongodb://admin:password@mongo:27017/test?authSource=admin',
                 'BASE_URL': '*',
                 'GOOGLE_ANALYTICS_ID': None,
             },

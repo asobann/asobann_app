@@ -150,7 +150,7 @@ def create_app(testing=False):
 
     try:
         app.logger.info("connecting mongo")
-        app.logger.info(app.config["MONGO_URI"])
+        app.logger.info("MONGO_URI: " + app.config["MONGO_URI"])
         app.mongo = PyMongo(app)
         # make sure mongodb is available and fail fast if not
         app.mongo.db.list_collection_names()
