@@ -78,6 +78,6 @@ trio==0.20.0; python_version >= '3.7'
 typer==0.4.1
 urllib3==1.26.9; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'
 wcwidth==0.2.5
-werkzeug==2.1.2; python_version >= '3.7'
+werkzeug==2.2.3; python_version >= '3.7'
 wrapt==1.14.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
 wsproto==1.1.0; python_version >= '3.7'
