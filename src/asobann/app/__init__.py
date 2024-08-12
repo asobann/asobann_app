@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, send_file
 from flask_pymongo import PyMongo
@@ -84,10 +85,11 @@ def configure_app(app, testing):
         SECRET_KEY='secret!',
     )
 
+    app.config['ASOBANN_ENV'] = os.environ.get('ASOBANN_ENV', 'development')
     folder = Path(asobann.__file__).parent.absolute()
-    if app.config["ENV"] == "test" or testing:
+    if app.config['ASOBANN_ENV'] == "test" or testing:
         app.config.from_pyfile(folder / 'config_test.py', silent=True)
-    elif app.config["ENV"] == "production":
+    elif app.config['ASOBANN_ENV'] == "production":
         app.config.from_pyfile(folder / 'config_production.py', silent=True)
     else:
         app.config.from_pyfile(folder / 'config_dev.py', silent=True)
@@ -182,7 +184,7 @@ def create_app(testing=False):
     else:
         raise ValueError(f'config UPLOADED_IMAGE_STORE "{app.config["UPLOADED_IMAGE_STORE"].lower()}" is invalid')
 
-    if app.config["ENV"] == "development":
+    if app.config["ASOBANN_ENV"] == "development":
         socketio_args['cors_allowed_origins'] = "*"
     else:
         socketio_args['cors_allowed_origins'] = app.config['BASE_URL']
@@ -197,7 +199,7 @@ def create_app(testing=False):
     app.register_blueprint(table.blueprint)
     app.register_blueprint(component.blueprint)
     app.register_blueprint(kit.blueprint)
-    if app.config['ENV'] == 'development' or app.config['ENV'] == 'test':
+    if app.config['ASOBANN_ENV'] == 'development' or app.config['ASOBANN_ENV'] == 'test':
         from asobann.app.blueprints import debug
         app.register_blueprint(debug.blueprint)
 

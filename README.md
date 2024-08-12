@@ -24,4 +24,6 @@ Access http://localhost:8000/
     3. npx npm-check-updates -u
     4. npm install --save-dev @babel/core @babel/preset-env
 1. npm i -d
+1.  pipenv requirements --dev > .\requirements-dev.txt
+2. Run the localdev and check if it works
 1. Check and commit

@@ -2,19 +2,11 @@ import os
 
 import asobann.config_common as common
 
-REDIS_URI = common.REDIS_URI
-if 'MONGODB_URI' in os.environ:
-    MONGO_URI = os.environ["MONGODB_URI"]
-else:
-    MONGO_URI = 'mongodb://admin:password@mongo:27017/test?authSource=admin'
+MONGO_URI = os.environ["MONGODB_URI"]
 PORT = 10011
-
+REDIS_URI = common.REDIS_URI
 BASE_URL = '*'
-
-if 'GOOGLE_ANALYTICS_ID' in os.environ:
-    GOOGLE_ANALYTICS_ID = os.environ['GOOGLE_ANALYTICS_ID']
-else:
-    GOOGLE_ANALYTICS_ID = None
+GOOGLE_ANALYTICS_ID = None
 
 if 'ASOBANN_DEBUG_HANDLER_WAIT' in os.environ:
     DEBUG_HANDLER_WAIT = os.environ['ASOBANN_DEBUG_HANDLER_WAIT']

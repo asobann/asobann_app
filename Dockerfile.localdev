@@ -1,5 +1,5 @@
 # basic setup
-FROM python:3.10-bullseye
+FROM python:3.12-bookworm
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 RUN apt-get -y update
@@ -11,5 +11,5 @@ COPY requirements-dev.txt /init
 RUN pip3 install -r requirements-dev.txt
 WORKDIR /app
 ENV PYTHONPATH=/app/src:/app
-CMD cd src/asobann ; FLASK_ENV=development python3 -m asobann.deploy ; FLASK_ENV=development python3 -m asobann.wsgi
+CMD cd src/asobann ; ASOBANN_ENV=development python3 -m asobann.deploy ; ASOBANN_ENV=development python3 -m asobann.wsgi
 

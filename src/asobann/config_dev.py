@@ -2,24 +2,10 @@ import os
 
 import asobann.config_common as common
 
-if 'MONGODB_URI' in os.environ:
-    if '?' not in os.environ['MONGODB_URI']:
-        MONGO_URI = f'{os.environ["MONGODB_URI"]}/ex2dev?authSource=admin'
-    else:
-        MONGO_URI = os.environ["MONGODB_URI"]
-else:
-    MONGO_URI = 'mongodb://localhost:27017/ex2dev'
-
+MONGO_URI = os.environ["MONGODB_URI"]
+PORT = 5000
 REDIS_URI = common.REDIS_URI
-
-if 'PUBLIC_HOSTNAME' in os.environ:
-    value = os.environ['PUBLIC_HOSTNAME']
-    if value.startswith('.'):
-        value = value[1:]
-    BASE_URL = 'https://' + value
-else:
-    BASE_URL = 'http://localhost:5000'
-
+BASE_URL = 'http://localhost:5000'
 GOOGLE_ANALYTICS_ID = None
 
 if 'ASOBANN_DEBUG_HANDLER_WAIT' in os.environ:

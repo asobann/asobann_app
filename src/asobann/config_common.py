@@ -12,7 +12,7 @@ def from_env(key, default=RAISE):
         return default
 
 
-REDIS_URI = from_env('REDIS_URI', default=None)
+REDIS_URI = from_env('REDIS_URI', default=RAISE)
 
 UPLOADED_IMAGE_STORE = from_env('UPLOADED_IMAGE_STORE', default='local')
 
