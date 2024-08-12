@@ -18,7 +18,7 @@ services:
             - ../../:/app
         environment:
             ASOBANN_ENV: localdev
-            MONGODB_URI: mongodb://admin:password@mongo:2701/ex2dev?authSource=admin
+            MONGODB_URI: mongodb://admin:password@mongo:27017/ex2dev?authSource=admin
             REDIS_URI: redis://redis:6379
         depends_on:
             mongo:
