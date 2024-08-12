@@ -5,13 +5,15 @@ services:
           dockerfile: Dockerfile.localdev.test
         volumes:
             - ../../:/app
+        profiles:
+            - manual
 
     app_1:
         build:
           context: ../..
           dockerfile: Dockerfile.localdev
         ports:
-            - "8000:5000"
+            - "8001:5000"
         volumes:
             - ../../:/app
         environment:
@@ -29,7 +31,7 @@ services:
             context: ../..
             dockerfile: Dockerfile.localdev
         ports:
-            - "8001:5000"
+            - "8002:5000"
         volumes:
             - ../../:/app
         environment:
@@ -47,7 +49,7 @@ services:
             context: ../..
             dockerfile: Dockerfile.localdev
         ports:
-            - "8002:5000"
+            - "8003:5000"
         volumes:
             - ../../:/app
         environment:
