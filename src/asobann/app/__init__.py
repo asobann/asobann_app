@@ -85,6 +85,12 @@ def configure_app(app, testing):
         SECRET_KEY='secret!',
     )
 
+    try:
+        import dotenv
+        dotenv.load_dotenv()
+    except ImportError:
+        pass
+
     app.config['ASOBANN_ENV'] = os.environ.get('ASOBANN_ENV', 'development')
     folder = Path(asobann.__file__).parent.absolute()
     if app.config['ASOBANN_ENV'] == "test" or testing:

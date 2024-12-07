@@ -3,8 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/asobann_app.iml" filepath="$PROJECT_DIR$/asobann_app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../asobann_contents/asobann_contents.iml" filepath="$PROJECT_DIR$/../asobann_contents/asobann_contents.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../asobann_deploy/asobann_deploy.iml" filepath="$PROJECT_DIR$/../asobann_deploy/asobann_deploy.iml" />
     </modules>
   </component>
 </project>
