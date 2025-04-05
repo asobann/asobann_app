@@ -72,7 +72,16 @@ class ComponentUpdateBuffer {
     }
 
     addDiff(componentId, diff) {
-        Object.assign(this.updateOf(componentId), diff);
+        // Store only the properties that changed instead of merging objects
+        const updates = this.updateOf(componentId);
+        
+        // Efficiently update only what changed, avoiding nested merges
+        for (const key in diff) {
+            if (diff.hasOwnProperty(key)) {
+                updates[key] = diff[key];
+            }
+        }
+        
         if (this.orderOfComponentId.indexOf(componentId) < 0) {
             this.orderOfComponentId.push(componentId);
         }
@@ -204,7 +213,16 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
 
 function updateTableDataWithComponentDiff(table, componentId, diff) {
     const oldData = table.data;
-    Object.assign(oldData.components[componentId], diff);
+    const component = oldData.components[componentId];
+    
+    // Only update the changed properties
+    for (const key in diff) {
+        if (diff.hasOwnProperty(key)) {
+            component[key] = diff[key];
+        }
+    }
+    
+    // No need to update all data, just indicate that component was updated
     table.receiveData(oldData);
 }
 
