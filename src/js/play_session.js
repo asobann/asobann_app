@@ -144,6 +144,10 @@ const syncTableConnector = {
         if (playerName === getPlayerName()) {
             return;
         }
+        
+        // Update last activity timestamp for the player
+        playerLastActivity[playerName] = Date.now();
+        
         if (!otherPlayersMouse[playerName]) {
             const e = el("div.others_mouse_cursor",
                 [
@@ -163,6 +167,23 @@ const syncTableConnector = {
 };
 
 const otherPlayersMouse = {};
+const playerLastActivity = {};
+const PLAYER_TIMEOUT_MS = 30000; // Remove cursor after 30 seconds of inactivity
+
+// Cleanup inactive player cursors periodically
+setInterval(() => {
+    const now = Date.now();
+    for (const playerName in playerLastActivity) {
+        if (now - playerLastActivity[playerName] > PLAYER_TIMEOUT_MS) {
+            // Player inactive, remove their cursor
+            if (otherPlayersMouse[playerName]) {
+                unmount(table.el, otherPlayersMouse[playerName]);
+                delete otherPlayersMouse[playerName];
+                delete playerLastActivity[playerName];
+            }
+        }
+    }
+}, 10000); // Check every 10 seconds
 
 function generateComponentId() {
     return 'xxxxxxxxxxxx'.replace(/[x]/g, function (/*c*/) {
