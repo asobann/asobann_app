@@ -546,10 +546,22 @@ const menu = new Menu(
     }));
 mount(container, menu.el);
 
+// Throttle mouse movement updates
+let lastMouseMoveTime = 0;
+const MOUSE_MOVE_THROTTLE_MS = 50; // Only send updates every 50ms
+
 tableContainer.addEventListener("mousemove", (event) => {
     if (isPlayerObserver()) {
         return;
     }
+    
+    const now = Date.now();
+    // Skip updates that are too frequent unless mouse button is pressed (for dragging)
+    if (event.buttons === 0 && now - lastMouseMoveTime < MOUSE_MOVE_THROTTLE_MS) {
+        return;
+    }
+    
+    lastMouseMoveTime = now;
     const r = tableContainer.getBoundingClientRect();
     const mouseOnTableX = event.clientX - r.left - parseFloat(table.el.style.left);
     const mouseOnTableY = event.clientY - r.top - parseFloat(table.el.style.top);
@@ -557,5 +569,5 @@ tableContainer.addEventListener("mousemove", (event) => {
         mouseOnTableX: mouseOnTableX,
         mouseOnTableY: mouseOnTableY,
         mouseButtons: event.buttons,
-    })
+    });
 });
