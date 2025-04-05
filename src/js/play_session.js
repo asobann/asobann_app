@@ -61,25 +61,52 @@ const syncTableConnector = {
 
     updateManyComponents(diffOfComponents, componentIdsToRemove) {
         const tableData = table.data;
+        const updatedComponentIds = new Set(); // Track which components changed
+        
+        // First apply all diffs
         for (const component_diff of diffOfComponents) {
             for (const componentId in component_diff) {
                 if (!component_diff.hasOwnProperty(componentId)) {
                     continue;
                 }
-                applyDiffToComponentData(componentId, component_diff[componentId]);
+                if (applyDiffToComponentData(componentId, component_diff[componentId])) {
+                    updatedComponentIds.add(componentId);
+                }
             }
         }
-        applyRemoveComponents(componentIdsToRemove);
-        table.update(tableData);
-        menu.update(tableData);
+        
+        // Then handle removals
+        if (componentIdsToRemove && componentIdsToRemove.length > 0) {
+            applyRemoveComponents(componentIdsToRemove);
+            // Full update needed when components are removed
+            table.update(tableData);
+            menu.update(tableData);
+        } else if (updatedComponentIds.size > 0) {
+            // Selectively update only changed components
+            for (const componentId of updatedComponentIds) {
+                if (table.componentsOnTable[componentId]) {
+                    table.componentsOnTable[componentId].updateView(tableData.components[componentId]);
+                }
+            }
+            menu.update(tableData);
+        }
+        
         dev_inspector.tracePoint('finished sync update many components');
 
         function applyDiffToComponentData(componentId, diff) {
             if (!tableData.components.hasOwnProperty(componentId)) {
                 // component is already removed from table probably
-                return;
+                return false;
             }
-            Object.assign(tableData.components[componentId], diff);
+            
+            // Only update changed properties instead of Object.assign
+            const component = tableData.components[componentId];
+            for (const key in diff) {
+                if (diff.hasOwnProperty(key)) {
+                    component[key] = diff[key];
+                }
+            }
+            return true;
         }
 
         function applyRemoveComponents(componentIdsToRemove) {
