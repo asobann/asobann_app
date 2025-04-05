@@ -90,6 +90,13 @@ function setPerformanceRecordingDebugger(uid) {
     }
 
     function sendTraces() {
+        // Check if fetch is available in this environment
+        if (typeof fetch === 'undefined') {
+            // In test environments without fetch, just clear the traces
+            traces.length = 0;
+            return;
+        }
+        
         // Don't allow trace queue to grow too large
         if (traces.length > MAX_TRACES / 2) {
             const toSend = [];
@@ -106,16 +113,22 @@ function setPerformanceRecordingDebugger(uid) {
                 return;
             }
             
-            const data = {
-                traces: toSend,
-                originator: uid,
+            try {
+                const data = {
+                    traces: toSend,
+                    originator: uid,
+                }
+                const request = new Request('/debug/add_traces', { method: 'POST', body: JSON.stringify(data) });
+                request.headers.append('Content-Type', 'application/json');
+                fetch(request).catch(err => {
+                    console.warn("Error sending traces", err);
+                    // Don't try to resend failed traces - just drop them
+                });
+            } catch (err) {
+                console.warn("Error preparing trace request", err);
+                // Clear the traces to avoid memory buildup
+                traces.length = 0;
             }
-            const request = new Request('/debug/add_traces', { method: 'POST', body: JSON.stringify(data) });
-            request.headers.append('Content-Type', 'application/json');
-            fetch(request).catch(err => {
-                console.warn("Error sending traces", err);
-                // Don't try to resend failed traces - just drop them
-            });
         }
     }
 
@@ -123,20 +136,29 @@ function setPerformanceRecordingDebugger(uid) {
 }
 
 (function () {
-    (async () => {
-        const uid = Math.floor(Math.random() * 1000000000);
-        const url = baseUrl() + "/debug/setting";
-        const response = await fetch(url);
-        if(!response.ok) {
-            return;
-        }
-        const data = response.json();
-        const setting = await data;
+    // Check if we're in a browser environment where fetch is available
+    const isBrowser = typeof window !== 'undefined' && typeof window.fetch !== 'undefined';
+    
+    if (isBrowser) {
+        (async () => {
+            try {
+                const uid = Math.floor(Math.random() * 1000000000);
+                const url = baseUrl() + "/debug/setting";
+                const response = await fetch(url);
+                if(!response.ok) {
+                    return;
+                }
+                const data = response.json();
+                const setting = await data;
 
-        if (setting.performanceRecording) {
-            setPerformanceRecordingDebugger(uid);
-        }
-    })();
+                if (setting && setting.performanceRecording) {
+                    setPerformanceRecordingDebugger(uid);
+                }
+            } catch (err) {
+                console.warn("Error initializing debug inspector:", err);
+            }
+        })();
+    }
 })();
 
 
