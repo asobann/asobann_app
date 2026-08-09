@@ -27,7 +27,18 @@ def do_run(name: str, workers: int, env: 'AbstractContainers', headless: bool, u
     try:
         result = env.run_test(name, headless=headless, url=url, params=params or {})
     finally:
-        env.shutdown()
+        try:
+            env.shutdown()
+        except Exception as shutdown_ex:
+            # A run can complete and hand back a valid result even when the containers
+            # end up in a state where tearing them down raises (observed: `shutdown`
+            # racing the controller's own exit after a 30-minute run finished cleanly).
+            # Letting that exception propagate from `finally` would silently discard an
+            # already-obtained `result` - not worth 30 minutes of load data. Cleanup
+            # failing is a real problem (containers may be left running) but a strictly
+            # secondary one to losing the result, so just report it instead of raising.
+            print(f'warning: env.shutdown() failed, containers may be left running: {shutdown_ex!r}',
+                  file=sys.stderr)
 
     pprint(result)
     if output:
