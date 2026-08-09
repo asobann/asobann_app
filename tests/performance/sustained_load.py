@@ -32,6 +32,11 @@ from .mouse_latency import evaluate_all_pairs_timeseries
 
 KIT_FILE = Path(__file__).parent / "sustained_load.json"
 
+# Raised on the controller's side of a result_queue.get() when that worker's own
+# manager connection has already gone away (e.g. its browser crashed and it called
+# mgr.shutdown() on itself - see remote_runner.py's worker exception handling).
+WORKER_DISCONNECT_ERRORS = (EOFError, ConnectionError, BrokenPipeError)
+
 DEFAULTS = {
     'duration_seconds': 180,
     'mousemove_hz': 30,
@@ -80,6 +85,8 @@ def execute_controller(command_queues, result_queues, parameters):
         sent_by_player = {'host': []}
         received_by_receiver = {'host': {}}
         drag_seconds_by_worker = {}
+        dead_workers = set()  # a browser crash in one worker must not lose every other
+                              # worker's data for the whole run - see WORKER_DISCONNECT_ERRORS
 
         for cycle in range(cycles):
             time.sleep(p['report_interval_seconds'])
@@ -88,19 +95,33 @@ def execute_controller(command_queues, result_queues, parameters):
             merge_received(received_by_receiver['host'], host.collect_and_clear_mouse_receive_log())
 
             for idx, q in enumerate(result_queues):
-                r = q.get()
+                if idx in dead_workers:
+                    continue
                 worker_name = f'P{idx}'
+                try:
+                    r = q.get()
+                except WORKER_DISCONNECT_ERRORS as ex:
+                    log(f'{worker_name} appears to have crashed ({ex!r}); '
+                        f'continuing the run with the remaining workers')
+                    dead_workers.add(idx)
+                    continue
                 sent_by_player.setdefault(worker_name, [])
                 sent_by_player[worker_name] += r['sent']
                 received_by_receiver.setdefault(worker_name, {})
                 merge_received(received_by_receiver[worker_name], r['received'])
                 drag_seconds_by_worker.setdefault(worker_name, []).extend(r['drag_seconds'])
 
-            log(f'cycle {cycle + 1}/{cycles} (elapsed {(cycle + 1) * p["report_interval_seconds"]}s) collected')
+            log(f'cycle {cycle + 1}/{cycles} (elapsed {(cycle + 1) * p["report_interval_seconds"]}s) collected, '
+                f'{len(dead_workers)} dead worker(s)')
 
         host.stop_mouse_load()
-        for q in result_queues:
-            q.get()  # final {'finished': True} marker
+        for idx, q in enumerate(result_queues):
+            if idx in dead_workers:
+                continue
+            try:
+                q.get()  # final {'finished': True} marker
+            except WORKER_DISCONNECT_ERRORS:
+                pass
 
         buckets = evaluate_all_pairs_timeseries(
             sent_by_player, received_by_receiver, start_at_ms, p['report_interval_seconds'])

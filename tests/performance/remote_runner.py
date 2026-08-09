@@ -62,6 +62,8 @@ def worker_server(port):
                 except:
                     pass
                 log(f'worker raised an exception: {ex} {ex.args}')
+                log(buf.getvalue())  # full traceback, always visible via `docker logs` even if
+                                      # result_queue.put() above lost the race with mgr.shutdown()
                 mgr.shutdown()
                 break
             log('worker is finished')
