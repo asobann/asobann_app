@@ -179,7 +179,12 @@ def execute_worker(name, command_queue, result_queue, parameters):
         player.go(invitation_url)
         player.menu.join(f'P{idx}')
         player.should_have_text(f"you are P{idx}")
-        nth = idx + 2  # component(1) is the NOTE; cards start at 2, see sustained_load.json
+        # Address the card by its data-component-name, the way the e2e tests do, rather
+        # than by DOM position: component(nth) resolves `.component:nth-of-type(N)`, and
+        # once several players start dragging cards around, the element at position N is
+        # no longer the card this worker owns (it can also stop matching entirely, which
+        # made every worker die on a TimeoutException within ~2 minutes of a drag-enabled run).
+        my_card_name = f'card{idx + 1}'  # see sustained_load.json
 
         player.start_mouse_load(hz=p['mousemove_hz'])
         player.start_mouse_receive_observer()
@@ -191,9 +196,18 @@ def execute_worker(name, command_queue, result_queue, parameters):
             for _ in range(drags_per_cycle):
                 time.sleep(p['drag_interval_seconds'])
                 started_at = time.monotonic()
-                player.drag(player.component(nth), 0, 100)
-                time.sleep(0.1)  # avoid double clicking, matches other scenarios
-                player.drag(player.component(nth), 0, -100)
+                # Pause the ambient cursor motion while dragging: a real player's pointer
+                # cannot be waving around and dragging a card simultaneously, and running
+                # both at once sent cards to y = -96000px until they left the viewport
+                # (see pause_mouse_load).
+                player.pause_mouse_load()
+                try:
+                    player.drag(player.component_by_name(my_card_name), 0, 100)
+                    time.sleep(0.1)  # avoid double clicking, matches other scenarios
+                    player.drag(player.component_by_name(my_card_name), 0, -100)
+                finally:
+                    time.sleep(0.2)  # let the drag's own events drain before resuming
+                    player.resume_mouse_load(hz=p['mousemove_hz'])
                 drag_seconds.append(time.monotonic() - started_at)
 
             result_queue.put({

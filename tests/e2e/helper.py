@@ -1,6 +1,7 @@
 from typing import Union
 import re
 import json
+import time
 import requests
 from selenium import webdriver
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -398,59 +399,110 @@ class GameHelper:
     def move_mouse_by_offset(self, offset):
         ActionChains(self.browser).move_by_offset(offset[0], offset[1]).perform()
 
-    def start_mouse_load(self, hz, center=(400, 300), radius=150):
+    # The synthetic cursor walks a GRID_SIZE x GRID_SIZE lattice of distinct positions,
+    # one pixel apart, anchored at the load's center. Every position in a full sweep is
+    # unique, which is what lets a receiver pair an observed cursor position back to the
+    # exact message that produced it (see mouse_latency.pair_latencies), and the sweep
+    # repeats instead of running away: an earlier version walked clientX = center + seq,
+    # which meant the pointer marched right forever (18,000px after ten minutes at 30Hz).
+    MOUSE_LOAD_GRID_SIZE = 100
+
+    def start_mouse_load(self, hz, center=(400, 300)):
         """
         Dispatch synthetic mousemove events on div.table_container at the given rate,
         without round-tripping through WebDriver for every event. Used to reproduce
-        the mousemove-broadcast load real users generate while dragging/looking around.
+        the mousemove-broadcast load real users generate while moving the pointer around.
 
         Replicates the app's own coordinate math (play_session.js: mouseOnTableX/Y and
         the ICON_OFFSET applied in showOthersMouseMovement) so each sent event's resulting
         "div.others_mouse_cursor" CSS left/top can be predicted in advance. A receiver
         (see start_mouse_receive_observer) records the *observed* left/top; pairing sent
-        vs. observed by that pixel value (see mouse_latency.py) gives exact send/receive
-        timestamps without needing an unambiguous sequence-number encoding.
+        vs. observed by that pixel pair (see mouse_latency.py) gives exact send/receive
+        timestamps.
+
         Assumes the table container position and table pan offset stay constant for the
         duration of the load (true for a bot that never resizes the window or drags the
         table itself).
         """
         self.browser.execute_script(
             """
-            const [hz, cx, cy, radius] = arguments;
-            const ICON_OFFSET_X = -(32 / 2);
-            const ICON_OFFSET_Y = -(32 / 2);
-            const container = document.querySelector('div.table_container');
-            const table = document.querySelector('div.table');
-            const r = container.getBoundingClientRect();
-            const tableLeft = parseFloat(table.style.left) || 0;
-            const tableTop = parseFloat(table.style.top) || 0;
-            const state = {count: 0, sent: []};
+            const [hz, cx, cy, gridSize] = arguments;
+            const state = {count: 0, sent: [], cx: cx, cy: cy, gridSize: gridSize};
             window.__asobann_mouse_load = state;
-            const intervalMs = 1000 / hz;
-            state.timer = setInterval(() => {
-                const seq = state.count;
-                const angle = seq * 0.1;
-                const clientX = cx + seq;  // monotonically increasing -> unique expected_left
-                const clientY = cy + Math.round(radius * Math.sin(angle));
-                const ev = new MouseEvent('mousemove', {
-                    bubbles: true,
-                    cancelable: true,
-                    clientX: clientX,
-                    clientY: clientY,
-                    buttons: 0,
-                });
-                container.dispatchEvent(ev);
-                const mouseOnTableX = clientX - r.left - tableLeft;
-                const mouseOnTableY = clientY - r.top - tableTop;
-                state.sent.push({
-                    expected_left: mouseOnTableX + ICON_OFFSET_X,
-                    expected_top: mouseOnTableY + ICON_OFFSET_Y,
+            window.__asobann_mouse_tick = function () {
+                const ICON_OFFSET_X = -(32 / 2);
+                const ICON_OFFSET_Y = -(32 / 2);
+                const container = document.querySelector('div.table_container');
+                const table = document.querySelector('div.table');
+                const r = container.getBoundingClientRect();
+                const tableLeft = parseFloat(table.style.left) || 0;
+                const tableTop = parseFloat(table.style.top) || 0;
+                const s = window.__asobann_mouse_load;
+                const pos = s.count % (s.gridSize * s.gridSize);
+                const clientX = s.cx + (pos % s.gridSize);
+                const clientY = s.cy + Math.floor(pos / s.gridSize);
+                container.dispatchEvent(new MouseEvent('mousemove', {
+                    bubbles: true, cancelable: true,
+                    clientX: clientX, clientY: clientY, buttons: 0,
+                }));
+                s.sent.push({
+                    expected_left: (clientX - r.left - tableLeft) + ICON_OFFSET_X,
+                    expected_top: (clientY - r.top - tableTop) + ICON_OFFSET_Y,
                     sent_at: Date.now(),
                 });
-                state.count += 1;
-            }, intervalMs);
+                s.count += 1;
+            };
+            state.timer = setInterval(window.__asobann_mouse_tick, 1000 / hz);
             """,
-            hz, center[0], center[1], radius,
+            hz, center[0], center[1], self.MOUSE_LOAD_GRID_SIZE,
+        )
+
+    def pause_mouse_load(self, settle_timeout=2.0):
+        """
+        Stop dispatching synthetic mousemoves and block until no further tick fires,
+        keeping the accumulated send log and position counter so the load can be resumed
+        as one continuous stream.
+
+        A real person cannot wave the cursor around and drag a component at the same time -
+        while dragging, the pointer motion *is* the drag. Overlapping the two is a state
+        that never occurs in real use, and dragged cards ended up ~96,000px off-screen
+        (element lookups then time out on visibility).
+
+        clearInterval() alone does not establish that overlap has ended: a tick already
+        queued, or one running at that moment, still gets to finish, and an ActionChains
+        drag takes hundreds of milliseconds during which such a straggler can land. So
+        this waits until the tick counter stops advancing before returning, making
+        "the ambient load has stopped" an observed fact rather than an assumption.
+        """
+        self.browser.execute_script(
+            """
+            const state = window.__asobann_mouse_load;
+            if (state && state.timer) {
+                clearInterval(state.timer);
+                state.timer = null;
+            }
+            """
+        )
+        deadline = time.monotonic() + settle_timeout
+        previous = None
+        while time.monotonic() < deadline:
+            count = self.browser.execute_script(
+                "return window.__asobann_mouse_load ? window.__asobann_mouse_load.count : 0;")
+            if count == previous:
+                return
+            previous = count
+            time.sleep(0.05)
+        raise RuntimeError('mouse load did not settle after pause_mouse_load()')
+
+    def resume_mouse_load(self, hz):
+        self.browser.execute_script(
+            """
+            const [hz] = arguments;
+            const state = window.__asobann_mouse_load;
+            if (!state || state.timer) { return; }
+            state.timer = setInterval(window.__asobann_mouse_tick, 1000 / hz);
+            """,
+            hz,
         )
 
     def stop_mouse_load(self):
