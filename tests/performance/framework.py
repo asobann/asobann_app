@@ -181,7 +181,13 @@ EXPOSE 8888
                 try:
                     res = urllib.request.urlopen(self.controller_url, data=command.encode('utf8'))
                     break
-                except urllib.error.URLError:
+                except (urllib.error.URLError, ConnectionError):
+                    # A bare ConnectionError (e.g. http.client.RemoteDisconnected, raised
+                    # when the controller closes the connection before sending a response -
+                    # observed here right after the controller logged an internal scenario
+                    # error) isn't wrapped into URLError by urllib in every code path, so it
+                    # would otherwise escape this retry loop entirely and crash the caller
+                    # (seen taking down shutdown() during a Step 4 run).
                     if (datetime.datetime.now() - started_at).total_seconds() > CONNECTION_RETRY_SECONDS:
                         raise
                     log(f'connection to controller {self.controller_url} refused. Retrying ...')

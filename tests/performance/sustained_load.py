@@ -8,7 +8,7 @@ delivery latency between every pair of players at `report_interval_seconds` cade
 Parameters (pass via `--param key=value`, see cli.py):
   duration_seconds        total load duration (default 180)
   mousemove_hz            per-player synthetic mousemove send rate (default 30)
-  drag_interval_seconds   seconds between each worker's card drags (default 10)
+  drag_interval_seconds   seconds between each worker's card drags (default 10; 0 disables drags)
   report_interval_seconds seconds between latency measurement snapshots (default 60)
 
 Output: {'timeline': [{'elapsed_seconds': int, 'pairs': [...], 'drag_seconds': {...}}, ...]}
@@ -105,6 +105,15 @@ def execute_controller(command_queues, result_queues, parameters):
                         f'continuing the run with the remaining workers')
                     dead_workers.add(idx)
                     continue
+                if 'sent' not in r:
+                    # worker_server's outer except caught an exception raised inside
+                    # execute_worker (e.g. a Selenium call failing mid-drag) and put an
+                    # {'error': {...}} dict instead of a per-cycle report, then shut itself
+                    # down - the queue read itself succeeds, so this isn't caught above.
+                    log(f'{worker_name} reported an error and is shutting down: '
+                        f'{r.get("error", r)!r}; continuing the run with the remaining workers')
+                    dead_workers.add(idx)
+                    continue
                 sent_by_player.setdefault(worker_name, [])
                 sent_by_player[worker_name] += r['sent']
                 received_by_receiver.setdefault(worker_name, {})
@@ -154,7 +163,14 @@ def execute_worker(name, command_queue, result_queue, parameters):
     headless = parameters['headless']
     p = get_params(parameters)
     cycles = max(1, round(p['duration_seconds'] / p['report_interval_seconds']))
-    drags_per_cycle = max(1, round(p['report_interval_seconds'] / p['drag_interval_seconds']))
+    # drag_interval_seconds == 0 disables drags entirely, leaving pure mousemove load.
+    # Useful to isolate the broadcast path from the mongo-write path ('update many
+    # components' persists on every drag event), and it also sidesteps the worker
+    # crashes observed mid-drag under load.
+    if p['drag_interval_seconds'] > 0:
+        drags_per_cycle = max(1, round(p['report_interval_seconds'] / p['drag_interval_seconds']))
+    else:
+        drags_per_cycle = 0
 
     window = browser(headless=headless)
     try:
@@ -170,6 +186,8 @@ def execute_worker(name, command_queue, result_queue, parameters):
 
         for cycle in range(cycles):
             drag_seconds = []
+            if drags_per_cycle == 0:
+                time.sleep(p['report_interval_seconds'])
             for _ in range(drags_per_cycle):
                 time.sleep(p['drag_interval_seconds'])
                 started_at = time.monotonic()
