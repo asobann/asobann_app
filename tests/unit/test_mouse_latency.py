@@ -1,4 +1,6 @@
-from tests.performance.mouse_latency import pair_latencies, summarize_latencies, loss_rate, evaluate_all_pairs
+from tests.performance.mouse_latency import (
+    pair_latencies, summarize_latencies, loss_rate, evaluate_all_pairs, evaluate_all_pairs_timeseries,
+)
 
 
 def test_pair_latencies_matches_by_expected_left():
@@ -38,6 +40,44 @@ def test_loss_rate():
     assert loss_rate(10, 10) == 0.0
     assert loss_rate(10, 5) == 0.5
     assert loss_rate(0, 0) == 0.0
+
+
+def test_evaluate_all_pairs_timeseries_buckets_by_send_time_not_drain_boundary():
+    # A message sent at the very end of interval 0 (sent_at=59900) but received just
+    # after interval 0's nominal boundary (60000) must NOT count as a loss in interval 0
+    # nor as a phantom (unmatched) reception in interval 1: it belongs to interval 0's
+    # sent bucket (by sent_at) and interval 1's received bucket (by received_at), and the
+    # latency itself is still attributed to interval 0 (bucket the match by sent_at).
+    start = 0
+    sent_by_player = {
+        'A': [
+            {'expected_left': 1.0, 'sent_at': 100},        # bucket 0
+            {'expected_left': 2.0, 'sent_at': 59900},      # bucket 0, received late
+        ],
+    }
+    received_by_receiver = {
+        'B': {
+            'A': [
+                {'left': 1.0, 'received_at': 300},      # bucket 0
+                {'left': 2.0, 'received_at': 60100},    # bucket 1 (crossed boundary)
+            ],
+        },
+    }
+    buckets = evaluate_all_pairs_timeseries(sent_by_player, received_by_receiver,
+                                            start_at_ms=start, interval_seconds=60)
+    assert set(buckets.keys()) == {0, 1}
+
+    bucket0 = buckets[0][0]
+    assert bucket0['sender'] == 'A' and bucket0['receiver'] == 'B'
+    assert bucket0['sent_count'] == 2  # both sends happened in bucket 0
+    assert bucket0['count'] == 2  # both matched, attributed to their sent_at bucket
+    assert bucket0['loss_rate'] == 0.0
+    assert bucket0['max'] == 60100 - 59900  # the late-arriving message's latency
+
+    bucket1 = buckets[1][0]
+    assert bucket1['sent_count'] == 0  # nothing was newly sent in bucket 1
+    assert bucket1['received_count'] == 1  # the late arrival landed here
+    assert bucket1['count'] == 0  # but it was already matched into bucket 0, not counted again
 
 
 def test_evaluate_all_pairs_skips_self():

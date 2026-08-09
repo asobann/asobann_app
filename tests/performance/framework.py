@@ -201,11 +201,13 @@ EXPOSE 8888
         self._send_command('shutdown')
         time.sleep(1)
 
-    def run_test(self, module_name, headless=True, url=None):
+    def run_test(self, module_name, headless=True, url=None, params: Dict[str, str] = None):
         log('start controller')
         self._send_command(f'set headless {"true" if headless else "false"}')
         if url:
             self._send_command(f'set url {url}')
+        for key, value in (params or {}).items():
+            self._send_command(f'set {key} {value}')
         run_id = self._send_command(f'run {module_name}')
         log(f'run sent; run_id {run_id}')
         while True:

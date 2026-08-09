@@ -465,6 +465,22 @@ class GameHelper:
             """
         )
 
+    def collect_and_clear_mouse_send_log(self):
+        """
+        Drain the buffer of predicted positions recorded by start_mouse_load without
+        stopping the load, so long-running scenarios can report progress periodically
+        instead of holding the whole run's send log in page memory.
+        """
+        return self.browser.execute_script(
+            """
+            const state = window.__asobann_mouse_load;
+            if (!state) { return []; }
+            const sent = state.sent;
+            state.sent = [];
+            return sent;
+            """
+        )
+
     def start_mouse_receive_observer(self):
         """
         Watch other players' cursor markers (div.others_mouse_cursor, rendered by
