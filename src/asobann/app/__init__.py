@@ -1,4 +1,5 @@
 from pathlib import Path
+from urllib.parse import urlsplit
 from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, send_file
 from flask_pymongo import PyMongo
 import logging
@@ -134,6 +135,20 @@ class S3ImageUploader:
         return F'https://{self.bucket_name}.s3.{self.aws_region}.amazonaws.com/{newname}'
 
 
+def redact_credentials(uri: str) -> str:
+    """接続文字列から認証情報を落とす。
+
+    ログはCloudWatchに残るため、パスワードをそのまま出すとSSMのSecureStringで
+    隠している意味がなくなる。接続先の確認に必要なスキーム・ホスト・DB名だけを返す。
+    文字列置換ではなくurlsplitで組み立て直すので、構造上パスワードは含まれない。
+    """
+    parts = urlsplit(uri)
+    host = parts.hostname or ''
+    if parts.port:
+        host = f'{host}:{parts.port}'
+    return f'{parts.scheme}://{host}{parts.path}'
+
+
 def create_app(testing=False):
     app = Flask(__name__)
     configure_app(app, testing=testing)
@@ -150,14 +165,14 @@ def create_app(testing=False):
 
     try:
         app.logger.info("connecting mongo")
-        app.logger.info(app.config["MONGO_URI"])
+        app.logger.info(redact_credentials(app.config["MONGO_URI"]))
         app.mongo = PyMongo(app)
         # make sure mongodb is available and fail fast if not
         app.mongo.db.list_collection_names()
         app.logger.info("connected to mongo")
     except Exception as e:
         app.logger.error('failed to connect to mongo')
-        app.logger.error(f'connection string: {app.config["MONGO_URI"]}')
+        app.logger.error(f'connection string: {redact_credentials(app.config["MONGO_URI"])}')
         raise
 
     if app.config['REDIS_URI']:
