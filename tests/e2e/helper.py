@@ -483,8 +483,14 @@ class GameHelper:
             };
             const observer = new MutationObserver((mutations) => {
                 const now = Date.now();
-                for (const m of mutations) {
-                    const el = m.target;
+                // A single app-level position update can set style.left and style.top as
+                // separate property assignments, producing more than one MutationRecord
+                // for the same element in this batch. Since the callback always re-reads
+                // the element's *current* style (not a value snapshotted per-record), those
+                // extra records would otherwise be logged as repeat "receptions" of the same
+                // update. Keep only the last record per element in this batch.
+                const targets = new Set(mutations.map((m) => m.target));
+                for (const el of targets) {
                     if (!(el instanceof Element) || !el.classList.contains('others_mouse_cursor')) {
                         continue;
                     }

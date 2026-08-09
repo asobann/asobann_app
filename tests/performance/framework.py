@@ -1,5 +1,5 @@
 import json
-import os
+import socket
 import sys
 import re
 import shutil
@@ -14,6 +14,29 @@ from typing import List, Tuple, Dict
 
 
 CONNECTION_RETRY_SECONDS = 60
+
+
+def wait_for_port(host: str, port: int, timeout_seconds: int = 30) -> None:
+    """
+    Block until a TCP connection to (host, port) succeeds, or raise TimeoutError.
+
+    `docker run -d` returns as soon as the container is created, before the process
+    inside it (here, remote_runner.py's multiprocessing.managers server) has actually
+    started listening. Connecting before that point doesn't just fail cleanly - a
+    half-ready listener can accept the TCP connection and then close it mid-handshake,
+    which multiprocessing.managers surfaces as an opaque EOFError on the client side
+    instead of a connection error. Waiting for the port to be genuinely acceptING
+    connections avoids that race.
+    """
+    started_at = time.monotonic()
+    while True:
+        try:
+            with socket.create_connection((host, port), timeout=2):
+                return
+        except OSError:
+            if time.monotonic() - started_at > timeout_seconds:
+                raise TimeoutError(f'timed out waiting for {host}:{port} to accept connections')
+            time.sleep(0.5)
 
 
 class Logger:
@@ -135,6 +158,7 @@ EXPOSE 8888
         assert proc.returncode == 0
 
     def _wait_for_controller_to_start(self) -> None:
+        started_at = time.monotonic()
         while True:
             try:
                 req = urllib.request.Request(self.controller_url, method='HEAD')
@@ -142,6 +166,11 @@ EXPOSE 8888
                 if res.getcode() == 200:
                     break
             except (ConnectionError, urllib.error.URLError):
+                if time.monotonic() - started_at > CONNECTION_RETRY_SECONDS:
+                    raise TimeoutError(
+                        f'controller at {self.controller_url} did not start within '
+                        f'{CONNECTION_RETRY_SECONDS}s; it likely crashed on startup '
+                        f'(check `docker logs` for the controller container)')
                 time.sleep(1)
 
     def _send_command(self, command: str) -> str:
@@ -206,7 +235,8 @@ class LocalProcesses(AbstractContainers):
                        capture=False, daemon=True))
 
         self._workers = AbstractContainers.Workers(binds=[('localhost', p) for p in ports], procs=procs)
-        time.sleep(1)
+        for port in ports:
+            wait_for_port('localhost', port)
 
     def start_controller(self) -> None:
         ports = [p for h, p in self._workers.binds]
@@ -245,34 +275,38 @@ class LocalContainers(AbstractContainers):
     def start_workers(self, worker_count) -> None:
         assert worker_count <= 10, 'Local running permits only less than 10 workers for the time being'
         ports = [50000 + i for i in range(worker_count)]  # 50000-50009 is EXPOSEd in Dockerfile
-        procs = []
+        binds = []
         for port in ports:
             log(f'start worker container port {port}')
-            procs.append(
-                system(
-                    f"docker run -d -p {port}:{port} -e PORT={port} {WORKER_NAME}",
-                    capture=True,
-                ))
-
-        self._workers = AbstractContainers.Workers(binds=[('localhost', p) for p in ports])
-
-    def start_controller(self) -> None:
-        ports = [p for h, p in self._workers.binds]
-        if os.name == 'posix':
-            # see https://docs.docker.com/engine/reference/commandline/run/#add-entries-to-container-hosts-file-add-host
             proc = system(
-                "ip -4 addr show scope global dev docker0 | grep inet | awk '{print $2}' | cut -d / -f 1 | sed -n 1p",
+                f"docker run -d -p {port}:{port} -e PORT={port} {WORKER_NAME}",
                 capture=True,
             )
-            host_access = f"--add-host=host.docker.internal:{proc.stdout.strip()}"
-        elif os.name == 'nt':
-            # see https://docs.docker.com/docker-for-windows/networking/#per-container-ip-addressing-is-not-possible
-            host_access = ''
-        else:
-            raise RuntimeError()
-        log(f'start controller container ports {ports}')
-        system(f"docker run {host_access} -p 8888:8888 -d {CONTROLLER_NAME} "
-               f"pipenv run python tests/performance/remote_runner.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}")
+            container_id = proc.stdout.strip()
+            # Reach the worker via its container-internal IP, not host.docker.internal's
+            # published-port hairpin route (container -> host -> back into another
+            # container on the same bridge). That hairpin path is unreliable on some
+            # Docker setups (observed on this machine's WSL2 docker: the controller
+            # container's connection was accepted by the port-forward but then closed
+            # mid-handshake, surfacing as an opaque EOFError in multiprocessing.managers).
+            # Same-bridge container-to-container traffic by IP doesn't cross that path.
+            ip_proc = system(
+                f"docker inspect -f "
+                f"'{{{{range .NetworkSettings.Networks}}}}{{{{.IPAddress}}}}{{{{end}}}}' {container_id}",
+                capture=True,
+            )
+            internal_ip = ip_proc.stdout.strip()
+            binds.append((internal_ip, port))
+
+        self._workers = AbstractContainers.Workers(binds=binds)
+        for internal_ip, port in binds:
+            wait_for_port(internal_ip, port)
+
+    def start_controller(self) -> None:
+        log(f'start controller container workers {self._workers.binds}')
+        arg_workers = ','.join([f'{ip}:{port}' for ip, port in self._workers.binds])
+        system(f"docker run -p 8888:8888 -d {CONTROLLER_NAME} "
+               f"pipenv run python tests/performance/remote_runner.py controller {arg_workers}")
         self._wait_for_controller_to_start()
 
     def shutdown(self) -> None:
