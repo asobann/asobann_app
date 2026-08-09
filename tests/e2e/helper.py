@@ -398,6 +398,124 @@ class GameHelper:
     def move_mouse_by_offset(self, offset):
         ActionChains(self.browser).move_by_offset(offset[0], offset[1]).perform()
 
+    def start_mouse_load(self, hz, center=(400, 300), radius=150):
+        """
+        Dispatch synthetic mousemove events on div.table_container at the given rate,
+        without round-tripping through WebDriver for every event. Used to reproduce
+        the mousemove-broadcast load real users generate while dragging/looking around.
+
+        Replicates the app's own coordinate math (play_session.js: mouseOnTableX/Y and
+        the ICON_OFFSET applied in showOthersMouseMovement) so each sent event's resulting
+        "div.others_mouse_cursor" CSS left/top can be predicted in advance. A receiver
+        (see start_mouse_receive_observer) records the *observed* left/top; pairing sent
+        vs. observed by that pixel value (see mouse_latency.py) gives exact send/receive
+        timestamps without needing an unambiguous sequence-number encoding.
+        Assumes the table container position and table pan offset stay constant for the
+        duration of the load (true for a bot that never resizes the window or drags the
+        table itself).
+        """
+        self.browser.execute_script(
+            """
+            const [hz, cx, cy, radius] = arguments;
+            const ICON_OFFSET_X = -(32 / 2);
+            const ICON_OFFSET_Y = -(32 / 2);
+            const container = document.querySelector('div.table_container');
+            const table = document.querySelector('div.table');
+            const r = container.getBoundingClientRect();
+            const tableLeft = parseFloat(table.style.left) || 0;
+            const tableTop = parseFloat(table.style.top) || 0;
+            const state = {count: 0, sent: []};
+            window.__asobann_mouse_load = state;
+            const intervalMs = 1000 / hz;
+            state.timer = setInterval(() => {
+                const seq = state.count;
+                const angle = seq * 0.1;
+                const clientX = cx + seq;  // monotonically increasing -> unique expected_left
+                const clientY = cy + Math.round(radius * Math.sin(angle));
+                const ev = new MouseEvent('mousemove', {
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: clientX,
+                    clientY: clientY,
+                    buttons: 0,
+                });
+                container.dispatchEvent(ev);
+                const mouseOnTableX = clientX - r.left - tableLeft;
+                const mouseOnTableY = clientY - r.top - tableTop;
+                state.sent.push({
+                    expected_left: mouseOnTableX + ICON_OFFSET_X,
+                    expected_top: mouseOnTableY + ICON_OFFSET_Y,
+                    sent_at: Date.now(),
+                });
+                state.count += 1;
+            }, intervalMs);
+            """,
+            hz, center[0], center[1], radius,
+        )
+
+    def stop_mouse_load(self):
+        return self.browser.execute_script(
+            """
+            const state = window.__asobann_mouse_load;
+            if (!state) { return {count: 0, sent: []}; }
+            clearInterval(state.timer);
+            const result = {count: state.count, sent: state.sent};
+            window.__asobann_mouse_load = null;
+            return result;
+            """
+        )
+
+    def start_mouse_receive_observer(self):
+        """
+        Watch other players' cursor markers (div.others_mouse_cursor, rendered by
+        showOthersMouseMovement in play_session.js) and record the observed left/top
+        pixel position each time it changes, together with the wall-clock time observed.
+        Pair against start_mouse_load's `expected_left`/`expected_top` (see
+        mouse_latency.py) to compute per-message latency.
+        """
+        self.browser.execute_script(
+            """
+            const state = {received: {}};
+            window.__asobann_mouse_recv = state;
+            const parsePx = (styleText, prop) => {
+                const m = new RegExp(prop + ':\\\\s*([\\\\-0-9.]+)px').exec(styleText);
+                return m ? parseFloat(m[1]) : null;
+            };
+            const observer = new MutationObserver((mutations) => {
+                const now = Date.now();
+                for (const m of mutations) {
+                    const el = m.target;
+                    if (!(el instanceof Element) || !el.classList.contains('others_mouse_cursor')) {
+                        continue;
+                    }
+                    const nameEl = el.querySelector('span');
+                    const playerName = nameEl ? nameEl.textContent : 'unknown';
+                    const style = el.getAttribute('style') || '';
+                    const left = parsePx(style, 'left');
+                    const top = parsePx(style, 'top');
+                    if (left === null || top === null) { continue; }
+                    if (!state.received[playerName]) { state.received[playerName] = []; }
+                    state.received[playerName].push({left: left, top: top, received_at: now});
+                }
+            });
+            observer.observe(document.querySelector('div.table'), {
+                attributes: true, attributeFilter: ['style'], subtree: true,
+            });
+            state.observer = observer;
+            """
+        )
+
+    def collect_and_clear_mouse_receive_log(self):
+        return self.browser.execute_script(
+            """
+            const state = window.__asobann_mouse_recv;
+            if (!state) { return {}; }
+            const received = state.received;
+            state.received = {};
+            return received;
+            """
+        )
+
     def double_click(self, component: "Component", modifier=[]):
         chain = ActionChains(self.browser)
         if 'SHIFT' in modifier:
