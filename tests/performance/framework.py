@@ -96,12 +96,12 @@ class AbstractContainers:
     def build_docker_image_for_worker(self, base_dir: Path):
         with open(str(base_dir / 'Dockerfile_worker'), 'w') as f:
             f.write("""
-FROM ubuntu:18.04
+FROM python:3.10-slim-bookworm
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV PYTHONPATH=/runner
-RUN apt-get -y update
-RUN apt-get install -y python3 python3-pip firefox firefox-geckodriver
+RUN apt-get -y update && apt-get install -y --no-install-recommends firefox-esr curl ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN curl -L https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz | tar zx -C /usr/local/bin
 RUN pip3 install pipenv
 WORKDIR /runner
 COPY runner/Pipfile runner/Pipfile.lock ./
@@ -117,12 +117,12 @@ CMD pipenv run python tests/performance/remote_runner.py worker $PORT
     def build_docker_image_for_controller(self, base_dir):
         with open(Path(base_dir) / 'Dockerfile_controller', 'w') as f:
             f.write("""
-FROM ubuntu:18.04
+FROM python:3.10-slim-bookworm
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV PYTHONPATH=/runner
-RUN apt-get -y update
-RUN apt-get install -y python3 python3-pip firefox firefox-geckodriver
+RUN apt-get -y update && apt-get install -y --no-install-recommends firefox-esr curl ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN curl -L https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz | tar zx -C /usr/local/bin
 RUN pip3 install pipenv
 WORKDIR /runner
 COPY runner/Pipfile runner/Pipfile.lock ./
