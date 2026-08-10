@@ -1,0 +1,12 @@
+# Sidecar for profiling loadtest-app-1's CPU without spending any of its own quota -
+# run with --pid=container:loadtest-app-1 --cap-add=SYS_PTRACE and its own cpuset,
+# separate from the app/mongo/worker cores. See plan.local-profiling.20260810.md §5.
+#
+# Build:  docker build -t loadtest-pyspy -f deploy/loadtest/Dockerfile.pyspy deploy/loadtest
+# Record: docker run --rm --pid=container:loadtest-app-1 --cap-add=SYS_PTRACE --cpuset-cpus=4 \
+#             -v "$PWD/results/local-xxx:/out" loadtest-pyspy \
+#             record --pid 1 --rate 100 --nonblocking --duration 300 \
+#             --format speedscope -o /out/profile.json
+FROM python:3.10-slim-bookworm
+RUN pip install --no-cache-dir py-spy
+ENTRYPOINT ["py-spy"]
