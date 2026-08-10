@@ -27,6 +27,13 @@ E2E_RERUNS_DELAY = 2
 # Not xfail: xfail would also swallow a *consistent* failure. Failing every attempt is
 # exactly how "this is not flaky, it is broken" shows up, and that signal must survive.
 # See E2E_TOLERATE_KNOWN_FLAKY below for how CI is kept green without losing it.
+#
+# 出入りのルール（コストの高い調査に引きずり込まれないための取り決め）:
+#   - 1回落ちただけでは、調査も対応もしない。**続けて落ちるかどうかを監視する**
+#   - 何かのきっかけで対応した場合も、**1回成功しただけでは一覧から外さない**。
+#     しばらく連続して成功することを見てから外す
+#   - 動機は、フレーキーの調査・対応はコストが高くROIが低いこと。いちいち気にせず、
+#     気にすべきときにシグナルが上がる状態を保つのが肝心
 E2E_KNOWN_FLAKY_RERUNS = 5
 E2E_KNOWN_FLAKY = {
     # 2026-08-10: 全件実行を複数回まわしたところ、落ちる顔ぶれが毎回入れ替わった。
@@ -35,10 +42,22 @@ E2E_KNOWN_FLAKY = {
     'test_session.py::TestOutOfSync::test_order_of_updates_at_server',
     'test_craft_box.py::TestCraftBoxWithOtherPlayers::test_editing_json_is_sync',
 
-    # 2026-08-11に解消: 「裏返しが効かない」系7件(TestGlued ×3 / TestHandArea ×4)は
-    # 観戦者ガードで操作が無言に捨てられていたのが原因だった。
-    # helper.should_be_joined() で sessionStorage の status が joined になるのを待つ
-    # ようにして解消。フレーキーではなく、テストの待ち不足だった。
+    # 2026-08-11: helper.should_be_joined() を入れて頻度は明確に下がった（観戦者ガードで
+    # 操作が無言に捨てられていた分は消えた。#127）が、全89件ではまだ再発する。
+    # 一度は一覧から外したものの、根拠が部分実行1回だけだったので戻した。上の出入りの
+    # ルールのとおり、連続で成功することを確認してから外すこと。
+    # なお test_flipped_and_image_change は setup 側で落ちることもある（キット追加の
+    # timeout）。他のTestGluedでは同じsetupが通っているので、これもフレーキーとして扱う。
+    'test_component.py::TestGlued::test_flipped_and_text_hides',
+    'test_component.py::TestGlued::test_flipped_and_image_change',
+    'test_component.py::TestGlued::test_put_in_hand_area_and_text_hides',
+
+    # 2026-08-11に追加: 元から落ちていたが未登録だった。textarea が出ないことがある。
+    'test_component.py::TestEditable::test_editing',
+    'test_component.py::TestEditable::test_editing_is_shared',
+
+    # TestHandArea 4件は should_be_joined() 以降どの実行でも落ちていないため外してある。
+    # 再発したら戻すこと。
 }
 
 # CI では、既知フレーキーが全リトライ落ちしてもビルドを赤くしたくない。ただし結果は
