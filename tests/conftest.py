@@ -1,12 +1,21 @@
 import os
 import socket
 import subprocess
+import sys
 import time
 from typing import Optional, Dict
 
 import pytest
 
 debug_server_config = {}
+
+# Launch the server with the interpreter that's already running the tests, rather than a
+# hardcoded /usr/local/bin/pipenv. The e2e image (Dockerfile.e2e) is built on the
+# production image, which installs dependencies with plain pip and has no pipenv at all.
+# Using sys.executable also guarantees the server runs under exactly the interpreter and
+# site-packages the tests were collected with.
+SERVER_COMMAND = [sys.executable, "-m", "asobann.wsgi"]
+DEPLOY_COMMAND = [sys.executable, "-m", "asobann.deploy"]
 
 # Must match config_test.py's PORT.
 TEST_SERVER_PORT = 10011
@@ -65,7 +74,7 @@ class TestServerProvider:
 
     def start_server(self, env):
         do_deploy_data()
-        self.proc = subprocess.Popen(["/usr/local/bin/pipenv", "run", "python", "-m", "asobann.wsgi"], env=env)
+        self.proc = subprocess.Popen(SERVER_COMMAND, env=env)
         self.current_server_environ = env
         wait_for_server(TEST_SERVER_PORT)
 
@@ -96,7 +105,7 @@ def debug_order_of_updates():
 
 def do_deploy_data():
     server_environ = provider.get_env_to_run()
-    subprocess.run(["/usr/local/bin/pipenv", "run", "python", "-m", "asobann.deploy"], env=server_environ)
+    subprocess.run(DEPLOY_COMMAND, env=server_environ)
 
 
 @pytest.fixture
