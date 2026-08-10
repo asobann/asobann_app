@@ -9,9 +9,11 @@ Parameters (pass via `--param key=value`, see cli.py):
   duration_seconds        total load duration (default 180)
   mousemove_hz            per-player synthetic mousemove send rate (default 30)
   drag_interval_seconds   seconds between each worker's card operations (default 10; 0 disables them)
-  operation               'drag' (default) or 'flip'. Both go through the mongo-write +
-                          broadcast path; flip never moves the card, so it cannot fail by
-                          the card drifting out of the viewport.
+  operation               'drag' (default), 'flip', or 'pause_only'. drag/flip both go
+                          through the mongo-write + broadcast path; flip never moves the
+                          card, so it cannot fail by the card drifting out of the
+                          viewport. pause_only does no component operation at all - see
+                          its comment in execute_worker for what it isolates.
   report_interval_seconds seconds between latency measurement snapshots (default 60)
 
 Output: {'timeline': [{'elapsed_seconds': int, 'pairs': [...], 'drag_seconds': {...}}, ...]}
@@ -233,7 +235,14 @@ def execute_worker(name, command_queue, result_queue, parameters):
                 # viewport (see pause_mouse_load).
                 player.pause_mouse_load()
                 try:
-                    if operation == 'flip':
+                    if operation == 'pause_only':
+                        # No component operation at all - same pause/resume cadence as
+                        # 'flip' (including the settle sleep) but no server request.
+                        # Isolates how much of flip's lower CPU (vs mouseonly) comes from
+                        # the ambient mousemove being paused during each operation, versus
+                        # the cost of the flip request itself.
+                        time.sleep(0.3)
+                    elif operation == 'flip':
                         # Flipping never moves the component, so it cannot fail by the card
                         # drifting out of the viewport - but it still goes through the same
                         # 'update single component' path (mongo write + broadcast).

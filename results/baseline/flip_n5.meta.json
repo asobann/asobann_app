@@ -1,0 +1,11 @@
+{
+  "name": "flip_n5",
+  "total_players": 5,
+  "worker_count": 4,
+  "hz": 30,
+  "operation": "flip",
+  "duration_seconds": 300,
+  "start_utc": "2026-08-10T01:40:06Z",
+  "end_utc": "2026-08-10T01:45:41Z",
+  "exit_code": 0
+}

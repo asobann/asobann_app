@@ -1,0 +1,11 @@
+{
+  "name": "pause_only_n6",
+  "total_players": 6,
+  "worker_count": 5,
+  "hz": 30,
+  "operation": "pause_only",
+  "duration_seconds": 300,
+  "start_utc": "2026-08-10T04:22:12Z",
+  "end_utc": "2026-08-10T04:27:24Z",
+  "exit_code": 0
+}

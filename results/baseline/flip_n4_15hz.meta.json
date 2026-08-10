@@ -1,0 +1,11 @@
+{
+  "name": "flip_n4_15hz",
+  "total_players": 4,
+  "worker_count": 3,
+  "hz": 15,
+  "operation": "flip",
+  "duration_seconds": 300,
+  "start_utc": "2026-08-10T01:53:56Z",
+  "end_utc": "2026-08-10T01:59:20Z",
+  "exit_code": 0
+}
