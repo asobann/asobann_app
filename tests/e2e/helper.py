@@ -211,6 +211,12 @@ class GameMenu:
         join_button.click()
         WebDriverWait(self.browser, 5).until(
             expected_conditions.text_to_be_present_in_element((By.TAG_NAME, "body"), "you are " + player_name))
+        # The name showing up does not mean the client may operate yet - see
+        # GameHelper.should_be_joined for why that is a separate wait.
+        WebDriverWait(self.browser, 5).until(
+            lambda d: d.execute_script(
+                "const k = Object.keys(sessionStorage).find(k => k.endsWith(': status'));"
+                "return k ? sessionStorage.getItem(k) : null;") == 'joined')
 
     def import_jsonfile(self, filename):
         WebDriverWait(self.browser, 5).until(
@@ -271,6 +277,7 @@ class GameHelper:
         if as_host:
             player.go(TOP)
             player.should_have_text("you are host")
+            player.should_be_joined()
             return player
         else:
             raise RuntimeError()
@@ -315,6 +322,28 @@ class GameHelper:
         except TimeoutException:
             pass
         assert False, f'{message} (timeout after {timeout}s)'
+
+    def should_be_joined(self, timeout=5):
+        """
+        Block until this client considers itself a joined player rather than an observer.
+
+        "you are host" appearing in the menu is NOT enough. play_session.js renders that
+        as soon as it decides to join, but sessionStorage's status only becomes "joined"
+        once the server answers with `confirmed player name` (initializeTable -> joinTable
+        sends `set player name`; updatePlayer sets the status). Until then
+        isPlayerObserver() returns true, so featsContext.canOperateOn() is false and
+        **operations are silently discarded** - the dblclick handler just returns.
+
+        That is the window this waits out. Instrumentation showed the failing flips did
+        receive a correct dblclick on the correct visible element and simply did nothing,
+        which is exactly what the observer guard looks like from outside.
+        """
+        self.eventually(
+            lambda: self.browser.execute_script(
+                "const k = Object.keys(sessionStorage).find(k => k.endsWith(': status'));"
+                "return k ? sessionStorage.getItem(k) : null;") == 'joined',
+            'client is still an observer, so its operations would be silently discarded',
+            timeout=timeout)
 
     def should_have_text(self, text, timeout=5):
         try:

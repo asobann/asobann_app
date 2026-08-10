@@ -18,28 +18,33 @@
 
 ## 手順
 
+ワークスペース直下の invoke タスクを使う。mongoの起動もイメージのビルドも面倒を見る。
+
 ```sh
-# 1. mongo を立てる(deploy/loadtest の compose を流用する。app は使わないが起動していても害はない)
-(cd deploy/loadtest && docker compose up -d mongo)
-
-# 2. ワーカーイメージをビルド(tests/ と src/ が焼き込まれるので、コード変更のたびに必要)
-pipenv run python -m tests.performance.cli build-image --run-on docker
-
-# 3. 実行
-docker run --rm --network loadtest_default \
-    -e PYTHONPATH=/runner:/runner/src \
-    -e MOZ_HEADLESS=1 \
-    --entrypoint sh test_run_multiprocess_in_container_worker \
-    -c "cd /runner && pipenv run pytest tests/e2e -q"
+uv run inv e2e                                    # 全件
+uv run inv e2e --tests tests/e2e/test_component.py
+uv run inv e2e -k TestGlued --no-build            # ビルド済みイメージで絞って実行
+uv run inv e2e --ordered --no-capture             # 順序固定＋print表示（切り分け用）
+uv run inv e2e --seed 12345                       # 落ちた順序を再現する
+uv run inv e2e --tolerate-flaky                   # CIと同じ扱い
+uv run inv --help e2e                             # 全オプション
 ```
 
-- `PYTHONPATH` に `/runner/src` を足すのは、`in_mem_app` フィクスチャなどが `asobann` を
-  import するため(イメージの既定は `/runner` だけ)
-- `MOZ_HEADLESS=1` を使うのは、`another_browser_window` と `browser_factory` が
-  `webdriver.Firefox()` をオプション無しで呼んでいて、`--headless` オプションが渡らないため。
-  環境変数ならどの経路でも効く
+**`tests/` や `src/` を変えたらビルドが要る**(イメージに焼き込まれる)。既定でビルドする
+ので、意図して省くときだけ `--no-build`。
 
-一部だけ流すときは末尾を `pytest tests/e2e/test_session.py -q` などに変える。
+直接叩くならこう。
+
+```sh
+(cd asobann_app/deploy/loadtest && docker compose up -d mongo)
+(cd asobann_app && ./scripts/build_e2e_image.sh)
+docker run --rm --network loadtest_default -e MOZ_HEADLESS=1 \
+    asobann-e2e:local python3 -m pytest tests/e2e -q
+```
+
+`MOZ_HEADLESS=1` を環境変数で渡すのは、`another_browser_window` と `browser_factory` が
+`webdriver.Firefox()` をオプション無しで呼んでいて `--headless` が渡らないため。
+環境変数ならどの経路でも効く。
 
 ## フレーキーさの扱い
 
