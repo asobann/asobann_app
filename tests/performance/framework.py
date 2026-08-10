@@ -109,6 +109,11 @@ class AbstractContainers:
         shutil.copytree('./src', str(base_dir / 'runner/src'))
         shutil.copy('./Pipfile', str(base_dir / 'runner/'))
         shutil.copy('./Pipfile.lock', str(base_dir / 'runner/'))
+        # pytest's whole configuration lives here (addopts, marker registration,
+        # filterwarnings). Without it, running the e2e suite in this image silently
+        # ignores `-m 'not loadtest'` and executes the tests that point at the long-dead
+        # Heroku staging URL, which can never pass.
+        shutil.copy('./pyproject.toml', str(base_dir / 'runner/'))
 
     def build_docker_images(self) -> None:
         raise NotImplementedError()

@@ -1,4 +1,5 @@
 import os
+import socket
 import subprocess
 import time
 from typing import Optional, Dict
@@ -6,6 +7,31 @@ from typing import Optional, Dict
 import pytest
 
 debug_server_config = {}
+
+# Must match config_test.py's PORT.
+TEST_SERVER_PORT = 10011
+
+
+def wait_for_server(port: int, timeout_seconds: int = 60) -> None:
+    """
+    Block until the test server accepts connections on `port`.
+
+    Waiting a fixed amount instead (this used to be time.sleep(1)) races with the
+    server's startup: connecting to mongo alone can take several seconds, so the
+    browser would navigate before the socket was listening and the test failed with
+    an opaque `Reached error page: about:neterror?e=connectionFailure`.
+    """
+    started_at = time.monotonic()
+    while True:
+        try:
+            with socket.create_connection(('localhost', port), timeout=2):
+                return
+        except OSError:
+            if time.monotonic() - started_at > timeout_seconds:
+                raise TimeoutError(
+                    f'test server did not start listening on port {port} '
+                    f'within {timeout_seconds}s')
+            time.sleep(0.2)
 
 
 class TestServerProvider:
@@ -41,7 +67,7 @@ class TestServerProvider:
         do_deploy_data()
         self.proc = subprocess.Popen(["/usr/local/bin/pipenv", "run", "python", "-m", "asobann.wsgi"], env=env)
         self.current_server_environ = env
-        time.sleep(1)
+        wait_for_server(TEST_SERVER_PORT)
 
     def stop_server(self):
         self.proc.terminate()
@@ -85,4 +111,4 @@ def server(server_provider: TestServerProvider):
 
 @pytest.fixture
 def base_url(server):
-    return 'http://localhost:10011'
+    return f'http://localhost:{TEST_SERVER_PORT}'
