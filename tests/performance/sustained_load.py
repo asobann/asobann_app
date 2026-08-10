@@ -76,7 +76,11 @@ def execute_controller(command_queues, result_queues, parameters):
         invitation_url = host.menu.invitation_url.value
         log(f'table is opened at {invitation_url}')
 
-        host.start_mouse_load(hz=p['mousemove_hz'])
+        # hz=0 means "idle" (see idle_n6 in plan.local-profiling.20260810.md §6) - JS's
+        # setInterval(fn, 1000/0) is Infinity, which is unreliable across browsers, so
+        # skip starting the load entirely rather than relying on it never firing.
+        if p['mousemove_hz'] > 0:
+            host.start_mouse_load(hz=p['mousemove_hz'])
         host.start_mouse_receive_observer()
         start_at_ms = now_ms()
 
@@ -219,7 +223,8 @@ def execute_worker(name, command_queue, result_queue, parameters):
         operation = parameters.get('operation', 'drag')
         flips_not_applied = 0  # flips where the face did not change (operation lost)
 
-        player.start_mouse_load(hz=p['mousemove_hz'])
+        if p['mousemove_hz'] > 0:
+            player.start_mouse_load(hz=p['mousemove_hz'])
         player.start_mouse_receive_observer()
 
         for cycle in range(cycles):

@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from urllib.parse import urlsplit
 from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, send_file
@@ -200,7 +201,12 @@ def create_app(testing=False):
     if app.config["ENV"] == "development":
         socketio_args['cors_allowed_origins'] = "*"
     else:
-        socketio_args['cors_allowed_origins'] = app.config['BASE_URL']
+        # CORS_ALLOWED_ORIGINS_OVERRIDE lets the local CPU-profiling harness (see
+        # plan.local-profiling.20260810.md) run the production config against a
+        # plain-http local origin, which never matches BASE_URL's hardcoded https://.
+        # Unset in every real deployment, so production behavior is unchanged.
+        socketio_args['cors_allowed_origins'] = os.environ.get(
+            'CORS_ALLOWED_ORIGINS_OVERRIDE', app.config['BASE_URL'])
     socketio.init_app(app, **socketio_args)
     app.socketio = socketio
 

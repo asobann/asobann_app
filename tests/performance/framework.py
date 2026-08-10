@@ -1,4 +1,5 @@
 import json
+import os
 import socket
 import sys
 import re
@@ -83,6 +84,11 @@ def system(cmd, capture=False, cwd=None, daemon=False):
 
 WORKER_NAME = 'test_run_multiprocess_in_container_worker'
 CONTROLLER_NAME = 'test_run_multiprocess_in_container_controller'
+
+# Extra `docker run` flags for worker/controller containers, e.g. `--network loadtest`
+# to join a target app's docker-compose network, or `--cpuset-cpus=8-31` to keep them
+# off the app's pinned cores (see plan.local-profiling.20260810.md §1, §3.1).
+DOCKER_RUN_OPTS = os.environ.get('LOADTEST_DOCKER_RUN_OPTS', '')
 
 
 class AbstractContainers:
@@ -287,7 +293,7 @@ class LocalContainers(AbstractContainers):
         for port in ports:
             log(f'start worker container port {port}')
             proc = system(
-                f"docker run -d -p {port}:{port} -e PORT={port} {WORKER_NAME}",
+                f"docker run -d -p {port}:{port} -e PORT={port} {DOCKER_RUN_OPTS} {WORKER_NAME}",
                 capture=True,
             )
             container_id = proc.stdout.strip()
@@ -313,16 +319,22 @@ class LocalContainers(AbstractContainers):
     def start_controller(self) -> None:
         log(f'start controller container workers {self._workers.binds}')
         arg_workers = ','.join([f'{ip}:{port}' for ip, port in self._workers.binds])
-        system(f"docker run -p 8888:8888 -d {CONTROLLER_NAME} "
+        system(f"docker run -p 8888:8888 -d {DOCKER_RUN_OPTS} {CONTROLLER_NAME} "
                f"pipenv run python tests/performance/remote_runner.py controller {arg_workers}")
         self._wait_for_controller_to_start()
 
     def shutdown(self) -> None:
         super().shutdown()
+        # Wait for the worker/controller containers specifically, not "docker ps is
+        # empty" - the local CPU-profiling harness keeps a target app+mongo running
+        # alongside every test run (see plan.local-profiling.20260810.md), so counting
+        # all containers never reaches zero and this used to hang forever.
         while True:
-            proc = system("docker ps", capture=True)
+            proc = system(
+                f"docker ps -q --filter ancestor={WORKER_NAME} --filter ancestor={CONTROLLER_NAME}",
+                capture=True)
             assert proc.returncode == 0
-            if len(proc.stdout.strip().split('\n')) == 1:
+            if not proc.stdout.strip():
                 break
             time.sleep(1)
 
