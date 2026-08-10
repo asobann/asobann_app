@@ -3,7 +3,7 @@ from tests.performance.mouse_latency import (
 )
 
 
-def test_pair_latencies_matches_by_expected_left():
+def test_pair_latencies_matches_by_position():
     sent = [
         {'expected_left': 100.0, 'expected_top': 10.0, 'sent_at': 1000},
         {'expected_left': 101.0, 'expected_top': 11.0, 'sent_at': 1010},
@@ -20,6 +20,41 @@ def test_pair_latencies_matches_by_expected_left():
 def test_pair_latencies_ignores_unmatched_receptions():
     sent = [{'expected_left': 5.0, 'expected_top': 0.0, 'sent_at': 0}]
     received = [{'left': 999.0, 'top': 0.0, 'received_at': 5}]
+    assert pair_latencies(sent, received) == []
+
+
+def test_pair_latencies_distinguishes_positions_sharing_an_x():
+    # The cursor walks a lattice, so many sends share an x coordinate and differ only in y.
+    # Keying on x alone would pair a reception with whichever same-x send came last.
+    sent = [
+        {'expected_left': 50.0, 'expected_top': 10.0, 'sent_at': 1000},
+        {'expected_left': 50.0, 'expected_top': 11.0, 'sent_at': 1100},
+    ]
+    received = [{'left': 50.0, 'top': 10.0, 'received_at': 1200}]
+    assert pair_latencies(sent, received) == [200]  # not 100
+
+
+def test_pair_latencies_picks_most_recent_send_when_position_repeats():
+    # A 100x100 grid at 30Hz revisits a position every ~5.5 minutes; the reception belongs
+    # to the latest lap, and a naive first/last-wins map would yield a nonsensical latency.
+    sent = [
+        {'expected_left': 7.0, 'expected_top': 3.0, 'sent_at': 1_000},
+        {'expected_left': 7.0, 'expected_top': 3.0, 'sent_at': 331_000},  # next lap
+    ]
+    received = [{'left': 7.0, 'top': 3.0, 'received_at': 331_200}]
+    assert pair_latencies(sent, received) == [200]
+
+
+def test_pair_latencies_never_reports_negative_latency():
+    # Reception precedes every recorded send at that position: unmatched, not negative.
+    sent = [{'expected_left': 1.0, 'expected_top': 1.0, 'sent_at': 5_000}]
+    received = [{'left': 1.0, 'top': 1.0, 'received_at': 1_000}]
+    assert pair_latencies(sent, received) == []
+
+
+def test_pair_latencies_drops_matches_beyond_max_latency():
+    sent = [{'expected_left': 1.0, 'expected_top': 1.0, 'sent_at': 0}]
+    received = [{'left': 1.0, 'top': 1.0, 'received_at': 120_000}]
     assert pair_latencies(sent, received) == []
 
 
@@ -51,15 +86,15 @@ def test_evaluate_all_pairs_timeseries_buckets_by_send_time_not_drain_boundary()
     start = 0
     sent_by_player = {
         'A': [
-            {'expected_left': 1.0, 'sent_at': 100},        # bucket 0
-            {'expected_left': 2.0, 'sent_at': 59900},      # bucket 0, received late
+            {'expected_left': 1.0, 'expected_top': 0.0, 'sent_at': 100},      # bucket 0
+            {'expected_left': 2.0, 'expected_top': 0.0, 'sent_at': 59900},    # bucket 0, received late
         ],
     }
     received_by_receiver = {
         'B': {
             'A': [
-                {'left': 1.0, 'received_at': 300},      # bucket 0
-                {'left': 2.0, 'received_at': 60100},    # bucket 1 (crossed boundary)
+                {'left': 1.0, 'top': 0.0, 'received_at': 300},      # bucket 0
+                {'left': 2.0, 'top': 0.0, 'received_at': 60100},    # bucket 1 (crossed boundary)
             ],
         },
     }

@@ -11,25 +11,51 @@ expected_left is unique per message, so this is an exact match, not a nearest-
 neighbor guess, and needs no assumption about delivery order or drop-free delivery.
 """
 
+import bisect
 from typing import Dict, List
 
 
-def pair_latencies_with_time(sent: List[dict], received: List[dict]) -> List[dict]:
+def pair_latencies_with_time(sent: List[dict], received: List[dict],
+                              max_latency_ms: int = 60000) -> List[dict]:
     """
     Like pair_latencies, but keeps sent_at on each match so callers can attribute a
-    match to the interval it was *sent* in (see bucket_by_sent_time / evaluate_all_pairs_timeseries) -
-    matching itself should always run over a run's full sent/received data, not data
-    already split into report-interval chunks: a message sent near the end of one
-    interval can easily be observed in the next one, and matching only within an
-    interval's own drained chunk would wrongly count that as a loss in the first
-    interval and an unmatched (phantom) reception in the second.
+    match to the interval it was *sent* in (see evaluate_all_pairs_timeseries) - matching
+    itself should always run over a run's full sent/received data, not data already split
+    into report-interval chunks: a message sent near the end of one interval can easily be
+    observed in the next one, and matching only within an interval's own drained chunk
+    would wrongly count that as a loss in the first interval and an unmatched (phantom)
+    reception in the second.
+
+    The synthetic cursor walks a finite lattice and repeats it (see
+    GameHelper.MOUSE_LOAD_GRID_SIZE), so a position is not unique over a long run: at 30Hz
+    a 100x100 grid comes back around every ~5.5 minutes. Matching therefore keeps every
+    send time recorded for a position and picks, for each reception, the most recent send
+    that precedes it. That makes a negative latency structurally impossible, and a
+    reception whose only candidate send is older than max_latency_ms is treated as
+    unmatched rather than reported as an absurd delay.
+
+    Both coordinates form the key: the x coordinate alone repeats every grid row (~3.3s at
+    30Hz), which is far too coarse to identify a message.
     """
-    sent_by_left = {round(s['expected_left']): s['sent_at'] for s in sent}
+    sent_times_by_position = {}
+    for s in sent:
+        key = (round(s['expected_left']), round(s['expected_top']))
+        sent_times_by_position.setdefault(key, []).append(s['sent_at'])
+    for times in sent_times_by_position.values():
+        times.sort()
+
     matched = []
     for r in received:
-        sent_at = sent_by_left.get(round(r['left']))
-        if sent_at is not None:
-            matched.append({'sent_at': sent_at, 'latency': r['received_at'] - sent_at})
+        times = sent_times_by_position.get((round(r['left']), round(r['top'])))
+        if not times:
+            continue
+        i = bisect.bisect_right(times, r['received_at']) - 1
+        if i < 0:
+            continue  # every send at this position happened after this reception
+        latency = r['received_at'] - times[i]
+        if latency > max_latency_ms:
+            continue
+        matched.append({'sent_at': times[i], 'latency': latency})
     return matched
 
 

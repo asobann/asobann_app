@@ -8,7 +8,10 @@ delivery latency between every pair of players at `report_interval_seconds` cade
 Parameters (pass via `--param key=value`, see cli.py):
   duration_seconds        total load duration (default 180)
   mousemove_hz            per-player synthetic mousemove send rate (default 30)
-  drag_interval_seconds   seconds between each worker's card drags (default 10; 0 disables drags)
+  drag_interval_seconds   seconds between each worker's card operations (default 10; 0 disables them)
+  operation               'drag' (default) or 'flip'. Both go through the mongo-write +
+                          broadcast path; flip never moves the card, so it cannot fail by
+                          the card drifting out of the viewport.
   report_interval_seconds seconds between latency measurement snapshots (default 60)
 
 Output: {'timeline': [{'elapsed_seconds': int, 'pairs': [...], 'drag_seconds': {...}}, ...]}
@@ -85,6 +88,7 @@ def execute_controller(command_queues, result_queues, parameters):
         sent_by_player = {'host': []}
         received_by_receiver = {'host': {}}
         drag_seconds_by_worker = {}
+        flips_not_applied_by_worker = {}
         dead_workers = set()  # a browser crash in one worker must not lose every other
                               # worker's data for the whole run - see WORKER_DISCONNECT_ERRORS
 
@@ -119,6 +123,7 @@ def execute_controller(command_queues, result_queues, parameters):
                 received_by_receiver.setdefault(worker_name, {})
                 merge_received(received_by_receiver[worker_name], r['received'])
                 drag_seconds_by_worker.setdefault(worker_name, []).extend(r['drag_seconds'])
+                flips_not_applied_by_worker[worker_name] = r.get('flips_not_applied', 0)
 
             log(f'cycle {cycle + 1}/{cycles} (elapsed {(cycle + 1) * p["report_interval_seconds"]}s) collected, '
                 f'{len(dead_workers)} dead worker(s)')
@@ -144,9 +149,33 @@ def execute_controller(command_queues, result_queues, parameters):
             'params': p,
             'timeline': timeline,
             'drag_seconds_by_worker': drag_seconds_by_worker,
+            'flips_not_applied_by_worker': flips_not_applied_by_worker,
         }
     finally:
         window.close()
+
+
+def describe_card(player, card_name):
+    """
+    Report where the card actually is when an operation fails on it. A TimeoutException
+    from component_by_name() only says "not visible within 5s", which does not distinguish
+    "gone from the DOM" from "still there but scrolled far out of view" - the latter is
+    what an earlier coordinate bug produced (y ~ -96000).
+    """
+    try:
+        return player.browser.execute_script(
+            """
+            const el = document.querySelector(
+                `.component[data-component-name='` + arguments[0] + `']`);
+            if (!el) { return 'card is absent from the DOM'; }
+            const r = el.getBoundingClientRect();
+            const s = getComputedStyle(el);
+            return `card at (${Math.round(r.x)},${Math.round(r.y)}) size ${Math.round(r.width)}x${Math.round(r.height)} `
+                 + `display=${s.display} visibility=${s.visibility} opacity=${s.opacity}`;
+            """,
+            card_name)
+    except Exception as ex:
+        return f'could not inspect card: {ex!r}'
 
 
 def now_ms():
@@ -185,6 +214,8 @@ def execute_worker(name, command_queue, result_queue, parameters):
         # no longer the card this worker owns (it can also stop matching entirely, which
         # made every worker die on a TimeoutException within ~2 minutes of a drag-enabled run).
         my_card_name = f'card{idx + 1}'  # see sustained_load.json
+        operation = parameters.get('operation', 'drag')
+        flips_not_applied = 0  # flips where the face did not change (operation lost)
 
         player.start_mouse_load(hz=p['mousemove_hz'])
         player.start_mouse_receive_observer()
@@ -196,17 +227,34 @@ def execute_worker(name, command_queue, result_queue, parameters):
             for _ in range(drags_per_cycle):
                 time.sleep(p['drag_interval_seconds'])
                 started_at = time.monotonic()
-                # Pause the ambient cursor motion while dragging: a real player's pointer
-                # cannot be waving around and dragging a card simultaneously, and running
-                # both at once sent cards to y = -96000px until they left the viewport
-                # (see pause_mouse_load).
+                # Pause the ambient cursor motion while operating a component: a real
+                # player's pointer cannot be waving around and dragging at the same time,
+                # and running both at once sent cards to y = -96000px until they left the
+                # viewport (see pause_mouse_load).
                 player.pause_mouse_load()
                 try:
-                    player.drag(player.component_by_name(my_card_name), 0, 100)
-                    time.sleep(0.1)  # avoid double clicking, matches other scenarios
-                    player.drag(player.component_by_name(my_card_name), 0, -100)
+                    if operation == 'flip':
+                        # Flipping never moves the component, so it cannot fail by the card
+                        # drifting out of the viewport - but it still goes through the same
+                        # 'update single component' path (mongo write + broadcast).
+                        # sustained_load.json gives every card faceupText/facedownText, so
+                        # the face itself tells us whether the operation actually landed
+                        # rather than merely not raising.
+                        before = player.component_by_name(my_card_name).face()
+                        player.double_click(player.component_by_name(my_card_name))
+                        time.sleep(0.3)  # let the flip round-trip through the server
+                        after = player.component_by_name(my_card_name).face()
+                        if before == after:
+                            flips_not_applied += 1
+                    else:
+                        player.drag(player.component_by_name(my_card_name), 0, 100)
+                        time.sleep(0.1)  # avoid double clicking, matches other scenarios
+                        player.drag(player.component_by_name(my_card_name), 0, -100)
+                except Exception:
+                    log(f'{name}: {operation} failed; {describe_card(player, my_card_name)}')
+                    raise
                 finally:
-                    time.sleep(0.2)  # let the drag's own events drain before resuming
+                    time.sleep(0.2)  # let the operation's own events drain before resuming
                     player.resume_mouse_load(hz=p['mousemove_hz'])
                 drag_seconds.append(time.monotonic() - started_at)
 
@@ -214,6 +262,7 @@ def execute_worker(name, command_queue, result_queue, parameters):
                 'sent': player.collect_and_clear_mouse_send_log(),
                 'received': player.collect_and_clear_mouse_receive_log(),
                 'drag_seconds': drag_seconds,
+                'flips_not_applied': flips_not_applied,
             })
             log(f'{name}: cycle {cycle + 1}/{cycles} reported')
 
