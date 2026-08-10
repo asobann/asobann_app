@@ -1,0 +1,113 @@
+Loading .env environment variables...
+start worker container port 50000
+system command: docker run -d -p 50000:50000 -e PORT=50000 --network loadtest_default --cpuset-cpus=8-31 test_run_multiprocess_in_container_worker
+system command: docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 1c0771b40a4309201a8d5168c18da5664c43cc1d284013303eba3f948dfb45c2
+start worker container port 50001
+system command: docker run -d -p 50001:50001 -e PORT=50001 --network loadtest_default --cpuset-cpus=8-31 test_run_multiprocess_in_container_worker
+system command: docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' d877fac0d524c04444d454ad6c892b3ddcd0b30231088c3897910d9d8c72e5e3
+start worker container port 50002
+system command: docker run -d -p 50002:50002 -e PORT=50002 --network loadtest_default --cpuset-cpus=8-31 test_run_multiprocess_in_container_worker
+system command: docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' df555bbd4f6d1e1d56cc70df156fd10582a1cb48614915da9d21da7099713244
+start worker container port 50003
+system command: docker run -d -p 50003:50003 -e PORT=50003 --network loadtest_default --cpuset-cpus=8-31 test_run_multiprocess_in_container_worker
+system command: docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 4e0c39cfb1854ec43c07ce9d66c563e7cdd04ceeb6f40110dbf188e4776ef693
+start worker container port 50004
+system command: docker run -d -p 50004:50004 -e PORT=50004 --network loadtest_default --cpuset-cpus=8-31 test_run_multiprocess_in_container_worker
+system command: docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 454cbf39e9f738abc5e222edb54c8d7a943e6dbff8e131f5056296fcc624ad5d
+start controller container workers [('172.20.0.4', 50000), ('172.20.0.5', 50001), ('172.20.0.6', 50002), ('172.20.0.7', 50003), ('172.20.0.8', 50004)]
+system command: docker run -p 8888:8888 -d --network loadtest_default --cpuset-cpus=8-31 test_run_multiprocess_in_container_controller pipenv run python tests/performance/remote_runner.py controller 172.20.0.4:50000,172.20.0.5:50001,172.20.0.6:50002,172.20.0.7:50003,172.20.0.8:50004
+d3a03c66ecc6c0d59f475b6abc036f639cbd06005cb9ae95efcd90166663e5c4
+start controller
+send command url=http://localhost:8888, data=set headless true
+send command url=http://localhost:8888, data=set url http://app:5000
+send command url=http://localhost:8888, data=set duration_seconds 300
+send command url=http://localhost:8888, data=set mousemove_hz 0
+send command url=http://localhost:8888, data=set report_interval_seconds 60
+send command url=http://localhost:8888, data=set drag_interval_seconds 0
+send command url=http://localhost:8888, data=run tests.performance.sustained_load
+run sent; run_id 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+send command url=http://localhost:8888, data=query 1786344097.12924
+result: {"name": "tests.performance.sustained_load", "result": {"params": {"duration_seconds": 300, "mousemove_hz": 0, "drag_interval_seconds": 0, "report_interval_seconds": 60}, "timeline": [], "drag_seconds_by_worker": {"P0": [], "P1": [], "P2": [], "P3": [], "P4": []}, "flips_not_applied_by_worker": {"P0": 0, "P1": 0, "P2": 0, "P3": 0, "P4": 0}}, "left_in_queues": [], "time": {"started_at": "Mon Aug 10 06:41:37 2026", "finished_at": "Mon Aug 10 06:46:19 2026", "elapsed": 282.462472}}
+send command url=http://localhost:8888, data=shutdown
+system command: docker ps -q --filter ancestor=test_run_multiprocess_in_container_worker --filter ancestor=test_run_multiprocess_in_container_controller
+{'left_in_queues': [],
+ 'name': 'tests.performance.sustained_load',
+ 'result': {'drag_seconds_by_worker': {'P0': [],
+                                       'P1': [],
+                                       'P2': [],
+                                       'P3': [],
+                                       'P4': []},
+            'flips_not_applied_by_worker': {'P0': 0,
+                                            'P1': 0,
+                                            'P2': 0,
+                                            'P3': 0,
+                                            'P4': 0},
+            'params': {'drag_interval_seconds': 0,
+                       'duration_seconds': 300,
+                       'mousemove_hz': 0,
+                       'report_interval_seconds': 60},
+            'timeline': []},
+ 'time': {'elapsed': 282.462472,
+          'finished_at': 'Mon Aug 10 06:46:19 2026',
+          'started_at': 'Mon Aug 10 06:41:37 2026'}}

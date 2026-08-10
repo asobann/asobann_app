@@ -64,6 +64,9 @@ def latency_stats(result_path: Path) -> dict:
 
     p50s, p95s, losses = [], [], []
     min_pairs, max_pairs = None, 0
+    # sent_count is a per-interval delta (the worker drains and clears its send log each
+    # cycle - see collect_and_clear_mouse_send_log), not cumulative, so every interval's
+    # value for a sender must be kept and averaged, not just the first.
     sent_by_sender = {}
     for interval in intervals:
         pairs = interval.get('pairs', [])
@@ -78,7 +81,7 @@ def latency_stats(result_path: Path) -> dict:
             if p.get('p95') is not None:
                 p95s.append(p['p95'])
             losses.append(p.get('loss_rate', 0))
-            sent_by_sender.setdefault(p['sender'], p['sent_count'])
+            sent_by_sender.setdefault(p['sender'], []).append(p['sent_count'])
 
     flips_not_applied = sum(result.get('flips_not_applied_by_worker', {}).values())
 
@@ -86,11 +89,11 @@ def latency_stats(result_path: Path) -> dict:
     # client-bound (the test harness itself couldn't keep up), not a valid CPU sample.
     hz = result.get('params', {}).get('mousemove_hz')
     report_interval = result.get('params', {}).get('report_interval_seconds', 60)
-    n_intervals = len(intervals) or 1
     achieved_hz_ratio = None
     if hz and sent_by_sender:
-        achieved = sum(sent_by_sender.values()) / len(sent_by_sender) / report_interval / n_intervals
-        achieved_hz_ratio = achieved / hz
+        per_sender_hz = [sum(counts) / len(counts) / report_interval
+                        for counts in sent_by_sender.values()]
+        achieved_hz_ratio = (sum(per_sender_hz) / len(per_sender_hz)) / hz
 
     return {
         'p50': sum(p50s) / len(p50s) if p50s else None,
