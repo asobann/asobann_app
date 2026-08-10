@@ -289,6 +289,33 @@ class GameHelper:
     def current_url(self) -> str:
         return self.browser.current_url
 
+    def eventually(self, condition, message, timeout=5):
+        """
+        Poll `condition()` until it returns truthy, then return. Fail with `message` on
+        timeout. Exceptions raised inside `condition` are treated as "not yet" - reading
+        state that is still arriving legitimately blows up (e.g. json.loads on a textarea
+        that is half-synchronised).
+
+        Use this instead of reading state right after an action. Nothing in this app is
+        applied synchronously: sync_table.js queues both the outgoing message *and* the
+        local application of an update onto a 75ms setInterval tick (actualUpdateQueue),
+        so a value read immediately after a click reliably races that tick. On a fast
+        machine the read wins almost every time, which is why several tests that assert
+        without waiting fail consistently here while they used to pass on slower setups.
+        """
+        def attempt(_):
+            try:
+                return condition()
+            except Exception:
+                return False
+
+        try:
+            WebDriverWait(self.browser, timeout).until(attempt)
+            return
+        except TimeoutException:
+            pass
+        assert False, f'{message} (timeout after {timeout}s)'
+
     def should_have_text(self, text, timeout=5):
         try:
             WebDriverWait(self.browser, timeout).until(

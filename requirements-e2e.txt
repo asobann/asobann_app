@@ -1,0 +1,17 @@
+# E2Eイメージ(Dockerfile.e2e)にだけ入れるテスト実行用の道具。
+# アプリの依存はベースの本番イメージが持っているので、ここには書かない。
+#
+# ここが唯一の正。Pipfile の [dev-packages] は手元作業用で、E2Eの実行環境には
+# 使われない(E2Eはホストでは動かない: tests/e2e/README.md 参照)。
+# 版を変えるときは両方を合わせること。
+pytest==8.4.2
+# 4.10 で Options.headless セッターが削除された。tests/e2e/conftest.py の
+# browser_func がそれを使っているので、上げるならそちらの書き換えが要る。
+selenium==4.1.5
+pytest-rerunfailures==16.4
+# 実行順序をランダム化して順序依存を炙り出す。既定で有効になり、使ったシードを
+# 出力するので `-p randomly --randomly-seed=<値>` で再現できる。
+# 順序を固定して切り分けたいときは `-p no:randomly`。
+pytest-randomly==4.1.0
+requests==2.32.5
+pillow==11.3.0

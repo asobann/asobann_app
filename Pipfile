@@ -12,7 +12,10 @@ pytest = "*"
 # 4.10 で Options.headless セッターが削除された。tests/e2e/conftest.py の browser_func が
 # それを使っているため、上げるならそちらの書き換えが要る。
 selenium = "==4.1.5"
+# E2Eイメージの実行環境は requirements-e2e.txt が正。ここは手元作業用なので、
+# 版を変えるときは両方を合わせること(E2Eはホストでは動かない)。
 pytest-rerunfailures = "==16.4"
+pytest-randomly = "==4.1.0"
 
 # 本番イメージ(Dockerfile.aws)は requirements.txt を、テストは Pipfile.lock を使う。
 # 別々の依存セットなので、ピン留めしないと再lockのたびにテスト環境だけがドリフトして

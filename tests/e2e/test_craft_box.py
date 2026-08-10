@@ -76,8 +76,10 @@ class TestCraftBoxWithOtherPlayers:
         }
 
         host.click(host.component(1))  # lose focus from textarea
-        sleep(0.1)  # should_have_text() does not work with textarea somehow
-        assert another_player.craft_box.kit_box.raw_kit_json == {
-            "dummy": "This is test",
-        }
+        # A fixed sleep raced the sync: raw_kit_json does json.loads on the textarea, so
+        # reading it mid-update raises JSONDecodeError. eventually() treats that as
+        # "not yet" and keeps polling.
+        another_player.eventually(
+            lambda: another_player.craft_box.kit_box.raw_kit_json == {"dummy": "This is test"},
+            'edited kit json was not synchronised to the other player')
 

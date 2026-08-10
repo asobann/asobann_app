@@ -25,14 +25,10 @@ RUN apt-get -y update \
 RUN curl -L https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz \
     | tar zx -C /usr/local/bin
 
-# selenium は 4.10 で Options.headless セッターが削除された。tests/e2e/conftest.py の
-# browser_func がそれを使っているので、上げるならそちらの書き換えが要る(Pipfileと同じ理由)。
-RUN pip3 install --no-cache-dir \
-        'pytest' \
-        'selenium==4.1.5' \
-        'pytest-rerunfailures==16.4' \
-        'requests' \
-        'pillow'
+# テスト道具の版は requirements-e2e.txt に集約する。ここに直接書くと Pipfile と
+# 二重管理になり、片方だけ動いてずれる(本番とテストで依存がずれていた件と同じ構図)。
+COPY requirements-e2e.txt /tmp/
+RUN pip3 install --no-cache-dir -r /tmp/requirements-e2e.txt && rm /tmp/requirements-e2e.txt
 
 # Dockerfile.aws が `COPY src /app/` しているので /app に asobann パッケージがある。
 # tests はその隣に置き、pyproject.toml(pytestの設定一式)も必ず入れる。これが無いと
