@@ -1,0 +1,80 @@
+--- container b7b4a8548e8d ---
+start worker port 50004
+running worker_server
+receiving cmd...
+received ['name', '172.20.0.8:50004']
+receiving cmd...
+received ['run', 'tests.performance.sustained_load', {'headless': True, 'url': 'http://app:5000', 'duration_seconds': 300, 'mousemove_hz': 30, 'drag_interval_seconds': 10, 'operation': 'pause_only'}]
+172.20.0.8:50004: cycle 1/5 reported
+172.20.0.8:50004: cycle 2/5 reported
+172.20.0.8:50004: cycle 3/5 reported
+172.20.0.8:50004: cycle 4/5 reported
+172.20.0.8:50004: cycle 5/5 reported
+worker is finished
+receiving cmd...
+received ['shutdown']
+shutting down ...
+--- container a2fb03d60e5a ---
+start worker port 50003
+running worker_server
+receiving cmd...
+received ['name', '172.20.0.7:50003']
+receiving cmd...
+received ['run', 'tests.performance.sustained_load', {'headless': True, 'url': 'http://app:5000', 'duration_seconds': 300, 'mousemove_hz': 30, 'drag_interval_seconds': 10, 'operation': 'pause_only'}]
+172.20.0.7:50003: cycle 1/5 reported
+172.20.0.7:50003: cycle 2/5 reported
+172.20.0.7:50003: cycle 3/5 reported
+172.20.0.7:50003: cycle 4/5 reported
+172.20.0.7:50003: cycle 5/5 reported
+worker is finished
+receiving cmd...
+received ['shutdown']
+shutting down ...
+--- container ae919fcf16d9 ---
+start worker port 50002
+running worker_server
+receiving cmd...
+received ['name', '172.20.0.6:50002']
+receiving cmd...
+received ['run', 'tests.performance.sustained_load', {'headless': True, 'url': 'http://app:5000', 'duration_seconds': 300, 'mousemove_hz': 30, 'drag_interval_seconds': 10, 'operation': 'pause_only'}]
+172.20.0.6:50002: cycle 1/5 reported
+172.20.0.6:50002: cycle 2/5 reported
+172.20.0.6:50002: cycle 3/5 reported
+172.20.0.6:50002: cycle 4/5 reported
+172.20.0.6:50002: cycle 5/5 reported
+worker is finished
+receiving cmd...
+received ['shutdown']
+shutting down ...
+--- container c1e5692d87d5 ---
+start worker port 50001
+running worker_server
+receiving cmd...
+received ['name', '172.20.0.5:50001']
+receiving cmd...
+received ['run', 'tests.performance.sustained_load', {'headless': True, 'url': 'http://app:5000', 'duration_seconds': 300, 'mousemove_hz': 30, 'drag_interval_seconds': 10, 'operation': 'pause_only'}]
+172.20.0.5:50001: cycle 1/5 reported
+172.20.0.5:50001: cycle 2/5 reported
+172.20.0.5:50001: cycle 3/5 reported
+172.20.0.5:50001: cycle 4/5 reported
+172.20.0.5:50001: cycle 5/5 reported
+worker is finished
+receiving cmd...
+received ['shutdown']
+shutting down ...
+--- container 633f28e0df29 ---
+start worker port 50000
+running worker_server
+receiving cmd...
+received ['name', '172.20.0.4:50000']
+receiving cmd...
+received ['run', 'tests.performance.sustained_load', {'headless': True, 'url': 'http://app:5000', 'duration_seconds': 300, 'mousemove_hz': 30, 'drag_interval_seconds': 10, 'operation': 'pause_only'}]
+172.20.0.4:50000: cycle 1/5 reported
+172.20.0.4:50000: cycle 2/5 reported
+172.20.0.4:50000: cycle 3/5 reported
+172.20.0.4:50000: cycle 4/5 reported
+172.20.0.4:50000: cycle 5/5 reported
+worker is finished
+receiving cmd...
+received ['shutdown']
+shutting down ...

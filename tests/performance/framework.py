@@ -130,7 +130,7 @@ class AbstractContainers:
     def build_docker_image_for_worker(self, base_dir: Path):
         with open(str(base_dir / 'Dockerfile_worker'), 'w') as f:
             f.write("""
-FROM python:3.10-slim-bookworm
+FROM python:3.14-slim-bookworm
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV PYTHONPATH=/runner
@@ -150,7 +150,7 @@ CMD python tests/performance/remote_runner.py worker $PORT
     def build_docker_image_for_controller(self, base_dir):
         with open(Path(base_dir) / 'Dockerfile_controller', 'w') as f:
             f.write("""
-FROM python:3.10-slim-bookworm
+FROM python:3.14-slim-bookworm
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV PYTHONPATH=/runner

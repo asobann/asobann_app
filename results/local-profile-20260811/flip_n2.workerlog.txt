@@ -1,0 +1,16 @@
+--- container 0d74dcb32858 ---
+start worker port 50000
+running worker_server
+receiving cmd...
+received ['name', '172.20.0.4:50000']
+receiving cmd...
+received ['run', 'tests.performance.sustained_load', {'headless': True, 'url': 'http://app:5000', 'duration_seconds': 300, 'mousemove_hz': 30, 'drag_interval_seconds': 10, 'operation': 'flip'}]
+172.20.0.4:50000: cycle 1/5 reported
+172.20.0.4:50000: cycle 2/5 reported
+172.20.0.4:50000: cycle 3/5 reported
+172.20.0.4:50000: cycle 4/5 reported
+172.20.0.4:50000: cycle 5/5 reported
+worker is finished
+receiving cmd...
+received ['shutdown']
+shutting down ...

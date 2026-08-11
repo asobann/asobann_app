@@ -8,8 +8,8 @@ services:
             dockerfile: Dockerfile.aws
         # イメージのCMDは `asobann.deploy`(キット初期化)を含むが、ここでは初期化不要
         # (プロファイル対象のキットは別途カード投入する)なので、fargate.yamlと同じく
-        # asobann.wsgi だけを起動する。
-        command: python3 -m asobann.wsgi
+        # asobann.asgi だけを起動する。
+        command: python3 -m asobann.asgi
         ports:
             - "5000:5000"
         environment:
