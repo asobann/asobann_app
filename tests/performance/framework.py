@@ -107,8 +107,8 @@ class AbstractContainers:
         (base_dir / 'runner').mkdir()
         shutil.copytree('./tests', str(base_dir / 'runner/tests'))
         shutil.copytree('./src', str(base_dir / 'runner/src'))
-        shutil.copy('./Pipfile', str(base_dir / 'runner/'))
-        shutil.copy('./Pipfile.lock', str(base_dir / 'runner/'))
+        # uv.lock からの生成物(アプリ依存 + dev group)。scripts/build_e2e_image.sh 等で再生成される
+        shutil.copy('./requirements-dev.txt', str(base_dir / 'runner/'))
         # pytest's whole configuration lives here (addopts, marker registration,
         # filterwarnings). Without it, running the e2e suite in this image silently
         # ignores `-m 'not loadtest'` and executes the tests that point at the long-dead
@@ -136,13 +136,12 @@ ENV LANG=C.UTF-8
 ENV PYTHONPATH=/runner
 RUN apt-get -y update && apt-get install -y --no-install-recommends firefox-esr curl ca-certificates && rm -rf /var/lib/apt/lists/*
 RUN curl -L https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz | tar zx -C /usr/local/bin
-RUN pip3 install pipenv
 WORKDIR /runner
-COPY runner/Pipfile runner/Pipfile.lock ./
-RUN pipenv install -d
+COPY runner/requirements-dev.txt ./
+RUN pip3 install --no-cache-dir -r requirements-dev.txt
 COPY runner/ .
 EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
-CMD pipenv run python tests/performance/remote_runner.py worker $PORT
+CMD python tests/performance/remote_runner.py worker $PORT
     """)
         proc = system(f"docker build . -f Dockerfile_worker -t {WORKER_NAME}",
                       cwd=base_dir)
@@ -157,10 +156,9 @@ ENV LANG=C.UTF-8
 ENV PYTHONPATH=/runner
 RUN apt-get -y update && apt-get install -y --no-install-recommends firefox-esr curl ca-certificates && rm -rf /var/lib/apt/lists/*
 RUN curl -L https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz | tar zx -C /usr/local/bin
-RUN pip3 install pipenv
 WORKDIR /runner
-COPY runner/Pipfile runner/Pipfile.lock ./
-RUN pipenv install -d
+COPY runner/requirements-dev.txt ./
+RUN pip3 install --no-cache-dir -r requirements-dev.txt
 COPY runner/ .
 EXPOSE 8888
     """)
@@ -325,7 +323,7 @@ class LocalContainers(AbstractContainers):
         log(f'start controller container workers {self._workers.binds}')
         arg_workers = ','.join([f'{ip}:{port}' for ip, port in self._workers.binds])
         system(f"docker run -p 8888:8888 -d {DOCKER_RUN_OPTS} {CONTROLLER_NAME} "
-               f"pipenv run python tests/performance/remote_runner.py controller {arg_workers}")
+               f"python tests/performance/remote_runner.py controller {arg_workers}")
         self._wait_for_controller_to_start()
 
     def shutdown(self) -> None:
@@ -552,8 +550,6 @@ class Ecs:
                 {
                     "name": CONTROLLER_NAME,
                     "command": [
-                        "/usr/local/bin/pipenv",
-                        "run",
                         "python",
                         "tests/performance/remote_runner.py",
                         "controller",

@@ -88,7 +88,7 @@ for entry in "${CONFIGS[@]}"; do
     fi
 
     STATS_DIR="$OUT_DIR/${name}.stats"
-    pipenv run python scripts/collect_container_stats.py loadtest-app-1 loadtest-mongo-1 \
+    uv run python scripts/collect_container_stats.py loadtest-app-1 loadtest-mongo-1 \
         --output-dir "$STATS_DIR" --interval 1 &
     STATS_PID=$!
     sleep 1
@@ -96,7 +96,7 @@ for entry in "${CONFIGS[@]}"; do
     RESULT_JSON="$OUT_DIR/${name}.json"
     RUN_LOG="$OUT_DIR/${name}.runlog.txt"
 
-    pipenv run python -m tests.performance.cli run tests.performance.sustained_load "$workers" \
+    uv run python -m tests.performance.cli run tests.performance.sustained_load "$workers" \
         --run-on docker --url "$APP_URL" \
         "${PARAM_ARGS[@]}" \
         --debug --output "$RESULT_JSON" \

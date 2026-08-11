@@ -8,11 +8,8 @@
   起動対象は `FLASK_ENV=test`、`config_test.py` の `PORT = 10011`
 - `config_test.py` の `MONGO_URI` が **`mongodb://admin:password@mongo:27017/test`** をハードコード。
   ホスト名 `mongo` はdocker-composeのサービス名なので、**そのネットワーク内でしか解決しない**
-- `tests/conftest.py` がサーバ起動に `/usr/local/bin/pipenv` を決め打ちしている
+- `tests/conftest.py` がサーバ起動に `sys.executable` を使う(テストとサーバが同じ環境に同居している前提)
 - firefox と geckodriver が要る
-
-分散負荷テスト用のワーカーイメージがこれらをすべて満たす(firefox-esr・geckodriver・
-`/usr/local/bin/pipenv`)ので、それを流用するのが手っ取り早い。
 
 なお `helper.py` の `STAGING_TOP` は死んだHeroku URLで、**このテストはstagingには向けられない**。
 

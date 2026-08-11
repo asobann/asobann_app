@@ -5,7 +5,7 @@
 #   - E2Eは以前 python:3.10-slim-bookworm から独立にビルドしたイメージで動いていて、
 #     本番(bullseye / Python 3.10.18 / greenlet 1.1.3)と食い違っていた。テストの意味が
 #     薄れるので、本番イメージをベースにする(Dockerfile.e2e)
-#   - Dockerfile.aws は requirements.txt を COPY するが、これは Pipfile.lock からの
+#   - Dockerfile.aws は requirements.txt を COPY するが、これは uv.lock からの
 #     生成物。作業ツリーに残った古い requirements.txt でビルドすると本番と別物になる。
 #     実際それで greenlet が 1.1.3 と 3.5.4 に割れていた。**必ず再生成する**
 #
@@ -19,9 +19,12 @@ cd "$(dirname "$0")/.."
 APP_IMAGE="asobann-app:local"
 E2E_IMAGE="asobann-e2e:local"
 
-echo "==> 依存を Pipfile.lock から書き出す"
-pipenv requirements > requirements.txt
-echo "    $(grep -c . requirements.txt) パッケージ"
+echo "==> 依存を uv.lock から書き出す"
+uv export --frozen --no-dev --no-emit-project --no-hashes -o requirements.txt --quiet
+uv export --frozen --only-group e2e --no-emit-project --no-hashes -o requirements-e2e.txt --quiet
+# localdevイメージと負荷試験runnerが使う。ついでに再生成してドリフトを防ぐ
+uv export --frozen --group dev --no-emit-project --no-hashes -o requirements-dev.txt --quiet
+echo "    requirements.txt: $(grep -cE '^[a-zA-Z0-9]' requirements.txt) パッケージ / requirements-e2e.txt: $(grep -cE '^[a-zA-Z0-9]' requirements-e2e.txt) パッケージ"
 
 echo "==> 本番相当イメージをビルドする ($APP_IMAGE)"
 docker build -q -f Dockerfile.aws -t "$APP_IMAGE" . > /dev/null

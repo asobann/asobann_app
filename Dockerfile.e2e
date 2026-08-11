@@ -25,7 +25,8 @@ RUN apt-get -y update \
 RUN curl -L https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz \
     | tar zx -C /usr/local/bin
 
-# テスト道具の版は requirements-e2e.txt に集約する。ここに直接書くと Pipfile と
+# テスト道具の版は pyproject.toml の e2e group に集約し、requirements-e2e.txt は
+# uv.lock からの生成物(scripts/build_e2e_image.sh が再生成する)。ここに直接書くと
 # 二重管理になり、片方だけ動いてずれる(本番とテストで依存がずれていた件と同じ構図)。
 COPY requirements-e2e.txt /tmp/
 RUN pip3 install --no-cache-dir -r /tmp/requirements-e2e.txt && rm /tmp/requirements-e2e.txt

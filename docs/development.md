@@ -4,11 +4,11 @@
 
 ## セットアップ
 
-必要なもの: Python（Pipfile準拠）、pipenv、Node.js、Docker。e2eテストにはFirefox + geckodriver。
+必要なもの: uv（Pythonと依存はuvが管理）、Node.js、Docker。e2eテストにはFirefox + geckodriver。
 
 ```shell
 npm i -d            # JS依存
-pipenv sync --dev   # Python依存
+uv sync             # Python依存（devグループ含む。.venvを作る）
 npx webpack         # フロントエンドビルド（src/js → src/asobann/app/static/main.js）
 ```
 
@@ -40,13 +40,13 @@ docker compose -f deploy/localdev/docker-compose.yml up --build
 
 ```shell
 npm test                                   # JS unit
-pipenv run pytest -m quick                 # 高速なテストのみ（@pytest.mark.quick）
-pipenv run pytest tests/unit tests/functional
-pipenv run pytest tests/e2e                # 重い。Firefox+geckodriverが必要
-pipenv run pytest tests/path/to/test.py::test_name -v   # 単一テスト
+uv run pytest -m quick                     # 高速なテストのみ（@pytest.mark.quick）
+uv run pytest tests/unit tests/functional
+uv run pytest tests/e2e                    # 重い。Firefox+geckodriverが必要
+uv run pytest tests/path/to/test.py::test_name -v   # 単一テスト
 ```
 
-- Pythonテストは `tests/conftest.py` の `TestServerProvider` がテストサーバ（port 10011）を都度起動する。**pipenvのパスが `/usr/local/bin/pipenv` にハードコードされている**点に注意（環境が違うと失敗する）
+- Pythonテストは `tests/conftest.py` の `TestServerProvider` がテストサーバ（port 10011）を都度起動する。起動には `sys.executable` を使うので、テストを動かしたインタプリタ（= uvの.venv）がそのまま使われる
 - e2eはgeckodriverがPATHにあること。`tests/geckodriver.example` 参照
 - コンテナ内でテストを回す仕組みは `tests/entry_for_test_container.sh`（slowness_issueブランチ）を参照
 
