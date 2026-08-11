@@ -186,7 +186,8 @@ def firefox_driver():
 
 @pytest.fixture(scope='session')
 def headless():
-    firefox_options.headless = True
+    # selenium 4.10 で Options.headless セッターが削除された。-headless引数で代替する。
+    firefox_options.add_argument('-headless')
 
 
 @pytest.fixture(scope='session')
@@ -209,8 +210,12 @@ def host(browser):
 
 
 def browser_func(headless=False):
-    firefox_options.headless = headless
-    browser = webdriver.Firefox(options=firefox_options)
+    # 呼び出しごとに独立したOptionsにする。共有の firefox_options に足すと
+    # 繰り返し呼ばれたとき -headless 引数が重複して溜まっていく。
+    options = Options()
+    if headless:
+        options.add_argument('-headless')
+    browser = webdriver.Firefox(options=options)
     browser.delete_all_cookies()
     return browser
 

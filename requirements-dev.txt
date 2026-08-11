@@ -10,6 +10,8 @@ attrs==26.1.0
     # via
     #   outcome
     #   trio
+awscrt==0.36.0
+    # via botocore
 bidict==0.23.1
     # via python-socketio
 blinker==1.9.0
@@ -25,11 +27,9 @@ botocore==1.43.67
 certifi==2026.7.22
     # via
     #   requests
-    #   urllib3
-cffi==2.1.1 ; (implementation_name != 'pypy' and os_name == 'nt') or platform_python_implementation != 'PyPy'
-    # via
-    #   cryptography
-    #   trio
+    #   selenium
+cffi==2.1.1 ; implementation_name != 'pypy' and os_name == 'nt'
+    # via trio
 charset-normalizer==3.4.9
     # via requests
 click==8.4.2
@@ -43,10 +43,6 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   ipython
     #   pytest
     #   typer
-cryptography==50.0.0
-    # via
-    #   pyopenssl
-    #   urllib3
 dnspython==2.8.0
     # via
     #   asobann
@@ -72,7 +68,6 @@ idna==3.18
     # via
     #   requests
     #   trio
-    #   urllib3
 iniconfig==2.3.0
     # via pytest
 ipython==9.16.1
@@ -129,7 +124,7 @@ ptyprocess==0.7.0 ; sys_platform != 'emscripten' and sys_platform != 'win32'
     # via pexpect
 pure-eval==0.2.3
     # via stack-data
-pycparser==3.0 ; (implementation_name != 'PyPy' and implementation_name != 'pypy' and os_name == 'nt') or (implementation_name != 'PyPy' and platform_python_implementation != 'PyPy')
+pycparser==3.0 ; implementation_name != 'PyPy' and implementation_name != 'pypy' and os_name == 'nt'
     # via cffi
 pygments==2.20.0
     # via
@@ -139,8 +134,6 @@ pygments==2.20.0
     #   rich
 pymongo==4.17.0
     # via asobann
-pyopenssl==26.4.0
-    # via urllib3
 pysocks==1.7.1
     # via urllib3
 pytest==9.1.1
@@ -168,7 +161,7 @@ rich==15.0.0
     # via typer
 s3transfer==0.19.2
     # via boto3
-selenium==4.1.5
+selenium==4.46.0
 shellingham==1.5.4
     # via typer
 simple-websocket==1.1.0
@@ -192,17 +185,19 @@ trio==0.33.0
 trio-websocket==0.12.2
     # via selenium
 typer==0.27.1
-urllib3==1.26.20
+typing-extensions==4.16.0
+    # via selenium
+urllib3==2.7.0
     # via
     #   botocore
     #   requests
     #   selenium
-urllib3-secure-extra==0.1.0
-    # via urllib3
 uvicorn==0.52.1
     # via asobann
 wcwidth==0.8.2
     # via prompt-toolkit
+websocket-client==1.9.0
+    # via selenium
 werkzeug==3.1.8
     # via
     #   flask

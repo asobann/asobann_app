@@ -36,9 +36,7 @@ dependencies = [
 e2e = [
     "pytest",
     "pytest-asyncio",
-    # 4.10 で Options.headless セッターが削除された。tests/e2e/conftest.py の
-    # browser_func がそれを使っているため、上げるならそちらの書き換えが要る。
-    "selenium==4.1.5",
+    "selenium",
     "pytest-rerunfailures",
     "pytest-randomly",
     "requests",
