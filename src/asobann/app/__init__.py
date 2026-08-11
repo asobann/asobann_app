@@ -1,22 +1,24 @@
+import asyncio
 import os
 from pathlib import Path
 from urllib.parse import urlsplit
-from flask import Flask, render_template, request, redirect, url_for, jsonify, json, make_response, send_file
-from flask_pymongo import PyMongo
-import logging
-from logging.config import dictConfig
-import boto3
 
+import boto3
+import socketio
+from pymongo import AsyncMongoClient
+from quart import Quart, render_template, request, redirect, url_for, jsonify, json, make_response, send_file
 from werkzeug.datastructures import FileStorage
 
 import asobann
 from asobann.store import tables, components, kits
+from . import debug_tools
 
-from .. import socketio
-
-# prevent 'Too many packets in paylod' error
+# prevent 'Too many packets in payload' error
 # see https://github.com/miguelgrinberg/python-engineio/issues/142
 from engineio.payload import Payload
+
+import logging
+from logging.config import dictConfig
 
 Payload.max_decode_packets = 1000
 
@@ -24,11 +26,10 @@ dictConfig({
     'version': 1,
     'formatters': {'default': {
         'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
-        # 'format': '[%(asctime)s] %(levelname)s in %(name)s at %(pathname)s: %(message)s',
     }},
     'handlers': {'wsgi': {
         'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'stream': 'ext://sys.stderr',
         'formatter': 'default'
     }},
     'loggers': {
@@ -84,6 +85,10 @@ def resolve_redis_srv(uri: str):
 def configure_app(app, testing):
     app.config.from_mapping(
         SECRET_KEY='secret!',
+        # Quartのconfigは(Flaskと違い)ENVを自動で持たない。FLASK_ENVは既存の
+        # デプロイ/テスト構成(docker-compose、conftest.py等)が使っている名前なので、
+        # そのまま踏襲する。
+        ENV=os.environ.get('FLASK_ENV', 'production'),
     )
 
     folder = Path(asobann.__file__).parent.absolute()
@@ -96,12 +101,12 @@ def configure_app(app, testing):
 
 
 class LocalImageUploader:
-    def upload(self, file):
+    async def upload(self, file: FileStorage):
         file_name = file.filename
         from pathlib import Path
         image_base_path = Path('/tmp/asobann/images')
         image_base_path.mkdir(exist_ok=True, parents=True)
-        file.save(image_base_path / file_name)
+        await file.save(image_base_path / file_name)
         return url_for('get_uploaded_image', file_name=file_name, _external=False)
 
 
@@ -116,7 +121,7 @@ class S3ImageUploader:
         self.aws_region = aws_region
         self.bucket_name = bucket_name
 
-    def upload(self, file):
+    def _upload_sync(self, file):
         filename = file.filename
         newname = 'upload/' + filename
         newobj = self.bucket.Object(newname)
@@ -135,6 +140,10 @@ class S3ImageUploader:
 
         return F'https://{self.bucket_name}.s3.{self.aws_region}.amazonaws.com/{newname}'
 
+    async def upload(self, file):
+        # boto3はブロッキングI/O。イベントループを止めないようスレッドに逃がす。
+        return await asyncio.to_thread(self._upload_sync, file)
+
 
 def redact_credentials(uri: str) -> str:
     """接続文字列から認証情報を落とす。
@@ -150,26 +159,27 @@ def redact_credentials(uri: str) -> str:
     return f'{parts.scheme}://{host}{parts.path}'
 
 
-def create_app(testing=False):
-    app = Flask(__name__)
+async def create_app(testing=False):
+    app = Quart(__name__)
     configure_app(app, testing=testing)
 
-    from flask.logging import default_handler
+    from quart.logging import default_handler
     app.logger.removeHandler(default_handler)
 
-    socketio_args = {}
+    sio_kwargs = {'async_mode': 'asgi'}
 
     if 'DEBUG_LOG' in app.config and app.config['DEBUG_LOG']:
-        socketio_args['logger'] = app.logger
-        socketio_args['engineio_logger'] = app.logger
+        sio_kwargs['logger'] = app.logger
+        sio_kwargs['engineio_logger'] = app.logger
         app.logger.setLevel('DEBUG')
 
     try:
         app.logger.info("connecting mongo")
         app.logger.info(redact_credentials(app.config["MONGO_URI"]))
-        app.mongo = PyMongo(app)
+        app.mongo_client = AsyncMongoClient(app.config["MONGO_URI"])
+        app.mongo_db = app.mongo_client.get_default_database()
         # make sure mongodb is available and fail fast if not
-        app.mongo.db.list_collection_names()
+        await app.mongo_db.list_collection_names()
         app.logger.info("connected to mongo")
     except Exception as e:
         app.logger.error('failed to connect to mongo')
@@ -182,7 +192,7 @@ def create_app(testing=False):
         if uri.startswith('redis+srv://'):
             uri = resolve_redis_srv(uri)
             app.logger.info(f'actual uri {uri}')
-        socketio_args['message_queue'] = uri
+        sio_kwargs['client_manager'] = socketio.AsyncRedisManager(uri)
     else:
         app.logger.info('use no message queue')
 
@@ -199,22 +209,29 @@ def create_app(testing=False):
         raise ValueError(f'config UPLOADED_IMAGE_STORE "{app.config["UPLOADED_IMAGE_STORE"].lower()}" is invalid')
 
     if app.config["ENV"] == "development":
-        socketio_args['cors_allowed_origins'] = "*"
+        sio_kwargs['cors_allowed_origins'] = "*"
     else:
         # CORS_ALLOWED_ORIGINS_OVERRIDE lets the local CPU-profiling harness (see
         # plan.local-profiling.20260810.md) run the production config against a
         # plain-http local origin, which never matches BASE_URL's hardcoded https://.
         # Unset in every real deployment, so production behavior is unchanged.
-        socketio_args['cors_allowed_origins'] = os.environ.get(
+        sio_kwargs['cors_allowed_origins'] = os.environ.get(
             'CORS_ALLOWED_ORIGINS_OVERRIDE', app.config['BASE_URL'])
-    socketio.init_app(app, **socketio_args)
-    app.socketio = socketio
 
-    tables.connect(app.mongo)
-    components.connect(app.mongo)
-    kits.connect(app.mongo)
+    sio = socketio.AsyncServer(**sio_kwargs)
+    app.sio = sio
+
+    tables.connect(app.mongo_db)
+    components.connect(app.mongo_db)
+    kits.connect(app.mongo_db)
+    debug_tools.configure(
+        app.mongo_db,
+        performance_recording=app.config.get('DEBUG_PERFORMANCE_RECORDING', False),
+        order_of_updates=app.config.get('DEBUG_ORDER_OF_UPDATES', False),
+    )
 
     from asobann.app.blueprints import table, kit, component
+    table.register_handlers(sio, app)
     app.register_blueprint(table.blueprint)
     app.register_blueprint(component.blueprint)
     app.register_blueprint(kit.blueprint)
@@ -223,60 +240,53 @@ def create_app(testing=False):
         app.register_blueprint(debug.blueprint)
 
     @app.route('/')
-    def index():
+    async def index():
         tablename = tables.generate_new_tablename()
         response = make_response(redirect(url_for('tables.play_table', tablename=tablename)))
-        return response
-
-    # @app.route('/join_session', methods=["POST"])
-    # def join_session():
-    #     tablename = request.form.get("tablename")
-    #     if not tablename:
-    #         tablename = str(random.randint(0, 9999)) + ''.join([random.choice('abddefghijklmnopqrstuvwxyz') for i in range(3)])
-    #     player = request.form.get("player")
-    #     response = make_response(redirect(url_for('.play_session', tablename=tablename)))
-    #     return response
+        return await response
 
     @app.route('/export', methods=["GET"])
-    def export_table():
+    async def export_table():
         tablename = request.args.get("tablename")
         app.logger.info(f"exporting table <{tablename}>")
-        table = tables.get(tablename)
+        table = await tables.get(tablename)
         return jsonify(table)
 
     @app.route('/import', methods=["POST"])
-    def import_table():
+    async def import_table():
         tablename = tables.generate_new_tablename()
         app.logger.info(f"importing table <{tablename}>")
-        if 'data' not in request.files:
+        files = await request.files
+        if 'data' not in files:
             return redirect(url_for('/'))
-        file = request.files['data']
+        file = files['data']
         table = json.loads(file.read())
-        tables.store(tablename, table)
+        await tables.store(tablename, table)
         return redirect(url_for('tables.play_table', tablename=tablename))
 
     @app.route('/customize')
-    def customize():
-        return render_template('customize.html')
+    async def customize():
+        return await render_template('customize.html')
 
     @app.route('/dummy', methods=['POST'])
-    def upload_image():
-        if 'image' not in request.files:
+    async def upload_image():
+        files = await request.files
+        if 'image' not in files:
             return redirect(url_for('/'))
-        file: FileStorage = request.files['image']
-        url = app.image_store.upload(file)
+        file: FileStorage = files['image']
+        url = await app.image_store.upload(file)
         return jsonify({
             'imageUrl': url,
         })
 
     @app.route('/images/uploaded/<file_name>', methods=['GET'])
-    def get_uploaded_image(file_name):
+    async def get_uploaded_image(file_name):
         from pathlib import Path
         image_base_path = Path('/tmp/asobann/images')
-        return send_file(image_base_path / file_name)
+        return await send_file(image_base_path / file_name)
 
     @app.route('/config', methods=['GET'])
-    def get_config():
+    async def get_config():
         client_config = {}
         if 'AWS_COGNITO_USER_POOL_ID' in app.config:
             client_config['AWS_COGNITO'] = {

@@ -1,17 +1,19 @@
 import time
 from typing import List
-from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app, make_response
-)
 
-trace_db = None
+# socketioイベントハンドラはQuartのリクエスト/アプリコンテキスト外で実行されるため、
+# current_appではなくcreate_app()から明示的に渡された状態を保持する。
+_state = {
+    'trace_db': None,
+    'performance_recording': False,
+    'order_of_updates': False,
+}
 
 
-def get_trace_db():
-    global trace_db
-    if not trace_db:
-        trace_db = current_app.mongo.db.traces
-    return trace_db
+def configure(mongo_db, performance_recording, order_of_updates):
+    _state['trace_db'] = mongo_db.traces
+    _state['performance_recording'] = performance_recording
+    _state['order_of_updates'] = order_of_updates
 
 
 def timestamp():
@@ -22,7 +24,7 @@ class NoOpPerformanceRecordingTrace:
     def trace_point(self, label):
         pass
 
-    def end(self):
+    async def end(self):
         pass
 
 
@@ -39,7 +41,7 @@ class PerformanceRecordingTrace:
         }
         self.points.append(point)
 
-    def end(self):
+    async def end(self):
         data = {
             'traces': [{
                 'traceId': self.trace_id,
@@ -48,21 +50,17 @@ class PerformanceRecordingTrace:
             }],
             'originator': self.locus,
         }
-        get_trace_db().insert_one({'traces': data, 'created_at': timestamp()})
+        await _state['trace_db'].insert_one({'traces': data, 'created_at': timestamp()})
 
 
 def resume_trace(envelope):
-    current_app.logger.debug('resume trace')
-    if not current_app.config.get('DEBUG_PERFORMANCE_RECORDING', False):
-        current_app.logger.debug('DEBUG_PERFORMANCE_RECORDING not set')
+    if not _state['performance_recording']:
         return NoOpPerformanceRecordingTrace()
 
     if 'inspectionTraceId' in envelope:
         trace_id = envelope['inspectionTraceId']
-        current_app.logger.debug('tracing activated with trace_id: ' + trace_id)
         return PerformanceRecordingTrace(trace_id)
 
-    current_app.logger.debug('no inspectionTraceId found')
     return NoOpPerformanceRecordingTrace()
 
 
@@ -70,7 +68,7 @@ log_of_updates = {}
 
 
 def add_log_of_updates(component_id, from_browser, epoch):
-    if not current_app.config['DEBUG_ORDER_OF_UPDATES']:
+    if not _state['order_of_updates']:
         return
     if from_browser not in log_of_updates:
         log_of_updates[from_browser] = {}
@@ -88,6 +86,6 @@ def add_log_of_updates(component_id, from_browser, epoch):
 
 
 def clear_log_of_updates():
-    if not current_app.config['DEBUG_ORDER_OF_UPDATES']:
+    if not _state['order_of_updates']:
         return
     log_of_updates.clear()

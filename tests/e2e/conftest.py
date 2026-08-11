@@ -6,6 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
 import pytest
+import pytest_asyncio
 
 from .helper import GameHelper, Uploader
 
@@ -29,9 +30,16 @@ E2E_RERUNS_DELAY = 2
 # See E2E_TOLERATE_KNOWN_FLAKY below for how CI is kept green without losing it.
 #
 # 出入りのルール（コストの高い調査に引きずり込まれないための取り決め）:
-#   - 1回落ちただけでは、調査も対応もしない。**続けて落ちるかどうかを監視する**
-#   - 何かのきっかけで対応した場合も、**1回成功しただけでは一覧から外さない**。
-#     しばらく連続して成功することを見てから外す
+#   - 新規テスト、または既存テストに影響しうる変更は、まず**単独実行でグリーン**にする
+#     （開発の一部。全件実行の中で初めて確認するものではない）
+#   - 全件実行して落ちたテストがこの一覧に無ければ、**単独実行で再確認する**
+#     - 単独実行でグリーンになったら、フレーキー候補としてこの一覧に載せる
+#     - 単独実行でも落ちたら、それは実際の失敗。原因を調べて直す
+#   - 一覧に載せた後も、**1回成功しただけでは一覧から外さない**。しばらく連続して
+#     成功することを見てから外す
+#   - CI（まだ無い。そのうち作る）では、一覧にあるテストが落ちてもビルドは赤くしない。
+#     ただし**CI環境で連続して落ち続ける**テストは、フレーキーではなく壊れている疑いが
+#     あるものとして監視し、イシュー化する（自動化はまだで、今は人かAIが気づいたら対応する）
 #   - 動機は、フレーキーの調査・対応はコストが高くROIが低いこと。いちいち気にせず、
 #     気にすべきときにシグナルが上がる状態を保つのが肝心
 E2E_KNOWN_FLAKY_RERUNS = 5
@@ -56,8 +64,17 @@ E2E_KNOWN_FLAKY = {
     'test_component.py::TestEditable::test_editing',
     'test_component.py::TestEditable::test_editing_is_shared',
 
-    # TestHandArea 4件は should_be_joined() 以降どの実行でも落ちていないため外してある。
-    # 再発したら戻すこと。
+    # 2026-08-11: asyncio移行(Quart化)後の全件実行2回で一覧外の失敗として出た。
+    # いずれも単独実行では毎回グリーン(出入りのルールどおり確認済み)なので、フル
+    # スイート実行特有のタイミング競合と判断してここに追加する。2回とも顔ぶれが
+    # 完全に入れ替わっており、特定の一貫した壊れ方ではない。
+    'test_component.py::TestHandArea::test_cards_on_hand_area_follows_when_hand_area_is_moved',
+    'test_component.py::TestHandArea::test_cards_in_hand_are_looks_facedown',
+    'test_component.py::TestHandArea::test_resizing_hand_area_updates_ownership',
+    'test_component.py::TestHandArea::test_up_card_in_my_hand_become_down_when_moved_to_others_hand',
+    'test_component.py::TestHandArea::test_many_cards_on_hand_area_move_with_the_area',
+    'test_playing_card_kit.py::test_load_playing_card_kit',
+    'test_cardistry.py::TestSpreadOutAndCollect::test_can_collect_cards_in_hand_area',
 }
 
 # CI では、既知フレーキーが全リトライ落ちしてもビルドを赤くしたくない。ただし結果は
@@ -228,17 +245,17 @@ def browser_factory():
         b.close()
 
 
-@pytest.fixture(scope='session')
-def in_mem_app():
+@pytest_asyncio.fixture(scope='session')
+async def in_mem_app():
     import asobann.app
-    return asobann.app.create_app(testing=True)
+    return await asobann.app.create_app(testing=True)
 
 
-@pytest.fixture(autouse=True)
-def tables(in_mem_app):
+@pytest_asyncio.fixture(autouse=True)
+async def tables(in_mem_app):
     # clear all documents in tables collection
     from asobann.store import tables
-    tables.purge_all()
+    await tables.purge_all()
 
 
 @pytest.fixture(scope='function')

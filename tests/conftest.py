@@ -14,7 +14,7 @@ debug_server_config = {}
 # production image, which installs dependencies with plain pip and has no pipenv at all.
 # Using sys.executable also guarantees the server runs under exactly the interpreter and
 # site-packages the tests were collected with.
-SERVER_COMMAND = [sys.executable, "-m", "asobann.wsgi"]
+SERVER_COMMAND = [sys.executable, "-m", "asobann.asgi"]
 DEPLOY_COMMAND = [sys.executable, "-m", "asobann.deploy"]
 
 # Must match config_test.py's PORT.

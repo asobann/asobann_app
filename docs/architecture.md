@@ -7,8 +7,8 @@
 ```
 ブラウザ (複数)                        サーバ (複数プロセス可)
 ┌──────────────────────┐   socket.io   ┌──────────────────────────┐
-│ play_session.js      │◄─────────────►│ Flask + Flask-SocketIO   │
-│  ├ table.js (表示)    │   HTTP        │  (eventlet)              │
+│ play_session.js      │◄─────────────►│ Quart + python-socketio  │
+│  ├ table.js (表示)    │   HTTP        │  AsyncServer (asyncio)   │
 │  ├ feat.js (能力)     │◄─────────────►│  ├ blueprints/ (API)     │
 │  ├ sync_table.js     │               │  └ store/ (永続化)        │
 │  └ menu.js ほか       │               └────────┬────────┬────────┘
@@ -19,21 +19,22 @@
 
 - 1つの「テーブル」（ゲーム卓）にプレイヤーがURL共有で集まり、socket.ioのroom単位で状態を同期する
 - テーブル状態はMongoDBに **1テーブル=1ドキュメント** で保存される
-- サーバプロセスが複数ある場合、Flask-SocketIOのmessage queue（Redis）でブロードキャストを中継する
+- サーバプロセスが複数ある場合、python-socketioのmessage queue（Redis、`AsyncRedisManager`）でブロードキャストを中継する
+- eventlet(greenlet)は使わない。ハンドラ・store層は全てasync def/await。ASGIサーバはuvicorn
 
 ## バックエンド構成（src/asobann/）
 
 | モジュール | 責務 |
 |---|---|
-| `app/__init__.py` | アプリファクトリ（create_app）。設定読み込み、Mongo/Redis接続、画像アップローダ選択 |
-| `app/blueprints/table.py` | socket.ioイベントハンドラ（同期の中心）とテーブル関連HTTP |
+| `app/__init__.py` | アプリファクトリ（create_app、async def）。設定読み込み、Mongo(AsyncMongoClient)/Redis接続、画像アップローダ選択 |
+| `app/blueprints/table.py` | socket.ioイベントハンドラ（同期の中心）とテーブル関連HTTP。`register_handlers(sio, app)` で登録 |
 | `app/blueprints/kit.py` | キット一覧・取得・アップロード（POST /kits/create） |
 | `app/blueprints/component.py` | キットに属するコンポーネント定義の取得 |
 | `app/blueprints/debug.py` | デバッグ用（development/test環境のみ登録） |
-| `store/tables.py, kits.py, components.py` | MongoDBアクセス層。`connect(mongo)` でコレクション参照をモジュールグローバルに設定 |
+| `store/tables.py, kits.py, components.py` | MongoDBアクセス層（async def）。`connect(mongo_db)` でコレクション参照をモジュールグローバルに設定 |
 | `config_common/dev/production/test.py` | 環境別設定。環境変数から読む（→ configuration.md） |
 | `deploy.py` | 初期データ（kit/コンポーネント定義）の投入 |
-| `wsgi.py` | エントリポイント |
+| `asgi.py` | エントリポイント。`create_app()` とuvicornのサーバを同一イベントループで実行する |
 
 ### データモデル（MongoDBコレクション）
 

@@ -38,7 +38,7 @@
 | 場所 | 値 | 問題 |
 |---|---|---|
 | `app/__init__.py` | `SECRET_KEY='secret!'` | 全環境で固定。要環境変数化 |
-| `config_test.py` | `mongodb://admin:password@mongo:27017/test` | 環境変数分岐の直後に無条件上書きしており、test環境のMONGODB_URIは実質固定 |
+| `config_test.py` | `mongodb://admin:password@mongo:27017/test` | MONGODB_URI環境変数が無いときのデフォルト値(E2E実行では通常未設定なのでこれが使われる) |
 | `config_test.py` | `PORT = 10011` | テストサーバのポート |
 
 ## ローカル開発（docker compose）で設定される値

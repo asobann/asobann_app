@@ -1,4 +1,4 @@
-# 依存管理は uv に一本化する(旧: Pipfile + pipenv)。
+# 依存管理は uv。
 #
 # uv.lock が唯一の正。以下の3ファイルは uv export による生成物で、手で編集しない:
 #   - requirements.txt      本番イメージ(Dockerfile.aws)用。アプリ依存のみ
@@ -7,87 +7,67 @@
 # 再生成は scripts/build_e2e_image.sh がやる。
 #
 # 本番とテストの依存セットが別ファイルでも、同じ uv.lock から書き出すので
-# 「テスト環境だけドリフトして本番と違うものをテストしている」事故は構造的に起きない
-# (2026-08-10 に flask-socketio 5.6.1 だけ上がって全件エラーになった件の再発防止)。
+# 「テスト環境だけドリフトして本番と違うものをテストしている」事故は構造的に起きない。
 
 [build-system]
-requires = ["setuptools==84.0.0"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "asobann"
 version = "0.0.1"
-requires-python = "==3.10.*"
-# 本番(requirements.txt)と完全一致のピン留め。片方だけ変えないこと。
-# werkzeug 3.x は flask 2.2.2 と非互換。python-engineio は python-socketio 5.1.0 と対。
+requires-python = ">=3.14"
+# eventlet(greenlet)を退役させ、pure asyncioスタックへ全面移行した。
+# Flask/flask-socketio/flask-pymongo/gunicorn は Quart/python-socketio AsyncServer/
+# pymongo AsyncMongoClient/uvicorn に置き換わった。
 dependencies = [
-    "python-socketio==5.1.0",
-    "flask==2.2.2",
-    "flask-socketio==5.3.1",
-    "flask-pymongo==2.3.0",
-    "gunicorn==20.1.0",
-    "redis==4.3.4",
-    "dnspython==2.2.1",
-    "eventlet==0.33.1",
-    "boto3==1.24.96",
-    "python-engineio==4.3.4",
-    "werkzeug==2.2.2",
-    "pymongo==4.3.2",
-    "jinja2==3.1.2",
-    "markupsafe==2.1.1",
-    "itsdangerous==2.1.2",
+    "quart",
+    "uvicorn",
+    "python-socketio",
+    "python-engineio",
+    "pymongo",
+    "redis",
+    "dnspython",
+    "boto3",
 ]
 
 [dependency-groups]
 # E2Eイメージに入れるテスト実行用の道具。アプリの依存はベースの本番イメージが持つ。
-# selenium 4.10 で Options.headless セッターが削除された。tests/e2e/conftest.py の
-# browser_func がそれを使っているため、上げるならそちらの書き換えが要る。
 e2e = [
-    "pytest==8.4.2",
+    "pytest",
+    "pytest-asyncio",
+    # 4.10 で Options.headless セッターが削除された。tests/e2e/conftest.py の
+    # browser_func がそれを使っているため、上げるならそちらの書き換えが要る。
     "selenium==4.1.5",
-    "pytest-rerunfailures==16.4",
-    "pytest-randomly==4.1.0",
-    "requests==2.32.5",
-    "pillow==11.3.0",
+    "pytest-rerunfailures",
+    "pytest-randomly",
+    "requests",
+    "pillow",
 ]
 # 手元作業用 = e2e と同じテスト道具 + 対話シェル等。
 dev = [
     { include-group = "e2e" },
-    "ipython==8.39.0",
-    "typer==0.27.1",
+    "ipython",
+    "typer",
 ]
 
 [tool.uv]
 # サプライチェーン対策の冷却期間: 公開から2日未満のリリースを解決対象から外す。
 exclude-newer = "2 days"
-# 推移的依存も旧 requirements.txt (= Pipfile.lock) と同一版に固定する。
-# pipenv → uv の移行を「ツールだけの交換」にするため。バージョンを上げる時はここも見直す。
-constraint-dependencies = [
-    "async-timeout==5.0.1",
-    "bidict==0.23.1",
-    "botocore==1.27.96",
-    "click==8.4.2",
-    "deprecated==1.3.1",
-    "greenlet==3.5.4",
-    "jmespath==1.1.0",
-    "packaging==26.3",
-    "python-dateutil==2.9.0.post0",
-    "s3transfer==0.6.2",
-    "setuptools==84.0.0",
-    "six==1.17.0",
-    "urllib3==1.26.20",
-    "wrapt==2.3.0",
-]
 
 [tool.pytest.ini_options]
 testpaths = [ "tests" ]
 filterwarnings = [
-    "ignore::DeprecationWarning:eventlet",
     "ignore::DeprecationWarning:dns",
-    "ignore:Monkey-patching::",
 ]
 markers = [
     "loadtest: load tests using heroku",
     "quick: fast and light tests",
 ]
 addopts = "-m 'not loadtest' --ignore tests/performance"
+asyncio_mode = "auto"
+# store層のグローバル接続(AsyncMongoClient)を全テストで使い回すため、イベントループを
+# セッション単位で1つに統一する。関数ごとに別ループだと前のテストで確立した接続が
+# 別ループに属したままになり、次のテストで使えなくなる。
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
