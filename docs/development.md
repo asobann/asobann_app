@@ -4,15 +4,15 @@
 
 ## セットアップ
 
-必要なもの: uv（Pythonと依存はuvが管理）、Node.js、Docker。e2eテストにはFirefox + geckodriver。
+必要なもの: uv（Pythonと依存はuvが管理）、Node.js + pnpm、Docker。e2eテストにはFirefox + geckodriver。
 
 ```shell
-npm i -d            # JS依存
+pnpm install        # JS依存
 uv sync             # Python依存（devグループ含む。.venvを作る）
-npx webpack         # フロントエンドビルド（src/js → src/asobann/app/static/main.js）
+pnpm exec webpack   # フロントエンドビルド（src/js → src/asobann/app/static/main.js）
 ```
 
-JSを変更したら `npx webpack` の再実行が必要（watchモード: `npx webpack --watch`）。
+JSを変更したら `pnpm exec webpack` の再実行が必要（watchモード: `pnpm exec webpack --watch`）。
 
 ## ローカル起動
 
@@ -29,7 +29,7 @@ docker compose -f deploy/localdev/docker-compose.yml up --build
 
 | 種類 | 場所 | 前提 | 内容 |
 |---|---|---|---|
-| unit (JS) | tests/unit/*.test.js | なし（jsdom） | 更新キュー（Level A/B/C）、送信バッファ等。`npm test` |
+| unit (JS) | tests/unit/*.test.js | なし（jsdom） | 更新キュー（Level A/B/C）、送信バッファ等。`pnpm test` |
 | unit (Python) | tests/unit/*.py | **一部は実MongoDBが必要**（store/test_tables.py） | 設定、store層 |
 | functional | tests/functional/ | MongoDB + テストサーバ（conftestが自動起動） | HTTPエンドポイント |
 | api | tests/api/ | 同上 | キットアップロードAPI |
@@ -39,7 +39,7 @@ docker compose -f deploy/localdev/docker-compose.yml up --build
 ### 実行
 
 ```shell
-npm test                                   # JS unit
+pnpm test                                  # JS unit
 uv run pytest -m quick                     # 高速なテストのみ（@pytest.mark.quick）
 uv run pytest tests/unit tests/functional
 uv run pytest tests/e2e                    # 重い。Firefox+geckodriverが必要

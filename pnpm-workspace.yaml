@@ -1,0 +1,7 @@
+# サプライチェーン対策の冷却期間: 公開から2日(2880分)未満のリリースをインストール対象から外す。
+# Python側(pyproject.tomlのexclude-newer)と揃えてある。
+minimumReleaseAge: 2880
+
+# core-js@2のpostinstallは案内表示だけで、ビルドに必要な処理は無い。意図して止めている。
+ignoredBuiltDependencies:
+  - core-js
