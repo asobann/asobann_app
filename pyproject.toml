@@ -49,6 +49,10 @@ dev = [
     { include-group = "e2e" },
     "ipython",
     "typer",
+    # scripts/summarize_load_suite.py 等がAWSプロファイル(asobann、SSOのlogin
+    # credential provider)経由でboto3を叩く際に要る。無いと
+    # MissingDependencyException になる(boto3 1.43で新たに要求されるようになった)。
+    "botocore[crt]",
 ]
 
 [tool.uv]

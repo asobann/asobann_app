@@ -1,0 +1,48 @@
+--- container f18b5d365331 ---
+start worker port 50002
+running worker_server
+receiving cmd...
+received ['name', '172.17.0.4:50002']
+receiving cmd...
+received ['run', 'tests.performance.sustained_load', {'headless': True, 'url': 'https://staging.asobann.yattom.jp', 'duration_seconds': 300, 'mousemove_hz': 30, 'drag_interval_seconds': 10, 'operation': 'flip'}]
+172.17.0.4:50002: cycle 1/5 reported
+172.17.0.4:50002: cycle 2/5 reported
+172.17.0.4:50002: cycle 3/5 reported
+172.17.0.4:50002: cycle 4/5 reported
+172.17.0.4:50002: cycle 5/5 reported
+worker is finished
+receiving cmd...
+received ['shutdown']
+shutting down ...
+--- container 867fe9c8f153 ---
+start worker port 50001
+running worker_server
+receiving cmd...
+received ['name', '172.17.0.3:50001']
+receiving cmd...
+received ['run', 'tests.performance.sustained_load', {'headless': True, 'url': 'https://staging.asobann.yattom.jp', 'duration_seconds': 300, 'mousemove_hz': 30, 'drag_interval_seconds': 10, 'operation': 'flip'}]
+172.17.0.3:50001: cycle 1/5 reported
+172.17.0.3:50001: cycle 2/5 reported
+172.17.0.3:50001: cycle 3/5 reported
+172.17.0.3:50001: cycle 4/5 reported
+172.17.0.3:50001: cycle 5/5 reported
+worker is finished
+receiving cmd...
+received ['shutdown']
+shutting down ...
+--- container bdd96e586524 ---
+start worker port 50000
+running worker_server
+receiving cmd...
+received ['name', '172.17.0.2:50000']
+receiving cmd...
+received ['run', 'tests.performance.sustained_load', {'headless': True, 'url': 'https://staging.asobann.yattom.jp', 'duration_seconds': 300, 'mousemove_hz': 30, 'drag_interval_seconds': 10, 'operation': 'flip'}]
+172.17.0.2:50000: cycle 1/5 reported
+172.17.0.2:50000: cycle 2/5 reported
+172.17.0.2:50000: cycle 3/5 reported
+172.17.0.2:50000: cycle 4/5 reported
+172.17.0.2:50000: cycle 5/5 reported
+worker is finished
+receiving cmd...
+received ['shutdown']
+shutting down ...
