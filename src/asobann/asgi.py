@@ -21,7 +21,13 @@ async def _serve():
         access_log=quart_app.config["ACCESS_LOG"],
     )
     server = uvicorn.Server(config)
-    await server.serve()
+    try:
+        await server.serve()
+    finally:
+        # AsyncMongoClientはトポロジ監視のバックグラウンドタスクを持つ。閉じずに
+        # 落とすと、SIGTERM後もそれが残ったままプロセスが終わる。Fargateのタスク
+        # 停止時に無意味なログが出る程度だが、graceful shutdownとしては宙ぶらりん。
+        await quart_app.mongo_client.aclose()
 
 
 if __name__ == '__main__':

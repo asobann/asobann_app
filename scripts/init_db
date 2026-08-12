@@ -1,4 +1,21 @@
-cd $ASOBANN_ROOT/asobann_app/src/asobann
-pipenv run python generate_table_json.py
-cd ../..
-FLASK_ENV=develop pipenv run python -m asobann.deploy
+#!/usr/bin/env bash
+#
+# ローカル開発用のDBに初期データ（kit / component）を投入する。
+# localdev の docker compose を起動したうえで実行すること。
+#
+# 使い方: ./scripts/init_db
+
+set -euo pipefail
+
+# 自分の位置からリポジトリのルートを引く。gitに答えさせるので、どこから
+# 実行しても、チェックアウト先がどこにあっても正しい。
+APP_DIR=$(git -C "$(dirname "$0")" rev-parse --show-toplevel)
+
+cd "$APP_DIR/src/asobann"
+uv run python generate_table_json.py
+
+cd "$APP_DIR"
+# development であって develop ではない。config の選択（config_dev.py）は else 分岐に
+# 落ちるのでどちらでも同じだが、`ENV == "development"` を直接見ている箇所が2つある
+# （debug blueprint の登録と socket.io の CORS）。Dockerfile.localdev も development。
+FLASK_ENV=development uv run python -m asobann.deploy

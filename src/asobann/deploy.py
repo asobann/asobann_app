@@ -32,16 +32,23 @@ async def load_default():
 
 async def run(cmd):
     # store層を使う前にcreate_app()でDB接続を確立する必要がある。
-    await asobann.app.create_app()
-    if cmd == 'load_default':
-        print("load default ...")
-        await load_default()
-    elif cmd == 'purge_kits_and_components':
-        print("purge kits and components ...")
-        await purge_kits_and_components()
-    else:
-        print("python deploy.py (load_default | purge_kits_and_components)")
-        exit(1)
+    app = await asobann.app.create_app()
+    try:
+        if cmd == 'load_default':
+            print("load default ...")
+            await load_default()
+        elif cmd == 'purge_kits_and_components':
+            print("purge kits and components ...")
+            await purge_kits_and_components()
+        else:
+            print("python deploy.py (load_default | purge_kits_and_components)")
+            exit(1)
+    finally:
+        # 閉じないと、asyncio.run()が戻るときにクライアントのバックグラウンド
+        # タスクが未完了のままループが閉じ、"Task was destroyed but it is pending"
+        # が出る。Dockerfile.aws の CMD はこの直後にサーバを起動するので、
+        # コンテナ起動ログの先頭が毎回それで汚れる。
+        await app.mongo_client.aclose()
 
 
 def main():

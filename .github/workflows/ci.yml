@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  js:
+    name: JavaScriptのユニットテスト
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # バージョンは package.json の packageManager (pnpm@10.30.3) から読む。
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      # lockと不一致なら失敗させる。手元の node_modules に引きずられないため。
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm test
+
+  python:
+    name: Pythonのユニット・API・機能テスト
+    runs-on: ubuntu-latest
+
+    services:
+      # ローカル開発(deploy/localdev)と同じ認証情報にしてある。
+      mongo:
+        image: mongo:8
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1})'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      # config_test.py の既定の接続先は mongodb://admin:password@mongo:27017 で、
+      # ホスト名 mongo は docker-compose のサービス名。ランナー上で直接実行すると
+      # 解決しないので、127.0.0.1 に向けてローカル開発と同じ条件を作る。
+      #
+      # 環境変数 MONGODB_URI で上書きする手もあるが、それをやると
+      # tests/unit/test_app_configuration.py が壊れる。あのテストは
+      # 「MONGODB_URI が無いときの既定値」を検証しているため。
+      - name: ホスト名 mongo を解決できるようにする
+        run: echo "127.0.0.1 mongo" | sudo tee -a /etc/hosts
+
+      - run: uv sync --frozen
+
+      # E2Eは除外する。実ブラウザを起動して十数分かかり、PRのたびに回すと
+      # 待ち時間に見合わない。頻度と実行タイミングは別途決める(#128)。
+      # tests/performance は pyproject の addopts で既に除外されている。
+      - run: uv run pytest --ignore=tests/e2e

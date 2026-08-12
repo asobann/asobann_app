@@ -6,7 +6,7 @@ JSON. Output table matches summarize_load_suite.py's format so the two can be re
 side by side. See plan.local-profiling.20260810.md §4.
 
 Usage:
-    pipenv run python scripts/summarize_local_suite.py results/local-20260810
+    uv run python scripts/summarize_local_suite.py results/local-20260810
 """
 import csv
 import json
