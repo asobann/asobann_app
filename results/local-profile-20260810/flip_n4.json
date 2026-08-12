@@ -1,0 +1,944 @@
+{
+  "name": "tests.performance.sustained_load",
+  "result": {
+    "params": {
+      "duration_seconds": 300,
+      "mousemove_hz": 30,
+      "drag_interval_seconds": 10,
+      "report_interval_seconds": 60
+    },
+    "timeline": [
+      {
+        "elapsed_seconds": 60,
+        "pairs": [
+          {
+            "sender": "P0",
+            "receiver": "host",
+            "sent_count": 1763,
+            "received_count": 1766,
+            "loss_rate": 0.0028360748723765816,
+            "count": 1758,
+            "p50": 18,
+            "p95": 36,
+            "max": 6091
+          },
+          {
+            "sender": "P1",
+            "receiver": "host",
+            "sent_count": 1762,
+            "received_count": 1769,
+            "loss_rate": 0.0005675368898978572,
+            "count": 1761,
+            "p50": 15,
+            "p95": 36,
+            "max": 6071
+          },
+          {
+            "sender": "P2",
+            "receiver": "host",
+            "sent_count": 1762,
+            "received_count": 1763,
+            "loss_rate": 0.0011350737797957144,
+            "count": 1760,
+            "p50": 12,
+            "p95": 36,
+            "max": 6091
+          },
+          {
+            "sender": "P1",
+            "receiver": "P0",
+            "sent_count": 1762,
+            "received_count": 1769,
+            "loss_rate": 0.0005675368898978572,
+            "count": 1761,
+            "p50": 13,
+            "p95": 36,
+            "max": 6063
+          },
+          {
+            "sender": "P2",
+            "receiver": "P0",
+            "sent_count": 1762,
+            "received_count": 1763,
+            "loss_rate": 0.0005675368898978572,
+            "count": 1761,
+            "p50": 19,
+            "p95": 36,
+            "max": 6089
+          },
+          {
+            "sender": "host",
+            "receiver": "P0",
+            "sent_count": 1945,
+            "received_count": 1910,
+            "loss_rate": 0.018508997429305896,
+            "count": 1909,
+            "p50": 21,
+            "p95": 35,
+            "max": 6088
+          },
+          {
+            "sender": "P0",
+            "receiver": "P1",
+            "sent_count": 1763,
+            "received_count": 1759,
+            "loss_rate": 0.006239364719228591,
+            "count": 1752,
+            "p50": 27,
+            "p95": 36,
+            "max": 6087
+          },
+          {
+            "sender": "P2",
+            "receiver": "P1",
+            "sent_count": 1762,
+            "received_count": 1763,
+            "loss_rate": 0.002270147559591429,
+            "count": 1758,
+            "p50": 16,
+            "p95": 36,
+            "max": 6087
+          },
+          {
+            "sender": "host",
+            "receiver": "P1",
+            "sent_count": 1945,
+            "received_count": 1904,
+            "loss_rate": 0.023136246786632397,
+            "count": 1900,
+            "p50": 25,
+            "p95": 35,
+            "max": 6093
+          },
+          {
+            "sender": "P0",
+            "receiver": "P2",
+            "sent_count": 1763,
+            "received_count": 1754,
+            "loss_rate": 0.009075439591605172,
+            "count": 1747,
+            "p50": 27,
+            "p95": 36,
+            "max": 6087
+          },
+          {
+            "sender": "P1",
+            "receiver": "P2",
+            "sent_count": 1762,
+            "received_count": 1764,
+            "loss_rate": 0.0039727582292848895,
+            "count": 1755,
+            "p50": 29,
+            "p95": 36,
+            "max": 6085
+          },
+          {
+            "sender": "host",
+            "receiver": "P2",
+            "sent_count": 1945,
+            "received_count": 1899,
+            "loss_rate": 0.02570694087403602,
+            "count": 1895,
+            "p50": 26,
+            "p95": 35,
+            "max": 6086
+          }
+        ]
+      },
+      {
+        "elapsed_seconds": 120,
+        "pairs": [
+          {
+            "sender": "P0",
+            "receiver": "host",
+            "sent_count": 1777,
+            "received_count": 1777,
+            "loss_rate": 0.0045019696117051256,
+            "count": 1769,
+            "p50": 22,
+            "p95": 35,
+            "max": 6369
+          },
+          {
+            "sender": "P1",
+            "receiver": "host",
+            "sent_count": 1780,
+            "received_count": 1779,
+            "loss_rate": 0.003370786516853963,
+            "count": 1774,
+            "p50": 27,
+            "p95": 36,
+            "max": 6381
+          },
+          {
+            "sender": "P2",
+            "receiver": "host",
+            "sent_count": 1783,
+            "received_count": 1782,
+            "loss_rate": 0.0022434099831744048,
+            "count": 1779,
+            "p50": 23,
+            "p95": 36,
+            "max": 6376
+          },
+          {
+            "sender": "P1",
+            "receiver": "P0",
+            "sent_count": 1780,
+            "received_count": 1779,
+            "loss_rate": 0.0022471910112359383,
+            "count": 1776,
+            "p50": 18,
+            "p95": 36,
+            "max": 6387
+          },
+          {
+            "sender": "P2",
+            "receiver": "P0",
+            "sent_count": 1783,
+            "received_count": 1782,
+            "loss_rate": 0.001121704991587258,
+            "count": 1781,
+            "p50": 21,
+            "p95": 35,
+            "max": 6382
+          },
+          {
+            "sender": "host",
+            "receiver": "P0",
+            "sent_count": 1952,
+            "received_count": 1951,
+            "loss_rate": 0.0005122950819672623,
+            "count": 1951,
+            "p50": 16,
+            "p95": 36,
+            "max": 6404
+          },
+          {
+            "sender": "P0",
+            "receiver": "P1",
+            "sent_count": 1777,
+            "received_count": 1778,
+            "loss_rate": 0.003376477208778872,
+            "count": 1771,
+            "p50": 22,
+            "p95": 35,
+            "max": 6369
+          },
+          {
+            "sender": "P2",
+            "receiver": "P1",
+            "sent_count": 1783,
+            "received_count": 1783,
+            "loss_rate": 0.001121704991587258,
+            "count": 1781,
+            "p50": 22,
+            "p95": 36,
+            "max": 6360
+          },
+          {
+            "sender": "host",
+            "receiver": "P1",
+            "sent_count": 1952,
+            "received_count": 1953,
+            "loss_rate": 0.0015368852459016757,
+            "count": 1949,
+            "p50": 14,
+            "p95": 36,
+            "max": 6382
+          },
+          {
+            "sender": "P0",
+            "receiver": "P2",
+            "sent_count": 1777,
+            "received_count": 1778,
+            "loss_rate": 0.003376477208778872,
+            "count": 1771,
+            "p50": 20,
+            "p95": 36,
+            "max": 6369
+          },
+          {
+            "sender": "P1",
+            "receiver": "P2",
+            "sent_count": 1780,
+            "received_count": 1780,
+            "loss_rate": 0.003370786516853963,
+            "count": 1774,
+            "p50": 21,
+            "p95": 36,
+            "max": 6373
+          },
+          {
+            "sender": "host",
+            "receiver": "P2",
+            "sent_count": 1952,
+            "received_count": 1952,
+            "loss_rate": 0.002049180327868827,
+            "count": 1948,
+            "p50": 20,
+            "p95": 36,
+            "max": 6390
+          }
+        ]
+      },
+      {
+        "elapsed_seconds": 180,
+        "pairs": [
+          {
+            "sender": "P0",
+            "receiver": "host",
+            "sent_count": 1774,
+            "received_count": 1775,
+            "loss_rate": 0.0022547914317925244,
+            "count": 1770,
+            "p50": 21,
+            "p95": 36,
+            "max": 6090
+          },
+          {
+            "sender": "P1",
+            "receiver": "host",
+            "sent_count": 1779,
+            "received_count": 1780,
+            "loss_rate": 0.00393479482855541,
+            "count": 1772,
+            "p50": 18,
+            "p95": 35,
+            "max": 6074
+          },
+          {
+            "sender": "P2",
+            "receiver": "host",
+            "sent_count": 1771,
+            "received_count": 1773,
+            "loss_rate": 0.0028232636928289256,
+            "count": 1766,
+            "p50": 19,
+            "p95": 36,
+            "max": 6091
+          },
+          {
+            "sender": "P1",
+            "receiver": "P0",
+            "sent_count": 1779,
+            "received_count": 1779,
+            "loss_rate": 0.0044969083754918815,
+            "count": 1771,
+            "p50": 19,
+            "p95": 36,
+            "max": 6091
+          },
+          {
+            "sender": "P2",
+            "receiver": "P0",
+            "sent_count": 1771,
+            "received_count": 1772,
+            "loss_rate": 0.0039525691699604515,
+            "count": 1764,
+            "p50": 21,
+            "p95": 36,
+            "max": 6088
+          },
+          {
+            "sender": "host",
+            "receiver": "P0",
+            "sent_count": 1950,
+            "received_count": 1950,
+            "loss_rate": 0.004615384615384577,
+            "count": 1941,
+            "p50": 18,
+            "p95": 36,
+            "max": 6088
+          },
+          {
+            "sender": "P0",
+            "receiver": "P1",
+            "sent_count": 1774,
+            "received_count": 1774,
+            "loss_rate": 0.0033821871476887866,
+            "count": 1768,
+            "p50": 22,
+            "p95": 36,
+            "max": 6088
+          },
+          {
+            "sender": "P2",
+            "receiver": "P1",
+            "sent_count": 1771,
+            "received_count": 1771,
+            "loss_rate": 0.0022586109542631627,
+            "count": 1767,
+            "p50": 20,
+            "p95": 35,
+            "max": 6091
+          },
+          {
+            "sender": "host",
+            "receiver": "P1",
+            "sent_count": 1950,
+            "received_count": 1949,
+            "loss_rate": 0.002564102564102555,
+            "count": 1945,
+            "p50": 19,
+            "p95": 35,
+            "max": 6087
+          },
+          {
+            "sender": "P0",
+            "receiver": "P2",
+            "sent_count": 1774,
+            "received_count": 1773,
+            "loss_rate": 0.00450958286358516,
+            "count": 1766,
+            "p50": 21,
+            "p95": 36,
+            "max": 6088
+          },
+          {
+            "sender": "P1",
+            "receiver": "P2",
+            "sent_count": 1779,
+            "received_count": 1779,
+            "loss_rate": 0.005059021922428353,
+            "count": 1770,
+            "p50": 18,
+            "p95": 35,
+            "max": 6091
+          },
+          {
+            "sender": "host",
+            "receiver": "P2",
+            "sent_count": 1950,
+            "received_count": 1949,
+            "loss_rate": 0.004102564102564155,
+            "count": 1942,
+            "p50": 23,
+            "p95": 35,
+            "max": 6089
+          }
+        ]
+      },
+      {
+        "elapsed_seconds": 240,
+        "pairs": [
+          {
+            "sender": "P0",
+            "receiver": "host",
+            "sent_count": 1772,
+            "received_count": 1770,
+            "loss_rate": 0.003950338600451464,
+            "count": 1765,
+            "p50": 23,
+            "p95": 36,
+            "max": 6099
+          },
+          {
+            "sender": "P1",
+            "receiver": "host",
+            "sent_count": 1778,
+            "received_count": 1778,
+            "loss_rate": 0.004499437570303688,
+            "count": 1770,
+            "p50": 17,
+            "p95": 36,
+            "max": 6098
+          },
+          {
+            "sender": "P2",
+            "receiver": "host",
+            "sent_count": 1778,
+            "received_count": 1777,
+            "loss_rate": 0.003937007874015741,
+            "count": 1771,
+            "p50": 18,
+            "p95": 36,
+            "max": 6096
+          },
+          {
+            "sender": "P1",
+            "receiver": "P0",
+            "sent_count": 1778,
+            "received_count": 1779,
+            "loss_rate": 0.004499437570303688,
+            "count": 1770,
+            "p50": 18,
+            "p95": 36,
+            "max": 6103
+          },
+          {
+            "sender": "P2",
+            "receiver": "P0",
+            "sent_count": 1778,
+            "received_count": 1778,
+            "loss_rate": 0.003937007874015741,
+            "count": 1771,
+            "p50": 27,
+            "p95": 36,
+            "max": 6103
+          },
+          {
+            "sender": "host",
+            "receiver": "P0",
+            "sent_count": 1930,
+            "received_count": 1931,
+            "loss_rate": 0.0036269430051812934,
+            "count": 1923,
+            "p50": 19,
+            "p95": 36,
+            "max": 6098
+          },
+          {
+            "sender": "P0",
+            "receiver": "P1",
+            "sent_count": 1772,
+            "received_count": 1771,
+            "loss_rate": 0.003950338600451464,
+            "count": 1765,
+            "p50": 25,
+            "p95": 36,
+            "max": 6097
+          },
+          {
+            "sender": "P2",
+            "receiver": "P1",
+            "sent_count": 1778,
+            "received_count": 1779,
+            "loss_rate": 0.004499437570303688,
+            "count": 1770,
+            "p50": 26,
+            "p95": 36,
+            "max": 6103
+          },
+          {
+            "sender": "host",
+            "receiver": "P1",
+            "sent_count": 1930,
+            "received_count": 1931,
+            "loss_rate": 0.0031088082901554737,
+            "count": 1924,
+            "p50": 22,
+            "p95": 36,
+            "max": 6096
+          },
+          {
+            "sender": "P0",
+            "receiver": "P2",
+            "sent_count": 1772,
+            "received_count": 1772,
+            "loss_rate": 0.003950338600451464,
+            "count": 1765,
+            "p50": 19,
+            "p95": 36,
+            "max": 6104
+          },
+          {
+            "sender": "P1",
+            "receiver": "P2",
+            "sent_count": 1778,
+            "received_count": 1779,
+            "loss_rate": 0.004499437570303688,
+            "count": 1770,
+            "p50": 21,
+            "p95": 36,
+            "max": 6103
+          },
+          {
+            "sender": "host",
+            "receiver": "P2",
+            "sent_count": 1930,
+            "received_count": 1932,
+            "loss_rate": 0.002590673575129543,
+            "count": 1925,
+            "p50": 21,
+            "p95": 36,
+            "max": 6095
+          }
+        ]
+      },
+      {
+        "elapsed_seconds": 300,
+        "pairs": [
+          {
+            "sender": "P0",
+            "receiver": "host",
+            "sent_count": 1779,
+            "received_count": 1647,
+            "loss_rate": 0.07869589657110732,
+            "count": 1639,
+            "p50": 20,
+            "p95": 36,
+            "max": 6096
+          },
+          {
+            "sender": "P1",
+            "receiver": "host",
+            "sent_count": 1778,
+            "received_count": 1648,
+            "loss_rate": 0.07536557930258714,
+            "count": 1644,
+            "p50": 18,
+            "p95": 34,
+            "max": 6095
+          },
+          {
+            "sender": "P2",
+            "receiver": "host",
+            "sent_count": 1776,
+            "received_count": 1648,
+            "loss_rate": 0.07488738738738743,
+            "count": 1643,
+            "p50": 13,
+            "p95": 36,
+            "max": 6104
+          },
+          {
+            "sender": "P1",
+            "receiver": "P0",
+            "sent_count": 1778,
+            "received_count": 1778,
+            "loss_rate": 0.003374578177727794,
+            "count": 1772,
+            "p50": 20,
+            "p95": 36,
+            "max": 6100
+          },
+          {
+            "sender": "P2",
+            "receiver": "P0",
+            "sent_count": 1776,
+            "received_count": 1777,
+            "loss_rate": 0.0045045045045044585,
+            "count": 1768,
+            "p50": 18,
+            "p95": 36,
+            "max": 6101
+          },
+          {
+            "sender": "host",
+            "receiver": "P0",
+            "sent_count": 1813,
+            "received_count": 1950,
+            "loss_rate": 0.0038610038610038533,
+            "count": 1806,
+            "p50": 18,
+            "p95": 36,
+            "max": 6100
+          },
+          {
+            "sender": "P0",
+            "receiver": "P1",
+            "sent_count": 1779,
+            "received_count": 1781,
+            "loss_rate": 0.005621135469364824,
+            "count": 1769,
+            "p50": 19,
+            "p95": 35,
+            "max": 6102
+          },
+          {
+            "sender": "P2",
+            "receiver": "P1",
+            "sent_count": 1776,
+            "received_count": 1776,
+            "loss_rate": 0.005630630630630629,
+            "count": 1766,
+            "p50": 18,
+            "p95": 35,
+            "max": 6099
+          },
+          {
+            "sender": "host",
+            "receiver": "P1",
+            "sent_count": 1813,
+            "received_count": 1949,
+            "loss_rate": 0.004412575841147293,
+            "count": 1805,
+            "p50": 18,
+            "p95": 33,
+            "max": 6090
+          },
+          {
+            "sender": "P0",
+            "receiver": "P2",
+            "sent_count": 1779,
+            "received_count": 1780,
+            "loss_rate": 0.005059021922428353,
+            "count": 1770,
+            "p50": 22,
+            "p95": 36,
+            "max": 6097
+          },
+          {
+            "sender": "P1",
+            "receiver": "P2",
+            "sent_count": 1778,
+            "received_count": 1777,
+            "loss_rate": 0.003937007874015741,
+            "count": 1771,
+            "p50": 20,
+            "p95": 35,
+            "max": 6100
+          },
+          {
+            "sender": "host",
+            "receiver": "P2",
+            "sent_count": 1813,
+            "received_count": 1948,
+            "loss_rate": 0.004964147821290732,
+            "count": 1804,
+            "p50": 29,
+            "p95": 36,
+            "max": 6098
+          }
+        ]
+      },
+      {
+        "elapsed_seconds": 360,
+        "pairs": [
+          {
+            "sender": "P0",
+            "receiver": "host",
+            "sent_count": 8,
+            "received_count": 0,
+            "loss_rate": 1.0,
+            "count": 0,
+            "p50": null,
+            "p95": null,
+            "max": null
+          },
+          {
+            "sender": "P1",
+            "receiver": "host",
+            "sent_count": 7,
+            "received_count": 0,
+            "loss_rate": 1.0,
+            "count": 0,
+            "p50": null,
+            "p95": null,
+            "max": null
+          },
+          {
+            "sender": "P2",
+            "receiver": "host",
+            "sent_count": 8,
+            "received_count": 0,
+            "loss_rate": 1.0,
+            "count": 0,
+            "p50": null,
+            "p95": null,
+            "max": null
+          },
+          {
+            "sender": "P1",
+            "receiver": "P0",
+            "sent_count": 7,
+            "received_count": 7,
+            "loss_rate": 0.1428571428571429,
+            "count": 6,
+            "p50": 24,
+            "p95": 26,
+            "max": 26
+          },
+          {
+            "sender": "P2",
+            "receiver": "P0",
+            "sent_count": 8,
+            "received_count": 7,
+            "loss_rate": 0.125,
+            "count": 7,
+            "p50": 11,
+            "p95": 13,
+            "max": 13
+          },
+          {
+            "sender": "host",
+            "receiver": "P0",
+            "sent_count": 0,
+            "received_count": 29,
+            "loss_rate": 0.0,
+            "count": 0,
+            "p50": null,
+            "p95": null,
+            "max": null
+          },
+          {
+            "sender": "P0",
+            "receiver": "P1",
+            "sent_count": 8,
+            "received_count": 7,
+            "loss_rate": 0.125,
+            "count": 7,
+            "p50": 13,
+            "p95": 14,
+            "max": 14
+          },
+          {
+            "sender": "P2",
+            "receiver": "P1",
+            "sent_count": 8,
+            "received_count": 7,
+            "loss_rate": 0.125,
+            "count": 7,
+            "p50": 21,
+            "p95": 23,
+            "max": 23
+          },
+          {
+            "sender": "host",
+            "receiver": "P1",
+            "sent_count": 0,
+            "received_count": 29,
+            "loss_rate": 0.0,
+            "count": 0,
+            "p50": null,
+            "p95": null,
+            "max": null
+          },
+          {
+            "sender": "P0",
+            "receiver": "P2",
+            "sent_count": 8,
+            "received_count": 8,
+            "loss_rate": 0.125,
+            "count": 7,
+            "p50": 27,
+            "p95": 28,
+            "max": 28
+          },
+          {
+            "sender": "P1",
+            "receiver": "P2",
+            "sent_count": 7,
+            "received_count": 8,
+            "loss_rate": 0.0,
+            "count": 7,
+            "p50": 16,
+            "p95": 17,
+            "max": 17
+          },
+          {
+            "sender": "host",
+            "receiver": "P2",
+            "sent_count": 0,
+            "received_count": 30,
+            "loss_rate": 0.0,
+            "count": 0,
+            "p50": null,
+            "p95": null,
+            "max": null
+          }
+        ]
+      }
+    ],
+    "drag_seconds_by_worker": {
+      "P0": [
+        0.9916322250210214,
+        0.9647181360051036,
+        0.9708820209780242,
+        0.9784886560228188,
+        0.974380752973957,
+        0.97939772598329,
+        0.9729105849983171,
+        0.9505435920145828,
+        0.9571494219999295,
+        0.9497297250200063,
+        0.969050073006656,
+        0.9676460250047967,
+        0.9598337929928675,
+        0.9531000049901195,
+        0.9544420070014894,
+        0.9594103519921191,
+        0.9585414350149222,
+        0.9767267349816393,
+        0.9653733269951772,
+        0.9758649039722513,
+        0.9666781070118304,
+        0.9708565179898869,
+        0.949075462995097,
+        0.952585936000105,
+        0.9602556119789369,
+        0.9503193479904439,
+        0.9506166509818286,
+        0.9719110289879609,
+        0.9605534559814259,
+        0.9494342420075554
+      ],
+      "P1": [
+        0.9634925889840815,
+        0.9609074299805798,
+        0.9546257210022304,
+        0.9508124470012262,
+        0.9741356929880567,
+        0.9522873630048707,
+        0.9679771419905592,
+        0.9427652719896287,
+        0.9422184769937303,
+        0.9393479940190446,
+        0.9485883830056991,
+        0.9655022739898413,
+        0.9483126389968675,
+        0.9634042079851497,
+        0.9496652090165298,
+        0.9575503939995542,
+        0.9580481940065511,
+        0.9793068539875094,
+        0.9487894040066749,
+        0.9585895130003337,
+        0.9469301830104087,
+        0.9549582389881834,
+        0.9509015980002005,
+        0.9470792720094323,
+        0.9556780389975756,
+        0.9585362850048114,
+        0.9480184889980592,
+        0.977031486982014,
+        0.950498277990846,
+        0.9835854849952739
+      ],
+      "P2": [
+        0.8026631880202331,
+        0.9574225969845429,
+        0.947285820991965,
+        0.9697418450086843,
+        0.9642552369914483,
+        0.9544159929791931,
+        0.9602228339936119,
+        0.9445360020035878,
+        0.9483021470077801,
+        0.959267775004264,
+        0.9455533649888821,
+        0.9533147659967653,
+        0.9574853779922705,
+        0.9635679019847885,
+        0.9473534580029082,
+        0.9576404239924159,
+        0.9570184749900363,
+        0.949956259020837,
+        0.9609042039955966,
+        0.9607734130113386,
+        0.951754355977755,
+        0.9483228260069154,
+        0.9672900779987685,
+        0.9481031460163649,
+        0.9526001689955592,
+        0.965465398010565,
+        0.9757958750124089,
+        0.9786499569891021,
+        0.952924486977281,
+        0.9565890160156414
+      ]
+    },
+    "flips_not_applied_by_worker": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0
+    }
+  },
+  "left_in_queues": [],
+  "time": {
+    "started_at": "Mon Aug 10 06:25:33 2026",
+    "finished_at": "Mon Aug 10 06:30:39 2026",
+    "elapsed": 306.029609
+  }
+}

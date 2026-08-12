@@ -6,8 +6,7 @@ REDIS_URI = common.REDIS_URI
 if 'MONGODB_URI' in os.environ:
     MONGO_URI = os.environ["MONGODB_URI"]
 else:
-    MONGO_URI = 'mongodb://localhost:27017/ex2test'
-MONGO_URI = 'mongodb://admin:password@mongo:27017/test?authSource=admin'
+    MONGO_URI = 'mongodb://admin:password@mongo:27017/test?authSource=admin'
 PORT = 10011
 
 BASE_URL = '*'

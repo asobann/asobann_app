@@ -1,0 +1,39 @@
+# E2Eテスト実行用イメージ。
+#
+# **本番イメージ(Dockerfile.aws)をそのままベースにする。** 以前は python:3.10-slim-bookworm
+# から独立にビルドしていたため、本番(bullseye / Python 3.10.18 / greenlet 1.1.3)と
+# テスト(bookworm / Python 3.10.20 / greenlet 3.5.4)がずれ、「本番と違うものをテストして
+# いる」状態になっていた。ベースを共有すればこのずれは構造的に起きない。
+#
+# 追加するのはテストを走らせるための道具だけ:
+#   - firefox-esr / geckodriver (ブラウザ操作)
+#   - pytest / selenium / pytest-rerunfailures (テスト実行)
+#   - requests / pillow (helper.py の Uploader と画像アップロードのテストが使う)
+#
+# tests/conftest.py はサーバを subprocess で起動するので、アプリと同じイメージ内に
+# テストが同居している必要がある。別コンテナに分離すると、サーバのenvを変えて再起動する
+# 3件のテスト(debug_handler_wait / debug_order_of_updates)が動かせない。これらが使う
+# デバッグフックは config_test.py にしかなく、config_production.py には無いため。
+#
+# Build: scripts/build_e2e_image.sh (本番イメージのビルドから通しでやる)
+ARG BASE_IMAGE=asobann-app:local
+FROM ${BASE_IMAGE}
+
+RUN apt-get -y update \
+ && apt-get install -y --no-install-recommends firefox-esr curl ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+RUN curl -L https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz \
+    | tar zx -C /usr/local/bin
+
+# テスト道具の版は pyproject.toml の e2e group に集約し、requirements-e2e.txt は
+# uv.lock からの生成物(scripts/build_e2e_image.sh が再生成する)。ここに直接書くと
+# 二重管理になり、片方だけ動いてずれる(本番とテストで依存がずれていた件と同じ構図)。
+COPY requirements-e2e.txt /tmp/
+RUN pip3 install --no-cache-dir -r /tmp/requirements-e2e.txt && rm /tmp/requirements-e2e.txt
+
+# Dockerfile.aws が `COPY src /app/` しているので /app に asobann パッケージがある。
+# tests はその隣に置き、pyproject.toml(pytestの設定一式)も必ず入れる。これが無いと
+# `-m 'not loadtest'` が効かず、死んだHeroku URLを見るテストが実行されてしまう。
+WORKDIR /app
+COPY tests /app/tests
+COPY pyproject.toml /app/

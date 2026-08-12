@@ -1,0 +1,42 @@
+# 本番相当の構成でローカルプロファイリングを行うための最小環境(1インスタンス, Redisなし)。
+# deploy/localdev はスティッキーセッションなし3インスタンス+Redisで開発用のため使えない。
+# 詳細は plan.local-profiling.20260810.md を参照。
+services:
+    app:
+        build:
+            context: ../..
+            dockerfile: Dockerfile.aws
+        # イメージのCMDは `asobann.deploy`(キット初期化)を含むが、ここでは初期化不要
+        # (プロファイル対象のキットは別途カード投入する)なので、fargate.yamlと同じく
+        # asobann.asgi だけを起動する。
+        command: python3 -m asobann.asgi
+        ports:
+            - "5000:5000"
+        environment:
+            MONGODB_URI: "mongodb://admin:password@mongo:27017/asobann_loadtest?authSource=admin"
+            PUBLIC_HOSTNAME: "app:5000"
+            FLASK_ENV: production
+            GOOGLE_ANALYTICS_ID: ""
+            UPLOADED_IMAGE_STORE: local
+            # http://app:5000 never matches BASE_URL's hardcoded https:// locally - see
+            # the CORS_ALLOWED_ORIGINS_OVERRIDE comment in src/asobann/app/__init__.py.
+            CORS_ALLOWED_ORIGINS_OVERRIDE: "http://app:5000"
+        # SMTペア(cpu0/cpu1)の相方cpu1は空けておく(plan §3.1)。
+        cpuset: "0"
+        # 較正で書き換える初期値。実行中は `docker update --cpu-period --cpu-quota` で
+        # 再起動なしに変更できる。
+        cpu_period: 100000
+        cpu_quota: 25000
+        depends_on:
+            - mongo
+
+    mongo:
+        image: mongo
+        ports:
+            - "27017:27017"
+        cpuset: "2"
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: admin
+            MONGO_INITDB_ROOT_PASSWORD: password
+        volumes:
+            - ./mongodata:/data/db

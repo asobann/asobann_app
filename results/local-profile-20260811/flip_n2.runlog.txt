@@ -1,0 +1,240 @@
+start worker container port 50000
+system command: docker run -d -p 50000:50000 -e PORT=50000 --network loadtest_default --cpuset-cpus=8-31 test_run_multiprocess_in_container_worker
+system command: docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 0d74dcb3285848e098351cbd84a9b8cdabc0699171e3751112b80c67f4cad13a
+start controller container workers [('172.20.0.4', 50000)]
+system command: docker run -p 8888:8888 -d --network loadtest_default --cpuset-cpus=8-31 test_run_multiprocess_in_container_controller python tests/performance/remote_runner.py controller 172.20.0.4:50000
+580dd30013d42e57d44d56b37e6e4ad4c162ef231ede5dc6077d363dbdea8e09
+start controller
+send command url=http://localhost:8888, data=set headless true
+send command url=http://localhost:8888, data=set url http://app:5000
+send command url=http://localhost:8888, data=set duration_seconds 300
+send command url=http://localhost:8888, data=set mousemove_hz 30
+send command url=http://localhost:8888, data=set drag_interval_seconds 10
+send command url=http://localhost:8888, data=set operation flip
+send command url=http://localhost:8888, data=run tests.performance.sustained_load
+run sent; run_id 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+send command url=http://localhost:8888, data=query 1786426663.283622
+result: {"name": "tests.performance.sustained_load", "result": {"params": {"duration_seconds": 300, "mousemove_hz": 30, "drag_interval_seconds": 10, "report_interval_seconds": 60}, "timeline": [{"elapsed_seconds": 60, "pairs": [{"sender": "P0", "receiver": "host", "sent_count": 1721, "received_count": 1725, "loss_rate": 0.0005810575246949501, "count": 1720, "p50": 1, "p95": 3, "max": 13}, {"sender": "host", "receiver": "P0", "sent_count": 1900, "received_count": 1876, "loss_rate": 0.012631578947368438, "count": 1876, "p50": 2, "p95": 3, "max": 17}]}, {"elapsed_seconds": 120, "pairs": [{"sender": "P0", "receiver": "host", "sent_count": 1751, "received_count": 1751, "loss_rate": 0.0005711022272987254, "count": 1750, "p50": 2, "p95": 3, "max": 6}, {"sender": "host", "receiver": "P0", "sent_count": 1911, "received_count": 1911, "loss_rate": 0.0, "count": 1911, "p50": 2, "p95": 3, "max": 10}]}, {"elapsed_seconds": 180, "pairs": [{"sender": "P0", "receiver": "host", "sent_count": 1739, "received_count": 1739, "loss_rate": 0.0011500862564692849, "count": 1737, "p50": 2, "p95": 3, "max": 9}, {"sender": "host", "receiver": "P0", "sent_count": 1890, "received_count": 1890, "loss_rate": 0.0005291005291004902, "count": 1889, "p50": 2, "p95": 3, "max": 11971}]}, {"elapsed_seconds": 240, "pairs": [{"sender": "P0", "receiver": "host", "sent_count": 1746, "received_count": 1746, "loss_rate": 0.0, "count": 1746, "p50": 1, "p95": 3, "max": 11972}, {"sender": "host", "receiver": "P0", "sent_count": 1917, "received_count": 1918, "loss_rate": 0.0005216484089723972, "count": 1916, "p50": 2, "p95": 3, "max": 11971}]}, {"elapsed_seconds": 300, "pairs": [{"sender": "P0", "receiver": "host", "sent_count": 1752, "received_count": 1617, "loss_rate": 0.07762557077625576, "count": 1616, "p50": 2, "p95": 3, "max": 5}, {"sender": "host", "receiver": "P0", "sent_count": 1737, "received_count": 1901, "loss_rate": 0.0005757052389177009, "count": 1736, "p50": 2, "p95": 3, "max": 12}]}, {"elapsed_seconds": 360, "pairs": [{"sender": "P0", "receiver": "host", "sent_count": 17, "received_count": 13, "loss_rate": 0.23529411764705888, "count": 13, "p50": 2, "p95": 4, "max": 4}, {"sender": "host", "receiver": "P0", "sent_count": 14, "received_count": 160, "loss_rate": 0.0, "count": 14, "p50": 2, "p95": 3, "max": 3}]}], "drag_seconds_by_worker": {"P0": [0.9752030440140516, 0.9597728259977885, 0.9647408280288801, 0.9550354909733869, 0.959860190981999, 0.9469963809824549, 0.9721856560208835, 1.004439693002496, 0.9675090259988792, 0.9563403120264411, 0.9524595600087196, 0.9510994830052368, 0.9545223049935885, 0.9615862990031019, 0.9536816099425778, 0.9481916960212402, 0.9423837890499271, 0.9531511960085481, 0.9658388429670595, 0.9504494579741731, 0.9430112970294431, 0.9463759509962983, 0.9400730759953149, 0.9545114310458302, 0.9691071980050765, 0.9529779919539578, 0.954838200006634, 0.9503387120203115, 0.9606915809563361, 5.982622112031095]}, "flips_not_applied_by_worker": {"P0": 0}}, "left_in_queues": [], "time": {"started_at": "Tue Aug 11 05:37:43 2026", "finished_at": "Tue Aug 11 05:42:52 2026", "elapsed": 309.295554}}
+send command url=http://localhost:8888, data=shutdown
+system command: docker ps -q --filter ancestor=test_run_multiprocess_in_container_worker --filter ancestor=test_run_multiprocess_in_container_controller
+{'left_in_queues': [],
+ 'name': 'tests.performance.sustained_load',
+ 'result': {'drag_seconds_by_worker': {'P0': [0.9752030440140516,
+                                              0.9597728259977885,
+                                              0.9647408280288801,
+                                              0.9550354909733869,
+                                              0.959860190981999,
+                                              0.9469963809824549,
+                                              0.9721856560208835,
+                                              1.004439693002496,
+                                              0.9675090259988792,
+                                              0.9563403120264411,
+                                              0.9524595600087196,
+                                              0.9510994830052368,
+                                              0.9545223049935885,
+                                              0.9615862990031019,
+                                              0.9536816099425778,
+                                              0.9481916960212402,
+                                              0.9423837890499271,
+                                              0.9531511960085481,
+                                              0.9658388429670595,
+                                              0.9504494579741731,
+                                              0.9430112970294431,
+                                              0.9463759509962983,
+                                              0.9400730759953149,
+                                              0.9545114310458302,
+                                              0.9691071980050765,
+                                              0.9529779919539578,
+                                              0.954838200006634,
+                                              0.9503387120203115,
+                                              0.9606915809563361,
+                                              5.982622112031095]},
+            'flips_not_applied_by_worker': {'P0': 0},
+            'params': {'drag_interval_seconds': 10,
+                       'duration_seconds': 300,
+                       'mousemove_hz': 30,
+                       'report_interval_seconds': 60},
+            'timeline': [{'elapsed_seconds': 60,
+                          'pairs': [{'count': 1720,
+                                     'loss_rate': 0.0005810575246949501,
+                                     'max': 13,
+                                     'p50': 1,
+                                     'p95': 3,
+                                     'received_count': 1725,
+                                     'receiver': 'host',
+                                     'sender': 'P0',
+                                     'sent_count': 1721},
+                                    {'count': 1876,
+                                     'loss_rate': 0.012631578947368438,
+                                     'max': 17,
+                                     'p50': 2,
+                                     'p95': 3,
+                                     'received_count': 1876,
+                                     'receiver': 'P0',
+                                     'sender': 'host',
+                                     'sent_count': 1900}]},
+                         {'elapsed_seconds': 120,
+                          'pairs': [{'count': 1750,
+                                     'loss_rate': 0.0005711022272987254,
+                                     'max': 6,
+                                     'p50': 2,
+                                     'p95': 3,
+                                     'received_count': 1751,
+                                     'receiver': 'host',
+                                     'sender': 'P0',
+                                     'sent_count': 1751},
+                                    {'count': 1911,
+                                     'loss_rate': 0.0,
+                                     'max': 10,
+                                     'p50': 2,
+                                     'p95': 3,
+                                     'received_count': 1911,
+                                     'receiver': 'P0',
+                                     'sender': 'host',
+                                     'sent_count': 1911}]},
+                         {'elapsed_seconds': 180,
+                          'pairs': [{'count': 1737,
+                                     'loss_rate': 0.0011500862564692849,
+                                     'max': 9,
+                                     'p50': 2,
+                                     'p95': 3,
+                                     'received_count': 1739,
+                                     'receiver': 'host',
+                                     'sender': 'P0',
+                                     'sent_count': 1739},
+                                    {'count': 1889,
+                                     'loss_rate': 0.0005291005291004902,
+                                     'max': 11971,
+                                     'p50': 2,
+                                     'p95': 3,
+                                     'received_count': 1890,
+                                     'receiver': 'P0',
+                                     'sender': 'host',
+                                     'sent_count': 1890}]},
+                         {'elapsed_seconds': 240,
+                          'pairs': [{'count': 1746,
+                                     'loss_rate': 0.0,
+                                     'max': 11972,
+                                     'p50': 1,
+                                     'p95': 3,
+                                     'received_count': 1746,
+                                     'receiver': 'host',
+                                     'sender': 'P0',
+                                     'sent_count': 1746},
+                                    {'count': 1916,
+                                     'loss_rate': 0.0005216484089723972,
+                                     'max': 11971,
+                                     'p50': 2,
+                                     'p95': 3,
+                                     'received_count': 1918,
+                                     'receiver': 'P0',
+                                     'sender': 'host',
+                                     'sent_count': 1917}]},
+                         {'elapsed_seconds': 300,
+                          'pairs': [{'count': 1616,
+                                     'loss_rate': 0.07762557077625576,
+                                     'max': 5,
+                                     'p50': 2,
+                                     'p95': 3,
+                                     'received_count': 1617,
+                                     'receiver': 'host',
+                                     'sender': 'P0',
+                                     'sent_count': 1752},
+                                    {'count': 1736,
+                                     'loss_rate': 0.0005757052389177009,
+                                     'max': 12,
+                                     'p50': 2,
+                                     'p95': 3,
+                                     'received_count': 1901,
+                                     'receiver': 'P0',
+                                     'sender': 'host',
+                                     'sent_count': 1737}]},
+                         {'elapsed_seconds': 360,
+                          'pairs': [{'count': 13,
+                                     'loss_rate': 0.23529411764705888,
+                                     'max': 4,
+                                     'p50': 2,
+                                     'p95': 4,
+                                     'received_count': 13,
+                                     'receiver': 'host',
+                                     'sender': 'P0',
+                                     'sent_count': 17},
+                                    {'count': 14,
+                                     'loss_rate': 0.0,
+                                     'max': 3,
+                                     'p50': 2,
+                                     'p95': 3,
+                                     'received_count': 160,
+                                     'receiver': 'P0',
+                                     'sender': 'host',
+                                     'sent_count': 14}]}]},
+ 'time': {'elapsed': 309.295554,
+          'finished_at': 'Tue Aug 11 05:42:52 2026',
+          'started_at': 'Tue Aug 11 05:37:43 2026'}}

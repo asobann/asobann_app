@@ -1,0 +1,46 @@
+[
+  {
+    "name": "idle_n6",
+    "total_players": 6,
+    "worker_count": 5,
+    "hz": 0,
+    "operation": "",
+    "duration_seconds": 300,
+    "cpu_quota": 16000,
+    "cpu_period": 100000,
+    "exit_code": 0
+  },
+  {
+    "name": "mouseonly_n6",
+    "total_players": 6,
+    "worker_count": 5,
+    "hz": 30,
+    "operation": "",
+    "duration_seconds": 300,
+    "cpu_quota": 16000,
+    "cpu_period": 100000,
+    "exit_code": 0
+  },
+  {
+    "name": "flip_n4",
+    "total_players": 4,
+    "worker_count": 3,
+    "hz": 30,
+    "operation": "flip",
+    "duration_seconds": 300,
+    "cpu_quota": 16000,
+    "cpu_period": 100000,
+    "exit_code": 0
+  },
+  {
+    "name": "pause_only_n6",
+    "total_players": 6,
+    "worker_count": 5,
+    "hz": 30,
+    "operation": "pause_only",
+    "duration_seconds": 300,
+    "cpu_quota": 16000,
+    "cpu_period": 100000,
+    "exit_code": 0
+  }
+]

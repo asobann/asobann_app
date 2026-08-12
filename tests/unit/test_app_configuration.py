@@ -2,8 +2,9 @@ import os
 
 import asobann
 import asobann.app
+import asobann.config_common
 import pytest
-from flask import Flask
+from quart import Quart
 
 pytestmark = [pytest.mark.quick]
 
@@ -63,7 +64,7 @@ PARAMS = [
         'expected': {
             'config': {
                 'REDIS_URI': None,
-                'MONGO_URI': 'mongodb://localhost:27017/ex2test',
+                'MONGO_URI': 'mongodb://admin:password@mongo:27017/test?authSource=admin',
                 'BASE_URL': '*',
                 'GOOGLE_ANALYTICS_ID': None,
             },
@@ -117,7 +118,7 @@ def test_config(param):
     try:
         for key, value in input_['env'].items():
             os.environ[key] = value
-        app = Flask(__name__)
+        app = Quart(__name__)
         import importlib
         importlib.reload(asobann.config_common)  # must be reloaded with new environment
         asobann.app.configure_app(app, testing=input_.get('testing', False))

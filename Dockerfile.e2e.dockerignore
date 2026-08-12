@@ -1,0 +1,10 @@
+# Dockerfile.e2e 専用。既定の .dockerignore は tests を除外している(本番イメージには
+# 不要なので妥当)が、E2Eイメージには tests が要る。
+# docker build --file Dockerfile.e2e を使うと BuildKit はこのファイルを見る。
+deploy
+.git
+src/js
+src/image
+src/style
+node_modules
+tests/performance/__pycache__

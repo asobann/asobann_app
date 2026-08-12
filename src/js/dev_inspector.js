@@ -99,17 +99,21 @@ function setPerformanceRecordingDebugger(uid) {
 
 (function () {
     (async () => {
-        const uid = Math.floor(Math.random() * 1000000000);
-        const url = baseUrl() + "/debug/setting";
-        const response = await fetch(url);
-        if(!response.ok) {
-            return;
-        }
-        const data = response.json();
-        const setting = await data;
+        try {
+            const uid = Math.floor(Math.random() * 1000000000);
+            const url = baseUrl() + "/debug/setting";
+            const response = await fetch(url);
+            if(!response.ok) {
+                return;
+            }
+            const data = response.json();
+            const setting = await data;
 
-        if (setting.performanceRecording) {
-            setPerformanceRecordingDebugger(uid);
+            if (setting.performanceRecording) {
+                setPerformanceRecordingDebugger(uid);
+            }
+        } catch (e) {
+            // best-effort debug hook; no server to ask (e.g. under jsdom in tests) is fine
         }
     })();
 })();

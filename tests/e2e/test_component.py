@@ -705,14 +705,16 @@ class TestGlued:
     def test_flipped_and_text_hides(self, host: GameHelper):
         before = host.component_by_name('test glued component 01').face()
         host.double_click(host.component_by_name('test glued component 01'))
-        after = host.component_by_name('test glued component 01').face()
-        # should_not_have_text() somehow fails if there's no delay; face() works more stably
-        assert after != before
+        host.eventually(
+            lambda: host.component_by_name('test glued component 01').face() != before,
+            'face did not change after flipping')
 
     def test_flipped_and_image_change(self, host: GameHelper):
         assert '64x64down' in host.component_by_name('test glued component 02').face()
         host.double_click(host.component_by_name('test glued component 02'))
-        assert '64x64bg' in host.component_by_name('test glued component 02').face()
+        host.eventually(
+            lambda: '64x64bg' in host.component_by_name('test glued component 02').face(),
+            'flipped face does not show 64x64bg')
 
     def test_put_in_hand_area_and_text_hides(self, host: GameHelper, another_player: GameHelper):
         before = host.component_by_name('test glued component 01').face()
@@ -720,7 +722,7 @@ class TestGlued:
         another_player.menu.add_my_hand_area.click()
         another_player.move_card_to_hand_area(another_player.component_by_name('test glued component 01'), 'Player 2', (100, 0))
 
-        after = host.component_by_name('test glued component 01').face()
-        # should_not_have_text() somehow fails if there's no delay; face() works more stably
-        assert after != before
+        host.eventually(
+            lambda: host.component_by_name('test glued component 01').face() != before,
+            'face did not change after the card was put in another player\'s hand area')
 

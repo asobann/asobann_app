@@ -1,0 +1,11 @@
+{
+  "name": "flip_n4",
+  "total_players": 4,
+  "worker_count": 3,
+  "hz": 30,
+  "operation": "flip",
+  "duration_seconds": 300,
+  "cpu_quota": 16000,
+  "cpu_period": 100000,
+  "exit_code": 0
+}

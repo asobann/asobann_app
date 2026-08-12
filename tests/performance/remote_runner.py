@@ -20,10 +20,15 @@ def worker_server(port):
     """
     This will run on remote host or container.
     """
+    import multiprocessing
     from multiprocessing.managers import BaseManager
     from multiprocessing import Queue
-    command_queue = Queue()
-    result_queue = Queue()
+    # Python 3.14でLinuxの既定start methodが"fork"から"forkserver"へ変わった。
+    # forkserverはワーカープロセスをpickleして起動するため、下のMyManagerのような
+    # ローカル定義クラスを渡せずPicklingErrorになる。forkはこの制約が無い。
+    ctx = multiprocessing.get_context('fork')
+    command_queue = ctx.Queue()
+    result_queue = ctx.Queue()
 
     class MyManager(BaseManager):
         pass
@@ -31,7 +36,7 @@ def worker_server(port):
     log('running worker_server')
     MyManager.register('command_que', callable=lambda: command_queue)
     MyManager.register('result_que', callable=lambda: result_queue)
-    mgr = MyManager(address=('', port), authkey=AUTHKEY)
+    mgr = MyManager(address=('', port), authkey=AUTHKEY, ctx=ctx)
     mgr.start()
 
     name = ''.join([random.choice('abcdefghijklmnopqrstuvwxyz') for i in range(10)])
@@ -62,6 +67,8 @@ def worker_server(port):
                 except:
                     pass
                 log(f'worker raised an exception: {ex} {ex.args}')
+                log(buf.getvalue())  # full traceback, always visible via `docker logs` even if
+                                      # result_queue.put() above lost the race with mgr.shutdown()
                 mgr.shutdown()
                 break
             log('worker is finished')

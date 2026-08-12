@@ -1,13 +1,75 @@
+# 依存管理は uv。
+#
+# uv.lock が唯一の正。以下の3ファイルは uv export による生成物で、手で編集しない:
+#   - requirements.txt      本番イメージ(Dockerfile.aws)用。アプリ依存のみ
+#   - requirements-dev.txt  localdevイメージ用。アプリ依存 + dev group
+#   - requirements-e2e.txt  E2Eイメージ(Dockerfile.e2e)用。テスト道具のみ(only-group e2e)
+# 再生成は scripts/build_e2e_image.sh がやる。
+#
+# 本番とテストの依存セットが別ファイルでも、同じ uv.lock から書き出すので
+# 「テスト環境だけドリフトして本番と違うものをテストしている」事故は構造的に起きない。
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "asobann"
+version = "0.0.1"
+requires-python = ">=3.14"
+# eventlet(greenlet)を退役させ、pure asyncioスタックへ全面移行した。
+# Flask/flask-socketio/flask-pymongo/gunicorn は Quart/python-socketio AsyncServer/
+# pymongo AsyncMongoClient/uvicorn に置き換わった。
+dependencies = [
+    "quart",
+    "uvicorn",
+    "python-socketio",
+    "python-engineio",
+    "pymongo",
+    "redis",
+    "dnspython",
+    "boto3",
+]
+
+[dependency-groups]
+# E2Eイメージに入れるテスト実行用の道具。アプリの依存はベースの本番イメージが持つ。
+e2e = [
+    "pytest",
+    "pytest-asyncio",
+    "selenium",
+    "pytest-rerunfailures",
+    "pytest-randomly",
+    "requests",
+    "pillow",
+]
+# 手元作業用 = e2e と同じテスト道具 + 対話シェル等。
+dev = [
+    { include-group = "e2e" },
+    "ipython",
+    "typer",
+    # scripts/summarize_load_suite.py 等がAWSプロファイル(asobann、SSOのlogin
+    # credential provider)経由でboto3を叩く際に要る。無いと
+    # MissingDependencyException になる(boto3 1.43で新たに要求されるようになった)。
+    "botocore[crt]",
+]
+
+[tool.uv]
+# サプライチェーン対策の冷却期間: 公開から2日未満のリリースを解決対象から外す。
+exclude-newer = "2 days"
+
 [tool.pytest.ini_options]
 testpaths = [ "tests" ]
 filterwarnings = [
-    "ignore::DeprecationWarning:eventlet",
     "ignore::DeprecationWarning:dns",
-    "ignore:Monkey-patching::",
 ]
 markers = [
     "loadtest: load tests using heroku",
     "quick: fast and light tests",
 ]
 addopts = "-m 'not loadtest' --ignore tests/performance"
-
+asyncio_mode = "auto"
+# store層のグローバル接続(AsyncMongoClient)を全テストで使い回すため、イベントループを
+# セッション単位で1つに統一する。関数ごとに別ループだと前のテストで確立した接続が
+# 別ループに属したままになり、次のテストで使えなくなる。
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"

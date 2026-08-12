@@ -1,6 +1,7 @@
 from typing import Union
 import re
 import json
+import time
 import requests
 from selenium import webdriver
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -210,6 +211,12 @@ class GameMenu:
         join_button.click()
         WebDriverWait(self.browser, 5).until(
             expected_conditions.text_to_be_present_in_element((By.TAG_NAME, "body"), "you are " + player_name))
+        # The name showing up does not mean the client may operate yet - see
+        # GameHelper.should_be_joined for why that is a separate wait.
+        WebDriverWait(self.browser, 5).until(
+            lambda d: d.execute_script(
+                "const k = Object.keys(sessionStorage).find(k => k.endsWith(': status'));"
+                "return k ? sessionStorage.getItem(k) : null;") == 'joined')
 
     def import_jsonfile(self, filename):
         WebDriverWait(self.browser, 5).until(
@@ -270,6 +277,7 @@ class GameHelper:
         if as_host:
             player.go(TOP)
             player.should_have_text("you are host")
+            player.should_be_joined()
             return player
         else:
             raise RuntimeError()
@@ -287,6 +295,55 @@ class GameHelper:
     @property
     def current_url(self) -> str:
         return self.browser.current_url
+
+    def eventually(self, condition, message, timeout=5):
+        """
+        Poll `condition()` until it returns truthy, then return. Fail with `message` on
+        timeout. Exceptions raised inside `condition` are treated as "not yet" - reading
+        state that is still arriving legitimately blows up (e.g. json.loads on a textarea
+        that is half-synchronised).
+
+        Use this instead of reading state right after an action. Nothing in this app is
+        applied synchronously: sync_table.js queues both the outgoing message *and* the
+        local application of an update onto a 75ms setInterval tick (actualUpdateQueue),
+        so a value read immediately after a click reliably races that tick. On a fast
+        machine the read wins almost every time, which is why several tests that assert
+        without waiting fail consistently here while they used to pass on slower setups.
+        """
+        def attempt(_):
+            try:
+                return condition()
+            except Exception:
+                return False
+
+        try:
+            WebDriverWait(self.browser, timeout).until(attempt)
+            return
+        except TimeoutException:
+            pass
+        assert False, f'{message} (timeout after {timeout}s)'
+
+    def should_be_joined(self, timeout=5):
+        """
+        Block until this client considers itself a joined player rather than an observer.
+
+        "you are host" appearing in the menu is NOT enough. play_session.js renders that
+        as soon as it decides to join, but sessionStorage's status only becomes "joined"
+        once the server answers with `confirmed player name` (initializeTable -> joinTable
+        sends `set player name`; updatePlayer sets the status). Until then
+        isPlayerObserver() returns true, so featsContext.canOperateOn() is false and
+        **operations are silently discarded** - the dblclick handler just returns.
+
+        That is the window this waits out. Instrumentation showed the failing flips did
+        receive a correct dblclick on the correct visible element and simply did nothing,
+        which is exactly what the observer guard looks like from outside.
+        """
+        self.eventually(
+            lambda: self.browser.execute_script(
+                "const k = Object.keys(sessionStorage).find(k => k.endsWith(': status'));"
+                "return k ? sessionStorage.getItem(k) : null;") == 'joined',
+            'client is still an observer, so its operations would be silently discarded',
+            timeout=timeout)
 
     def should_have_text(self, text, timeout=5):
         try:
@@ -397,6 +454,197 @@ class GameHelper:
 
     def move_mouse_by_offset(self, offset):
         ActionChains(self.browser).move_by_offset(offset[0], offset[1]).perform()
+
+    # The synthetic cursor walks a GRID_SIZE x GRID_SIZE lattice of distinct positions,
+    # one pixel apart, anchored at the load's center. Every position in a full sweep is
+    # unique, which is what lets a receiver pair an observed cursor position back to the
+    # exact message that produced it (see mouse_latency.pair_latencies), and the sweep
+    # repeats instead of running away: an earlier version walked clientX = center + seq,
+    # which meant the pointer marched right forever (18,000px after ten minutes at 30Hz).
+    MOUSE_LOAD_GRID_SIZE = 100
+
+    def start_mouse_load(self, hz, center=(400, 300)):
+        """
+        Dispatch synthetic mousemove events on div.table_container at the given rate,
+        without round-tripping through WebDriver for every event. Used to reproduce
+        the mousemove-broadcast load real users generate while moving the pointer around.
+
+        Replicates the app's own coordinate math (play_session.js: mouseOnTableX/Y and
+        the ICON_OFFSET applied in showOthersMouseMovement) so each sent event's resulting
+        "div.others_mouse_cursor" CSS left/top can be predicted in advance. A receiver
+        (see start_mouse_receive_observer) records the *observed* left/top; pairing sent
+        vs. observed by that pixel pair (see mouse_latency.py) gives exact send/receive
+        timestamps.
+
+        Assumes the table container position and table pan offset stay constant for the
+        duration of the load (true for a bot that never resizes the window or drags the
+        table itself).
+        """
+        self.browser.execute_script(
+            """
+            const [hz, cx, cy, gridSize] = arguments;
+            const state = {count: 0, sent: [], cx: cx, cy: cy, gridSize: gridSize};
+            window.__asobann_mouse_load = state;
+            window.__asobann_mouse_tick = function () {
+                const ICON_OFFSET_X = -(32 / 2);
+                const ICON_OFFSET_Y = -(32 / 2);
+                const container = document.querySelector('div.table_container');
+                const table = document.querySelector('div.table');
+                const r = container.getBoundingClientRect();
+                const tableLeft = parseFloat(table.style.left) || 0;
+                const tableTop = parseFloat(table.style.top) || 0;
+                const s = window.__asobann_mouse_load;
+                const pos = s.count % (s.gridSize * s.gridSize);
+                const clientX = s.cx + (pos % s.gridSize);
+                const clientY = s.cy + Math.floor(pos / s.gridSize);
+                container.dispatchEvent(new MouseEvent('mousemove', {
+                    bubbles: true, cancelable: true,
+                    clientX: clientX, clientY: clientY, buttons: 0,
+                }));
+                s.sent.push({
+                    expected_left: (clientX - r.left - tableLeft) + ICON_OFFSET_X,
+                    expected_top: (clientY - r.top - tableTop) + ICON_OFFSET_Y,
+                    sent_at: Date.now(),
+                });
+                s.count += 1;
+            };
+            state.timer = setInterval(window.__asobann_mouse_tick, 1000 / hz);
+            """,
+            hz, center[0], center[1], self.MOUSE_LOAD_GRID_SIZE,
+        )
+
+    def pause_mouse_load(self, settle_timeout=2.0):
+        """
+        Stop dispatching synthetic mousemoves and block until no further tick fires,
+        keeping the accumulated send log and position counter so the load can be resumed
+        as one continuous stream.
+
+        A real person cannot wave the cursor around and drag a component at the same time -
+        while dragging, the pointer motion *is* the drag. Overlapping the two is a state
+        that never occurs in real use, and dragged cards ended up ~96,000px off-screen
+        (element lookups then time out on visibility).
+
+        clearInterval() alone does not establish that overlap has ended: a tick already
+        queued, or one running at that moment, still gets to finish, and an ActionChains
+        drag takes hundreds of milliseconds during which such a straggler can land. So
+        this waits until the tick counter stops advancing before returning, making
+        "the ambient load has stopped" an observed fact rather than an assumption.
+        """
+        self.browser.execute_script(
+            """
+            const state = window.__asobann_mouse_load;
+            if (state && state.timer) {
+                clearInterval(state.timer);
+                state.timer = null;
+            }
+            """
+        )
+        deadline = time.monotonic() + settle_timeout
+        previous = None
+        while time.monotonic() < deadline:
+            count = self.browser.execute_script(
+                "return window.__asobann_mouse_load ? window.__asobann_mouse_load.count : 0;")
+            if count == previous:
+                return
+            previous = count
+            time.sleep(0.05)
+        raise RuntimeError('mouse load did not settle after pause_mouse_load()')
+
+    def resume_mouse_load(self, hz):
+        self.browser.execute_script(
+            """
+            const [hz] = arguments;
+            const state = window.__asobann_mouse_load;
+            if (!state || state.timer) { return; }
+            state.timer = setInterval(window.__asobann_mouse_tick, 1000 / hz);
+            """,
+            hz,
+        )
+
+    def stop_mouse_load(self):
+        return self.browser.execute_script(
+            """
+            const state = window.__asobann_mouse_load;
+            if (!state) { return {count: 0, sent: []}; }
+            clearInterval(state.timer);
+            const result = {count: state.count, sent: state.sent};
+            window.__asobann_mouse_load = null;
+            return result;
+            """
+        )
+
+    def collect_and_clear_mouse_send_log(self):
+        """
+        Drain the buffer of predicted positions recorded by start_mouse_load without
+        stopping the load, so long-running scenarios can report progress periodically
+        instead of holding the whole run's send log in page memory.
+        """
+        return self.browser.execute_script(
+            """
+            const state = window.__asobann_mouse_load;
+            if (!state) { return []; }
+            const sent = state.sent;
+            state.sent = [];
+            return sent;
+            """
+        )
+
+    def start_mouse_receive_observer(self):
+        """
+        Watch other players' cursor markers (div.others_mouse_cursor, rendered by
+        showOthersMouseMovement in play_session.js) and record the observed left/top
+        pixel position each time it changes, together with the wall-clock time observed.
+        Pair against start_mouse_load's `expected_left`/`expected_top` (see
+        mouse_latency.py) to compute per-message latency.
+        """
+        self.browser.execute_script(
+            """
+            const state = {received: {}};
+            window.__asobann_mouse_recv = state;
+            const parsePx = (styleText, prop) => {
+                const m = new RegExp(prop + ':\\\\s*([\\\\-0-9.]+)px').exec(styleText);
+                return m ? parseFloat(m[1]) : null;
+            };
+            const observer = new MutationObserver((mutations) => {
+                const now = Date.now();
+                // A single app-level position update can set style.left and style.top as
+                // separate property assignments, producing more than one MutationRecord
+                // for the same element in this batch. Since the callback always re-reads
+                // the element's *current* style (not a value snapshotted per-record), those
+                // extra records would otherwise be logged as repeat "receptions" of the same
+                // update. Keep only the last record per element in this batch.
+                const targets = new Set(mutations.map((m) => m.target));
+                for (const el of targets) {
+                    if (!(el instanceof Element) || !el.classList.contains('others_mouse_cursor')) {
+                        continue;
+                    }
+                    const nameEl = el.querySelector('span');
+                    const playerName = nameEl ? nameEl.textContent : 'unknown';
+                    const style = el.getAttribute('style') || '';
+                    const left = parsePx(style, 'left');
+                    const top = parsePx(style, 'top');
+                    if (left === null || top === null) { continue; }
+                    if (!state.received[playerName]) { state.received[playerName] = []; }
+                    state.received[playerName].push({left: left, top: top, received_at: now});
+                }
+            });
+            observer.observe(document.querySelector('div.table'), {
+                attributes: true, attributeFilter: ['style'], subtree: true,
+            });
+            state.observer = observer;
+            """
+        )
+
+    def collect_and_clear_mouse_receive_log(self):
+        return self.browser.execute_script(
+            """
+            const state = window.__asobann_mouse_recv;
+            if (!state) { return {}; }
+            const received = state.received;
+            state.received = {};
+            return received;
+            """
+        )
 
     def double_click(self, component: "Component", modifier=[]):
         chain = ActionChains(self.browser)

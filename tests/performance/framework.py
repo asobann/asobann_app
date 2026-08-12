@@ -1,5 +1,6 @@
 import json
 import os
+import socket
 import sys
 import re
 import shutil
@@ -14,6 +15,29 @@ from typing import List, Tuple, Dict
 
 
 CONNECTION_RETRY_SECONDS = 60
+
+
+def wait_for_port(host: str, port: int, timeout_seconds: int = 30) -> None:
+    """
+    Block until a TCP connection to (host, port) succeeds, or raise TimeoutError.
+
+    `docker run -d` returns as soon as the container is created, before the process
+    inside it (here, remote_runner.py's multiprocessing.managers server) has actually
+    started listening. Connecting before that point doesn't just fail cleanly - a
+    half-ready listener can accept the TCP connection and then close it mid-handshake,
+    which multiprocessing.managers surfaces as an opaque EOFError on the client side
+    instead of a connection error. Waiting for the port to be genuinely acceptING
+    connections avoids that race.
+    """
+    started_at = time.monotonic()
+    while True:
+        try:
+            with socket.create_connection((host, port), timeout=2):
+                return
+        except OSError:
+            if time.monotonic() - started_at > timeout_seconds:
+                raise TimeoutError(f'timed out waiting for {host}:{port} to accept connections')
+            time.sleep(0.5)
 
 
 class Logger:
@@ -61,6 +85,11 @@ def system(cmd, capture=False, cwd=None, daemon=False):
 WORKER_NAME = 'test_run_multiprocess_in_container_worker'
 CONTROLLER_NAME = 'test_run_multiprocess_in_container_controller'
 
+# Extra `docker run` flags for worker/controller containers, e.g. `--network loadtest`
+# to join a target app's docker-compose network, or `--cpuset-cpus=8-31` to keep them
+# off the app's pinned cores (see plan.local-profiling.20260810.md §1, §3.1).
+DOCKER_RUN_OPTS = os.environ.get('LOADTEST_DOCKER_RUN_OPTS', '')
+
 
 class AbstractContainers:
     controller_url = None
@@ -78,8 +107,13 @@ class AbstractContainers:
         (base_dir / 'runner').mkdir()
         shutil.copytree('./tests', str(base_dir / 'runner/tests'))
         shutil.copytree('./src', str(base_dir / 'runner/src'))
-        shutil.copy('./Pipfile', str(base_dir / 'runner/'))
-        shutil.copy('./Pipfile.lock', str(base_dir / 'runner/'))
+        # uv.lock からの生成物(アプリ依存 + dev group)。scripts/build_e2e_image.sh 等で再生成される
+        shutil.copy('./requirements-dev.txt', str(base_dir / 'runner/'))
+        # pytest's whole configuration lives here (addopts, marker registration,
+        # filterwarnings). Without it, running the e2e suite in this image silently
+        # ignores `-m 'not loadtest'` and executes the tests that point at the long-dead
+        # Heroku staging URL, which can never pass.
+        shutil.copy('./pyproject.toml', str(base_dir / 'runner/'))
 
     def build_docker_images(self) -> None:
         raise NotImplementedError()
@@ -96,19 +130,18 @@ class AbstractContainers:
     def build_docker_image_for_worker(self, base_dir: Path):
         with open(str(base_dir / 'Dockerfile_worker'), 'w') as f:
             f.write("""
-FROM ubuntu:18.04
+FROM python:3.14-slim-bookworm
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV PYTHONPATH=/runner
-RUN apt-get -y update
-RUN apt-get install -y python3 python3-pip firefox firefox-geckodriver
-RUN pip3 install pipenv
+RUN apt-get -y update && apt-get install -y --no-install-recommends firefox-esr curl ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN curl -L https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz | tar zx -C /usr/local/bin
 WORKDIR /runner
-COPY runner/Pipfile runner/Pipfile.lock ./
-RUN pipenv install -d
+COPY runner/requirements-dev.txt ./
+RUN pip3 install --no-cache-dir -r requirements-dev.txt
 COPY runner/ .
 EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
-CMD pipenv run python tests/performance/remote_runner.py worker $PORT
+CMD python tests/performance/remote_runner.py worker $PORT
     """)
         proc = system(f"docker build . -f Dockerfile_worker -t {WORKER_NAME}",
                       cwd=base_dir)
@@ -117,16 +150,15 @@ CMD pipenv run python tests/performance/remote_runner.py worker $PORT
     def build_docker_image_for_controller(self, base_dir):
         with open(Path(base_dir) / 'Dockerfile_controller', 'w') as f:
             f.write("""
-FROM ubuntu:18.04
+FROM python:3.14-slim-bookworm
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV PYTHONPATH=/runner
-RUN apt-get -y update
-RUN apt-get install -y python3 python3-pip firefox firefox-geckodriver
-RUN pip3 install pipenv
+RUN apt-get -y update && apt-get install -y --no-install-recommends firefox-esr curl ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN curl -L https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz | tar zx -C /usr/local/bin
 WORKDIR /runner
-COPY runner/Pipfile runner/Pipfile.lock ./
-RUN pipenv install -d
+COPY runner/requirements-dev.txt ./
+RUN pip3 install --no-cache-dir -r requirements-dev.txt
 COPY runner/ .
 EXPOSE 8888
     """)
@@ -135,6 +167,7 @@ EXPOSE 8888
         assert proc.returncode == 0
 
     def _wait_for_controller_to_start(self) -> None:
+        started_at = time.monotonic()
         while True:
             try:
                 req = urllib.request.Request(self.controller_url, method='HEAD')
@@ -142,6 +175,11 @@ EXPOSE 8888
                 if res.getcode() == 200:
                     break
             except (ConnectionError, urllib.error.URLError):
+                if time.monotonic() - started_at > CONNECTION_RETRY_SECONDS:
+                    raise TimeoutError(
+                        f'controller at {self.controller_url} did not start within '
+                        f'{CONNECTION_RETRY_SECONDS}s; it likely crashed on startup '
+                        f'(check `docker logs` for the controller container)')
                 time.sleep(1)
 
     def _send_command(self, command: str) -> str:
@@ -152,7 +190,13 @@ EXPOSE 8888
                 try:
                     res = urllib.request.urlopen(self.controller_url, data=command.encode('utf8'))
                     break
-                except urllib.error.URLError:
+                except (urllib.error.URLError, ConnectionError):
+                    # A bare ConnectionError (e.g. http.client.RemoteDisconnected, raised
+                    # when the controller closes the connection before sending a response -
+                    # observed here right after the controller logged an internal scenario
+                    # error) isn't wrapped into URLError by urllib in every code path, so it
+                    # would otherwise escape this retry loop entirely and crash the caller
+                    # (seen taking down shutdown() during a Step 4 run).
                     if (datetime.datetime.now() - started_at).total_seconds() > CONNECTION_RETRY_SECONDS:
                         raise
                     log(f'connection to controller {self.controller_url} refused. Retrying ...')
@@ -172,11 +216,13 @@ EXPOSE 8888
         self._send_command('shutdown')
         time.sleep(1)
 
-    def run_test(self, module_name, headless=True, url=None):
+    def run_test(self, module_name, headless=True, url=None, params: Dict[str, str] = None):
         log('start controller')
         self._send_command(f'set headless {"true" if headless else "false"}')
         if url:
             self._send_command(f'set url {url}')
+        for key, value in (params or {}).items():
+            self._send_command(f'set {key} {value}')
         run_id = self._send_command(f'run {module_name}')
         log(f'run sent; run_id {run_id}')
         while True:
@@ -206,7 +252,8 @@ class LocalProcesses(AbstractContainers):
                        capture=False, daemon=True))
 
         self._workers = AbstractContainers.Workers(binds=[('localhost', p) for p in ports], procs=procs)
-        time.sleep(1)
+        for port in ports:
+            wait_for_port('localhost', port)
 
     def start_controller(self) -> None:
         ports = [p for h, p in self._workers.binds]
@@ -245,42 +292,52 @@ class LocalContainers(AbstractContainers):
     def start_workers(self, worker_count) -> None:
         assert worker_count <= 10, 'Local running permits only less than 10 workers for the time being'
         ports = [50000 + i for i in range(worker_count)]  # 50000-50009 is EXPOSEd in Dockerfile
-        procs = []
+        binds = []
         for port in ports:
             log(f'start worker container port {port}')
-            procs.append(
-                system(
-                    f"docker run -d -p {port}:{port} -e PORT={port} {WORKER_NAME}",
-                    capture=True,
-                ))
-
-        self._workers = AbstractContainers.Workers(binds=[('localhost', p) for p in ports])
-
-    def start_controller(self) -> None:
-        ports = [p for h, p in self._workers.binds]
-        if os.name == 'posix':
-            # see https://docs.docker.com/engine/reference/commandline/run/#add-entries-to-container-hosts-file-add-host
             proc = system(
-                "ip -4 addr show scope global dev docker0 | grep inet | awk '{print $2}' | cut -d / -f 1 | sed -n 1p",
+                f"docker run -d -p {port}:{port} -e PORT={port} {DOCKER_RUN_OPTS} {WORKER_NAME}",
                 capture=True,
             )
-            host_access = f"--add-host=host.docker.internal:{proc.stdout.strip()}"
-        elif os.name == 'nt':
-            # see https://docs.docker.com/docker-for-windows/networking/#per-container-ip-addressing-is-not-possible
-            host_access = ''
-        else:
-            raise RuntimeError()
-        log(f'start controller container ports {ports}')
-        system(f"docker run {host_access} -p 8888:8888 -d {CONTROLLER_NAME} "
-               f"pipenv run python tests/performance/remote_runner.py controller {','.join([f'host.docker.internal:{p}' for p in ports])}")
+            container_id = proc.stdout.strip()
+            # Reach the worker via its container-internal IP, not host.docker.internal's
+            # published-port hairpin route (container -> host -> back into another
+            # container on the same bridge). That hairpin path is unreliable on some
+            # Docker setups (observed on this machine's WSL2 docker: the controller
+            # container's connection was accepted by the port-forward but then closed
+            # mid-handshake, surfacing as an opaque EOFError in multiprocessing.managers).
+            # Same-bridge container-to-container traffic by IP doesn't cross that path.
+            ip_proc = system(
+                f"docker inspect -f "
+                f"'{{{{range .NetworkSettings.Networks}}}}{{{{.IPAddress}}}}{{{{end}}}}' {container_id}",
+                capture=True,
+            )
+            internal_ip = ip_proc.stdout.strip()
+            binds.append((internal_ip, port))
+
+        self._workers = AbstractContainers.Workers(binds=binds)
+        for internal_ip, port in binds:
+            wait_for_port(internal_ip, port)
+
+    def start_controller(self) -> None:
+        log(f'start controller container workers {self._workers.binds}')
+        arg_workers = ','.join([f'{ip}:{port}' for ip, port in self._workers.binds])
+        system(f"docker run -p 8888:8888 -d {DOCKER_RUN_OPTS} {CONTROLLER_NAME} "
+               f"python tests/performance/remote_runner.py controller {arg_workers}")
         self._wait_for_controller_to_start()
 
     def shutdown(self) -> None:
         super().shutdown()
+        # Wait for the worker/controller containers specifically, not "docker ps is
+        # empty" - the local CPU-profiling harness keeps a target app+mongo running
+        # alongside every test run (see plan.local-profiling.20260810.md), so counting
+        # all containers never reaches zero and this used to hang forever.
         while True:
-            proc = system("docker ps", capture=True)
+            proc = system(
+                f"docker ps -q --filter ancestor={WORKER_NAME} --filter ancestor={CONTROLLER_NAME}",
+                capture=True)
             assert proc.returncode == 0
-            if len(proc.stdout.strip().split('\n')) == 1:
+            if not proc.stdout.strip():
                 break
             time.sleep(1)
 
@@ -493,8 +550,6 @@ class Ecs:
                 {
                     "name": CONTROLLER_NAME,
                     "command": [
-                        "/usr/local/bin/pipenv",
-                        "run",
                         "python",
                         "tests/performance/remote_runner.py",
                         "controller",

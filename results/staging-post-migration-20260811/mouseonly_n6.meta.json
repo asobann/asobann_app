@@ -1,0 +1,11 @@
+{
+  "name": "mouseonly_n6",
+  "total_players": 6,
+  "worker_count": 5,
+  "hz": 30,
+  "operation": "",
+  "duration_seconds": 300,
+  "start_utc": "2026-08-11T06:56:12Z",
+  "end_utc": "2026-08-11T07:01:05Z",
+  "exit_code": 0
+}
