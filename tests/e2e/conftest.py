@@ -89,7 +89,16 @@ E2E_TOLERATE_KNOWN_FLAKY = os.environ.get('E2E_TOLERATE_KNOWN_FLAKY') == '1'
 
 def _is_known_flaky_nodeid(nodeid: str) -> bool:
     # nodeid looks like 'tests/e2e/test_component.py::TestHandArea::test_x'
-    return any(nodeid.endswith(entry) for entry in E2E_KNOWN_FLAKY)
+    #
+    # endswith ではなく完全一致で見る。endswith には2つの穴があった:
+    #   - パラメータ化すると nodeid が '...::test_x[case1]' になり、一覧に載って
+    #     いてもマッチせずリトライ回数が5から3に落ちる
+    #   - 別ファイルの同名クラス・同名テストにも当たりうる
+    # どちらも今の顔ぶれでは表面化していないが、一覧に足すたびに踏みうる。
+    #
+    # パラメータ化テストを一覧に載せたくなったら、'[' の前で切って比べる形に
+    # 変えること（今は該当が無いので単純な等価比較にしてある）。
+    return nodeid in {f'tests/e2e/{entry}' for entry in E2E_KNOWN_FLAKY}
 
 
 def _is_known_flaky(item) -> bool:

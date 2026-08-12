@@ -37,7 +37,11 @@ echo "==> アプリの依存が本番イメージと一致しているか検証�
 # 動いていたら、そのイメージでのテスト結果は本番の挙動を保証しない。
 # --format=freeze で name==version にする。既定の表形式は列幅がパッケージ名の最長に
 # 合わせて変わるため、テスト道具を足したE2E側だけ空白が増えて偽の差分になる。
-pkgs='^(flask|flask-socketio|python-socketio|python-engineio|eventlet|werkzeug|pymongo|greenlet|flask-pymongo|redis|dnspython|boto3)=='
+# asyncio移行後のスタックに合わせた顔ぶれ。flask / flask-socketio / eventlet /
+# greenlet / flask-pymongo を並べたままにしていた時期があり、消えたパッケージ名を
+# 見ているせいで「一致」と出てしまう状態だった。**依存を入れ替えたらここも直すこと。**
+# quart と uvicorn が抜けていると、このスクリプトの存在意義が無くなる。
+pkgs='^(quart|uvicorn|hypercorn|wsproto|simple-websocket|python-socketio|python-engineio|werkzeug|pymongo|redis|dnspython|boto3|aiofiles|blinker|itsdangerous|jinja2)=='
 app_list=$(docker run --rm --entrypoint sh "$APP_IMAGE" -c "pip3 list --format=freeze 2>/dev/null" | grep -iE "$pkgs" | sort)
 e2e_list=$(docker run --rm --entrypoint sh "$E2E_IMAGE" -c "pip3 list --format=freeze 2>/dev/null" | grep -iE "$pkgs" | sort)
 if [ "$app_list" = "$e2e_list" ]; then
