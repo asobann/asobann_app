@@ -15,17 +15,24 @@
 
 ## 手順
 
-ワークスペース直下の invoke タスクを使う。mongoの起動もイメージのビルドも面倒を見る。
+`scripts/run_e2e.sh` を使う。mongoの起動もイメージのビルドも面倒を見る。
 
 ```sh
-uv run inv e2e                                    # 全件
-uv run inv e2e --tests tests/e2e/test_component.py
-uv run inv e2e -k TestGlued --no-build            # ビルド済みイメージで絞って実行
-uv run inv e2e --ordered --no-capture             # 順序固定＋print表示（切り分け用）
-uv run inv e2e --seed 12345                       # 落ちた順序を再現する
-uv run inv e2e --tolerate-flaky                   # CIと同じ扱い
-uv run inv --help e2e                             # 全オプション
+./scripts/run_e2e.sh                              # 全件
+./scripts/run_e2e.sh tests/e2e/test_component.py
+./scripts/run_e2e.sh --no-build -k TestGlued      # ビルド済みイメージで絞って実行
+./scripts/run_e2e.sh -p no:randomly -s            # 順序固定＋print表示（切り分け用）
+./scripts/run_e2e.sh --randomly-seed=12345        # 落ちた順序を再現する
+./scripts/run_e2e.sh --tolerate-flaky             # CIと同じ扱い
 ```
+
+スクリプト自身が解釈するのは `--no-build` / `--dev` / `--tolerate-flaky` の3つだけで、
+**残りの引数はすべて pytest に素通しする**。上の `-k` や `-p no:randomly` は pytest の
+オプションそのもの。既定で `-q` を渡すので、詳細表示にしたいときは `-v` を足す。
+
+ワークスペース（devenv）からは `uv run inv e2e` でも同じことができる。中身はこの
+スクリプトを呼んでいるだけで、複数リポジトリを跨ぐ作業のときに入口を1つにまとめる
+ためのもの。asobann_app 単体のチェックアウトやCIからは、こちらのスクリプトを直接叩く。
 
 **`tests/` や `src/` を変えたらビルドが要る**(イメージに焼き込まれる)。既定でビルドする
 ので、意図して省くときだけ `--no-build`。
@@ -33,7 +40,7 @@ uv run inv --help e2e                             # 全オプション
 ### テストを直しながら回すときは `--dev`
 
 ```sh
-uv run inv e2e --dev -k TestGlued
+./scripts/run_e2e.sh --dev -k TestGlued
 ```
 
 `tests/` をホストから読み取り専用でマウントし、ビルドを省く。テストコードの変更が
@@ -46,11 +53,11 @@ uv run inv e2e --dev -k TestGlued
 読み取り専用でマウントしているのは、コンテナのrootが `__pycache__` を作業ツリーに
 作ると、ホストから消せなくなるため(`deploy/loadtest/mongodata` で実際にやらかした)。
 
-直接叩くならこう。
+スクリプトも通さず直接叩くならこう。
 
 ```sh
-(cd asobann_app/deploy/loadtest && docker compose up -d mongo)
-(cd asobann_app && ./scripts/build_e2e_image.sh)
+(cd deploy/loadtest && docker compose up -d mongo)
+./scripts/build_e2e_image.sh
 docker run --rm --network loadtest_default -e MOZ_HEADLESS=1 \
     asobann-e2e:local python3 -m pytest tests/e2e -q
 ```
