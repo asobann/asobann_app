@@ -87,7 +87,8 @@ CONTROLLER_NAME = 'test_run_multiprocess_in_container_controller'
 
 # Extra `docker run` flags for worker/controller containers, e.g. `--network loadtest`
 # to join a target app's docker-compose network, or `--cpuset-cpus=8-31` to keep them
-# off the app's pinned cores (see plan.local-profiling.20260810.md §1, §3.1).
+# off the app's pinned cores (needed when measuring a CPU-constrained app locally: the
+# load generators must not compete with the app for the same cores).
 DOCKER_RUN_OPTS = os.environ.get('LOADTEST_DOCKER_RUN_OPTS', '')
 
 
@@ -196,7 +197,7 @@ EXPOSE 8888
                     # observed here right after the controller logged an internal scenario
                     # error) isn't wrapped into URLError by urllib in every code path, so it
                     # would otherwise escape this retry loop entirely and crash the caller
-                    # (seen taking down shutdown() during a Step 4 run).
+                    # (seen taking down shutdown() during a long multi-worker run).
                     if (datetime.datetime.now() - started_at).total_seconds() > CONNECTION_RETRY_SECONDS:
                         raise
                     log(f'connection to controller {self.controller_url} refused. Retrying ...')
@@ -329,9 +330,8 @@ class LocalContainers(AbstractContainers):
     def shutdown(self) -> None:
         super().shutdown()
         # Wait for the worker/controller containers specifically, not "docker ps is
-        # empty" - the local CPU-profiling harness keeps a target app+mongo running
-        # alongside every test run (see plan.local-profiling.20260810.md), so counting
-        # all containers never reaches zero and this used to hang forever.
+        # empty" - a local run keeps a target app+mongo container up alongside the test,
+        # so counting all containers never reaches zero and this used to hang forever.
         while True:
             proc = system(
                 f"docker ps -q --filter ancestor={WORKER_NAME} --filter ancestor={CONTROLLER_NAME}",

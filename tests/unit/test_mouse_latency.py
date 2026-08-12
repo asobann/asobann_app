@@ -1,4 +1,4 @@
-from tests.performance.mouse_latency import (
+from tests.support.mouse_latency import (
     pair_latencies, summarize_latencies, loss_rate, evaluate_all_pairs, evaluate_all_pairs_timeseries,
 )
 

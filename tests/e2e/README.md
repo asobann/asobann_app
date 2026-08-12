@@ -174,4 +174,4 @@ docker run --rm --network loadtest_default -e MOZ_HEADLESS=1 \
 - **ウィンドウサイズ**: ヘッドレスFirefoxの既定ビューポートは **1366x634** だが、テストは
   y=650〜750 あたりにドラッグする。`MoveTargetOutOfBoundsException` と、その後の
   連鎖的なタイムアウトが大量に出る。`new_e2e_browser` で明示的に 1600x1200 にしている。
-  負荷テストと共有している `firefox_options` は変更していない(変えるとベースラインがずれる)
+  モジュール変数の `firefox_options` のほうは変更していない(変更をE2Eのブラウザに閉じるため)

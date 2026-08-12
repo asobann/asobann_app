@@ -1,5 +1,5 @@
 """
-Step 1 verification for the slowness-repro plan (see plan.slowness-repro-test.*.md):
+Verifies the measurement path used by the slowness investigation (issue #134):
 confirms that GameHelper.start_mouse_load's synthetic mousemove events actually reach
 another player's screen through the real app path (mousemove listener -> socket.emit
 -> server broadcast -> socket.on -> showOthersMouseMovement), and that the pairing in
@@ -14,7 +14,7 @@ import time
 
 from ..e2e.conftest import browser_func as browser
 from ..e2e.helper import GameHelper, STAGING_TOP
-from .mouse_latency import evaluate_pair
+from ..support.mouse_latency import evaluate_pair
 
 HZ = 30
 LOAD_SECONDS = 10
