@@ -1,7 +1,8 @@
 """
 Step 2/3/4 of the slowness-repro plan: reproduce "gets slow after several people use it
 for tens of minutes" by keeping every player generating realistic mousemove load (the
-suspected N^2 broadcast amplification path - see issues.fable5.20260706.md #2) plus
+suspected N^2 broadcast amplification path, since disproven for 2-6 players - the
+cost is closer to linear in players x Hz; see issue #134) plus
 occasional card drags, continuously for `duration_seconds`, while measuring mousemove
 delivery latency between every pair of players at `report_interval_seconds` cadence.
 
@@ -33,7 +34,7 @@ from pathlib import Path
 
 from ..e2e.conftest import browser_func as browser
 from ..e2e.helper import GameHelper, STAGING_TOP
-from .mouse_latency import evaluate_all_pairs_timeseries
+from ..support.mouse_latency import evaluate_all_pairs_timeseries
 
 KIT_FILE = Path(__file__).parent / "sustained_load.json"
 
@@ -76,9 +77,10 @@ def execute_controller(command_queues, result_queues, parameters):
         invitation_url = host.menu.invitation_url.value
         log(f'table is opened at {invitation_url}')
 
-        # hz=0 means "idle" (see idle_n6 in plan.local-profiling.20260810.md §6) - JS's
-        # setInterval(fn, 1000/0) is Infinity, which is unreliable across browsers, so
-        # skip starting the load entirely rather than relying on it never firing.
+        # hz=0 means "idle": a baseline config that keeps players connected without
+        # generating any mousemove load. JS's setInterval(fn, 1000/0) is Infinity, which
+        # is unreliable across browsers, so skip starting the load entirely rather than
+        # relying on it never firing.
         if p['mousemove_hz'] > 0:
             host.start_mouse_load(hz=p['mousemove_hz'])
         host.start_mouse_receive_observer()

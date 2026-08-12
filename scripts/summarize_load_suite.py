@@ -71,7 +71,8 @@ def latency_stats(result_path: Path) -> dict:
     result = data.get('result', data)
     timeline = result.get('timeline', [])
     # The final interval is skewed by the host stopping first (loss spikes as a boundary
-    # artifact, not a real signal) - see slowness-investigation-results.20260809.md §4.
+    # artifact of how the run ends, not a real signal: the last report interval is
+    # cut short by shutdown, so its loss rate is inflated. Ignore the final interval.
     intervals = timeline[:-1] if len(timeline) > 1 else timeline
 
     p50s, p95s, losses = [], [], []

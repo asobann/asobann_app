@@ -1,6 +1,6 @@
 # 本番相当の構成でローカルプロファイリングを行うための最小環境(1インスタンス, Redisなし)。
 # deploy/localdev はスティッキーセッションなし3インスタンス+Redisで開発用のため使えない。
-# 詳細は plan.local-profiling.20260810.md を参照。
+# E2E(scripts/run_e2e.sh)もこの mongo とネットワーク(loadtest_default)を使う。
 services:
     app:
         build:
