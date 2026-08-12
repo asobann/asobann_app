@@ -197,7 +197,7 @@ EXPOSE 8888
                     # observed here right after the controller logged an internal scenario
                     # error) isn't wrapped into URLError by urllib in every code path, so it
                     # would otherwise escape this retry loop entirely and crash the caller
-                    # (seen taking down shutdown() during a Step 4 run).
+                    # (seen taking down shutdown() during a long multi-worker run).
                     if (datetime.datetime.now() - started_at).total_seconds() > CONNECTION_RETRY_SECONDS:
                         raise
                     log(f'connection to controller {self.controller_url} refused. Retrying ...')

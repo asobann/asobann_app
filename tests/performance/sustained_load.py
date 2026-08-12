@@ -1,10 +1,14 @@
 """
-Step 2/3/4 of the slowness-repro plan: reproduce "gets slow after several people use it
-for tens of minutes" by keeping every player generating realistic mousemove load (the
-suspected N^2 broadcast amplification path, since disproven for 2-6 players - the
-cost is closer to linear in players x Hz; see issue #134) plus
-occasional card drags, continuously for `duration_seconds`, while measuring mousemove
-delivery latency between every pair of players at `report_interval_seconds` cadence.
+Reproduce "gets slow after several people use it for tens of minutes" (issue #134) by
+keeping every player generating realistic mousemove load plus occasional card drags,
+continuously for `duration_seconds`, while measuring mousemove delivery latency between
+every pair of players at `report_interval_seconds` cadence.
+
+The suspected mechanism is the N^2 broadcast amplification path: the server re-emits each
+received mousemove to the whole room, so fanout stays N-1 per message. Measured CPU cost,
+however, came out closer to linear in players x Hz for 2-6 players, which suggests the
+per-received-message handling dominates over the fanout itself. That does not rule out the
+N^2 path at higher player counts - saturation at 6 players made it unmeasurable.
 
 Parameters (pass via `--param key=value`, see cli.py):
   duration_seconds        total load duration (default 180)

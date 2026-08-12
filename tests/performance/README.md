@@ -24,7 +24,7 @@
 
 ## 他への依存
 
-- **`tests/e2e/` のヘルパーに乗っている**（`GameHelper`, `browser_func`, `firefox_options`）。E2E側を変えるとここも影響を受ける。逆向きの依存は無い
+- **`tests/e2e/` のヘルパーに乗っている**（`GameHelper`, `browser_func`）。E2E側を変えるとここも影響を受ける。逆向きの依存は無い
 - `deploy/loadtest/docker-compose.yml` が対象アプリと mongo を提供する。これは E2E も使っている
 
 ## 実行

@@ -169,8 +169,7 @@ firefox_options = Options()
 # of 1366x634, so those drags fail with MoveTargetOutOfBoundsException and every
 # assertion that follows times out. Size the window explicitly rather than depending on
 # whatever the driver picks. Applied per browser (see new_e2e_browser) instead of via
-# the shared `firefox_options`, because that object is also used by the performance
-# tests' browser_func and changing their window size would shift the load-test baseline.
+# the shared `firefox_options`, to keep the change scoped to E2E browsers.
 E2E_WINDOW_SIZE = (1600, 1200)
 
 
