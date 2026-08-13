@@ -148,31 +148,48 @@ run_pytest() {
         fi
     fi
 
-    # 失敗時のスクリーンショットの置き場。コンテナ内はrootで動くので、書いたものは
-    # そのままだとホストからは root 所有になり消せない（過去に mongodata でやらかした）。
-    # pytestの直後、まだコンテナの中にいるうちに chown する。ホスト側でsudoが要らない。
-    rm -rf "$TMP_ARTIFACTS"
+    # テストが書き出したものの受け皿。コンテナはrootで動くので、ここに落ちる
+    # ファイルはroot所有になる。**ホスト側へは cp で取り出す。** cp は新しい
+    # ファイルを作るので、実行した本人が所有者になり、chownもsudoも要らない。
+    #
+    # この受け皿はディレクトリ自体をホスト側で作る。中のファイルがroot所有でも、
+    # 削除に要るのは親ディレクトリへの書き込み権限なので rm -rf は通る。
+    #
+    # コンテナに渡すコマンドには手を入れない。テストの種類ごとに渡すものが違うので、
+    # 後始末をコマンド側に埋め込むと、その都度ついて回ることになる。
+    clean_tmp_artifacts
     mkdir -p "$TMP_ARTIFACTS"
     mounts+=(-v "$TMP_ARTIFACTS:/artifacts")
     envs+=(-e ASOBANN_E2E_ARTIFACTS=/artifacts)
-    envs+=(-e "CHOWN_TO=$(id -u):$(id -g)")
 
     # -rR はリトライしたテストを一覧に出す。フレーキーの出入りを見るのに要る。
     # -v はテスト名を1件ずつ出す。以前は -q を渡しており、進捗のドットしか残らず
     # 「どのテストがどの順で走ったか」が後から追えなかった。順序依存を疑ったときに
     # 手がかりが無いのは困るので、既定を詳細側にする。
-    # pytestへの引数は sh -c の位置パラメータで渡す。文字列に埋め込むと、
-    # -k 'Test A' のような空白入りの指定が壊れる。
     local rc=0
-    docker run --rm --network "$NETWORK" "${envs[@]}" "${mounts[@]}" "$TEST_IMAGE" \
-        sh -c 'python3 -m pytest -v -rR "$@"; rc=$?; chown -R "$CHOWN_TO" /artifacts 2>/dev/null; exit $rc' \
-        sh "$@" || rc=$?
+    docker run --rm --network "$NETWORK" "${envs[@]}" "${mounts[@]}" \
+        "$TEST_IMAGE" python3 -m pytest -v -rR "$@" || rc=$?
 
     save_artifacts
     return $rc
 }
 
-# コンテナが書き出したものを、保存用のディレクトリへ実行ごとに分けて残す。
+# 受け皿を空にする。
+#
+# 中のファイルはコンテナがrootで書いたもの。平坦に置かれているかぎりホスト側で
+# 消せる（消すのに要るのは親ディレクトリへの書き込み権限で、それはこちらが持って
+# いる）。ただしコンテナが**サブディレクトリ**を作ると、その中身には手が出せない。
+# そのときだけコンテナに消させる。ホスト側でsudoを使わずに済ませるため。
+clean_tmp_artifacts() {
+    [ -e "$TMP_ARTIFACTS" ] || return 0
+    rm -rf "$TMP_ARTIFACTS" 2>/dev/null
+    [ -e "$TMP_ARTIFACTS" ] || return 0
+    docker run --rm -v "$ARTIFACTS_DIR:/a" "$TEST_IMAGE" sh -c 'rm -rf /a/tmp' >/dev/null 2>&1
+    rm -rf "$TMP_ARTIFACTS" 2>/dev/null || true
+}
+
+# コンテナが書き出したものを、保存用のディレクトリへ実行ごとに分けて取り出す。
+# cp が新しいファイルを作るので、ここで所有者がホスト側の自分になる。
 # 中身が無ければ何もしない（成功した実行でディレクトリが増えても邪魔なだけ）。
 save_artifacts() {
     if [ -z "$(ls -A "$TMP_ARTIFACTS" 2>/dev/null)" ]; then
