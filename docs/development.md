@@ -47,7 +47,7 @@ docker compose -f deploy/localdev/docker-compose.yml up --build
 ```shell
 inv test-unit                                    # Python + JS。DBもコンテナも不要
 inv test-functional                              # functional + api（コンテナ）
-inv e2e                                          # e2e（コンテナ。重い）
+inv test-e2e                                     # e2e（コンテナ。重い）
 
 inv test-functional --extra="tests/functional/store"
 inv test-unit --extra="-k redact -v"
