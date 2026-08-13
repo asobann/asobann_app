@@ -350,3 +350,7 @@ fabric.properties
 
 # 負荷試験の計測出力。残したいものは asobann_docs の worklogs へ（ADR 0010）
 /results/
+
+# E2Eの失敗時スクリーンショット。実行のたびに増える一時的なもので、普段は捨ててよい。
+# 必要になったら issue に貼るか、asobann_docs の worklog へ持っていく。
+/.e2e-artifacts/

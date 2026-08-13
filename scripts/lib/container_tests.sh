@@ -32,6 +32,12 @@ NETWORK=${NETWORK:-loadtest_default}
 MONGO_COMPOSE="$APP_DIR/deploy/loadtest/docker-compose.yml"
 MONGO_CONTAINER=loadtest-mongo-1
 
+# 失敗時のスクリーンショットの置き場。作業ツリーの中だが .gitignore してある。
+# tmp/ はコンテナへマウントする作業用で毎回消す。保存用は実行ごとの日時ディレクトリ。
+# 普段は捨ててよいもので、必要になったら issue に貼るか worklog へ持っていく。
+ARTIFACTS_DIR="$APP_DIR/.e2e-artifacts"
+TMP_ARTIFACTS="$ARTIFACTS_DIR/tmp"
+
 BUILD=yes
 DEV=no
 MOUNT_SRC=no
@@ -142,7 +148,71 @@ run_pytest() {
         fi
     fi
 
+    # テストが書き出したものの受け皿。コンテナはrootで動くので、ここに落ちる
+    # ファイルはroot所有になる。**ホスト側へは cp で取り出す。** cp は新しい
+    # ファイルを作るので、実行した本人が所有者になり、chownもsudoも要らない。
+    #
+    # この受け皿はディレクトリ自体をホスト側で作る。中のファイルがroot所有でも、
+    # 削除に要るのは親ディレクトリへの書き込み権限なので rm -rf は通る。
+    #
+    # コンテナに渡すコマンドには手を入れない。テストの種類ごとに渡すものが違うので、
+    # 後始末をコマンド側に埋め込むと、その都度ついて回ることになる。
+    clean_tmp_artifacts
+    mkdir -p "$TMP_ARTIFACTS"
+    mounts+=(-v "$TMP_ARTIFACTS:/artifacts")
+    envs+=(-e ASOBANN_E2E_ARTIFACTS=/artifacts)
+
     # -rR はリトライしたテストを一覧に出す。フレーキーの出入りを見るのに要る。
-    exec docker run --rm --network "$NETWORK" "${envs[@]}" "${mounts[@]}" \
-        "$TEST_IMAGE" python3 -m pytest -q -rR "$@"
+    # -v はテスト名を1件ずつ出す。以前は -q を渡しており、進捗のドットしか残らず
+    # 「どのテストがどの順で走ったか」が後から追えなかった。順序依存を疑ったときに
+    # 手がかりが無いのは困るので、既定を詳細側にする。
+    local rc=0
+    docker run --rm --network "$NETWORK" "${envs[@]}" "${mounts[@]}" \
+        "$TEST_IMAGE" python3 -m pytest -v -rR "$@" || rc=$?
+
+    # || true は set -e への保険。save_artifacts 自身も失敗を握りつぶすが、
+    # 二重に守っておく。返すべきは pytest の終了コードだけ。
+    save_artifacts || true
+    return $rc
+}
+
+# 受け皿を空にする。
+#
+# 中のファイルはコンテナがrootで書いたもの。平坦に置かれているかぎりホスト側で
+# 消せる（消すのに要るのは親ディレクトリへの書き込み権限で、それはこちらが持って
+# いる）。ただしコンテナが**サブディレクトリ**を作ると、その中身には手が出せない。
+# そのときだけコンテナに消させる。ホスト側でsudoを使わずに済ませるため。
+clean_tmp_artifacts() {
+    [ -e "$TMP_ARTIFACTS" ] || return 0
+    rm -rf "$TMP_ARTIFACTS" 2>/dev/null
+    [ -e "$TMP_ARTIFACTS" ] || return 0
+    docker run --rm -v "$ARTIFACTS_DIR:/a" "$TEST_IMAGE" sh -c 'rm -rf /a/tmp' >/dev/null 2>&1
+    rm -rf "$TMP_ARTIFACTS" 2>/dev/null || true
+}
+
+# コンテナが書き出したものを、保存用のディレクトリへ実行ごとに分けて取り出す。
+# cp が新しいファイルを作るので、ここで所有者がホスト側の自分になる。
+# 中身が無ければ何もしない（成功した実行でディレクトリが増えても邪魔なだけ）。
+#
+# **失敗しても握りつぶす。** これは診断の材料を残すためのおまけであって、テストの
+# 結果ではない。ここでコケてスクリプトが落ちると、pytestの終了コードを返す前に
+# 死ぬことになり、成果物の都合がテスト結果を上書きしてしまう。
+#
+# 保存先に秒とPIDを入れる。秒だけだと、同じ秒に2回呼ばれたとき（並行実行や、
+# 短いテストを続けて回したとき）に同じディレクトリへ混ざる。
+save_artifacts() {
+    if [ -z "$(ls -A "$TMP_ARTIFACTS" 2>/dev/null)" ]; then
+        return 0
+    fi
+    local dest="$ARTIFACTS_DIR/$(date +%Y%m%d-%H%M%S)-$$"
+    if ! mkdir -p "$dest" 2>/dev/null; then
+        echo "成果物の保存先を作れなかった: $dest" >&2
+        return 0
+    fi
+    if ! cp -r "$TMP_ARTIFACTS"/. "$dest"/ 2>/dev/null; then
+        echo "成果物のコピーに失敗した（テスト結果には影響しない）: $dest" >&2
+        return 0
+    fi
+    echo "失敗時のスクリーンショット: $dest"
+    ls "$dest" 2>/dev/null | sed 's/^/  /' || true
 }
