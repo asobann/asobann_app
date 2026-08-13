@@ -93,8 +93,8 @@ class ComponentUpdateBuffer {
     }
 
     persistedKeysOf(componentId) {
-        if (!this.persistedKeys.hasOwnProperty(componentId)) {
-            this.persistedKeys[componentId] = new Set();
+        if (!Object.prototype.hasOwnProperty.call(this.persistedKeys, componentId)) {
+            Object.defineProperty(this.persistedKeys, componentId, { value: new Set(), writable: true, configurable: true, enumerable: true });
         }
         return this.persistedKeys[componentId];
     }
