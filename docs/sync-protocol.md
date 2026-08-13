@@ -18,7 +18,7 @@ socket.io（デフォルト設定: polling→websocketアップグレード）�
 |---|---|---|
 | `come by table` | `{tablename}` | テーブルをget（なければ default_table.json から作成）、roomにjoin、送信者に `load table` を返す。**connect/再接続のたびに送られる** |
 | `set player name` | `{tablename, player: {name, isHost}}` | `table.players[name]` に登録して全体保存。送信者に `confirmed player name` |
-| `update many components` | `{tablename, originator, diffs: [{componentId: diff}], componentIdsToRemove: []}` | 部分`$set`で更新、削除は全体読み書き。roomへそのまま再配信。**通常の操作は全部この経路**（75msバッファ経由） |
+| `update many components` | `{tablename, originator, diffs: [{componentId: diff}], componentIdsToRemove: []}` | 部分`$set`で更新、削除は全体読み書き。roomへそのまま再配信。**通常のコンポーネント更新はこの経路**（75msバッファ経由）。新規追加は `add component` / `add kit` が別経路 |
 | `add component` | `{tablename, originator, component}` | テーブル全体読み→追加→全体書き戻し。roomへ `add component` |
 | `add kit` | `{tablename, originator, kitData: {kit}, newComponents}` | `$push` + 部分`$set`。roomへ `add kit` |
 | `sync with me` | `{tablename, originator, tableData}` | **クライアントから送られたテーブル全体で上書き保存**。roomへ `refresh table`。クライアントのkit削除（removeKit）が使用 |

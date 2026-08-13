@@ -163,11 +163,6 @@ socket.on('update many components', (msg) => {
     if (msg.tablename !== context.tablename) {
         return;
     }
-    for (const ev of msg.diffs) {
-        if (ev.inspectionTraceId) {
-            dev_inspector.tracePointByTraceId('receive update many components', ev.data.inspectionTraceId);
-        }
-    }
     if (msg.originator === context.client_connection_id) {
         return;
     }
