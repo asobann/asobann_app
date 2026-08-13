@@ -17,8 +17,8 @@ socket.io（デフォルト設定: polling→websocketアップグレード）�
 |---|---|---|
 | `come by table` | `{tablename}` | テーブルをget（なければ default_table.json から作成）、roomにjoin、送信者に `load table` を返す。**connect/再接続のたびに送られる** |
 | `set player name` | `{tablename, player: {name, isHost}}` | `table.players[name]` に登録して全体保存。送信者に `confirmed player name` |
-| `update many components` | `{tablename, originator, diffs: [{componentId: diff}], componentIdsToRemove: [], volatileKeys: {componentId: [key, ...]}}` | `volatileKeys` に列挙されたキーを除いて部分`$set`で更新（配信は`diffs`全体をそのまま）。削除は全体読み書き。roomへそのまま再配信。**通常のコンポーネント更新はこの経路**（75msバッファ経由）。新規追加は `add component` / `add kit` が別経路 |
-| `add component` | `{tablename, originator, component}` | テーブル全体読み→追加→全体書き戻し。roomへ `add component` |
+| `update many components` | `{tablename, originator, diffs: [{componentId: diff}], componentIdsToRemove: [], volatileKeys: {componentId: [key, ...]}}` | `volatileKeys` に列挙されたキーを除いて部分`$set`で更新（配信は`diffs`全体をそのまま）。削除はコンポーネント単位の`$unset`。roomへそのまま再配信。**通常のコンポーネント更新はこの経路**（75msバッファ経由）。新規追加は `add component` / `add kit` が別経路 |
+| `add component` | `{tablename, originator, component}` | コンポーネント単位の`$set`で追加。roomへ `add component` |
 | `add kit` | `{tablename, originator, kitData: {kit}, newComponents}` | `$push` + 部分`$set`。roomへ `add kit` |
 | `sync with me` | `{tablename, originator, tableData}` | **クライアントから送られたテーブル全体で上書き保存**。roomへ `refresh table`。クライアントのkit削除（removeKit）が使用 |
 | `mouse movement` | `{tablename, playerName, mouseMovement: {mouseOnTableX, mouseOnTableY, mouseButtons}}` | 保存せずroomへそのまま再配信。**間引きなし（mousemoveイベントの頻度そのまま）** |
@@ -48,7 +48,7 @@ socket.io（デフォルト設定: polling→websocketアップグレード）�
 
 ## 既知の問題点（変更時の参考）
 
-1. `add component` / `set player name` / `sync with me` はテーブル全体の読み書き — read-modify-writeなので並行更新でロストアップデートが起きる。`update many components` はコンポーネント単位の `$set` で並行安全
+1. `set player name` / `sync with me` はテーブル全体の読み書き — read-modify-writeなので並行更新でロストアップデートが起きる。他はコンポーネント単位の `$set` / `$unset` になっており並行安全。`set player name` は**プレイヤー名をキーにしている**（自由入力なので `.` や `$` を含みうる）ためドット記法に移せない。キーを生成IDにして名前を別に持つ設計変更が要る
 2. `mouse movement` が無間引き・送信者含む全員再配信 — 人数の2乗でメッセージが増える
 3. `refresh table`（`sync with me` の応答）の全量転送。kit削除がこの経路を使う
 4. disconnectハンドラがなく `players` に退室者が残る
