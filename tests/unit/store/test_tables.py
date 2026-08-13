@@ -110,6 +110,35 @@ class TestTableStore:
             assert read['components']['component2'] == {'value1': 300, 'value2': 120}
             assert read['components']['component3'] == {'value1': 300, 'value2': 220}
 
+        async def test_update_components_skips_volatile_keys(self, simple_table):
+            await tables.update_components(
+                'table1',
+                [{'component1': {'value1': 999, 'value2': 999}}],
+                volatile_keys={'component1': ['value1']})
+            read = await tables.get('table1')
+            assert read['components']['component1'] == {'value1': 10, 'value2': 999}
+
+        async def test_update_components_all_keys_volatile_writes_nothing(self, simple_table):
+            await tables.update_components(
+                'table1',
+                [{'component1': {'value1': 999, 'value2': 999}}],
+                volatile_keys={'component1': ['value1', 'value2']})
+            read = await tables.get('table1')
+            assert read['components']['component1'] == {'value1': 10, 'value2': 20}
+
+        async def test_update_components_volatile_keys_for_other_component_is_ignored(
+                self, table_with_several_components):
+            await tables.update_components(
+                'table1',
+                [
+                    {'component1': {'value1': 300}},
+                    {'component2': {'value1': 300}},
+                ],
+                volatile_keys={'component2': ['value1']})
+            read = await tables.get('table1')
+            assert read['components']['component1'] == {'value1': 300, 'value2': 20}
+            assert read['components']['component2'] == {'value1': 110, 'value2': 120}
+
     class TestAddNewKitAndComponents:
         async def test_usual(self, simple_table):
             await tables.add_new_kit_and_components(

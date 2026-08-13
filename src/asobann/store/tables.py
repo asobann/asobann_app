@@ -58,16 +58,18 @@ def connect(mongo_db):
     table_metas = mongo_db.table_metas
 
 
-async def update_components(tablename, diff_of_components):
+async def update_components(tablename, diff_of_components, volatile_keys=None):
     current_table = await get(tablename)
+    volatile_keys = volatile_keys or {}
     modification = {}
-    i = 0
     for diff in diff_of_components:
         for component_id in diff.keys():
             if component_id not in current_table["components"]:
                 continue
-            i += 1
+            skip_keys = volatile_keys.get(component_id, [])
             for key in diff[component_id].keys():
+                if key in skip_keys:
+                    continue
                 mod_key = f'table.components.{component_id}.{key}'
                 modification[mod_key] = diff[component_id][key]
     if not modification:
