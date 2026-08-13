@@ -1,12 +1,9 @@
 import os
-import pytest
 import pytest_asyncio
 
 os.environ["FLASK_ENV"] = "test"
 
 import asobann.app
-
-pytestmark = [pytest.mark.quick]
 
 
 @pytest_asyncio.fixture

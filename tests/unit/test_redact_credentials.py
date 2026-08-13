@@ -2,8 +2,6 @@ import pytest
 
 from asobann.app import redact_credentials
 
-pytestmark = [pytest.mark.quick]
-
 PARAMS = [
     {
         'id': 'atlas (mongodb+srv with query string)',

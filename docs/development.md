@@ -27,28 +27,62 @@ docker compose -f deploy/localdev/docker-compose.yml up --build
 
 ### 種類と場所
 
-| 種類 | 場所 | 前提 | 内容 |
-|---|---|---|---|
-| unit (JS) | tests/unit/*.test.js | なし（jsdom） | 更新キュー（Level A/B/C）、送信バッファ等。`pnpm test` |
-| unit (Python) | tests/unit/*.py | **一部は実MongoDBが必要**（store/test_tables.py） | 設定、store層 |
-| functional | tests/functional/ | MongoDB + テストサーバ（conftestが自動起動） | HTTPエンドポイント |
-| api | tests/api/ | 同上 | キットアップロードAPI |
-| e2e | tests/e2e/ | 同上 + Firefox/geckodriver | Seleniumでの実ブラウザ操作。2ブラウザ同期検証を含む |
-| performance | tests/performance/ | 対象サーバ | 負荷計測フレームワーク（pytestではなくcli.pyから実行） |
+**必要な外部リソースでディレクトリを分けている。** どこに置くかは「何が要るか」で決まる。
+
+| 種類 | 場所 | 前提 | 実行方法 | 内容 |
+|---|---|---|---|---|
+| unit (JS) | tests/unit/*.test.js | **なし**（jsdom） | ホスト | 更新キュー（Level A/B/C）、送信バッファ |
+| unit (Python) | tests/unit/*.py | **なし** | ホスト | 設定、ログの伏字化、レイテンシ解析 |
+| functional | tests/functional/ | MongoDB | **コンテナ** | HTTPエンドポイント、store層。アプリは `test_client()` でインプロセス起動 |
+| api | tests/api/ | MongoDB + テストサーバ（conftestが起動） | **コンテナ** | キットアップロードAPI |
+| e2e | tests/e2e/ | MongoDB + テストサーバ + Firefox | **コンテナ** | Seleniumでの実ブラウザ操作。2ブラウザ同期検証を含む |
+| performance | tests/performance/ | 対象サーバ | cli.py | 負荷計測フレームワーク（pytestでは実行しない） |
+
+**実DBが要るテストを `tests/unit/` に置かないこと。** ユニットテストは外部プロセス無しで完走する、が唯一の基準。
 
 ### 実行
 
+ワークスペース直下の invoke タスクが統一の窓口。
+
 ```shell
-pnpm test                                  # JS unit
-uv run pytest -m quick                     # 高速なテストのみ（@pytest.mark.quick）
-uv run pytest tests/unit tests/functional
-uv run pytest tests/e2e                    # 重い。Firefox+geckodriverが必要
-uv run pytest tests/path/to/test.py::test_name -v   # 単一テスト
+inv test-unit                                    # Python + JS。DBもコンテナも不要
+inv test-functional                              # functional + api（コンテナ）
+inv test-e2e                                     # e2e（コンテナ。重い）
+
+inv test-functional --extra="tests/functional/store"
+inv test-unit --extra="-k redact -v"
 ```
 
-- Pythonテストは `tests/conftest.py` の `TestServerProvider` がテストサーバ（port 10011）を都度起動する。起動には `sys.executable` を使うので、テストを動かしたインタプリタ（= uvの.venv）がそのまま使われる
-- e2eはgeckodriverがPATHにあること。`tests/geckodriver.example` 参照
-- コンテナ内でテストを回す仕組みは `tests/entry_for_test_container.sh`（slowness_issueブランチ）を参照
+asobann_app 単体で作業しているならスクリプトを直接叩くほうが速い。
+
+```shell
+uv run pytest tests/unit                         # ホストでそのまま動く
+pnpm test                                        # JS unit
+./scripts/run_functional.sh                      # functional + api
+./scripts/run_e2e.sh                             # e2e
+```
+
+### なぜコンテナなのか
+
+`config_test.py` が接続先に `mongo:27017` を使う。この名前は docker のネットワーク内でしか解決できないので、**functional 以降はホストから直接は動かない**。`scripts/lib/container_tests.sh` が mongo の起動とテストコンテナの実行をまとめて面倒を見る。
+
+- mongo は `deploy/loadtest/docker-compose.yml` から起動し、**上げっぱなしで再利用する**（毎回上げ直さない）
+- テストイメージは `asobann-e2e:local`。functional にブラウザは要らないが、イメージを増やす手間のほうが大きいので共用している
+
+### 直しながら回すとき
+
+既定ではイメージをビルドし直すので時間がかかる。`--dev` を使うとビルドを飛ばし、作業ツリーをマウントする。
+
+```shell
+./scripts/run_functional.sh --dev tests/functional/store   # 約2秒
+inv test-functional --dev --extra="-k update_components"
+```
+
+| | functional | e2e |
+|---|---|---|
+| `--dev` でマウントするもの | `tests/` と `src/` | `tests/` のみ |
+
+e2e で `src/` をマウントしないのは、**本番イメージそのものを検証する**という位置づけを保つため（→ issue #126）。アプリ側を直したら `--dev` を外してビルドし直す。functional はアプリをインプロセスで起動するのでこの制約がなく、`src/` も一緒にマウントして編集→再実行を速くしている。
 
 ### 性能計測（tests/performance/）
 
@@ -69,7 +103,7 @@ tests/             # 上記テスト群
 
 - Python: PEP 8、型アノテーション推奨、snake_case / PascalCase
 - JavaScript: ES6+、camelCase / PascalCase
-- テストには適切なマーク（例: `@pytest.mark.quick`）を付ける
+- テストは種類ごとのディレクトリに置く（→ 上記「種類と場所」）。マーカーではなく置き場所で区別する
 
 ## 落とし穴メモ
 

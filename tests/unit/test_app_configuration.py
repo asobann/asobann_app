@@ -4,8 +4,6 @@ import asobann.config_common
 import pytest
 from quart import Quart
 
-pytestmark = [pytest.mark.quick]
-
 PARAMS = [
     {
         'id': 'development',

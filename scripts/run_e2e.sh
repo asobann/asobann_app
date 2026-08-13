@@ -6,6 +6,8 @@
 # firefox も geckodriver も要る。本番イメージをベースにしたE2Eイメージを docker 上で
 # 動かす。設計上の前提は tests/e2e/README.md を参照。
 #
+# 共通の足回り（mongo起動・イメージ用意・docker run）は scripts/lib/container_tests.sh。
+#
 # 使い方:
 #   ./scripts/run_e2e.sh [オプション] [pytestに渡す引数...]
 #
@@ -30,62 +32,28 @@
 
 set -euo pipefail
 
-# 自分の位置からリポジトリのルートを引く。gitに答えさせるので、どこから
-# 実行しても、チェックアウト先がどこにあっても正しい。
-APP_DIR=$(git -C "$(dirname "$0")" rev-parse --show-toplevel)
+source "$(dirname "$0")/lib/container_tests.sh"
 
-E2E_IMAGE=${E2E_IMAGE:-asobann-e2e:local}
-NETWORK=${NETWORK:-loadtest_default}
-MONGO_COMPOSE="$APP_DIR/deploy/loadtest/docker-compose.yml"
-MONGO_CONTAINER=loadtest-mongo-1
-
-BUILD=yes
-DEV=no
 TOLERATE_FLAKY=no
 
-while [ $# -gt 0 ]; do
+# --tolerate-flaky はこのスクリプト固有。共通パーサに渡して、他のフラグと同じ
+# 扱いにする（先頭のみ解釈し、`--` 以降には手を出さない）。
+handle_e2e_flag() {
     case "$1" in
-        --no-build)       BUILD=no; shift ;;
-        --dev)            DEV=yes; BUILD=no; shift ;;
-        --tolerate-flaky) TOLERATE_FLAKY=yes; shift ;;
-        --)               shift; break ;;
-        *)                break ;;
+        --tolerate-flaky) TOLERATE_FLAKY=yes; return 0 ;;
+        *)                return 1 ;;
     esac
-done
+}
+EXTRA_FLAG_HANDLER=handle_e2e_flag
 
-# 対象を指定しなければ tests/e2e 全体。
-if [ $# -eq 0 ]; then
-    set -- tests/e2e
-fi
+parse_common_flags "$@"
+default_targets tests/e2e -- ${REMAINING_ARGS+"${REMAINING_ARGS[@]}"}
+set -- "${TARGETS[@]}"
 
-# E2Eは config_test.py のハードコードにより mongo:27017 を見る。deploy/loadtest の
-# composeがサービス名 mongo でそれを提供するので、それを使い回す。
-if ! docker ps --format '{{.Names}}' | grep -qx "$MONGO_CONTAINER"; then
-    echo "mongo が起動していないので起動する"
-    docker compose -f "$MONGO_COMPOSE" up -d mongo
-fi
-
-if [ "$BUILD" = yes ]; then
-    "$APP_DIR/scripts/build_e2e_image.sh"
-elif ! docker image inspect "$E2E_IMAGE" >/dev/null 2>&1; then
-    echo "$E2E_IMAGE が無い。--no-build / --dev を外すか、" >&2
-    echo "scripts/build_e2e_image.sh を先に実行すること" >&2
-    exit 1
-fi
+ensure_mongo
+ensure_image
 
 envs=(-e MOZ_HEADLESS=1)
 [ "$TOLERATE_FLAKY" = yes ] && envs+=(-e E2E_TOLERATE_KNOWN_FLAKY=1)
 
-mounts=()
-if [ "$DEV" = yes ]; then
-    # 読み取り専用。書き込みを許すとコンテナのrootが __pycache__ を作業ツリーに
-    # 作り、ホストから消せなくなる（deploy/loadtest/mongodata で実際にやらかした）。
-    mounts=(-v "$APP_DIR/tests:/app/tests:ro")
-    envs+=(-e PYTHONDONTWRITEBYTECODE=1)
-    echo '--- dev: tests/ はホストからマウント、src/（アプリ）はイメージのもの ---'
-    echo '--- アプリ側を直したときは --dev を外してイメージを作り直すこと ---'
-fi
-
-# -rR はリトライしたテストを一覧に出す。フレーキーの出入りを見るのに要る。
-exec docker run --rm --network "$NETWORK" "${envs[@]}" "${mounts[@]}" \
-    "$E2E_IMAGE" python3 -m pytest -q -rR "$@"
+run_pytest "${envs[@]}" -- "$@"

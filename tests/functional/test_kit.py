@@ -1,5 +1,4 @@
 import os
-import pytest
 import pytest_asyncio
 import json
 
@@ -8,8 +7,6 @@ os.environ["FLASK_ENV"] = "test"
 # pylint: disable=E402
 import asobann.app
 import asobann.deploy
-
-pytestmark = [pytest.mark.quick]
 
 
 @pytest_asyncio.fixture
