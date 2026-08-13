@@ -11,10 +11,6 @@ async def play_table(tablename):
     return await render_template('play_session.html')
 
 
-async def add_component(json, table):
-    table["components"][json["component"]["componentId"]] = json["component"]
-
-
 def register_handlers(sio, app):
     logger = app.logger
 
@@ -67,9 +63,7 @@ def register_handlers(sio, app):
     async def handle_add_component(sid, json):
         logger.info(f'add component: {json["component"]["componentId"]} {json["component"]["name"]}')
         logger.debug(f'add component: {json}')
-        table = await tables.get(json["tablename"])
-        await add_component(json, table)
-        await tables.update_table(json["tablename"], table)
+        await tables.add_component(json["tablename"], json["component"])
         await sio.emit("add component", {"tablename": json["tablename"], "component": json["component"]},
                         room=json["tablename"])
         logger.info(f'add component end')

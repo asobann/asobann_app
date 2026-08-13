@@ -105,6 +105,6 @@ addFeat(myFeat);  // feats/counter.js 等を参照
 
 ## 既知の設計上の課題
 
-- テーブル全体の読み書きを行うサーバイベントが残っており、テーブル肥大で遅くなる
+- テーブル全体の読み書きを行うサーバイベントが `set player name` と `sync with me` に残っている（→ [sync-protocol.md](sync-protocol.md) 既知の問題点）
 - 揮発データ（マウスカーソル）と永続データが同じ経路を通る
 - `players` から退室者が削除されない（disconnectハンドラなし）

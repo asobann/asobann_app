@@ -89,11 +89,44 @@ async def add_new_kit_and_components(tablename, kitData, components):
     await tables.update_one({"tablename": tablename}, {"$set": modification})
 
 
+class TableNotFound(Exception):
+    pass
+
+
+def _ensure_matched(result, tablename):
+    """卓が見つからなかった書き込みを、黙って捨てずに落とす。
+
+    卓全体を読んでから書き戻していた頃は、読んだ時点で存在しない卓が None として
+    返り、その後のアクセスで必ず落ちていた。部分更新はフィルタが一致しなくても
+    update_one が成功扱いで返るので、放っておくと「クライアントには配信されたのに
+    DBには入っていない」状態を無言で作る（リロードで消える）。
+    """
+    if result.matched_count == 0:
+        raise TableNotFound(tablename)
+
+
 async def remove_components(tablename, component_ids_to_remove):
-    table = await get(tablename)
-    for component_id in component_ids_to_remove:
-        del table["components"][component_id]
-    await tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
+    # $unset はコンポーネント単位で消すので、卓を読んで丸ごと書き戻す必要がない。
+    # 全体書き戻しだと、その間に届いた他プレイヤーの更新を巻き込んで消していた。
+    # 存在しないパスへの $unset はエラーにならないので、事前の存在確認も要らない。
+    modification = {f'table.components.{component_id}': '' for component_id in component_ids_to_remove}
+    if not modification:
+        return
+    result = await tables.update_one({"tablename": tablename}, {"$unset": modification})
+    _ensure_matched(result, tablename)
+    await table_metas.update_one(
+        {"tablename": tablename},
+        {"$set": {"updated_at": datetime.datetime.now()}})
+
+
+async def add_component(tablename, component_data):
+    # componentIdはクライアントが生成する12桁hex（play_session.jsのgenerateComponentId）
+    # なので、ドット記法のパスに入れても壊れない。
+    component_id = component_data["componentId"]
+    result = await tables.update_one(
+        {"tablename": tablename},
+        {"$set": {f'table.components.{component_id}': component_data}})
+    _ensure_matched(result, tablename)
     await table_metas.update_one(
         {"tablename": tablename},
         {"$set": {"updated_at": datetime.datetime.now()}})
