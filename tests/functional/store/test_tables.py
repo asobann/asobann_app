@@ -182,9 +182,9 @@ class TestTableStore:
             assert 'componentA' in read['components']
             assert 'componentB' in read['components']
 
-        # gather の起動順がそのまま書き込み順になるので、「後から書くほう」を
-        # 全体書き戻しにする順序で並べること。逆にすると、全体書き戻しの上に
-        # 部分$setが乗って上書きが起きず、旧実装でも通ってしまう（実際に踏んだ）。
+        # 旧実装（remove側がread-modify-writeで全体を書き戻す）では、
+        # removeの書き戻しが update_components の部分更新を上書きしてロストアップデートが起きうる。
+        # ここでは warm_pool で交差しやすい状態を作り、同時実行でも上書きされないことを確認する。
         async def test_remove_does_not_clobber_concurrent_update(self, table_with_several_components):
             await asyncio.gather(
                 tables.update_components('table1', [{'component2': {'value1': 999}}]),
