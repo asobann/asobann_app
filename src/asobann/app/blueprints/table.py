@@ -56,7 +56,7 @@ def register_handlers(sio, app):
         logger.info(f'update many component')
         trace.trace_point('before update_table')
         if json['diffs']:
-            await tables.update_components(json['tablename'], json['diffs'])
+            await tables.update_components(json['tablename'], json['diffs'], json.get('volatileKeys'))
         if json['componentIdsToRemove']:
             await tables.remove_components(json['tablename'], json['componentIdsToRemove'])
         trace.trace_point('after update_table')

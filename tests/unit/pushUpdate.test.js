@@ -105,3 +105,50 @@ describe('ComponentUpdateBuffer builds message', () => {
         })
     });
 });
+
+describe('volatile updates are excluded from persistence but not from broadcast', () => {
+    test('a volatile-only key is listed in volatileKeys', () => {
+        pushComponentUpdate(table, 'component1', { left: 10 }, true);
+        const msg = componentUpdateBuffer.buildMessageToEmit();
+        expect(msg.data.diffs).toMatchObject([{ component1: { left: 10 } }]);
+        expect(msg.data.volatileKeys.component1).toEqual(expect.arrayContaining(['left']));
+    });
+
+    test('a non-volatile key is not listed in volatileKeys', () => {
+        pushComponentUpdate(table, 'component1', { value: 100 }, false);
+        const msg = componentUpdateBuffer.buildMessageToEmit();
+        expect(msg.data.volatileKeys.component1).toBeUndefined();
+    });
+
+    test('a non-volatile write after a volatile write on the same key persists it', () => {
+        pushComponentUpdate(table, 'component1', { left: 10 }, true);
+        pushComponentUpdate(table, 'component1', { left: 20 }, false);
+        const msg = componentUpdateBuffer.buildMessageToEmit();
+        expect(msg.data.diffs).toMatchObject([{ component1: { left: 20 } }]);
+        expect(msg.data.volatileKeys.component1).toBeUndefined();
+    });
+
+    test('a volatile write after a non-volatile write on the same key stays persisted', () => {
+        pushComponentUpdate(table, 'component1', { left: 20 }, false);
+        pushComponentUpdate(table, 'component1', { left: 30 }, true);
+        const msg = componentUpdateBuffer.buildMessageToEmit();
+        expect(msg.data.diffs).toMatchObject([{ component1: { left: 30 } }]);
+        expect(msg.data.volatileKeys.component1).toBeUndefined();
+    });
+
+    test('other keys on the same component stay volatile independently', () => {
+        pushComponentUpdate(table, 'component1', { left: 10 }, true);
+        pushComponentUpdate(table, 'component1', { value: 100 }, false);
+        const msg = componentUpdateBuffer.buildMessageToEmit();
+        expect(msg.data.diffs).toMatchObject([{ component1: { left: 10, value: 100 } }]);
+        expect(msg.data.volatileKeys.component1).toEqual(['left']);
+    });
+
+    test('reset clears persisted-key tracking', () => {
+        pushComponentUpdate(table, 'component1', { left: 20 }, false);
+        componentUpdateBuffer.reset();
+        pushComponentUpdate(table, 'component1', { left: 10 }, true);
+        const msg = componentUpdateBuffer.buildMessageToEmit();
+        expect(msg.data.volatileKeys.component1).toEqual(expect.arrayContaining(['left']));
+    });
+});

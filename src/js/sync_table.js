@@ -62,14 +62,26 @@ class ComponentUpdateBuffer {
     constructor(table) {
         this.table = table;
         this.buffer = {};
+        // Keys written by a non-volatile diff in the current window, per componentId.
+        // A key not in here is volatile-only and won't be persisted. Once a key is
+        // marked persisted it stays persisted for the rest of the window, regardless
+        // of the order volatile/non-volatile diffs for that key arrive in - e.g. a
+        // drop (non-volatile) followed by more volatile updates must still be saved.
+        this.persistedKeys = {};
         this.orderOfComponentId = [];
         this.componentIdsToRemove = [];
     }
 
-    addDiff(componentId, diff) {
+    addDiff(componentId, diff, volatile) {
         Object.assign(this.updateOf(componentId), diff);
         if (this.orderOfComponentId.indexOf(componentId) < 0) {
             this.orderOfComponentId.push(componentId);
+        }
+        if (!volatile) {
+            const persisted = this.persistedKeysOf(componentId);
+            for (const key of Object.keys(diff)) {
+                persisted.add(key);
+            }
         }
     }
 
@@ -78,6 +90,18 @@ class ComponentUpdateBuffer {
             this.buffer[componentId] = {};
         }
         return this.buffer[componentId];
+    }
+
+    persistedKeysOf(componentId) {
+        if (!this.persistedKeys.hasOwnProperty(componentId)) {
+            this.persistedKeys[componentId] = new Set();
+        }
+        return this.persistedKeys[componentId];
+    }
+
+    volatileKeysOf(componentId) {
+        const persisted = this.persistedKeysOf(componentId);
+        return Object.keys(this.updateOf(componentId)).filter((key) => !persisted.has(key));
     }
 
     addComponentIdToRemove(componentId) {
@@ -94,10 +118,15 @@ class ComponentUpdateBuffer {
         }
 
         const diffs = [];
+        const volatileKeys = {};
         for (const componentId of this.orderOfComponentId) {
             const diff = {};
             diff[componentId] = this.updateOf(componentId);
             diffs.push(diff);
+            const keys = this.volatileKeysOf(componentId);
+            if (keys.length > 0) {
+                volatileKeys[componentId] = keys;
+            }
         }
         return {
             eventName: 'update many components',
@@ -106,6 +135,7 @@ class ComponentUpdateBuffer {
                 originator: context.client_connection_id,
                 diffs: diffs,
                 componentIdsToRemove: this.componentIdsToRemove.slice(),
+                volatileKeys: volatileKeys,
             },
         }
     }
@@ -115,6 +145,7 @@ class ComponentUpdateBuffer {
      */
     reset() {
         this.buffer = {};
+        this.persistedKeys = {};
         this.orderOfComponentId.splice(0);
         this.componentIdsToRemove.splice(0);
     }
@@ -149,7 +180,7 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
         epoch: Date.now(),
     }
     dev_inspector.tracePoint('queued');
-    componentUpdateBuffer.addDiff(componentId, diff);
+    componentUpdateBuffer.addDiff(componentId, diff, volatile === true);
     updateTableDataWithComponentDiff(table, componentId, diff);
 }
 
