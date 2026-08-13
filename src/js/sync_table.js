@@ -175,10 +175,6 @@ function pushComponentUpdate(table, componentId, diff, volatile) {
         console.log("no such component", componentId, table.data);
     }
 
-    diff.lastUpdated = {
-        from: context.client_connection_id,
-        epoch: Date.now(),
-    }
     dev_inspector.tracePoint('queued');
     componentUpdateBuffer.addDiff(componentId, diff, volatile === true);
     updateTableDataWithComponentDiff(table, componentId, diff);

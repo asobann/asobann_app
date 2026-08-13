@@ -1,6 +1,6 @@
 # 同期プロトコル仕様（現状）
 
-最終更新: 2026-08-13（volatile対応後のmasterブランチから逆引きで文書化）
+最終更新: 2026-08-13（lastUpdated撤去後のmasterブランチから逆引きで文書化）
 
 socket.io（デフォルト設定: polling→websocketアップグレード）で、テーブル名をroomとして同期する。
 本書は「現状の仕様」の記録であり、既知の問題点は末尾にまとめる。
@@ -10,7 +10,6 @@ socket.io（デフォルト設定: polling→websocketアップグレード）�
 - `tablename`: URLパスから取得（`/tables/<tablename>`）。**アクセス制御はこれを知っているかどうかのみ**
 - `originator` / `client_connection_id`: クライアントが起動時に生成する12桁hexランダム値。自分発のブロードキャストを無視するために使う
 - `componentId`: コンポーネント追加時にクライアントが生成する12桁hex
-- `lastUpdated: {from: <connection_id>, epoch: <Date.now()>}`: 送信・保存はされるが、**現状どこからも読まれていない**（後述）
 
 ## クライアント → サーバ
 
@@ -30,7 +29,7 @@ socket.io（デフォルト設定: polling→websocketアップグレード）�
 |---|---|---|
 | `load table` | テーブル全体 | 初期化。players空なら自分がhostとしてjoin |
 | `confirmed player name` | `{player: {name}}` | sessionStorageへ保存 |
-| `update many components` | 送信ペイロードそのまま | originatorが自分なら無視。diff適用+削除適用。**`lastUpdated` による新旧比較は無い**（到着順そのまま適用） |
+| `update many components` | 送信ペイロードそのまま | originatorが自分なら無視。diff適用+削除適用。**新旧比較は無い**（到着順そのまま適用） |
 | `add component` / `add kit` | 同上 | 追加を適用（add kitはoriginator自分なら無視） |
 | `refresh table` | `{tablename, table}` | **テーブル全体を差し替え再描画** |
 | `mouse movement` | 送信ペイロードそのまま | 他プレイヤーのカーソル表示を移動（自分のplayerNameなら無視） |
@@ -44,7 +43,7 @@ socket.io（デフォルト設定: polling→websocketアップグレード）�
 ## 権威と競合解決
 
 - サーバは検証しないパススルー。**権威はクライアント側**にあり、サーバはテーブル状態をメモリに保持しない
-- `lastUpdated` はクライアント時計に基づくlast-write-winsのために送信・保存されているが、**受信側での比較ロジックは無い**。競合解決は事実上「到着順」
+- 競合解決は無い。同じフィールドへの更新は事実上「サーバに最後に届いた方が勝つ」（到着順）。かつてクライアント時計ベースの `lastUpdated`（`from`/`epoch`）による新旧比較があったが、実際には受信側で使われないまま放置されていたため撤去した。同一送信者からの更新が受信側で順序逆転するケースに対する保険がない状態
 - カードの裏表・手札の所有もすべて全クライアントにデータとして届く。手札が見えないのは表示制御のみ（データは取得可能）
 
 ## 既知の問題点（変更時の参考）
@@ -53,7 +52,7 @@ socket.io（デフォルト設定: polling→websocketアップグレード）�
 2. `mouse movement` が無間引き・送信者含む全員再配信 — 人数の2乗でメッセージが増える
 3. `refresh table`（`sync with me` の応答）の全量転送。kit削除がこの経路を使う
 4. disconnectハンドラがなく `players` に退室者が残る
-5. `lastUpdated` ガードが無い（受信側での新旧比較ロジックが存在しない。上記）
+5. 競合解決・新旧比較が無い（上記）。同一送信者からの更新の順序逆転にも保険がない
 6. `update_components()` が更新のたびにテーブル全体を1回読む（存在しないcomponentIdへの`$set`を避けるためだけ）
 7. 順序保証・ack・再送なし
 

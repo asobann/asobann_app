@@ -111,7 +111,7 @@ describe('volatile updates are excluded from persistence but not from broadcast'
         pushComponentUpdate(table, 'component1', { left: 10 }, true);
         const msg = componentUpdateBuffer.buildMessageToEmit();
         expect(msg.data.diffs).toMatchObject([{ component1: { left: 10 } }]);
-        expect(msg.data.volatileKeys.component1).toEqual(expect.arrayContaining(['left']));
+        expect(msg.data.volatileKeys.component1).toEqual(['left']);
     });
 
     test('a non-volatile key is not listed in volatileKeys', () => {
@@ -149,6 +149,6 @@ describe('volatile updates are excluded from persistence but not from broadcast'
         componentUpdateBuffer.reset();
         pushComponentUpdate(table, 'component1', { left: 10 }, true);
         const msg = componentUpdateBuffer.buildMessageToEmit();
-        expect(msg.data.volatileKeys.component1).toEqual(expect.arrayContaining(['left']));
+        expect(msg.data.volatileKeys.component1).toEqual(['left']);
     });
 });
