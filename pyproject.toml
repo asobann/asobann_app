@@ -64,7 +64,6 @@ filterwarnings = [
 ]
 markers = [
     "loadtest: load tests using heroku",
-    "quick: fast and light tests",
 ]
 addopts = "-m 'not loadtest' --ignore tests/performance"
 asyncio_mode = "auto"
