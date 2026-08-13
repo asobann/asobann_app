@@ -1,5 +1,3 @@
-import os
-
 import asobann
 import asobann.app
 import asobann.config_common
@@ -110,20 +108,24 @@ PARAMS = [
 ]
 
 
+# Every key that any PARAMS case sets. Cleared before each test regardless of what the
+# test runner's own shell happens to export (e.g. a developer's MONGODB_URI for
+# convenience), so expectations don't depend on the ambient environment.
+ENV_KEYS_UNDER_TEST = sorted({key for p in PARAMS for key in p['input']['env'].keys()})
+
+
 @pytest.mark.parametrize('param', PARAMS, ids=[p['id'] for p in PARAMS])
-def test_config(param):
+def test_config(param, monkeypatch):
     input_ = param['input']
     expected = param['expected']
-    os.environ['FLASK_ENV'] = input_['FLASK_ENV']
-    try:
-        for key, value in input_['env'].items():
-            os.environ[key] = value
-        app = Quart(__name__)
-        import importlib
-        importlib.reload(asobann.config_common)  # must be reloaded with new environment
-        asobann.app.configure_app(app, testing=input_.get('testing', False))
-        for key, value in expected['config'].items():
-            assert app.config[key] == value
-    finally:
-        for key, value in input_['env'].items():
-            del os.environ[key]
+    monkeypatch.setenv('FLASK_ENV', input_['FLASK_ENV'])
+    for key in ENV_KEYS_UNDER_TEST:
+        monkeypatch.delenv(key, raising=False)
+    for key, value in input_['env'].items():
+        monkeypatch.setenv(key, value)
+    app = Quart(__name__)
+    import importlib
+    importlib.reload(asobann.config_common)  # must be reloaded with new environment
+    asobann.app.configure_app(app, testing=input_.get('testing', False))
+    for key, value in expected['config'].items():
+        assert app.config[key] == value

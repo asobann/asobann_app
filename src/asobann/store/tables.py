@@ -52,42 +52,6 @@ async def update_table(tablename, table):
         {"$set": {"updated_at": datetime.datetime.now()}})
 
 
-async def add_component(tablename, component_data):
-    table = await get(tablename)
-    table["components"][component_data["componentId"]] = component_data
-    await tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
-    await table_metas.update_one(
-        {"tablename": tablename},
-        {"$set": {"updated_at": datetime.datetime.now()}})
-
-
-async def remove_component(tablename, component_id):
-    table = await get(tablename)
-    del table["components"][component_id]
-    await tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
-    await table_metas.update_one(
-        {"tablename": tablename},
-        {"$set": {"updated_at": datetime.datetime.now()}})
-
-
-async def add_kit(tablename, kitData):
-    table = await get(tablename)
-    table["kits"].append(kitData)
-    await tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
-    await table_metas.update_one(
-        {"tablename": tablename},
-        {"$set": {"updated_at": datetime.datetime.now()}})
-
-
-async def remove_kit(tablename, kit_id):
-    table = await get(tablename)
-    table["kits"] = [e for e in table["kits"] if e["kitId"] != kit_id]
-    await tables.update_one({"tablename": tablename}, {"$set": {"table": table}})
-    await table_metas.update_one(
-        {"tablename": tablename},
-        {"$set": {"updated_at": datetime.datetime.now()}})
-
-
 def connect(mongo_db):
     global tables, table_metas
     tables = mongo_db.tables
