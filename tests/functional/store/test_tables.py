@@ -182,9 +182,15 @@ class TestTableStore:
             assert 'componentA' in read['components']
             assert 'componentB' in read['components']
 
-        # 旧実装（remove側がread-modify-writeで全体を書き戻す）では、
-        # removeの書き戻しが update_components の部分更新を上書きしてロストアップデートが起きうる。
-        # ここでは warm_pool で交差しやすい状態を作り、同時実行でも上書きされないことを確認する。
+        # 旧実装（remove側がread-modify-writeで全体を書き戻す）では、removeの書き戻しが
+        # update_components の部分更新を上書きしてロストアップデートが起きる。warm_pool で
+        # 交差しやすい状態を作り、同時実行でも上書きされないことを確認する。
+        #
+        # 引数の並び順にも意味がある。書き込みが実際にどの順でDBへ届くかは await の位置や
+        # 応答時間で決まり、gather の起動順で保証されるわけではない。ただしこの並びだと
+        # 旧実装で実際に上書きが起きることを確認済みで、逆に並べたら旧実装でも通って
+        # しまった（全体書き戻しの上に部分$setが乗るため）。並べ替えるなら、旧実装に
+        # 戻して落ちることを確かめ直すこと。
         async def test_remove_does_not_clobber_concurrent_update(self, table_with_several_components):
             await asyncio.gather(
                 tables.update_components('table1', [{'component2': {'value1': 999}}]),
@@ -225,6 +231,15 @@ class TestTableStore:
             with pytest.raises(tables.TableNotFound):
                 await tables.remove_components('no_such_table', ['component1'])
 
+        async def test_id_with_dot_is_rejected_and_nothing_is_removed(
+                self, table_with_several_components):
+            # 'component1.value1' を通すと `table.components.component1.value1` という
+            # パスになり、コンポーネントではなくその中の1フィールドだけを消してしまう。
+            with pytest.raises(tables.InvalidComponentId):
+                await tables.remove_components('table1', ['component1.value1'])
+            read = await tables.get('table1')
+            assert read['components']['component1'] == {'value1': 10, 'value2': 20}
+
     class TestAddNewKitAndComponents:
         async def test_usual(self, simple_table):
             await tables.add_new_kit_and_components(
@@ -243,3 +258,46 @@ class TestTableStore:
                 components={})
             read = await tables.get('table1')
             assert len(read['components']) == len(simple_table['components'])
+
+        async def test_unknown_table_raises(self, no_tables):
+            with pytest.raises(tables.TableNotFound):
+                await tables.add_new_kit_and_components(
+                    tablename='no_such_table',
+                    kitData={'name': 'kit1', 'kitId': 'kit001'},
+                    components={'component9': {}})
+
+
+class TestValidateComponentId:
+    """componentId は `table.components.<id>` というパスに埋め込まれるので、
+    フィールド名として使えない文字列は通してはいけない。黙って直すのではなく
+    落とす（呼び出し側のバグか、外から不正な値が来ているかのどちらかなので）。
+
+    許容側は**規則の一般性**を示す。いま生成しているIDがたまたま12桁hexである
+    ことに寄せない。IDの形は実装の都合で変わりうるもので、ここで守っているのは
+    「フィールド名として使えること」だけ。
+    """
+
+    @pytest.mark.parametrize('component_id', [
+        'component1',
+        'a1b2c3d4e5f6',
+        'title',
+        'a-b_c',
+        '日本語のid',
+    ])
+    def test_accepts_usable_ids(self, component_id):
+        assert tables.validate_component_id(component_id) == component_id
+
+    @pytest.mark.parametrize('component_id', [
+        'a.b',            # パスの区切り。別フィールドを指してしまう
+        '.',
+        'table.components.other',
+        '$set',           # 演算子と解釈される
+        'a$b',            # 位置を問わず不正。安全な範囲が文脈依存になるため
+        '',
+        None,
+        123,
+        'a\0b',
+    ])
+    def test_rejects_unusable_ids(self, component_id):
+        with pytest.raises(tables.InvalidComponentId):
+            tables.validate_component_id(component_id)
