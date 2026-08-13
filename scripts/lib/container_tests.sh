@@ -32,6 +32,12 @@ NETWORK=${NETWORK:-loadtest_default}
 MONGO_COMPOSE="$APP_DIR/deploy/loadtest/docker-compose.yml"
 MONGO_CONTAINER=loadtest-mongo-1
 
+# 失敗時のスクリーンショットの置き場。作業ツリーの中だが .gitignore してある。
+# tmp/ はコンテナへマウントする作業用で毎回消す。保存用は実行ごとの日時ディレクトリ。
+# 普段は捨ててよいもので、必要になったら issue に貼るか worklog へ持っていく。
+ARTIFACTS_DIR="$APP_DIR/.e2e-artifacts"
+TMP_ARTIFACTS="$ARTIFACTS_DIR/tmp"
+
 BUILD=yes
 DEV=no
 MOUNT_SRC=no
@@ -142,7 +148,39 @@ run_pytest() {
         fi
     fi
 
+    # 失敗時のスクリーンショットの置き場。コンテナ内はrootで動くので、書いたものは
+    # そのままだとホストからは root 所有になり消せない（過去に mongodata でやらかした）。
+    # pytestの直後、まだコンテナの中にいるうちに chown する。ホスト側でsudoが要らない。
+    rm -rf "$TMP_ARTIFACTS"
+    mkdir -p "$TMP_ARTIFACTS"
+    mounts+=(-v "$TMP_ARTIFACTS:/artifacts")
+    envs+=(-e ASOBANN_E2E_ARTIFACTS=/artifacts)
+    envs+=(-e "CHOWN_TO=$(id -u):$(id -g)")
+
     # -rR はリトライしたテストを一覧に出す。フレーキーの出入りを見るのに要る。
-    exec docker run --rm --network "$NETWORK" "${envs[@]}" "${mounts[@]}" \
-        "$TEST_IMAGE" python3 -m pytest -q -rR "$@"
+    # -v はテスト名を1件ずつ出す。以前は -q を渡しており、進捗のドットしか残らず
+    # 「どのテストがどの順で走ったか」が後から追えなかった。順序依存を疑ったときに
+    # 手がかりが無いのは困るので、既定を詳細側にする。
+    # pytestへの引数は sh -c の位置パラメータで渡す。文字列に埋め込むと、
+    # -k 'Test A' のような空白入りの指定が壊れる。
+    local rc=0
+    docker run --rm --network "$NETWORK" "${envs[@]}" "${mounts[@]}" "$TEST_IMAGE" \
+        sh -c 'python3 -m pytest -v -rR "$@"; rc=$?; chown -R "$CHOWN_TO" /artifacts 2>/dev/null; exit $rc' \
+        sh "$@" || rc=$?
+
+    save_artifacts
+    return $rc
+}
+
+# コンテナが書き出したものを、保存用のディレクトリへ実行ごとに分けて残す。
+# 中身が無ければ何もしない（成功した実行でディレクトリが増えても邪魔なだけ）。
+save_artifacts() {
+    if [ -z "$(ls -A "$TMP_ARTIFACTS" 2>/dev/null)" ]; then
+        return 0
+    fi
+    local dest="$ARTIFACTS_DIR/$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "$dest"
+    cp -r "$TMP_ARTIFACTS"/. "$dest"/
+    echo "失敗時のスクリーンショット: $dest"
+    ls "$dest" | sed 's/^/  /'
 }

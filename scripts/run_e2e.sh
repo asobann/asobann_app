@@ -27,8 +27,10 @@
 #   ./scripts/run_e2e.sh --randomly-seed=12345            # 落ちた順序を再現する
 #   ./scripts/run_e2e.sh --tolerate-flaky                 # CIと同じ扱い
 #
-# 既定で -q を渡すので、詳細表示にしたいときは -v を足す（pytestの -q と -v は
-# 打ち消し合う）。
+# 既定で -v を渡すので、テスト名が1件ずつ出る。簡潔にしたいときは -q を足す
+# （pytestの -q と -v は打ち消し合う）。
+#
+# 失敗したテストのスクリーンショットは .e2e-artifacts/<日時>/ に残る（.gitignore済み）。
 
 set -euo pipefail
 

@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -173,10 +174,53 @@ firefox_options = Options()
 E2E_WINDOW_SIZE = (1600, 1200)
 
 
+# 失敗時にスクリーンショットを撮るため、開いているブラウザを覚えておく。
+#
+# このスイートの失敗は「2つのブラウザで見えているものが違う」種類なので、
+# **全部を撮らないと診断にならない**。片方だけでは判断できない。
+_live_browsers = []
+
+
 def new_e2e_browser(options=None):
     browser = webdriver.Firefox(options=options) if options else webdriver.Firefox()
     browser.set_window_size(*E2E_WINDOW_SIZE)
+    _live_browsers.append(browser)
     return browser
+
+
+def _artifacts_dir():
+    path = os.environ.get('ASOBANN_E2E_ARTIFACTS')
+    return Path(path) if path else None
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """失敗したテストのスクリーンショットを、開いている全ブラウザぶん残す。
+
+    リトライごとに撮る（ファイル名に試行番号を入れる）。「1回目は失敗、2回目は成功」
+    の差分が、フレーキーの調査でいちばん見たいもの。
+
+    撮影で例外が出てもテストの結果は変えない。ブラウザが死んでいる、セッションが
+    切れている、といった状況こそ撮りたい場面だが、そこで落ちて本来の失敗理由を
+    隠してしまっては本末転倒。
+    """
+    outcome = yield
+    report = outcome.get_result()
+    if not report.failed:
+        return
+    out = _artifacts_dir()
+    if out is None or not _live_browsers:
+        return
+
+    safe = re.sub(r'[^A-Za-z0-9_.-]', '_', item.nodeid)
+    attempt = getattr(item, 'execution_count', None)
+    suffix = f'_try{attempt}' if attempt else ''
+    out.mkdir(parents=True, exist_ok=True)
+    for i, browser in enumerate(_live_browsers, start=1):
+        try:
+            browser.save_screenshot(str(out / f'{safe}{suffix}_browser{i}.png'))
+        except Exception:
+            pass
 
 
 @pytest.fixture(scope='session')
