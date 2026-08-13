@@ -185,7 +185,35 @@ def new_e2e_browser(options=None):
     browser = webdriver.Firefox(options=options) if options else webdriver.Firefox()
     browser.set_window_size(*E2E_WINDOW_SIZE)
     _live_browsers.append(browser)
+    _untrack_when_closed(browser)
     return browser
+
+
+def _untrack_when_closed(browser):
+    """close/quit された時点で、覚えておく対象から外す。
+
+    `browser_factory` はテストごとにブラウザを作って teardown で閉じるので、
+    放っておくと閉じたドライバがセッション中ずっと溜まる。撮影のたびに死んだ
+    ドライバへ save_screenshot を投げて例外を握りつぶすことになり、実行数に
+    比例して無駄が増える。
+
+    閉じる側で明示的に外す（close を呼ぶ箇所で1行足す）やり方もあるが、それだと
+    今後ブラウザを閉じるコードが増えたときに漏れる。ドライバ自身に紐づけておく。
+    """
+    def unhook(name):
+        original = getattr(browser, name)
+
+        def wrapped(*args, **kwargs):
+            try:
+                return original(*args, **kwargs)
+            finally:
+                if browser in _live_browsers:
+                    _live_browsers.remove(browser)
+
+        setattr(browser, name, wrapped)
+
+    for name in ('close', 'quit'):
+        unhook(name)
 
 
 def _artifacts_dir():

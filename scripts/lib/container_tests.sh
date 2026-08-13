@@ -170,7 +170,9 @@ run_pytest() {
     docker run --rm --network "$NETWORK" "${envs[@]}" "${mounts[@]}" \
         "$TEST_IMAGE" python3 -m pytest -v -rR "$@" || rc=$?
 
-    save_artifacts
+    # || true は set -e への保険。save_artifacts 自身も失敗を握りつぶすが、
+    # 二重に守っておく。返すべきは pytest の終了コードだけ。
+    save_artifacts || true
     return $rc
 }
 
@@ -191,13 +193,26 @@ clean_tmp_artifacts() {
 # コンテナが書き出したものを、保存用のディレクトリへ実行ごとに分けて取り出す。
 # cp が新しいファイルを作るので、ここで所有者がホスト側の自分になる。
 # 中身が無ければ何もしない（成功した実行でディレクトリが増えても邪魔なだけ）。
+#
+# **失敗しても握りつぶす。** これは診断の材料を残すためのおまけであって、テストの
+# 結果ではない。ここでコケてスクリプトが落ちると、pytestの終了コードを返す前に
+# 死ぬことになり、成果物の都合がテスト結果を上書きしてしまう。
+#
+# 保存先に秒とPIDを入れる。秒だけだと、同じ秒に2回呼ばれたとき（並行実行や、
+# 短いテストを続けて回したとき）に同じディレクトリへ混ざる。
 save_artifacts() {
     if [ -z "$(ls -A "$TMP_ARTIFACTS" 2>/dev/null)" ]; then
         return 0
     fi
-    local dest="$ARTIFACTS_DIR/$(date +%Y%m%d-%H%M%S)"
-    mkdir -p "$dest"
-    cp -r "$TMP_ARTIFACTS"/. "$dest"/
+    local dest="$ARTIFACTS_DIR/$(date +%Y%m%d-%H%M%S)-$$"
+    if ! mkdir -p "$dest" 2>/dev/null; then
+        echo "成果物の保存先を作れなかった: $dest" >&2
+        return 0
+    fi
+    if ! cp -r "$TMP_ARTIFACTS"/. "$dest"/ 2>/dev/null; then
+        echo "成果物のコピーに失敗した（テスト結果には影響しない）: $dest" >&2
+        return 0
+    fi
     echo "失敗時のスクリーンショット: $dest"
-    ls "$dest" | sed 's/^/  /'
+    ls "$dest" 2>/dev/null | sed 's/^/  /' || true
 }
