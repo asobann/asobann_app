@@ -256,7 +256,8 @@ def execute_worker(name, command_queue, result_queue, parameters):
                     elif operation == 'flip':
                         # Flipping never moves the component, so it cannot fail by the card
                         # drifting out of the viewport - but it still goes through the same
-                        # 'update single component' path (mongo write + broadcast).
+                        # 'update many components' path (mongo write + broadcast) as any
+                        # other component operation.
                         # sustained_load.json gives every card faceupText/facedownText, so
                         # the face itself tells us whether the operation actually landed
                         # rather than merely not raising.

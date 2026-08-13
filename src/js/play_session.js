@@ -43,22 +43,6 @@ const syncTableConnector = {
         menu.update(tableData);
     },
 
-    updateSingleComponent(componentId, diff) {
-        const tableData = table.data;
-        if (tableData.components[componentId].lastUpdated) {
-            if (tableData.components[componentId].lastUpdated.from === diff.lastUpdated.from
-                && tableData.components[componentId].lastUpdated.epoch > diff.lastUpdated.epoch) {
-                dev_inspector.tracePoint('aborted sync update single component');
-                // already recieved newer update for this component; ignore the diff
-                return;
-            }
-        }
-        Object.assign(tableData.components[componentId], diff);
-        table.update(tableData);
-        menu.update(tableData);
-        dev_inspector.tracePoint('finished sync update single component');
-    },
-
     updateManyComponents(diffOfComponents, componentIdsToRemove) {
         const tableData = table.data;
         for (const component_diff of diffOfComponents) {

@@ -21,7 +21,6 @@ function emit(eventName, data) {
 function setTableContext(tablename, connector) {
     context.tablename = tablename;
     context.initializeTable = connector.initializeTable;
-    context.updateSingleComponent = connector.updateSingleComponent;
     context.updateManyComponents = connector.updateManyComponents;
     context.updateWholeTable = connector.updateWholeTable;
     context.updatePlayer = connector.updatePlayer;
@@ -58,10 +57,6 @@ socket.on("mouse movement", (msg) => {
     }
     context.showOthersMouseMovement(msg.playerName, msg.mouseMovement);
 });
-
-// sending out component update to server is queued and actually emit()ted intermittently
-const componentUpdateQueue = [];
-const actualUpdateQueue = [];
 
 class ComponentUpdateBuffer {
     constructor(table) {
@@ -144,60 +139,16 @@ class ComponentUpdateBuffer {
 const componentUpdateBuffer = new ComponentUpdateBuffer();
 componentUpdateBuffer.startBufferedEmit();
 
-function sendComponentUpdateFromQueue() {
-    while (componentUpdateQueue.length > 0) {
-        const update = componentUpdateQueue.shift();
-        let shouldEmit = true;
-        if (update.data.volatile) {
-            for (const another of componentUpdateQueue) {
-                if (another.data.componentId === update.data.componentId) {
-                    // discard update as another is newer
-                    shouldEmit = false;
-                    break;
-                }
-            }
-        }
-        if (shouldEmit) {
-            if (update.data.inspectionTraceId) {
-                dev_inspector.tracePointByTraceId('emitted', update.data.inspectionTraceId);
-            }
-            socket.emit(update.eventName, update.data);
-        }
-    }
-
-    while (actualUpdateQueue.length > 0) {
-        const actualUpdate = actualUpdateQueue.shift();
-        actualUpdate();
-    }
-}
-
-setInterval(sendComponentUpdateFromQueue, 75);
-
 function pushComponentUpdate(table, componentId, diff, volatile) {
-    // console.log("pushComponentUpdate", componentId, diff, volatile);
     if (!table.data.components[componentId]) {
         console.log("no such component", componentId, table.data);
     }
 
-    const eventName = "update single component";
     diff.lastUpdated = {
         from: context.client_connection_id,
         epoch: Date.now(),
     }
-    const data = {
-        tablename: context.tablename,
-        originator: context.client_connection_id,
-        componentId: componentId,
-        diff: diff,
-        volatile: volatile === true,
-    };
-    const event = {
-        eventName: eventName,
-        data: data
-    };
     dev_inspector.tracePoint('queued');
-    dev_inspector.passTraceInfo((traceId) => data.inspectionTraceId = traceId);
-    // componentUpdateQueue.push(event);
     componentUpdateBuffer.addDiff(componentId, diff);
     updateTableDataWithComponentDiff(table, componentId, diff);
 }
@@ -207,24 +158,6 @@ function updateTableDataWithComponentDiff(table, componentId, diff) {
     Object.assign(oldData.components[componentId], diff);
     table.receiveData(oldData);
 }
-
-socket.on("update single component", (msg) => {
-    if (msg.tablename !== context.tablename) {
-        return;
-    }
-    if (msg.inspectionTraceId) {
-        dev_inspector.resumeTrace(msg.inspectionTraceId);
-        dev_inspector.tracePoint('receive update single component');
-    }
-    if (msg.originator === context.client_connection_id) {
-        dev_inspector.endTrace();
-        return;
-    }
-    context.updateSingleComponent(msg.componentId, msg.diff);
-    dev_inspector.tracePoint('finished receive update single component');
-    dev_inspector.endTrace();
-});
-
 
 socket.on('update many components', (msg) => {
     if (msg.tablename !== context.tablename) {
@@ -280,14 +213,6 @@ socket.on("add kit", (msg) => {
     context.addKitAndComponents(msg.kit, msg.newComponents);
 });
 
-function pushRemoveKit(kitId) {
-    emit("remove kit", {
-        tablename: context.tablename,
-        originator: context.client_connection_id,
-        kitId: kitId,
-    })
-}
-
 function pushRemoveComponent(componentId) {
     console.log("pushRemoveComponent", componentId);
     componentUpdateBuffer.addComponentIdToRemove(componentId);
@@ -326,7 +251,6 @@ export {
     pushNewComponent,
     pushRemoveComponent,
     pushNewKitAndComponents,
-    pushRemoveKit,
     pushSyncWithMe,
     joinTable,
     pushCursorMovement,
