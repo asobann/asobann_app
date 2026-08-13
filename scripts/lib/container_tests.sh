@@ -14,6 +14,7 @@
 #   TEST_IMAGE           テスト実行に使うイメージ
 #   NETWORK              テストコンテナとmongoを繋ぐdockerネットワーク
 #   parse_common_flags   --no-build / --dev を解釈する（残りは呼び出し側へ返す）
+#                        スクリプト固有のフラグは EXTRA_FLAG_HANDLER で足す
 #   default_targets      対象が指定されていなければ既定のテストパスを補う
 #   ensure_mongo         mongoが無ければ起動する
 #   ensure_image         イメージをビルドする、または存在を確かめる
@@ -37,6 +38,13 @@ MOUNT_SRC=no
 
 # 呼び出し側の "$@" をそのまま渡す。解釈しなかった引数を REMAINING_ARGS に残す。
 # 配列で返すのは、-k 'Test A' のような空白を含む指定を壊さないため。
+#
+# スクリプト固有のフラグは EXTRA_FLAG_HANDLER に関数名を入れて渡す。その関数は
+# 引数を1つ受け取り、解釈したら0を返す。解釈しなければ非0を返すこと。
+#
+# 解釈をやめる条件は「`--` が来た」か「フラグでない引数が来た」。どちらの場合も
+# 残りは一切触らずpytestへ渡す。ここを緩めると `-- --dev` のように「pytestへの
+# 引数として --dev を渡したい」ケースを吸い込んでしまう。
 parse_common_flags() {
     REMAINING_ARGS=()
     while [ $# -gt 0 ]; do
@@ -45,7 +53,13 @@ parse_common_flags() {
             --dev)       DEV=yes; BUILD=no; shift ;;
             --mount-src) MOUNT_SRC=yes; shift ;;
             --)          shift; REMAINING_ARGS=("$@"); return ;;
-            *)           REMAINING_ARGS=("$@"); return ;;
+            *)
+                if [ -n "${EXTRA_FLAG_HANDLER:-}" ] && "$EXTRA_FLAG_HANDLER" "$1"; then
+                    shift
+                else
+                    REMAINING_ARGS=("$@"); return
+                fi
+                ;;
         esac
     done
 }

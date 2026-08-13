@@ -36,17 +36,17 @@ source "$(dirname "$0")/lib/container_tests.sh"
 
 TOLERATE_FLAKY=no
 
-# --tolerate-flaky はこのスクリプト固有。共通パーサに渡す前に抜き取る。
-args=()
-for arg in "$@"; do
-    if [ "$arg" = --tolerate-flaky ]; then
-        TOLERATE_FLAKY=yes
-    else
-        args+=("$arg")
-    fi
-done
+# --tolerate-flaky はこのスクリプト固有。共通パーサに渡して、他のフラグと同じ
+# 扱いにする（先頭のみ解釈し、`--` 以降には手を出さない）。
+handle_e2e_flag() {
+    case "$1" in
+        --tolerate-flaky) TOLERATE_FLAKY=yes; return 0 ;;
+        *)                return 1 ;;
+    esac
+}
+EXTRA_FLAG_HANDLER=handle_e2e_flag
 
-parse_common_flags ${args+"${args[@]}"}
+parse_common_flags "$@"
 default_targets tests/e2e -- ${REMAINING_ARGS+"${REMAINING_ARGS[@]}"}
 set -- "${TARGETS[@]}"
 
