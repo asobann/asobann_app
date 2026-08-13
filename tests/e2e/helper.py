@@ -24,6 +24,29 @@ TOP = "http://localhost:10011/"
 CUSTOMIZATION = "/customize"
 STAGING_TOP = "https://fast-dusk-61776.herokuapp.com/"
 
+# 「いま開いている卓で、このクライアントが参加済みか」を取るスクリプト。
+#
+# **必ず現在の卓のキーだけを見ること。** play_session.js のキーは
+# "asobann: <tablename>: status" と卓ごとに分かれている一方、e2eのブラウザは
+# セッションスコープで使い回され、sessionStorage は消されない（conftest.py が
+# 消すのは cookie だけ）。
+#
+# 以前ここは Object.keys(sessionStorage).find(k => k.endsWith(': status')) と
+# 書いており、挿入順で最初＝**最も古い卓**のエントリを拾いうる。全件実行では前の
+# テストが残した 'joined' を見て、現在の卓ではまだ観戦者なのに待たずに通過する
+# 経路がある。観戦者のままの操作は無言で捨てられる（#127）。
+#
+# なお、これがフレーキーの原因かどうかは**確かめられていない**。このスイートは
+# 同一条件でも失敗数が大きくぶれるため、実行を数回比べた程度では因果を判定
+# できない（判定の土台については #128）。ここで直しているのは「現在の卓を見る
+# べき場所で別の卓を見ている」という、実行結果とは無関係な誤りのほう。
+#
+# tablename の導出は play_session.js と同じ（location.pathname.split("/")[2]）。
+JOINED_STATUS_SCRIPT = (
+    "const tablename = location.pathname.split('/')[2];"
+    "return sessionStorage.getItem('asobann: ' + tablename + ': status');"
+)
+
 
 def parse_style(style_str: str) -> dict:
     style = {}
@@ -214,9 +237,7 @@ class GameMenu:
         # The name showing up does not mean the client may operate yet - see
         # GameHelper.should_be_joined for why that is a separate wait.
         WebDriverWait(self.browser, 5).until(
-            lambda d: d.execute_script(
-                "const k = Object.keys(sessionStorage).find(k => k.endsWith(': status'));"
-                "return k ? sessionStorage.getItem(k) : null;") == 'joined')
+            lambda d: d.execute_script(JOINED_STATUS_SCRIPT) == 'joined')
 
     def import_jsonfile(self, filename):
         WebDriverWait(self.browser, 5).until(
@@ -339,9 +360,7 @@ class GameHelper:
         which is exactly what the observer guard looks like from outside.
         """
         self.eventually(
-            lambda: self.browser.execute_script(
-                "const k = Object.keys(sessionStorage).find(k => k.endsWith(': status'));"
-                "return k ? sessionStorage.getItem(k) : null;") == 'joined',
+            lambda: self.browser.execute_script(JOINED_STATUS_SCRIPT) == 'joined',
             'client is still an observer, so its operations would be silently discarded',
             timeout=timeout)
 
