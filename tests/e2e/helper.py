@@ -1,4 +1,5 @@
 from typing import Union
+import os
 import re
 import json
 import time
@@ -23,6 +24,19 @@ from .craft_box_helper import CraftBox
 TOP = "http://localhost:10011/"
 CUSTOMIZATION = "/customize"
 STAGING_TOP = "https://fast-dusk-61776.herokuapp.com/"
+
+# フレーキーの切り分け用のつまみ。既定は従来どおりで、環境変数でだけ変わる。
+#
+# ASOBANN_E2E_SLOWMO: ブラウザ操作1回ごとに待つ秒数（例: 0.3）。このappは操作を
+#   75msのティックでまとめて送るので、操作直後に読むと取りこぼす。意図的に遅くして
+#   安定度が変わるかを見るためのもの。常用するものではない。
+E2E_SLOWMO = float(os.environ.get('ASOBANN_E2E_SLOWMO', '0'))
+
+
+def _slowmo():
+    if E2E_SLOWMO:
+        time.sleep(E2E_SLOWMO)
+
 
 # 「いま開いている卓で、このクライアントが参加済みか」を取るスクリプト。
 #
@@ -175,9 +189,11 @@ class GameMenuItem:
 
     def click(self):
         self.element.click()
+        _slowmo()
 
     def execute(self):
         self.element.click()
+        _slowmo()
 
     @property
     def value(self):
@@ -457,6 +473,7 @@ class GameHelper:
             move_by_offset(x, y). \
             release(). \
             perform()
+        _slowmo()
 
     def move_card_to_hand_area(self, card: 'Component', player_name: str, offset=(0, 0)):
         self.move_card_to_center_of_rect(card, self.hand_area(player_name).rect(), offset)
@@ -470,6 +487,7 @@ class GameHelper:
         dy = (rect.top + rect.height / 2) - (card_rect.top + card_rect.height / 2) + offset[1]
         ActionChains(self.browser).move_to_element(card.element).click_and_hold().move_by_offset(dx, dy) \
             .release().perform()
+        _slowmo()
 
     def move_mouse_by_offset(self, offset):
         ActionChains(self.browser).move_by_offset(offset[0], offset[1]).perform()
@@ -670,12 +688,15 @@ class GameHelper:
         if 'SHIFT' in modifier:
             chain.key_down(Keys.SHIFT)
         chain.double_click(component.element).perform()
+        _slowmo()
 
     def click(self, component: "Component"):
         ActionChains(self.browser).click(component.element).perform()
+        _slowmo()
 
     def click_at(self, component: "Component", by: By.ID, value: str):
         ActionChains(self.browser).click(component.element.find_element(by, value)).perform()
+        _slowmo()
 
     def hand_area(self, owner):
         for e in self.browser.find_elements(by=By.CLASS_NAME, value="component"):

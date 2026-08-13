@@ -58,4 +58,11 @@ ensure_image
 envs=(-e MOZ_HEADLESS=1)
 [ "$TOLERATE_FLAKY" = yes ] && envs+=(-e E2E_TOLERATE_KNOWN_FLAKY=1)
 
+# 切り分け用のつまみ。ホスト側で設定されていればコンテナへ渡す。
+for name in ASOBANN_E2E_SLOWMO; do
+    if [ -n "${!name:-}" ]; then
+        envs+=(-e "$name=${!name}")
+    fi
+done
+
 run_pytest "${envs[@]}" -- "$@"
