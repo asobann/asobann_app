@@ -3,6 +3,7 @@ import os
 
 import pytest
 import pytest_asyncio
+from pymongo.errors import DuplicateKeyError
 
 os.environ["FLASK_ENV"] = "test"
 
@@ -20,7 +21,9 @@ async def app():
 
 @pytest_asyncio.fixture
 async def no_tables(app):
-    await tables.tables.delete_many({})
+    # tables だけ消すと table_metas に前のテストの分が残り、同じ卓名で作り直した
+    # ときに tablename が重複する（unique索引があると索引作成や insert が落ちる）。
+    await tables.purge_all()
 
 
 @pytest_asyncio.fixture
@@ -282,6 +285,28 @@ class TestTableStore:
                     tablename='no_such_table',
                     kitData={'name': 'kit1', 'kitId': 'kit001'},
                     components={'component9': {}})
+
+
+class TestEnsureIndexes:
+    async def test_tablename_is_indexed(self, app):
+        # create_app() が起動時に呼ぶので、app フィクスチャを取った時点で貼られている。
+        for collection in (tables.tables, tables.table_metas):
+            keys = [tuple(info['key']) for info in (await collection.index_information()).values()]
+            assert (('tablename', 1),) in keys
+
+    async def test_duplicate_tablename_is_rejected_in_tables(self, no_tables):
+        # unique であること自体の確認。tablename は実質的な主キーなので、
+        # 同じ名前の卓が2つできる状態を索引で防ぐ。
+        await tables.tables.insert_one({'tablename': 'table1', 'table': {}})
+        with pytest.raises(DuplicateKeyError):
+            await tables.tables.insert_one({'tablename': 'table1', 'table': {}})
+
+    async def test_duplicate_tablename_is_rejected_in_table_metas(self, no_tables):
+        # table_metas 側も unique。ここが緩いと、purge_all() の削除漏れのような
+        # 経路で重複が積み上がっても気づけない（実際それでテストDBに4696件溜まっていた）。
+        await tables.table_metas.insert_one({'tablename': 'table1'})
+        with pytest.raises(DuplicateKeyError):
+            await tables.table_metas.insert_one({'tablename': 'table1'})
 
 
 class TestValidateComponentId:
