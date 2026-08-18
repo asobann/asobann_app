@@ -147,9 +147,11 @@ def execute_controller(command_queues, result_queues, parameters):
             log(f'cycle {cycle + 1}/{cycles} (elapsed {(cycle + 1) * p["report_interval_seconds"]}s) collected, '
                 f'{len(dead_workers)} dead worker(s)')
 
-        host.stop_mouse_load()
+        # stop_mouse_load() itself returns the sends not yet drained and then discards the
+        # page-side buffer, so the tail must be taken from its return value - a later
+        # collect_and_clear_mouse_send_log() would find the buffer gone and return [].
+        sent_by_player['host'] += host.stop_mouse_load()['sent']
         time.sleep(SETTLE_SECONDS)
-        sent_by_player['host'] += host.collect_and_clear_mouse_send_log()
         merge_received(received_by_receiver['host'], host.collect_and_clear_mouse_receive_log())
 
         for idx, q in enumerate(result_queues):
@@ -308,10 +310,12 @@ def execute_worker(name, command_queue, result_queue, parameters):
             })
             log(f'{name}: cycle {cycle + 1}/{cycles} reported')
 
-        player.stop_mouse_load()
+        # See the controller's matching comment: the tail of the send log only exists in
+        # stop_mouse_load()'s return value.
+        tail_sent = player.stop_mouse_load()['sent']
         time.sleep(SETTLE_SECONDS)
         result_queue.put({
-            'sent': player.collect_and_clear_mouse_send_log(),
+            'sent': tail_sent,
             'received': player.collect_and_clear_mouse_receive_log(),
         })
         result_queue.put({'finished': True})
