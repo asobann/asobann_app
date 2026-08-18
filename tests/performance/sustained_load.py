@@ -54,6 +54,13 @@ DEFAULTS = {
     'report_interval_seconds': 60,
 }
 
+# How long to keep the receive observer running after mousemove sending stops, before
+# doing the final log collection. Sending stops immediately, but in-flight messages
+# (server broadcast + the receiver's MutationObserver reacting to the DOM update) take
+# a moment to land. Without this, the run's own tail traffic gets counted as lost purely
+# because the browser closes before it arrives - not because delivery actually failed.
+SETTLE_SECONDS = 15
+
 
 def log(*args):
     print(*args)
@@ -141,9 +148,23 @@ def execute_controller(command_queues, result_queues, parameters):
                 f'{len(dead_workers)} dead worker(s)')
 
         host.stop_mouse_load()
+        time.sleep(SETTLE_SECONDS)
+        sent_by_player['host'] += host.collect_and_clear_mouse_send_log()
+        merge_received(received_by_receiver['host'], host.collect_and_clear_mouse_receive_log())
+
         for idx, q in enumerate(result_queues):
             if idx in dead_workers:
                 continue
+            worker_name = f'P{idx}'
+            try:
+                r = q.get()  # settle-period report (see execute_worker)
+            except WORKER_DISCONNECT_ERRORS:
+                continue
+            if 'sent' in r:
+                sent_by_player.setdefault(worker_name, [])
+                sent_by_player[worker_name] += r['sent']
+                received_by_receiver.setdefault(worker_name, {})
+                merge_received(received_by_receiver[worker_name], r['received'])
             try:
                 q.get()  # final {'finished': True} marker
             except WORKER_DISCONNECT_ERRORS:
@@ -288,6 +309,11 @@ def execute_worker(name, command_queue, result_queue, parameters):
             log(f'{name}: cycle {cycle + 1}/{cycles} reported')
 
         player.stop_mouse_load()
+        time.sleep(SETTLE_SECONDS)
+        result_queue.put({
+            'sent': player.collect_and_clear_mouse_send_log(),
+            'received': player.collect_and_clear_mouse_receive_log(),
+        })
         result_queue.put({'finished': True})
     finally:
         window.close()
