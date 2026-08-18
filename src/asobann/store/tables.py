@@ -68,8 +68,10 @@ async def ensure_indexes():
     無いとコレクションスキャンになる。update_components() だけでもプレイ中に
     1クライアントあたり約13回/秒（読み1回+書き1回）走るため、卓が増えるほど効く。
 
-    tablenameは実質的な主キーなのでuniqueにする。create_index は冪等で、同じ定義
-    なら既存の索引に対して何もしない。
+    tablenameは実質的な主キーなのでuniqueにする。create_index は同じ定義に対しては
+    冪等だが、**同名で定義が違う索引（uniqueの有無など）が既にあると
+    IndexKeySpecsConflict で失敗する**。起動時に呼んでいるので、その場合タスクが
+    上がらない。索引の定義を変えるときは、先に既存の索引を落とす手順が要る。
     """
     await tables.create_index('tablename', unique=True)
     await table_metas.create_index('tablename', unique=True)

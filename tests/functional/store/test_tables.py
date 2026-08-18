@@ -3,6 +3,7 @@ import os
 
 import pytest
 import pytest_asyncio
+from pymongo.errors import DuplicateKeyError
 
 os.environ["FLASK_ENV"] = "test"
 
@@ -293,12 +294,19 @@ class TestEnsureIndexes:
             keys = [tuple(info['key']) for info in (await collection.index_information()).values()]
             assert (('tablename', 1),) in keys
 
-    async def test_duplicate_tablename_is_rejected(self, no_tables):
+    async def test_duplicate_tablename_is_rejected_in_tables(self, no_tables):
         # unique であること自体の確認。tablename は実質的な主キーなので、
         # 同じ名前の卓が2つできる状態を索引で防ぐ。
         await tables.tables.insert_one({'tablename': 'table1', 'table': {}})
-        with pytest.raises(Exception, match='duplicate key'):
+        with pytest.raises(DuplicateKeyError):
             await tables.tables.insert_one({'tablename': 'table1', 'table': {}})
+
+    async def test_duplicate_tablename_is_rejected_in_table_metas(self, no_tables):
+        # table_metas 側も unique。ここが緩いと、purge_all() の削除漏れのような
+        # 経路で重複が積み上がっても気づけない（実際それでテストDBに4696件溜まっていた）。
+        await tables.table_metas.insert_one({'tablename': 'table1'})
+        with pytest.raises(DuplicateKeyError):
+            await tables.table_metas.insert_one({'tablename': 'table1'})
 
 
 class TestValidateComponentId:
