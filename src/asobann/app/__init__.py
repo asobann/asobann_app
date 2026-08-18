@@ -225,6 +225,7 @@ async def create_app(testing=False):
     tables.connect(app.mongo_db)
     components.connect(app.mongo_db)
     kits.connect(app.mongo_db)
+    await tables.ensure_indexes()
     debug_tools.configure(
         app.mongo_db,
         performance_recording=app.config.get('DEBUG_PERFORMANCE_RECORDING', False),

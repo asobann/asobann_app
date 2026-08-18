@@ -42,7 +42,10 @@ async def store(tablename, table):
 
 
 async def purge_all():
+    # table_metas も一緒に消す。tables だけ消していたころは、同じ卓名で create() する
+    # たびに table_metas 側へ insert_one が積み上がり、tablename が重複していった。
     await tables.delete_many({})
+    await table_metas.delete_many({})
 
 
 async def update_table(tablename, table):
@@ -56,6 +59,20 @@ def connect(mongo_db):
     global tables, table_metas
     tables = mongo_db.tables
     table_metas = mongo_db.table_metas
+
+
+async def ensure_indexes():
+    """tablenameで引くための索引を用意する。
+
+    この2コレクションへのアクセスはすべて {"tablename": ...} で、_id 以外の索引が
+    無いとコレクションスキャンになる。update_components() だけでもプレイ中に
+    1クライアントあたり約13回/秒（読み1回+書き1回）走るため、卓が増えるほど効く。
+
+    tablenameは実質的な主キーなのでuniqueにする。create_index は冪等で、同じ定義
+    なら既存の索引に対して何もしない。
+    """
+    await tables.create_index('tablename', unique=True)
+    await table_metas.create_index('tablename', unique=True)
 
 
 class TableNotFound(Exception):
