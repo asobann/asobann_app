@@ -105,21 +105,40 @@ def _ensure_matched(result, tablename):
         raise TableNotFound(tablename)
 
 
-async def update_components(tablename, diff_of_components, volatile_keys=None):
-    current_table = await get(tablename)
-    volatile_keys = volatile_keys or {}
-    modification = {}
+def collect_update_candidates(diff_of_components, volatile_keys):
+    candidates = {}
     for diff in diff_of_components:
         for component_id in diff.keys():
             validate_component_id(component_id)
-            if component_id not in current_table["components"]:
-                continue
             skip_keys = volatile_keys.get(component_id, [])
-            for key in diff[component_id].keys():
+            for key, value in diff[component_id].items():
                 if key in skip_keys:
                     continue
-                mod_key = f'table.components.{component_id}.{key}'
-                modification[mod_key] = diff[component_id][key]
+                candidates.setdefault(component_id, {})[key] = value
+    return candidates
+
+
+def build_modification(candidates, existing_component_ids):
+    modification = {}
+    for component_id, diff in candidates.items():
+        if component_id not in existing_component_ids:
+            continue
+        for key, value in diff.items():
+            modification[f'table.components.{component_id}.{key}'] = value
+    return modification
+
+
+async def update_components(tablename, diff_of_components, volatile_keys=None):
+    # volatileだけの更新（ドラッグ中の中間座標など）は、この時点で候補が空になる。
+    # 卓の存在チェックのためだけに全文書readするのは、書くものが何も無いときは
+    # 意味が無い。書くと決まってから読む。
+    candidates = collect_update_candidates(diff_of_components, volatile_keys or {})
+    if not candidates:
+        return
+    current_table = await get(tablename)
+    if current_table is None:
+        raise TableNotFound(tablename)
+    modification = build_modification(candidates, current_table["components"])
     if not modification:
         return
     await tables.update_one({"tablename": tablename}, {"$set": modification})
