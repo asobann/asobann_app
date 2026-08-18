@@ -81,6 +81,23 @@ class TestTableStore:
         assert read['components']['component1'] == {'value1': 100, 'value2': 20}
 
     class TestUpdateComponents:
+        async def test_update_components_all_volatile_does_not_read_the_table(self, no_tables):
+            # 卓を作らずに呼ぶ。書くものが無いのでreadもしないなら、存在しない卓でも
+            # 例外にならず黙って返るはず。読んでいれば current_table が None になり
+            # TableNotFound（あるいは修正前の実装ではTypeError）で落ちる。
+            await tables.update_components(
+                'nonexistent-table',
+                [{'component1': {'value1': 999}}],
+                volatile_keys={'component1': ['value1']})
+
+        async def test_unknown_table_raises_when_there_is_something_to_write(self, no_tables):
+            # volatileでない更新は書くものがあるのでreadする。読んだ結果、卓が無いと
+            # 分かったら他の3関数と同じくTableNotFoundで落とす（黙ってTypeErrorに
+            # ならないように）。
+            with pytest.raises(tables.TableNotFound):
+                await tables.update_components(
+                    'no_such_table', [{'component1': {'value1': 999}}])
+
         async def test_update_components_basic(self, simple_table):
             await tables.update_components('table1', [{'component1': {'value1': 100}}])
             read = await tables.get('table1')

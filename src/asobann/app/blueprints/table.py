@@ -25,7 +25,6 @@ def register_handlers(sio, app):
         if not table:
             table = await tables.create(json["tablename"], None)
         await sio.enter_room(sid, json["tablename"])
-        table = await tables.get(json["tablename"])
         await sio.emit("load table", table, to=sid)
 
     @sio.on('set player name')
