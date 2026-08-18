@@ -4,6 +4,8 @@ aiofiles==25.1.0
     # via quart
 annotated-doc==0.0.5
     # via typer
+anyio==4.14.2
+    # via watchfiles
 asttokens==3.0.2
     # via stack-data
 attrs==26.1.0
@@ -60,12 +62,15 @@ h2==4.4.1
     # via hypercorn
 hpack==4.2.0
     # via h2
+httptools==0.8.0
+    # via uvicorn
 hypercorn==0.18.0
     # via quart
 hyperframe==6.1.0
     # via h2
 idna==3.18
     # via
+    #   anyio
     #   requests
     #   trio
 iniconfig==2.3.0
@@ -146,12 +151,16 @@ pytest-randomly==4.1.0
 pytest-rerunfailures==16.4
 python-dateutil==2.9.0.post0
     # via botocore
+python-dotenv==1.2.2
+    # via uvicorn
 python-engineio==4.13.4
     # via
     #   asobann
     #   python-socketio
 python-socketio==5.16.4
     # via asobann
+pyyaml==6.0.3
+    # via uvicorn
 quart==0.21.0
     # via asobann
 redis==8.1.0
@@ -194,10 +203,16 @@ urllib3==2.7.0
     #   selenium
 uvicorn==0.52.1
     # via asobann
+uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
+    # via uvicorn
+watchfiles==1.2.0
+    # via uvicorn
 wcwidth==0.8.2
     # via prompt-toolkit
 websocket-client==1.9.0
     # via selenium
+websockets==17.0.1
+    # via uvicorn
 werkzeug==3.1.8
     # via
     #   flask
