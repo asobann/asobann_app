@@ -242,18 +242,26 @@ EXPOSE 8888
             started_at = datetime.datetime.now()
             while True:
                 try:
-                    res = urllib.request.urlopen(self.controller_url, data=command.encode('utf8'))
+                    # timeout=5: without it, a connection that gets accepted but never
+                    # answered (observed on this machine's controller when 13+ local
+                    # worker containers were starving it of CPU right as shutdown() was
+                    # sent) blocks here forever - neither raising into this except clause
+                    # nor ever returning, hanging the whole run past the caller's own
+                    # `timeout` wrapper and losing an otherwise-successful result.
+                    res = urllib.request.urlopen(self.controller_url, data=command.encode('utf8'), timeout=5)
                     break
-                except (urllib.error.URLError, ConnectionError):
+                except (urllib.error.URLError, ConnectionError, TimeoutError):
                     # A bare ConnectionError (e.g. http.client.RemoteDisconnected, raised
                     # when the controller closes the connection before sending a response -
                     # observed here right after the controller logged an internal scenario
                     # error) isn't wrapped into URLError by urllib in every code path, so it
                     # would otherwise escape this retry loop entirely and crash the caller
-                    # (seen taking down shutdown() during a long multi-worker run).
+                    # (seen taking down shutdown() during a long multi-worker run). A bare
+                    # TimeoutError (socket.timeout, from the `timeout=5` above) needs the
+                    # same treatment for the same reason.
                     if (datetime.datetime.now() - started_at).total_seconds() > CONNECTION_RETRY_SECONDS:
                         raise
-                    log(f'connection to controller {self.controller_url} refused. Retrying ...')
+                    log(f'connection to controller {self.controller_url} refused or timed out. Retrying ...')
                     time.sleep(1)
             result = res.read().decode('utf-8')
             return result
