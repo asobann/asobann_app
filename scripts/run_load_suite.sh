@@ -66,6 +66,12 @@ CONFIGS=(
     "flip_n6_dist:6:5:30:flip:300:2"
     "flip_n10_dist:10:9:30:flip:300:4"
     "flip_n14_dist:14:13:30:flip:300:6"
+    # R3 (CPU512): CPU256 saturated between n10 (92% avg/99% max) and n14 (worker
+    # attrition, p95 202ms->294ms). n10_dist is reused as-is against CPU512 for a direct
+    # before/after point; n18/n24/n30 step coarsely past it to find where 512 saturates.
+    "flip_n18_dist:18:17:30:flip:300:8"
+    "flip_n24_dist:24:23:30:flip:300:11"
+    "flip_n30_dist:30:29:30:flip:300:14"
 )
 
 should_run() {
