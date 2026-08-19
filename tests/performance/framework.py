@@ -188,7 +188,7 @@ WORKDIR /runner
 COPY runner/requirements-dev.txt ./
 RUN pip3 install --no-cache-dir -r requirements-dev.txt
 COPY runner/ .
-EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
+EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009 50010 50011 50012 50013 50014 50015 50016 50017 50018 50019
 CMD python tests/performance/remote_runner.py worker $PORT
     """)
         proc = system(f"docker build . -f Dockerfile_worker -t {WORKER_NAME}",
@@ -351,15 +351,15 @@ class LocalContainers(AbstractContainers):
             raise ValueError(
                 f'LOADTEST_EXTRA_WORKERS lists {len(external)} workers but only '
                 f'{worker_count} were requested')
-        if local_count > 10:
+        if local_count > 20:
             raise ValueError(
-                f'Local running permits at most 10 workers for the time being, got '
+                f'Local running permits at most 20 workers for the time being, got '
                 f'{local_count} (use LOADTEST_EXTRA_WORKERS to push more onto another host)')
         self.external_worker_count = len(external)
         if external:
             log(f'using {len(external)} external worker(s): {external}')
 
-        ports = [50000 + i for i in range(local_count)]  # 50000-50009 is EXPOSEd in Dockerfile
+        ports = [50000 + i for i in range(local_count)]  # 50000-50019 is EXPOSEd in Dockerfile
         binds = []
         for port in ports:
             log(f'start worker container port {port}')
