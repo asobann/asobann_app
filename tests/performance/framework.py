@@ -104,16 +104,32 @@ EXTRA_WORKERS = os.environ.get('LOADTEST_EXTRA_WORKERS', '')
 
 
 def parse_extra_workers(spec: str) -> List[Tuple[str, int]]:
-    """'host:port,host:port' -> [(host, port), ...]. Empty/blank spec means none."""
+    """'host:port,host:port' -> [(host, port), ...]. Empty/blank spec means none.
+
+    All entries must share one host: sustained_load.same_machine_pairs() only tracks
+    "local" vs. "external" (a count, not a per-worker machine id), so it can only be
+    correct if every external worker shares one clock. IPv6 literals are rejected too -
+    they contain ':' themselves, which would break remote_runner.py's plain
+    `arg.split(':')` parsing of the controller's worker list.
+    """
     binds = []
+    hosts = set()
     for entry in spec.split(','):
         entry = entry.strip()
         if not entry:
             continue
-        host, _, port = entry.rpartition(':')
-        if not host or not port.isdigit():
-            raise ValueError(f'LOADTEST_EXTRA_WORKERS entry must be host:port, got {entry!r}')
+        host, sep, port = entry.rpartition(':')
+        if not sep or ':' in host or not port.isdigit():
+            raise ValueError(
+                f'LOADTEST_EXTRA_WORKERS entry must be host:port with an IPv4/hostname '
+                f'host (no IPv6), got {entry!r}')
         binds.append((host, int(port)))
+        hosts.add(host)
+    if len(hosts) > 1:
+        raise ValueError(
+            f'LOADTEST_EXTRA_WORKERS lists workers on {len(hosts)} different hosts '
+            f'({sorted(hosts)}), but only a single external host is supported - '
+            f'same_machine_pairs() assumes all external workers share one clock')
     return binds
 
 
@@ -335,7 +351,10 @@ class LocalContainers(AbstractContainers):
             raise ValueError(
                 f'LOADTEST_EXTRA_WORKERS lists {len(external)} workers but only '
                 f'{worker_count} were requested')
-        assert local_count <= 10, 'Local running permits only less than 10 workers for the time being'
+        if local_count > 10:
+            raise ValueError(
+                f'Local running permits at most 10 workers for the time being, got '
+                f'{local_count} (use LOADTEST_EXTRA_WORKERS to push more onto another host)')
         self.external_worker_count = len(external)
         if external:
             log(f'using {len(external)} external worker(s): {external}')
