@@ -52,6 +52,11 @@ DEFAULTS = {
     'mousemove_hz': 30,
     'drag_interval_seconds': 10,
     'report_interval_seconds': 60,
+    # Set by framework.run_test from AbstractContainers.external_worker_count. Workers
+    # are ordered local-then-external, so P<idx> with idx >= (total workers -
+    # external_worker_count) is on another machine. 0 (the default for every run mode
+    # except LocalContainers with LOADTEST_EXTRA_WORKERS) means "everyone is local".
+    'external_worker_count': 0,
 }
 
 # How long to keep the receive observer running after mousemove sending stops, before
@@ -69,6 +74,36 @@ def log(*args):
 
 def get_params(parameters):
     return {key: int(parameters.get(key, default)) for key, default in DEFAULTS.items()}
+
+
+def _is_local(worker_name, total_workers, external_worker_count):
+    """host and any P<idx> not covered by LOADTEST_EXTRA_WORKERS run on this machine.
+
+    Workers are ordered local-then-external (see LocalContainers.start_workers), so the
+    last `external_worker_count` indices are the remote ones.
+    """
+    if worker_name == 'host':
+        return True
+    idx = int(worker_name[1:])
+    return idx < total_workers - external_worker_count
+
+
+def same_machine_pairs(pairs, total_workers, external_worker_count):
+    """Keep only sender/receiver pairs that ran on the same machine.
+
+    Latency is one browser's received_at minus another's sent_at. Across machines that
+    requires the clocks to agree, and a one-time NTP correction can't be trusted to hold:
+    this project's WSL2 machine's clock was observed drifting from 0 to -3.3s within 30s,
+    reset by timesyncd, so any fixed offset measured at the start of a run goes stale
+    within it. Restricting latency to same-machine pairs sidesteps clock comparison
+    entirely. CPU and loss-rate figures elsewhere still cover every worker regardless of
+    machine - only cross-machine *latency* is unmeasurable this way.
+    """
+    if external_worker_count == 0:
+        return pairs
+    return [p for p in pairs
+            if _is_local(p['sender'], total_workers, external_worker_count)
+            == _is_local(p['receiver'], total_workers, external_worker_count)]
 
 
 def execute_controller(command_queues, result_queues, parameters):
@@ -174,8 +209,10 @@ def execute_controller(command_queues, result_queues, parameters):
 
         buckets = evaluate_all_pairs_timeseries(
             sent_by_player, received_by_receiver, start_at_ms, p['report_interval_seconds'])
+        total_workers = len(command_queues)
         timeline = [
-            {'elapsed_seconds': (bucket_idx + 1) * p['report_interval_seconds'], 'pairs': buckets[bucket_idx]}
+            {'elapsed_seconds': (bucket_idx + 1) * p['report_interval_seconds'],
+             'pairs': same_machine_pairs(buckets[bucket_idx], total_workers, p['external_worker_count'])}
             for bucket_idx in sorted(buckets.keys())
             if bucket_idx >= 0  # drop the handful of host ticks sent before start_at_ms was captured
         ]

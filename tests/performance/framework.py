@@ -91,6 +91,31 @@ CONTROLLER_NAME = 'test_run_multiprocess_in_container_controller'
 # load generators must not compete with the app for the same cores).
 DOCKER_RUN_OPTS = os.environ.get('LOADTEST_DOCKER_RUN_OPTS', '')
 
+# Already-running workers on other machines, as a comma-separated host:port list
+# (e.g. `192.168.0.28:50000,192.168.0.28:50001`). They are used in addition to the
+# workers started locally, and this process neither starts nor stops them.
+#
+# One machine can only host so many browsers, and the local mode's ceiling is really
+# the published port range 50000-50009 on a single host. Spreading workers across
+# machines removes both limits at once: each machine can publish 50000 again, and the
+# browsers no longer compete for one machine's CPU. That matters because a load
+# generator that is itself saturated silently understates the server's capacity.
+EXTRA_WORKERS = os.environ.get('LOADTEST_EXTRA_WORKERS', '')
+
+
+def parse_extra_workers(spec: str) -> List[Tuple[str, int]]:
+    """'host:port,host:port' -> [(host, port), ...]. Empty/blank spec means none."""
+    binds = []
+    for entry in spec.split(','):
+        entry = entry.strip()
+        if not entry:
+            continue
+        host, _, port = entry.rpartition(':')
+        if not host or not port.isdigit():
+            raise ValueError(f'LOADTEST_EXTRA_WORKERS entry must be host:port, got {entry!r}')
+        binds.append((host, int(port)))
+    return binds
+
 
 class AbstractContainers:
     controller_url = None
@@ -103,6 +128,12 @@ class AbstractContainers:
 
     def __init__(self):
         self._workers: 'Optional[AbstractContainers.Workers]' = None
+        # How many of self._workers.binds are LOADTEST_EXTRA_WORKERS rather than
+        # containers started on this machine. 0 unless a subclass sets otherwise -
+        # scenarios that care (see sustained_load.py's same-machine latency grouping)
+        # get "everything is local" by default, which is correct for every run mode
+        # except LocalContainers with extra workers configured.
+        self.external_worker_count = 0
 
     def prepare_docker_contents(self, base_dir: Path):
         (base_dir / 'runner').mkdir()
@@ -224,6 +255,10 @@ EXPOSE 8888
             self._send_command(f'set url {url}')
         for key, value in (params or {}).items():
             self._send_command(f'set {key} {value}')
+        # workers are ordered local-then-external (see LocalContainers.start_workers), so
+        # a scenario that only wants to compare same-machine pairs can tell which is which
+        # from this count and each worker's P<idx> alone - see sustained_load.py.
+        self._send_command(f'set external_worker_count {self.external_worker_count}')
         run_id = self._send_command(f'run {module_name}')
         log(f'run sent; run_id {run_id}')
         while True:
@@ -291,8 +326,21 @@ class LocalContainers(AbstractContainers):
             self.build_docker_image_for_controller(base_path)
 
     def start_workers(self, worker_count) -> None:
-        assert worker_count <= 10, 'Local running permits only less than 10 workers for the time being'
-        ports = [50000 + i for i in range(worker_count)]  # 50000-50009 is EXPOSEd in Dockerfile
+        # Workers already running elsewhere (LOADTEST_EXTRA_WORKERS) count towards the
+        # requested total, so the caller asks for "12 workers" without caring how they
+        # are split between this machine and the others.
+        external = parse_extra_workers(EXTRA_WORKERS)
+        local_count = worker_count - len(external)
+        if local_count < 0:
+            raise ValueError(
+                f'LOADTEST_EXTRA_WORKERS lists {len(external)} workers but only '
+                f'{worker_count} were requested')
+        assert local_count <= 10, 'Local running permits only less than 10 workers for the time being'
+        self.external_worker_count = len(external)
+        if external:
+            log(f'using {len(external)} external worker(s): {external}')
+
+        ports = [50000 + i for i in range(local_count)]  # 50000-50009 is EXPOSEd in Dockerfile
         binds = []
         for port in ports:
             log(f'start worker container port {port}')
@@ -316,9 +364,10 @@ class LocalContainers(AbstractContainers):
             internal_ip = ip_proc.stdout.strip()
             binds.append((internal_ip, port))
 
+        binds += external
         self._workers = AbstractContainers.Workers(binds=binds)
-        for internal_ip, port in binds:
-            wait_for_port(internal_ip, port)
+        for host, port in binds:
+            wait_for_port(host, port)
 
     def start_controller(self) -> None:
         log(f'start controller container workers {self._workers.binds}')
