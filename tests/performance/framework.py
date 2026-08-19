@@ -102,7 +102,7 @@ DOCKER_RUN_OPTS = os.environ.get('LOADTEST_DOCKER_RUN_OPTS', '')
 # with a matching /etc/hosts entry, or an LAN-resolvable hostname).
 #
 # One machine can only host so many browsers, and a single machine's ceiling is really
-# the published port range 50000-50019 on that host. Spreading workers across machines
+# the published port range 50000-50029 on that host. Spreading workers across machines
 # removes both limits at once: each machine can publish 50000 again, and the browsers
 # no longer compete for one machine's CPU. That matters because a load generator that
 # is itself saturated silently understates the server's capacity.
@@ -194,7 +194,7 @@ WORKDIR /runner
 COPY runner/requirements-dev.txt ./
 RUN pip3 install --no-cache-dir -r requirements-dev.txt
 COPY runner/ .
-EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009 50010 50011 50012 50013 50014 50015 50016 50017 50018 50019
+EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009 50010 50011 50012 50013 50014 50015 50016 50017 50018 50019 50020 50021 50022 50023 50024 50025 50026 50027 50028 50029
 CMD python tests/performance/remote_runner.py worker $PORT
     """)
         proc = system(f"docker build . -f Dockerfile_worker -t {WORKER_NAME}",
@@ -368,11 +368,11 @@ class LocalContainers(AbstractContainers):
         self.worker_system_names = []
         binds = []
         for name, count in systems:
-            if count > 20:
+            if count > 30:
                 raise ValueError(
-                    f'system {name!r} requests {count} workers; at most 20 are '
+                    f'system {name!r} requests {count} workers; at most 30 are '
                     f'permitted per system for the time being (published ports are '
-                    f'50000-50019 on each host)')
+                    f'50000-50029 on each host)')
             if name == 'local':
                 binds += self._start_local_workers(count)
             else:
@@ -384,7 +384,7 @@ class LocalContainers(AbstractContainers):
             wait_for_port(host, port)
 
     def _start_local_workers(self, count) -> List[Tuple[str, int]]:
-        ports = [50000 + i for i in range(count)]  # 50000-50019 is EXPOSEd in Dockerfile
+        ports = [50000 + i for i in range(count)]  # 50000-50029 is EXPOSEd in Dockerfile
         binds = []
         for port in ports:
             log(f'start worker container port {port}')
