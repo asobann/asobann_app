@@ -70,13 +70,16 @@ CONFIGS=(
     # attrition, p95 202ms->294ms). n10_dist is reused as-is against CPU512 for a direct
     # before/after point; n18/n24/n30 step coarsely past it to find where 512 saturates.
     "flip_n18_dist:18:17:30:flip:300:river:8"
-    # river worker CPU監視の実測(2026-08-19)で、11台では平均30%/瞬間100%、14台では
-    # 平均82%/瞬間100%とriver(8コア)自体が張り付いていたと判明。p95の悪化はここが
-    # 律速していた可能性が高く、サーバー側の飽和点として読めなかった。riverを10台に
-    # 抑え、残りをローカル(32コア、n30でも平均36%/最大77%と余裕確認済み)に寄せる。
-    "flip_n24_dist:24:23:30:flip:300:river:10"
-    "flip_n30_dist:30:29:30:flip:300:river:10"
-    # river turned out to fall over past ~10 workers of its own (8 cores) - n24/n30_dist
+    # river worker CPU監視の実測(2026-08-19)で、11台/14台とも高負荷とわかり、いったん
+    # river:10に抑えて再測定した。ところがコンテナ捕捉数まで見ると、11台構成時の
+    # サンプルは平均5.5台分しか捉えられておらず(欠落によりCPU%が過小に出ていた)、
+    # river:10の再測定(コンテナ捕捉数は平均9.8〜9.9台とほぼ完全)ではn24/n30とも
+    # 平均70%前後・瞬間99%とほぼ張り付いたままだった。river(8コア)は10台でもまだ
+    # 過負荷寄りと判断し、8台まで下げる。残りはローカル(32コア、n30/river:10構成で
+    # 平均43%/最大78%とまだ余裕確認済み)に寄せる。
+    "flip_n24_dist:24:23:30:flip:300:river:8"
+    "flip_n30_dist:30:29:30:flip:300:river:8"
+    # river turned out to fall over even at 10 workers of its own (8 cores) - n24/n30_dist
     # above are invalid past that point. These probe how far this machine alone (32
     # cores) scales before finding another machine is unavoidable.
     "flip_n14_local:14:13:30:flip:300:"
