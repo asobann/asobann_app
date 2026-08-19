@@ -40,6 +40,14 @@ from ..e2e.conftest import browser_func as browser
 from ..e2e.helper import GameHelper, STAGING_TOP
 from ..support.mouse_latency import evaluate_all_pairs_timeseries
 
+# 60 flippable cards, one per worker (see execute_worker's my_card_name) - generated
+# by scripts/generate_sustained_load_kit.py, not hand-edited. A kit with fewer cards
+# than workers makes every worker past the card count fail its very first flip/drag
+# with 'card is absent from the DOM', from cycle 1 onward - indistinguishable in the
+# logs from that worker's machine or the server giving out. Discovered when three
+# different local-only worker counts (13/17/19 workers) all failed starting at exactly
+# the 13th worker - past this file's old fixed 12 cards - which likely confounded some
+# of the higher-n distributed-worker measurements too.
 KIT_FILE = Path(__file__).parent / "sustained_load.json"
 
 # Raised on the controller's side of a result_queue.get() when that worker's own
