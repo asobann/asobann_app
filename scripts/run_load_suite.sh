@@ -70,8 +70,12 @@ CONFIGS=(
     # attrition, p95 202ms->294ms). n10_dist is reused as-is against CPU512 for a direct
     # before/after point; n18/n24/n30 step coarsely past it to find where 512 saturates.
     "flip_n18_dist:18:17:30:flip:300:river:8"
-    "flip_n24_dist:24:23:30:flip:300:river:11"
-    "flip_n30_dist:30:29:30:flip:300:river:14"
+    # river worker CPU監視の実測(2026-08-19)で、11台では平均30%/瞬間100%、14台では
+    # 平均82%/瞬間100%とriver(8コア)自体が張り付いていたと判明。p95の悪化はここが
+    # 律速していた可能性が高く、サーバー側の飽和点として読めなかった。riverを10台に
+    # 抑え、残りをローカル(32コア、n30でも平均36%/最大77%と余裕確認済み)に寄せる。
+    "flip_n24_dist:24:23:30:flip:300:river:10"
+    "flip_n30_dist:30:29:30:flip:300:river:10"
     # river turned out to fall over past ~10 workers of its own (8 cores) - n24/n30_dist
     # above are invalid past that point. These probe how far this machine alone (32
     # cores) scales before finding another machine is unavoidable.
