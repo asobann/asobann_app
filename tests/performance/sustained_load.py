@@ -52,12 +52,14 @@ DEFAULTS = {
     'mousemove_hz': 30,
     'drag_interval_seconds': 10,
     'report_interval_seconds': 60,
-    # Set by framework.run_test from AbstractContainers.external_worker_count. Workers
-    # are ordered local-then-external, so P<idx> with idx >= (total workers -
-    # external_worker_count) is on another machine. 0 (the default for every run mode
-    # except LocalContainers with LOADTEST_EXTRA_WORKERS) means "everyone is local".
-    'external_worker_count': 0,
 }
+
+# Set by framework.run_test from AbstractContainers.worker_system_names: a
+# comma-separated per-worker system name, in P<idx> order (e.g. 'local,local,river').
+# Not part of DEFAULTS above because it's a string, not an int - get_params() below
+# handles it separately. Empty/unset (every run mode except LocalContainers with
+# LOADTEST_WORKER_SYSTEMS set) means "everyone is local".
+DEFAULT_WORKER_SYSTEMS = ''
 
 # How long to keep the receive observer running after mousemove sending stops, before
 # doing the final log collection. Sending stops immediately, but in-flight messages
@@ -73,22 +75,29 @@ def log(*args):
 
 
 def get_params(parameters):
-    return {key: int(parameters.get(key, default)) for key, default in DEFAULTS.items()}
+    p = {key: int(parameters.get(key, default)) for key, default in DEFAULTS.items()}
+    p['worker_systems'] = parameters.get('worker_systems', DEFAULT_WORKER_SYSTEMS)
+    return p
 
 
-def _is_local(worker_name, total_workers, external_worker_count):
-    """host and any P<idx> not covered by LOADTEST_EXTRA_WORKERS run on this machine.
+def _worker_system(worker_name, worker_systems):
+    """Which system (machine) `worker_name` ('host' or 'P<idx>') ran on.
 
-    Workers are ordered local-then-external (see LocalContainers.start_workers), so the
-    last `external_worker_count` indices are the remote ones.
+    'host' is the controller's own browser, which always shares this process's
+    machine - by convention that machine's system name is always 'local' (see
+    framework.WORKER_SYSTEMS), so 'host' maps to 'local' unconditionally. An empty
+    worker_systems list means every P<idx> is 'local' too (the default, single-machine
+    case). worker_systems is per-worker in P<idx> order (see framework.run_test).
     """
     if worker_name == 'host':
-        return True
+        return 'local'
     idx = int(worker_name[1:])
-    return idx < total_workers - external_worker_count
+    if not worker_systems:
+        return 'local'
+    return worker_systems[idx]
 
 
-def same_machine_pairs(pairs, total_workers, external_worker_count):
+def same_machine_pairs(pairs, worker_systems_str):
     """Keep only sender/receiver pairs that ran on the same machine.
 
     Latency is one browser's received_at minus another's sent_at. Across machines that
@@ -98,12 +107,17 @@ def same_machine_pairs(pairs, total_workers, external_worker_count):
     within it. Restricting latency to same-machine pairs sidesteps clock comparison
     entirely. CPU and loss-rate figures elsewhere still cover every worker regardless of
     machine - only cross-machine *latency* is unmeasurable this way.
+
+    Pairs are grouped by each worker's exact system name (not a binary local/external
+    flag), so any number of machines can be mixed without two different remote hosts
+    being mistaken for sharing a clock.
     """
-    if external_worker_count == 0:
+    if not worker_systems_str:
         return pairs
+    worker_systems = worker_systems_str.split(',')
     return [p for p in pairs
-            if _is_local(p['sender'], total_workers, external_worker_count)
-            == _is_local(p['receiver'], total_workers, external_worker_count)]
+            if _worker_system(p['sender'], worker_systems)
+            == _worker_system(p['receiver'], worker_systems)]
 
 
 def execute_controller(command_queues, result_queues, parameters):
@@ -209,10 +223,9 @@ def execute_controller(command_queues, result_queues, parameters):
 
         buckets = evaluate_all_pairs_timeseries(
             sent_by_player, received_by_receiver, start_at_ms, p['report_interval_seconds'])
-        total_workers = len(command_queues)
         timeline = [
             {'elapsed_seconds': (bucket_idx + 1) * p['report_interval_seconds'],
-             'pairs': same_machine_pairs(buckets[bucket_idx], total_workers, p['external_worker_count'])}
+             'pairs': same_machine_pairs(buckets[bucket_idx], p['worker_systems'])}
             for bucket_idx in sorted(buckets.keys())
             if bucket_idx >= 0  # drop the handful of host ticks sent before start_at_ms was captured
         ]
