@@ -354,3 +354,7 @@ fabric.properties
 # E2Eの失敗時スクリーンショット。実行のたびに増える一時的なもので、普段は捨ててよい。
 # 必要になったら issue に貼るか、asobann_docs の worklog へ持っていく。
 /.e2e-artifacts/
+
+# Claude Code のローカル設定・作業ファイル（開発者ごとに異なる）
+.claude/
+.mcp.json
