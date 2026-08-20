@@ -91,46 +91,52 @@ CONTROLLER_NAME = 'test_run_multiprocess_in_container_controller'
 # load generators must not compete with the app for the same cores).
 DOCKER_RUN_OPTS = os.environ.get('LOADTEST_DOCKER_RUN_OPTS', '')
 
-# Already-running workers on other machines, as a comma-separated host:port list
-# (e.g. `192.168.0.28:50000,192.168.0.28:50001`). They are used in addition to the
-# workers started locally, and this process neither starts nor stops them.
+# How to spread workers across machines, as a comma-separated name:count list (e.g.
+# `local:14,river:10`). Each name is just a label for a machine, not a binary
+# local/external flag - sustained_load.same_machine_pairs() groups latency by exact
+# system name, so any number of machines can be mixed without one of them silently
+# absorbing another's clock. The literal name 'local' is the one machine that never
+# goes through SSH (see LocalContainers.start_workers); every other name is used both
+# as an SSH destination to start workers there and as the hostname the controller
+# connects to, so it must resolve on this machine's network too (an SSH config alias
+# with a matching /etc/hosts entry, or an LAN-resolvable hostname).
 #
-# One machine can only host so many browsers, and the local mode's ceiling is really
-# the published port range 50000-50009 on a single host. Spreading workers across
-# machines removes both limits at once: each machine can publish 50000 again, and the
-# browsers no longer compete for one machine's CPU. That matters because a load
-# generator that is itself saturated silently understates the server's capacity.
-EXTRA_WORKERS = os.environ.get('LOADTEST_EXTRA_WORKERS', '')
+# One machine can only host so many browsers, and a single machine's ceiling is really
+# the published port range 50000-50029 on that host. Spreading workers across machines
+# removes both limits at once: each machine can publish 50000 again, and the browsers
+# no longer compete for one machine's CPU. That matters because a load generator that
+# is itself saturated silently understates the server's capacity.
+#
+# Empty/unset means every worker requested by start_workers(worker_count) runs on
+# 'local'.
+WORKER_SYSTEMS = os.environ.get('LOADTEST_WORKER_SYSTEMS', '')
 
 
-def parse_extra_workers(spec: str) -> List[Tuple[str, int]]:
-    """'host:port,host:port' -> [(host, port), ...]. Empty/blank spec means none.
+def parse_worker_systems(spec: str) -> List[Tuple[str, int]]:
+    """'name:count,name:count,...' -> [(name, count), ...], in the given order.
 
-    All entries must share one host: sustained_load.same_machine_pairs() only tracks
-    "local" vs. "external" (a count, not a per-worker machine id), so it can only be
-    correct if every external worker shares one clock. IPv6 literals are rejected too -
-    they contain ':' themselves, which would break remote_runner.py's plain
-    `arg.split(':')` parsing of the controller's worker list.
+    No name is special to this parser - see WORKER_SYSTEMS above for the 'local'
+    convention that start_workers() applies. Each name must be unique (a system can't
+    be split across two entries) and each count must be a positive integer.
     """
-    binds = []
-    hosts = set()
+    if not spec.strip():
+        return []
+    systems = []
+    seen = set()
     for entry in spec.split(','):
         entry = entry.strip()
         if not entry:
             continue
-        host, sep, port = entry.rpartition(':')
-        if not sep or ':' in host or not port.isdigit():
+        name, sep, count = entry.rpartition(':')
+        if not sep or ':' in name or not count.isdigit() or int(count) <= 0:
             raise ValueError(
-                f'LOADTEST_EXTRA_WORKERS entry must be host:port with an IPv4/hostname '
-                f'host (no IPv6), got {entry!r}')
-        binds.append((host, int(port)))
-        hosts.add(host)
-    if len(hosts) > 1:
-        raise ValueError(
-            f'LOADTEST_EXTRA_WORKERS lists workers on {len(hosts)} different hosts '
-            f'({sorted(hosts)}), but only a single external host is supported - '
-            f'same_machine_pairs() assumes all external workers share one clock')
-    return binds
+                f'LOADTEST_WORKER_SYSTEMS entry must be name:count with a positive '
+                f'count and a name with no colon, got {entry!r}')
+        if name in seen:
+            raise ValueError(f'LOADTEST_WORKER_SYSTEMS lists system {name!r} more than once')
+        seen.add(name)
+        systems.append((name, int(count)))
+    return systems
 
 
 class AbstractContainers:
@@ -144,12 +150,12 @@ class AbstractContainers:
 
     def __init__(self):
         self._workers: 'Optional[AbstractContainers.Workers]' = None
-        # How many of self._workers.binds are LOADTEST_EXTRA_WORKERS rather than
-        # containers started on this machine. 0 unless a subclass sets otherwise -
-        # scenarios that care (see sustained_load.py's same-machine latency grouping)
-        # get "everything is local" by default, which is correct for every run mode
-        # except LocalContainers with extra workers configured.
-        self.external_worker_count = 0
+        # Each self._workers.binds entry's system name, in the same order (e.g.
+        # ['local', 'local', 'river', 'river']). Empty unless a subclass sets
+        # otherwise - scenarios that care (see sustained_load.py's same-machine
+        # latency grouping) get "everything is local" by default, which is correct
+        # for every run mode except LocalContainers with LOADTEST_WORKER_SYSTEMS set.
+        self.worker_system_names: List[str] = []
 
     def prepare_docker_contents(self, base_dir: Path):
         (base_dir / 'runner').mkdir()
@@ -188,7 +194,7 @@ WORKDIR /runner
 COPY runner/requirements-dev.txt ./
 RUN pip3 install --no-cache-dir -r requirements-dev.txt
 COPY runner/ .
-EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009
+EXPOSE 50000 50001 50002 50003 50004 50005 50006 50007 50008 50009 50010 50011 50012 50013 50014 50015 50016 50017 50018 50019 50020 50021 50022 50023 50024 50025 50026 50027 50028 50029
 CMD python tests/performance/remote_runner.py worker $PORT
     """)
         proc = system(f"docker build . -f Dockerfile_worker -t {WORKER_NAME}",
@@ -236,18 +242,26 @@ EXPOSE 8888
             started_at = datetime.datetime.now()
             while True:
                 try:
-                    res = urllib.request.urlopen(self.controller_url, data=command.encode('utf8'))
+                    # timeout=5: without it, a connection that gets accepted but never
+                    # answered (observed on this machine's controller when 13+ local
+                    # worker containers were starving it of CPU right as shutdown() was
+                    # sent) blocks here forever - neither raising into this except clause
+                    # nor ever returning, hanging the whole run past the caller's own
+                    # `timeout` wrapper and losing an otherwise-successful result.
+                    res = urllib.request.urlopen(self.controller_url, data=command.encode('utf8'), timeout=5)
                     break
-                except (urllib.error.URLError, ConnectionError):
+                except (urllib.error.URLError, ConnectionError, TimeoutError):
                     # A bare ConnectionError (e.g. http.client.RemoteDisconnected, raised
                     # when the controller closes the connection before sending a response -
                     # observed here right after the controller logged an internal scenario
                     # error) isn't wrapped into URLError by urllib in every code path, so it
                     # would otherwise escape this retry loop entirely and crash the caller
-                    # (seen taking down shutdown() during a long multi-worker run).
+                    # (seen taking down shutdown() during a long multi-worker run). A bare
+                    # TimeoutError (socket.timeout, from the `timeout=5` above) needs the
+                    # same treatment for the same reason.
                     if (datetime.datetime.now() - started_at).total_seconds() > CONNECTION_RETRY_SECONDS:
                         raise
-                    log(f'connection to controller {self.controller_url} refused. Retrying ...')
+                    log(f'connection to controller {self.controller_url} refused or timed out. Retrying ...')
                     time.sleep(1)
             result = res.read().decode('utf-8')
             return result
@@ -271,10 +285,10 @@ EXPOSE 8888
             self._send_command(f'set url {url}')
         for key, value in (params or {}).items():
             self._send_command(f'set {key} {value}')
-        # workers are ordered local-then-external (see LocalContainers.start_workers), so
-        # a scenario that only wants to compare same-machine pairs can tell which is which
-        # from this count and each worker's P<idx> alone - see sustained_load.py.
-        self._send_command(f'set external_worker_count {self.external_worker_count}')
+        # Workers are ordered by system (see LocalContainers.start_workers), so a
+        # scenario that only wants to compare same-machine pairs can map each worker's
+        # P<idx> to its system name via this list alone - see sustained_load.py.
+        self._send_command(f'set worker_systems {",".join(self.worker_system_names)}')
         run_id = self._send_command(f'run {module_name}')
         log(f'run sent; run_id {run_id}')
         while True:
@@ -342,24 +356,35 @@ class LocalContainers(AbstractContainers):
             self.build_docker_image_for_controller(base_path)
 
     def start_workers(self, worker_count) -> None:
-        # Workers already running elsewhere (LOADTEST_EXTRA_WORKERS) count towards the
-        # requested total, so the caller asks for "12 workers" without caring how they
-        # are split between this machine and the others.
-        external = parse_extra_workers(EXTRA_WORKERS)
-        local_count = worker_count - len(external)
-        if local_count < 0:
+        systems = parse_worker_systems(WORKER_SYSTEMS)
+        if not systems:
+            systems = [('local', worker_count)]
+        total = sum(count for _, count in systems)
+        if total != worker_count:
             raise ValueError(
-                f'LOADTEST_EXTRA_WORKERS lists {len(external)} workers but only '
-                f'{worker_count} were requested')
-        if local_count > 10:
-            raise ValueError(
-                f'Local running permits at most 10 workers for the time being, got '
-                f'{local_count} (use LOADTEST_EXTRA_WORKERS to push more onto another host)')
-        self.external_worker_count = len(external)
-        if external:
-            log(f'using {len(external)} external worker(s): {external}')
+                f'LOADTEST_WORKER_SYSTEMS lists {total} workers across '
+                f'{[name for name, _ in systems]} but {worker_count} were requested')
 
-        ports = [50000 + i for i in range(local_count)]  # 50000-50009 is EXPOSEd in Dockerfile
+        self.worker_system_names = []
+        binds = []
+        for name, count in systems:
+            if count > 30:
+                raise ValueError(
+                    f'system {name!r} requests {count} workers; at most 30 are '
+                    f'permitted per system for the time being (published ports are '
+                    f'50000-50029 on each host)')
+            if name == 'local':
+                binds += self._start_local_workers(count)
+            else:
+                binds += self._start_remote_workers(name, count)
+            self.worker_system_names += [name] * count
+
+        self._workers = AbstractContainers.Workers(binds=binds)
+        for host, port in binds:
+            wait_for_port(host, port)
+
+    def _start_local_workers(self, count) -> List[Tuple[str, int]]:
+        ports = [50000 + i for i in range(count)]  # 50000-50029 is EXPOSEd in Dockerfile
         binds = []
         for port in ports:
             log(f'start worker container port {port}')
@@ -382,11 +407,17 @@ class LocalContainers(AbstractContainers):
             )
             internal_ip = ip_proc.stdout.strip()
             binds.append((internal_ip, port))
+        return binds
 
-        binds += external
-        self._workers = AbstractContainers.Workers(binds=binds)
-        for host, port in binds:
-            wait_for_port(host, port)
+    def _start_remote_workers(self, host, count) -> List[Tuple[str, int]]:
+        # The remote worker image must already be present on `host` (docker save | ssh
+        # host docker load) - this does not build or transfer it. Each remote host gets
+        # its own independent 50000.. port range (different machines, no collision).
+        log(f'start {count} worker(s) on {host} (ports 50000..{50000 + count - 1})')
+        for i in range(count):
+            port = 50000 + i
+            system(f"ssh {host} \"docker run -d -p {port}:{port} -e PORT={port} {WORKER_NAME}\"")
+        return [(host, 50000 + i) for i in range(count)]
 
     def start_controller(self) -> None:
         log(f'start controller container workers {self._workers.binds}')

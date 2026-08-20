@@ -1,43 +1,57 @@
 import pytest
 
-from tests.performance.framework import parse_extra_workers
+from tests.performance.framework import parse_worker_systems
 
 
-class TestParseExtraWorkers:
-    def test_empty_spec_means_no_workers(self):
-        assert parse_extra_workers('') == []
-        assert parse_extra_workers('   ') == []
+class TestParseWorkerSystems:
+    def test_empty_spec_means_no_systems(self):
+        assert parse_worker_systems('') == []
+        assert parse_worker_systems('   ') == []
 
     def test_single_entry(self):
-        assert parse_extra_workers('192.168.0.28:50000') == [('192.168.0.28', 50000)]
+        assert parse_worker_systems('local:14') == [('local', 14)]
 
-    def test_multiple_entries_on_one_host(self):
-        assert parse_extra_workers('192.168.0.28:50000,192.168.0.28:50001') == [
-            ('192.168.0.28', 50000),
-            ('192.168.0.28', 50001),
+    def test_multiple_entries(self):
+        assert parse_worker_systems('local:14,river:10') == [
+            ('local', 14),
+            ('river', 10),
         ]
 
     def test_whitespace_around_entries_is_stripped(self):
-        assert parse_extra_workers(' 192.168.0.28:50000 , 192.168.0.28:50001 ') == [
-            ('192.168.0.28', 50000),
-            ('192.168.0.28', 50001),
+        assert parse_worker_systems(' local:14 , river:10 ') == [
+            ('local', 14),
+            ('river', 10),
         ]
 
     def test_malformed_entry_is_rejected(self):
         with pytest.raises(ValueError):
-            parse_extra_workers('not-a-host-port')
+            parse_worker_systems('not-a-name-count')
 
-    def test_non_numeric_port_is_rejected(self):
+    def test_non_numeric_count_is_rejected(self):
         with pytest.raises(ValueError):
-            parse_extra_workers('192.168.0.28:notaport')
+            parse_worker_systems('river:notacount')
 
-    def test_ipv6_host_is_rejected(self):
-        # ':' inside the host would also break remote_runner.py's plain split(':').
+    def test_zero_count_is_rejected(self):
         with pytest.raises(ValueError):
-            parse_extra_workers('::1:50000')
+            parse_worker_systems('river:0')
 
-    def test_entries_spanning_multiple_hosts_are_rejected(self):
-        # same_machine_pairs() only tracks a local/external count, not a per-worker
-        # machine id, so it is only correct if every external worker shares one clock.
+    def test_negative_count_is_rejected(self):
         with pytest.raises(ValueError):
-            parse_extra_workers('192.168.0.28:50000,192.168.0.29:50000')
+            parse_worker_systems('river:-1')
+
+    def test_name_containing_colon_is_rejected(self):
+        # A colon in the name would make rpartition(':') misparse the count.
+        with pytest.raises(ValueError):
+            parse_worker_systems('::1:14')
+
+    def test_duplicate_system_name_is_rejected(self):
+        with pytest.raises(ValueError):
+            parse_worker_systems('river:10,river:4')
+
+    def test_any_number_of_systems_is_allowed(self):
+        # Unlike the old single-external-host design, three or more machines mix freely.
+        assert parse_worker_systems('local:14,river:10,pi:4') == [
+            ('local', 14),
+            ('river', 10),
+            ('pi', 4),
+        ]
