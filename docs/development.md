@@ -67,7 +67,7 @@ pnpm test                                        # JS unit
 `config_test.py` が接続先に `mongo:27017` を使う。この名前は docker のネットワーク内でしか解決できないので、**functional 以降はホストから直接は動かない**。`scripts/lib/container_tests.sh` が mongo の起動とテストコンテナの実行をまとめて面倒を見る。
 
 - mongo は `deploy/loadtest/docker-compose.yml` から起動し、**上げっぱなしで再利用する**（毎回上げ直さない）
-- テストイメージは `asobann-e2e:local`。functional にブラウザは要らないが、イメージを増やす手間のほうが大きいので共用している
+- テストイメージは `asobann-e2e:<sha>`(gitのコミットSHA基準。`scripts/build_image.sh --print-tag` が唯一の正)。functional にブラウザは要らないが、イメージを増やす手間のほうが大きいので共用している
 
 ### 直しながら回すとき
 

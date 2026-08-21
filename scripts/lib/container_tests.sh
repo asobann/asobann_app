@@ -27,7 +27,10 @@ APP_DIR=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)
 # functional も e2e も同じイメージを使う。functional にブラウザは要らないが、
 # イメージを増やす方が管理の手間が大きいと判断した。firefoxが乗っている分だけ
 # 重いのはローカル実行だけの話で、実害がない。
-TEST_IMAGE=${TEST_IMAGE:-${E2E_IMAGE:-asobann-e2e:local}}
+#
+# タグはSHA基準(scripts/build_image.sh --print-tag が唯一の正)。固定タグ
+# :local だと「どの本番イメージに対してテストしたか」が残らない。
+TEST_IMAGE=${TEST_IMAGE:-${E2E_IMAGE:-"asobann-e2e:$("$APP_DIR/scripts/build_image.sh" --print-tag)"}}
 NETWORK=${NETWORK:-loadtest_default}
 MONGO_COMPOSE="$APP_DIR/deploy/loadtest/docker-compose.yml"
 MONGO_CONTAINER=loadtest-mongo-1
