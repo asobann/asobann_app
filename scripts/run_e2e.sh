@@ -19,6 +19,9 @@
 #   --tolerate-flaky  既知フレーキーの失敗を終了コードに含めない（CI用）。
 #                     一覧に無い失敗が1件でもあれば従来どおり失敗する
 #
+# 環境変数:
+#   ASOBANN_E2E_SLOWMO=秒数  操作の合間に待つ。結果が不安定化する可能性がある
+#
 # 例:
 #   ./scripts/run_e2e.sh                                  # 全件
 #   ./scripts/run_e2e.sh tests/e2e/test_component.py
@@ -57,5 +60,12 @@ ensure_image
 
 envs=(-e MOZ_HEADLESS=1)
 [ "$TOLERATE_FLAKY" = yes ] && envs+=(-e E2E_TOLERATE_KNOWN_FLAKY=1)
+
+# 切り分け用のつまみ。ホスト側で設定されていればコンテナへ渡す。
+for name in ASOBANN_E2E_SLOWMO; do
+    if [ -n "${!name:-}" ]; then
+        envs+=(-e "$name=${!name}")
+    fi
+done
 
 run_pytest "${envs[@]}" -- "$@"

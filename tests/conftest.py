@@ -96,13 +96,6 @@ def debug_handler_wait():
     provider.set_env('ASOBANN_DEBUG_HANDLER_WAIT', '1')
 
 
-@pytest.fixture
-def debug_order_of_updates():
-    debug_opts = provider.get_env('ASOBANN_DEBUG_OPTS') or ''
-    debug_opts += ' ORDER_OF_UPDATES'
-    provider.set_env('ASOBANN_DEBUG_OPTS', debug_opts.strip())
-
-
 def do_deploy_data():
     server_environ = provider.get_env_to_run()
     subprocess.run(DEPLOY_COMMAND, env=server_environ)

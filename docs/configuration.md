@@ -30,7 +30,7 @@
 
 | 環境変数 | 説明 |
 |---|---|
-| `ASOBANN_DEBUG_OPTS` | カンマ区切り。`PERFORMANCE_RECORDING`（トレースをmongoのtracesへ記録、/debug/tracesで閲覧）、`ORDER_OF_UPDATES`（更新順ログ）、`LOG`（socketio詳細ログ） |
+| `ASOBANN_DEBUG_OPTS` | カンマ区切り。`PERFORMANCE_RECORDING`（トレースをmongoのtracesへ記録、/debug/tracesで閲覧）、`LOG`（socketio詳細ログ） |
 | `ASOBANN_DEBUG_HANDLER_WAIT` | `come by table` 処理に指定秒のsleepを入れる（遅延の再現用） |
 
 ## ハードコードされている値（要注意）

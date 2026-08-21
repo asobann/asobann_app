@@ -48,14 +48,3 @@ async def get_traces():
 @blueprint.route('delete_all_traces')
 async def delete_all_traces():
     await current_app.mongo_db.traces.delete_many({})
-
-
-@blueprint.route('get_log_of_updates', methods=['GET'])
-async def get_log_of_updates():
-    return jsonify(debug_tools.log_of_updates)
-
-
-@blueprint.route('clear_log_of_updates', methods=['GET'])
-async def clear_log_of_updates():
-    debug_tools.clear_log_of_updates()
-    return '{}'

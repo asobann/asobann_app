@@ -12,7 +12,7 @@
 #
 # tests/conftest.py はサーバを subprocess で起動するので、アプリと同じイメージ内に
 # テストが同居している必要がある。別コンテナに分離すると、サーバのenvを変えて再起動する
-# 3件のテスト(debug_handler_wait / debug_order_of_updates)が動かせない。これらが使う
+# 2件のテスト(debug_handler_wait を使うもの)が動かせない。これが使う
 # デバッグフックは config_test.py にしかなく、config_production.py には無いため。
 #
 # Build: scripts/build_e2e_image.sh (本番イメージのビルドから通しでやる)

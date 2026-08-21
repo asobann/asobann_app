@@ -37,7 +37,6 @@ AWS_COGNITO_CLIENT_ID = common.AWS_COGNITO_CLIENT_ID
 if 'ASOBANN_DEBUG_OPTS' in os.environ:
     opts = os.environ['ASOBANN_DEBUG_OPTS'].split(',')
     DEBUG_PERFORMANCE_RECORDING = 'PERFORMANCE_RECORDING' in opts
-    DEBUG_ORDER_OF_UPDATES = 'ORDER_OF_UPDATES' in opts
     DEBUG_LOG = 'LOG' in opts
 
 if "ASOBANN_ACCESS_LOG" in os.environ:
