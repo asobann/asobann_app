@@ -58,10 +58,17 @@ class TestHandArea:
         put_one_card_each_on_2_hand_areas(host, another)
 
         # assert text
-        assert '♠A' in host.component_by_name(C_A).face()
-        assert '♠A' not in another.component_by_name(C_A).face()
-        assert '♠K' not in host.component_by_name(C_K).face()
-        assert '♠K' in another.component_by_name(C_K).face()
+        # put_one_card_each_on_2_hand_areas ends with a double_click on each side; nothing
+        # here is applied synchronously (see GameHelper.eventually's docstring), so the
+        # first read of state that changed as a result must wait for it to arrive.
+        host.eventually(lambda: '♠A' in host.component_by_name(C_A).face(),
+                         'card did not flip face-up for its owner')
+        another.eventually(lambda: '♠A' not in another.component_by_name(C_A).face(),
+                            'card did not stay face-down for the other player')
+        host.eventually(lambda: '♠K' not in host.component_by_name(C_K).face(),
+                         'other player\'s card did not stay face-down')
+        another.eventually(lambda: '♠K' in another.component_by_name(C_K).face(),
+                            'other player\'s card did not flip face-up for its owner')
 
         # assert image
         assert 'card_up.png' in host.component_by_name(C_A).face()
@@ -103,10 +110,14 @@ class TestHandArea:
         another.move_card_to_hand_area(another.component_by_name(C_K), 'host')
 
         # assert text
-        assert '♠A' not in host.component_by_name(C_A).face()
-        assert '♠A' in another.component_by_name(C_A).face()
-        assert '♠K' in host.component_by_name(C_K).face()
-        assert '♠K' not in another.component_by_name(C_K).face()
+        host.eventually(lambda: '♠A' not in host.component_by_name(C_A).face(),
+                         'card did not flip face-down after moving to the other player\'s hand')
+        another.eventually(lambda: '♠A' in another.component_by_name(C_A).face(),
+                            'card did not flip face-up for its new owner')
+        host.eventually(lambda: '♠K' in host.component_by_name(C_K).face(),
+                         'card did not flip face-up for its new owner')
+        another.eventually(lambda: '♠K' not in another.component_by_name(C_K).face(),
+                            'card did not flip face-down after moving to the other player\'s hand')
 
         # assert image
         assert 'card_back.png' in host.component_by_name(C_A).face()
@@ -124,20 +135,26 @@ class TestHandArea:
         host_card_pos = host_card.pos()
         hand_area = host.hand_area(owner="host")
         host.drag(hand_area, -50, -100, grab_at=(0, 40))  # avoid overlay buttons
-        time.sleep(0.1)  # moving with traylike is Level C user action, so it's safer to wait
-        assert host_card_pos.left - 50 == host_card.pos().left
-        assert host_card_pos.top - 100 == host_card.pos().top
+        # moving with traylike is Level C user action; nothing is applied synchronously
+        # (see GameHelper.eventually's docstring), so wait for the position to converge
+        # instead of a fixed sleep.
+        host.eventually(
+            lambda: host_card.pos().left == host_card_pos.left - 50
+            and host_card.pos().top == host_card_pos.top - 100,
+            'card did not follow the hand area after it was dragged')
 
         # host_card is still owned by host
         assert '♠A' in host.component_by_name(C_A).face()
         assert '♠A' not in another.component_by_name(C_A).face()
 
         host.double_click(host_card)
-        assert '♠A' not in host.component_by_name(C_A).face()
+        host.eventually(lambda: '♠A' not in host.component_by_name(C_A).face(),
+                         'card did not flip face-down')
         assert '♠A' not in another.component_by_name(C_A).face()
 
         host.double_click(host_card)
-        assert '♠A' in host.component_by_name(C_A).face()
+        host.eventually(lambda: '♠A' in host.component_by_name(C_A).face(),
+                         'card did not flip back face-up')
         assert '♠A' not in another.component_by_name(C_A).face()
 
     def test_many_cards_on_hand_area_move_with_the_area(self, browser: webdriver.Firefox,
@@ -179,9 +196,12 @@ class TestHandArea:
         host.drag(hand_area, 0, -100, 'top left')
         host.drag(hand_area, 0, -100, 'bottom')
 
-        # host_card is no longer owned by host
-        time.sleep(0.1)
-        assert '♠A' in another.component_by_name(C_A).face()
+        # host_card is no longer owned by host. Nothing is applied synchronously (see
+        # GameHelper.eventually's docstring), so wait for the ownership change to arrive
+        # instead of a fixed sleep.
+        another.eventually(
+            lambda: '♠A' in another.component_by_name(C_A).face(),
+            'card did not become visible to the other player after losing hand area ownership')
 
         # PlayingCard S_3 is owned by host
         assert '♠Q' in host.component_by_name(C_Q).face()
