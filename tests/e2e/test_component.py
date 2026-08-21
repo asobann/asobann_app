@@ -138,9 +138,10 @@ class TestHandArea:
         # moving with traylike is Level C user action; nothing is applied synchronously
         # (see GameHelper.eventually's docstring), so wait for the position to converge
         # instead of a fixed sleep.
+        expected_left = host_card_pos.left - 50
+        expected_top = host_card_pos.top - 100
         host.eventually(
-            lambda: host_card.pos().left == host_card_pos.left - 50
-            and host_card.pos().top == host_card_pos.top - 100,
+            lambda: (pos := host_card.pos()).left == expected_left and pos.top == expected_top,
             'card did not follow the hand area after it was dragged')
 
         # host_card is still owned by host
