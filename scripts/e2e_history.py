@@ -84,16 +84,34 @@ CREATE INDEX IF NOT EXISTS idx_attempt_test_result ON attempt(test_result_id);
 """
 
 
+SUPPORTED_SCHEMA_VERSION = 1
+
+
 def connect():
     HISTORY_DIR.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
+    # SQLiteは既定でREFERENCESを検証しない(接続ごとに有効化が要る)。
+    conn.execute('PRAGMA foreign_keys = ON')
     conn.executescript(SCHEMA)
     return conn
 
 
-def ingest_file(conn, path: Path) -> bool:
-    """1件のrun JSONをDBへ入れる。既に入っていればFalse、新規に入れたらTrue。"""
+def ingest_file(conn, path: Path, source_label: str | None = None) -> bool:
+    """1件のrun JSONをDBへ入れる。既に入っていればFalse、新規に入れたらTrue。
+
+    source_label は「どこから来たか」の記録用の文字列で、実在するパスである
+    必要はない(fetch-ciでは一時ディレクトリが取り込み後に消えるため)。
+    省略時は path をそのまま使う。
+    """
+    if source_label is None:
+        source_label = str(path)
+
     data = json.loads(path.read_text(encoding='utf-8'))
+    if data.get('schema_version') != SUPPORTED_SCHEMA_VERSION:
+        raise ValueError(
+            f'{path}: schema_version が想定と違う'
+            f'(期待={SUPPORTED_SCHEMA_VERSION}, 実際={data.get("schema_version")!r})。'
+            f'tests/e2e/conftest.pyとscripts/e2e_history.pyのスキーマがずれている可能性がある。')
     run = data['run']
     run_id = run['run_id']
 
@@ -120,7 +138,7 @@ def ingest_file(conn, path: Path) -> bool:
             int(bool(run.get('tolerate_known_flaky'))),
             json.dumps(run.get('known_flaky_list'), ensure_ascii=False),
             int(bool(run.get('headless'))), run.get('slowmo'), run.get('browser'),
-            run.get('browser_version'), run.get('exit_status'), str(path),
+            run.get('browser_version'), run.get('exit_status'), source_label,
         ),
     )
 
@@ -196,9 +214,12 @@ def cmd_fetch_ci(args):
                 continue
             for path in sorted(Path(tmp).glob('*.json')):
                 seen_total += 1
-                if ingest_file(conn, path):
+                # 一時ディレクトリはこのwithブロックを抜けると消えるので、パスその
+                # ものではなく、CI実行(databaseId)とファイル名を含むラベルを残す。
+                label = f'ci-run:{run_db_id}/{path.name}'
+                if ingest_file(conn, path, source_label=label):
                     new_total += 1
-                    print(f'取り込んだ: run {run_db_id} / {path.name}')
+                    print(f'取り込んだ: {label}')
     print(f'CI実行{len(runs)}件を確認し、artifact {seen_total}件中{new_total}件を新規に取り込んだ({DB_PATH})')
 
 
