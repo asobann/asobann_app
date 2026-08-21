@@ -5,29 +5,34 @@
 #   - E2Eは以前 python:3.10-slim-bookworm から独立にビルドしたイメージで動いていて、
 #     本番(bullseye / Python 3.10.18 / greenlet 1.1.3)と食い違っていた。テストの意味が
 #     薄れるので、本番イメージをベースにする(Dockerfile.e2e)
-#   - Dockerfile.aws は requirements.txt を COPY するが、これは uv.lock からの
-#     生成物。作業ツリーに残った古い requirements.txt でビルドすると本番と別物になる。
-#     実際それで greenlet が 1.1.3 と 3.5.4 に割れていた。**必ず再生成する**
+#   - 本番相当イメージのビルドは scripts/build_image.sh に一本化する。以前はここで
+#     Dockerfile.aws を直接ビルドしており、build_image.sh が必ずやるwebpackの
+#     ビルドを踏まずにイメージができていた。手元では作業ツリーに残った古いJS
+#     バンドル(gitignore済み)が偶然拾われて気づかないが、CIの新規チェックアウト
+#     ではJSバンドル無しの本番イメージができ、E2Eが全件落ちる。本番イメージの
+#     ビルド手順が2箇所にあると、こういう食い違いが構造的に起きる。
 #
 # Usage: ./scripts/build_e2e_image.sh
 #
-# 出力: asobann-app:local (本番相当) と asobann-e2e:local (それ+テスト道具)
+# 出力: asobann_aws:<sha>(本番相当、scripts/build_image.shが作る) と
+#       asobann-e2e:<sha>(それ+テスト道具)。<sha>は同じ値で、未コミットの
+#       変更があれば -dirty が付く(scripts/build_image.sh --print-tag が唯一の正)。
 
 set -eu
 cd "$(dirname "$0")/.."
 
-APP_IMAGE="asobann-app:local"
-E2E_IMAGE="asobann-e2e:local"
+TAG=$(./scripts/build_image.sh --print-tag)
+APP_IMAGE="asobann_aws:$TAG"
+E2E_IMAGE="asobann-e2e:$TAG"
 
-echo "==> 依存を uv.lock から書き出す"
-uv export --frozen --no-dev --no-emit-project --no-hashes -o requirements.txt --quiet
+echo "==> 本番相当イメージをビルドする ($APP_IMAGE)"
+./scripts/build_image.sh
+
+echo "==> E2Eテスト道具の依存を uv.lock から書き出す"
 uv export --frozen --only-group e2e --no-emit-project --no-hashes -o requirements-e2e.txt --quiet
 # localdevイメージと負荷試験runnerが使う。ついでに再生成してドリフトを防ぐ
 uv export --frozen --group dev --no-emit-project --no-hashes -o requirements-dev.txt --quiet
-echo "    requirements.txt: $(grep -cE '^[a-zA-Z0-9]' requirements.txt) パッケージ / requirements-e2e.txt: $(grep -cE '^[a-zA-Z0-9]' requirements-e2e.txt) パッケージ"
-
-echo "==> 本番相当イメージをビルドする ($APP_IMAGE)"
-docker build -q -f Dockerfile.aws -t "$APP_IMAGE" . > /dev/null
+echo "    requirements-e2e.txt: $(grep -cE '^[a-zA-Z0-9]' requirements-e2e.txt) パッケージ / requirements-dev.txt: $(grep -cE '^[a-zA-Z0-9]' requirements-dev.txt) パッケージ"
 
 echo "==> E2Eイメージをビルドする ($E2E_IMAGE)"
 docker build -q -f Dockerfile.e2e --build-arg "BASE_IMAGE=$APP_IMAGE" -t "$E2E_IMAGE" . > /dev/null

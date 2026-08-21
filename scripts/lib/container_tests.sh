@@ -27,7 +27,10 @@ APP_DIR=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)
 # functional も e2e も同じイメージを使う。functional にブラウザは要らないが、
 # イメージを増やす方が管理の手間が大きいと判断した。firefoxが乗っている分だけ
 # 重いのはローカル実行だけの話で、実害がない。
-TEST_IMAGE=${TEST_IMAGE:-${E2E_IMAGE:-asobann-e2e:local}}
+#
+# タグはSHA基準(scripts/build_image.sh --print-tag が唯一の正)。固定タグ
+# :local だと「どの本番イメージに対してテストしたか」が残らない。
+TEST_IMAGE=${TEST_IMAGE:-${E2E_IMAGE:-"asobann-e2e:$("$APP_DIR/scripts/build_image.sh" --print-tag)"}}
 NETWORK=${NETWORK:-loadtest_default}
 MONGO_COMPOSE="$APP_DIR/deploy/loadtest/docker-compose.yml"
 MONGO_CONTAINER=loadtest-mongo-1
@@ -37,6 +40,11 @@ MONGO_CONTAINER=loadtest-mongo-1
 # 普段は捨ててよいもので、必要になったら issue に貼るか worklog へ持っていく。
 ARTIFACTS_DIR="$APP_DIR/.e2e-artifacts"
 TMP_ARTIFACTS="$ARTIFACTS_DIR/tmp"
+
+# 実行履歴(JSON、1回の実行につき1ファイル)の置き場。作業ツリーの中だが .gitignore
+# してある。artifactsと違って消さず溜め続ける。フレーキーの傾向を長期で見るための
+# 生データなので、消していい基準がまだ無い。
+HISTORY_DIR="$APP_DIR/.e2e-runs"
 
 BUILD=yes
 DEV=no
@@ -161,6 +169,22 @@ run_pytest() {
     mkdir -p "$TMP_ARTIFACTS"
     mounts+=(-v "$TMP_ARTIFACTS:/artifacts")
     envs+=(-e ASOBANN_E2E_ARTIFACTS=/artifacts)
+
+    # 実行履歴の記録先。artifactsと違い、こちらは実行ごとに消さず溜め続ける
+    # （tests/e2e/conftest.pyのpytest_sessionfinishが1回の実行につき1ファイル書く）。
+    # functional実行でも同じ変数を渡すが、tests/e2e/conftest.pyが読み込まれない
+    # 限り何も起きないので害はない（ASOBANN_E2E_ARTIFACTSと同じ扱い）。
+    mkdir -p "$HISTORY_DIR"
+    mounts+=(-v "$HISTORY_DIR:/e2e-runs")
+    envs+=(-e ASOBANN_E2E_HISTORY=/e2e-runs)
+    envs+=(-e "ASOBANN_E2E_RUN_ORIGIN=${ASOBANN_E2E_RUN_ORIGIN:-local}")
+    envs+=(-e "ASOBANN_E2E_MACHINE=$(hostname)")
+    envs+=(-e "ASOBANN_E2E_IMAGE_TAG=$TEST_IMAGE")
+    envs+=(-e "ASOBANN_E2E_DEV_MODE=$DEV")
+    envs+=(-e "ASOBANN_GIT_SHA=$(git -C "$APP_DIR" rev-parse --short HEAD)")
+    if [ -n "$(git -C "$APP_DIR" status --porcelain)" ]; then
+        envs+=(-e ASOBANN_GIT_DIRTY=1)
+    fi
 
     # -rR はリトライしたテストを一覧に出す。フレーキーの出入りを見るのに要る。
     # -v はテスト名を1件ずつ出す。以前は -q を渡しており、進捗のドットしか残らず

@@ -64,7 +64,7 @@
 (cd deploy/loadtest && docker compose up -d mongo)
 ./scripts/build_e2e_image.sh
 docker run --rm --network loadtest_default -e MOZ_HEADLESS=1 \
-    asobann-e2e:local python3 -m pytest tests/e2e -q
+    "asobann-e2e:$(./scripts/build_image.sh --print-tag)" python3 -m pytest tests/e2e -q
 ```
 
 `MOZ_HEADLESS=1` を環境変数で渡すのは、`another_browser_window` と `browser_factory` が

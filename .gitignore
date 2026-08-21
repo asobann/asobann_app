@@ -355,6 +355,10 @@ fabric.properties
 # 必要になったら issue に貼るか、asobann_docs の worklog へ持っていく。
 /.e2e-artifacts/
 
+# E2Eの実行履歴(JSON、1回の実行につき1ファイル)。artifactsと違って溜め続ける
+# ものなので、バックアップはPCの通常運用に任せる。
+/.e2e-runs/
+
 # Claude Code のローカル設定・作業ファイル（開発者ごとに異なる）
 .claude/
 .mcp.json

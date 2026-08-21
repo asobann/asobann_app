@@ -16,7 +16,15 @@
 # デバッグフックは config_test.py にしかなく、config_production.py には無いため。
 #
 # Build: scripts/build_e2e_image.sh (本番イメージのビルドから通しでやる)
-ARG BASE_IMAGE=asobann-app:local
+#
+# BASE_IMAGEはscripts/build_image.sh(本番ビルドの唯一の正)が作ったイメージを
+# 渡すこと。以前はここでDockerfile.awsを直接ビルドしており、build_image.shが
+# 必ずやるwebpackのビルドを踏まないままイメージができていた(webpackの出力先
+# src/asobann/app/static/*.jsはgitignore済みなので、手元の作業ツリーに残った
+# ものが偶然拾われるだけで、CIの新規チェックアウトではJSバンドル無しの
+# 本番イメージができてE2Eが全件落ちる)。既定値は与えない。BASE_IMAGE無しで
+# 直接ビルドすると即座に壊れた形でFROMが失敗するようにするため。
+ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 
 RUN apt-get -y update \

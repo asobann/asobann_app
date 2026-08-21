@@ -1,0 +1,74 @@
+name: E2E (日次)
+
+# 段階1: データ収集のみ。ジョブは常に緑にする(失敗も含めて exit 0)。
+#
+# 理由: E2Eはこのアプリの性質上フレーキー(tests/e2e/README.md参照)で、
+# CI環境は手元より遅く、既知フレーキー一覧も手元の実測(#128以前)を
+# もとにしたもの。CI固有の落ち方がどれだけあるか分かっていない段階で
+# 赤くすると、毎朝の通知がノイズになり「調べなくていい」と学習される
+# ほうが害が大きい。まずは実行結果を積み上げてから、一覧の見直しや
+# マージ後トリガー(門番)の追加を検討する。
+#
+# 実行結果そのものは握り潰さない。$GITHUB_STEP_SUMMARY に必ず書く。
+#
+# CIへの取り込み(結果をartifactに上げて手元のSQLiteへ、など)は次の
+# ステップ。ここでは無し(まずは実行が続くことを確認してから)。
+#
+# public リポジトリの schedule トリガーは60日間リポジトリの更新が無いと
+# 自動停止する。今のところ実害は無いはずだが、動いていないと気づいたら
+# これを疑うこと。
+
+on:
+  schedule:
+    # 3:00 JST = 18:00 UTC(前日)
+    - cron: '0 18 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: E2E日次実行(失敗してもジョブは赤くしない)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # webpackのビルドに要る(scripts/build_image.shが呼ぶ)。
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      # requirements*.txt の書き出しに要る(uv export)。
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      # mongoの起動・イメージのビルド・docker runでの実行は、すべて
+      # scripts/run_e2e.sh (経由の scripts/lib/container_tests.sh) が
+      # 面倒を見る。ローカル実行と同じ経路をそのまま使う。
+      #
+      # `run:` のシェルは既定で `-e` が効くので、pytestが非0で終わっても
+      # ステップ自体は失敗させたい……が、このジョブは失敗させたくないので
+      # 自前で `set +e` して終了コードを拾う。
+      - name: E2Eを実行する
+        id: e2e
+        run: |
+          set +e
+          ./scripts/run_e2e.sh --tolerate-flaky
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: 結果をサマリーに書く
+        if: always()
+        run: |
+          code="${{ steps.e2e.outputs.exit_code }}"
+          if [ "$code" = "0" ]; then
+            echo "✅ E2E成功(既知フレーキーの扱いも含む)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "⚠️ E2E失敗(終了コード $code)。一覧に無いテストが落ちた可能性がある。ログを確認すること" >> "$GITHUB_STEP_SUMMARY"
+          fi
