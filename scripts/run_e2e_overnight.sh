@@ -29,6 +29,22 @@
 set -uo pipefail  # -e は使わない。1回の失敗でループ全体を止めない
 
 HOURS=${1:-8}
+case "$HOURS" in
+    ''|*[!0-9]*)
+        echo "使い方: $0 [時間数(1以上の整数)]。'$HOURS' は数値ではない" >&2
+        exit 1
+        ;;
+esac
+if [ "$HOURS" -lt 1 ]; then
+    echo "時間数は1以上にすること: '$HOURS'" >&2
+    exit 1
+fi
+
+if ! command -v timeout >/dev/null 2>&1; then
+    echo "timeout コマンドが無い。中止する" >&2
+    exit 1
+fi
+
 COOLDOWN_SECONDS=60
 PER_RUN_TIMEOUT_SECONDS=3600
 MAX_CONSECUTIVE_FAILURES=3
@@ -39,8 +55,8 @@ LOG_SESSION_DIR=".e2e-runs/overnight-logs/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$LOG_SESSION_DIR"
 
 fmt_elapsed() {
-    local total_seconds=$1
-    printf '%dh%02dm' $((total_seconds / 3600)) $(((total_seconds % 3600) / 60))
+    local total_seconds="$1"
+    printf '%dh%02dm' "$((total_seconds / 3600))" "$(((total_seconds % 3600) / 60))"
 }
 
 echo "[$(date '+%H:%M:%S')] 初回ビルド" >&2
@@ -77,11 +93,13 @@ while :; do
     else
         consecutive_failures=$((consecutive_failures + 1))
         if [ "$rc" -eq 124 ]; then
-            echo "[$count回目] タイムアウト(${PER_RUN_TIMEOUT_SECONDS}秒)。ログ: $iter_log" >&2
+            echo "[$count回目] タイムアウト(${PER_RUN_TIMEOUT_SECONDS}秒)。履歴なし${consecutive_failures}回連続。ログ: $iter_log" >&2
         else
-            echo "[$count回目] 実行履歴が増えなかった(終了コード $rc)。ログ: $iter_log" >&2
+            echo "[$count回目] 実行履歴が増えなかった(終了コード $rc)。履歴なし${consecutive_failures}回連続。ログ: $iter_log" >&2
         fi
-        echo "[$count] 経過 $(fmt_elapsed "$elapsed") (履歴なし ${consecutive_failures}回連続)"
+        # stdoutは常に「回数と経過時間」の1行だけにする(スクリプト冒頭のコメント参照)。
+        # 補足(連続失敗回数など)はstderrにだけ出す。
+        echo "[$count] 経過 $(fmt_elapsed "$elapsed")"
 
         if [ "$consecutive_failures" -ge "$MAX_CONSECUTIVE_FAILURES" ]; then
             echo "${MAX_CONSECUTIVE_FAILURES}回連続でスイートが完走していない。続けても意味が無いので中止する" >&2
