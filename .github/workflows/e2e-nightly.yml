@@ -11,8 +11,9 @@ name: E2E (日次)
 #
 # 実行結果そのものは握り潰さない。$GITHUB_STEP_SUMMARY に必ず書く。
 #
-# CIへの取り込み(結果をartifactに上げて手元のSQLiteへ、など)は次の
-# ステップ。ここでは無し(まずは実行が続くことを確認してから)。
+# tests/e2e/conftest.pyが書く実行履歴(.e2e-runs/*.json)はartifactとして
+# 上げる。手元では scripts/e2e_history.py fetch-ci が gh run download 経由で
+# 取り込む(#128)。
 #
 # public リポジトリの schedule トリガーは60日間リポジトリの更新が無いと
 # 自動停止する。今のところ実害は無いはずだが、動いていないと気づいたら
@@ -72,3 +73,14 @@ jobs:
           else
             echo "⚠️ E2E失敗(終了コード $code)。一覧に無いテストが落ちた可能性がある。ログを確認すること" >> "$GITHUB_STEP_SUMMARY"
           fi
+
+      # E2Eの実行そのものが失敗しても(mongo起動やビルドで死んだ場合を除き)pytestは
+      # 最後まで走ってJSONを書く。always() で、失敗時ほど見たい記録を確実に残す。
+      - name: 実行履歴をartifactに上げる
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-history
+          path: .e2e-runs/*.json
+          if-no-files-found: warn
+          retention-days: 90
