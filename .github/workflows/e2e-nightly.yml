@@ -58,6 +58,10 @@ jobs:
       # 自前で `set +e` して終了コードを拾う。
       - name: E2Eを実行する
         id: e2e
+        env:
+          # 既定はlocal(scripts/lib/container_tests.sh)。CIから来た実行だと
+          # 分かるようにする。実行履歴(.e2e-runs/*.json)のrun.originに残る。
+          ASOBANN_E2E_RUN_ORIGIN: ci
         run: |
           set +e
           ./scripts/run_e2e.sh --tolerate-flaky
