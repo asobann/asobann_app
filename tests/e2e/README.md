@@ -141,7 +141,7 @@ docker run --rm --network loadtest_default -e MOZ_HEADLESS=1 \
 ところ、52件のリトライ発生のうち、回復する層(1〜3回目で成功)と回復しない層(5回とも
 失敗)が完全に排他だった。4回目・5回目のリトライで初めて成功した例はゼロ。「同じ条件の
 直後リトライでは同じ理由でまた落ちる」という上の懸念は、既に実測で裏づけられている。
-詳細は [20260820.e2e-observability-study/05-history-stats.md](../../../asobann_docs/worklogs/20260820.e2e-observability-study/05-history-stats.md)。
+詳細は asobann_docs の `worklogs/20260820.e2e-observability-study/05-history-stats.md`（private）。
 優先度の判断はやり直しが必要。
 
 ### CIでの扱い

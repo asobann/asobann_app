@@ -30,7 +30,18 @@ STAGING_TOP = "https://fast-dusk-61776.herokuapp.com/"
 # ASOBANN_E2E_SLOWMO: ブラウザ操作1回ごとに待つ秒数（例: 0.3）。このappは操作を
 #   75msのティックでまとめて送るので、操作直後に読むと取りこぼす。意図的に遅くして
 #   安定度が変わるかを見るためのもの。常用するものではない。
-E2E_SLOWMO = float(os.environ.get('ASOBANN_E2E_SLOWMO', '0'))
+def _parse_e2e_slowmo():
+    raw = os.environ.get('ASOBANN_E2E_SLOWMO', '0')
+    try:
+        value = float(raw)
+    except ValueError:
+        raise ValueError(f"ASOBANN_E2E_SLOWMO must be a number, got {raw!r}") from None
+    if value < 0:
+        raise ValueError(f"ASOBANN_E2E_SLOWMO must not be negative, got {value}")
+    return value
+
+
+E2E_SLOWMO = _parse_e2e_slowmo()
 
 
 def _slowmo():
@@ -491,6 +502,7 @@ class GameHelper:
 
     def move_mouse_by_offset(self, offset):
         ActionChains(self.browser).move_by_offset(offset[0], offset[1]).perform()
+        _slowmo()
 
     # The synthetic cursor walks a GRID_SIZE x GRID_SIZE lattice of distinct positions,
     # one pixel apart, anchored at the load's center. Every position in a full sweep is
