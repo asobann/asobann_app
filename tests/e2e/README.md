@@ -135,8 +135,14 @@ docker run --rm --network loadtest_default -e MOZ_HEADLESS=1 \
   シャッフルしているだけで、rerunには影響しない)
 
 やるなら pytest-rerunfailures をやめて自前のリトライ制御に置き換える必要があり、
-それなりの実装コストがかかる。今のところ実害の兆候(一覧のテストが「毎回同じ順序の
-直後リトライでだけ」通っている、といった観察)は無いので、優先度は低い。
+それなりの実装コストがかかる。
+
+**[訂正 2026-08-21] 「実害の兆候は無い」は誤りだった。** 20260814の測定を数え直した
+ところ、52件のリトライ発生のうち、回復する層(1〜3回目で成功)と回復しない層(5回とも
+失敗)が完全に排他だった。4回目・5回目のリトライで初めて成功した例はゼロ。「同じ条件の
+直後リトライでは同じ理由でまた落ちる」という上の懸念は、既に実測で裏づけられている。
+詳細は [20260820.e2e-observability-study/05-history-stats.md](../../../asobann_docs/worklogs/20260820.e2e-observability-study/05-history-stats.md)。
+優先度の判断はやり直しが必要。
 
 ### CIでの扱い
 
@@ -158,10 +164,13 @@ docker run --rm --network loadtest_default -e MOZ_HEADLESS=1 \
 
 ### 待ちを入れるときは `eventually()` を使う
 
-このアプリは何も同期的には反映されない。`sync_table.js` は送信だけでなく**ローカルへの
-適用も75msのsetIntervalティック**(`actualUpdateQueue`)に載せる。クリック直後に状態を
-読むと、そのティックと必ず競合する。速いマシンでは読み取りがほぼ毎回勝つので、
-**待ちを入れていないテストは安定して落ちる**(遅い環境では偶然通っていた)。
+このアプリは何も同期的には反映されない。更新は2段のsetIntervalティックを経由する:
+`sync_table.js` の**送信**が75ms、`table.js` の**画面への反映**が50ms
+(旧`actualUpdateQueue`は`09b59df`で構成が変わっている。現在の実体は
+`ComponentUpdateBuffer.startBufferedEmit`と`startConsolidatedUpdatingView`)。
+クリック直後に状態を読むと、このどちらかのティックと必ず競合する。速いマシンでは
+読み取りがほぼ毎回勝つので、**待ちを入れていないテストは安定して落ちる**
+(遅い環境では偶然通っていた)。
 
 `GameHelper.eventually(condition, message)` を使うこと。条件の中で送出された例外は
 「まだ」とみなして再試行する(同期途中のtextareaに `json.loads` すると
