@@ -19,6 +19,9 @@
 #   --tolerate-flaky  既知フレーキーの失敗を終了コードに含めない（CI用）。
 #                     一覧に無い失敗が1件でもあれば従来どおり失敗する
 #
+# 環境変数:
+#   ASOBANN_E2E_SLOWMO=秒数  操作の合間に待つ。結果が不安定化する可能性がある
+#
 # 例:
 #   ./scripts/run_e2e.sh                                  # 全件
 #   ./scripts/run_e2e.sh tests/e2e/test_component.py
