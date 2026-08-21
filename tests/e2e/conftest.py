@@ -1,6 +1,9 @@
+import json
 import os
 import re
 import subprocess
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 from selenium import webdriver
@@ -142,6 +145,8 @@ def pytest_terminal_summary(terminalreporter):
 
 
 def pytest_sessionfinish(session, exitstatus):
+    _write_history(session, exitstatus)
+
     if not E2E_TOLERATE_KNOWN_FLAKY:
         return
     terminalreporter = session.config.pluginmanager.getplugin('terminalreporter')
@@ -169,6 +174,137 @@ def pytest_collection_modifyitems(items):
         item.add_marker(pytest.mark.flaky(reruns=reruns, reruns_delay=E2E_RERUNS_DELAY))
 
 
+# ---- 実行履歴の記録 ----
+#
+# 1回のスイート実行を、試行(attempt)単位でJSONに書き出す。「常連フレーキーの中に
+# 直せるものがあるか」「フレーキーだと思っているが実は壊れているテストがあるか」を
+# 判定するための材料。SQLiteへの取り込みや分析は別の作業で、ここではまず
+# 漏らさず残すことだけをやる。
+#
+# report.rerun (0始まりの試行番号) と report.outcome=='rerun' は pytest-rerunfailures
+# 自身が全レポートに付ける(ソースで確認済み: item.execution_count-1がreport.rerunに
+# なる)。対象は必ず tests/e2e/ 配下で、flakyマーカーは全件に付いている
+# (pytest_collection_modifyitemsを見よ)ので、この属性は毎回付いている前提でよい。
+_HISTORY_RUN = {}
+_HISTORY_ATTEMPTS = {}   # nodeid -> [attempt dict, ...]
+_HISTORY_ORDER = []      # 実行順に並んだnodeid(初出のときだけ追加)
+
+
+def _history_dir():
+    path = os.environ.get('ASOBANN_E2E_HISTORY')
+    return Path(path) if path else None
+
+
+def _capture_browser_info(browser):
+    if 'browser' in _HISTORY_RUN:
+        return
+    try:
+        caps = browser.capabilities
+        _HISTORY_RUN['browser'] = caps.get('browserName')
+        _HISTORY_RUN['browser_version'] = caps.get('browserVersion')
+    except Exception:
+        pass
+
+
+def pytest_sessionstart(session):
+    if _history_dir() is None:
+        return
+    config = session.config
+    _HISTORY_RUN.update({
+        'run_id': str(uuid.uuid4()),
+        'started_at': datetime.now(timezone.utc).astimezone().isoformat(),
+        'origin': os.environ.get('ASOBANN_E2E_RUN_ORIGIN', 'local'),
+        'machine': os.environ.get('ASOBANN_E2E_MACHINE'),
+        'cpu_count': os.cpu_count(),
+        'git_sha': os.environ.get('ASOBANN_GIT_SHA'),
+        'git_dirty': os.environ.get('ASOBANN_GIT_DIRTY') == '1',
+        'e2e_image': os.environ.get('ASOBANN_E2E_IMAGE_TAG'),
+        'dev_mode': os.environ.get('ASOBANN_E2E_DEV_MODE') == 'yes',
+        'randomly_seed': config.getoption('randomly_seed', None),
+        'pytest_args': list(config.invocation_params.args),
+        'reruns': E2E_RERUNS,
+        'known_flaky_reruns': E2E_KNOWN_FLAKY_RERUNS,
+        'reruns_delay': E2E_RERUNS_DELAY,
+        'tolerate_known_flaky': E2E_TOLERATE_KNOWN_FLAKY,
+        'known_flaky_list': sorted(E2E_KNOWN_FLAKY),
+        'headless': os.environ.get('MOZ_HEADLESS') == '1',
+        'slowmo': float(os.environ.get('ASOBANN_E2E_SLOWMO', '0')),
+    })
+
+
+def _failure_summary(report):
+    if not report.longrepr:
+        return None
+    try:
+        return report.longrepr.reprcrash.message
+    except AttributeError:
+        pass
+    text = report.longreprtext.strip()
+    return text.splitlines()[0] if text else None
+
+
+def pytest_runtest_logreport(report):
+    if _history_dir() is None:
+        return
+    if 'tests/e2e/' not in report.nodeid.replace('\\', '/'):
+        return
+    attempt_number = getattr(report, 'rerun', 0)
+    nodeid = report.nodeid
+    attempts = _HISTORY_ATTEMPTS.setdefault(nodeid, [])
+    if nodeid not in _HISTORY_ORDER:
+        _HISTORY_ORDER.append(nodeid)
+
+    current = next((a for a in attempts if a['attempt'] == attempt_number), None)
+    if current is None:
+        current = {
+            'attempt': attempt_number,
+            'phase_failed': None,
+            'outcome': 'passed',
+            'duration_s': 0.0,
+            'started_at': datetime.fromtimestamp(report.start, tz=timezone.utc).astimezone().isoformat(),
+            'failure_summary': None,
+        }
+        attempts.append(current)
+
+    current['duration_s'] += report.duration
+    if report.outcome != 'passed':
+        current['outcome'] = report.outcome
+        if report.when != 'teardown':
+            current['phase_failed'] = report.when
+        if report.failed or report.outcome == 'rerun':
+            current['failure_summary'] = _failure_summary(report)
+
+
+def _final_outcome(attempts):
+    last = attempts[-1]
+    if last['outcome'] == 'skipped':
+        return 'skipped'
+    if last['outcome'] in ('failed', 'error'):
+        return last['outcome'] + '_all_retries' if len(attempts) > 1 else last['outcome']
+    return 'passed_after_retry' if len(attempts) > 1 else 'passed'
+
+
+def _write_history(session, exitstatus):
+    out = _history_dir()
+    if out is None or not _HISTORY_RUN:
+        return
+    _HISTORY_RUN['finished_at'] = datetime.now(timezone.utc).astimezone().isoformat()
+    _HISTORY_RUN['exit_status'] = int(exitstatus)
+    results = []
+    for order_index, nodeid in enumerate(_HISTORY_ORDER):
+        attempts = sorted(_HISTORY_ATTEMPTS[nodeid], key=lambda a: a['attempt'])
+        results.append({
+            'nodeid': nodeid,
+            'order_index': order_index,
+            'final_outcome': _final_outcome(attempts),
+            'attempts': attempts,
+        })
+    payload = {'schema_version': 1, 'run': _HISTORY_RUN, 'results': results}
+    out.mkdir(parents=True, exist_ok=True)
+    (out / f"{_HISTORY_RUN['run_id']}.json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
+
+
 firefox_options = Options()
 
 # The e2e tests drag components to absolute coordinates up to roughly y=750 and were
@@ -192,6 +328,7 @@ def new_e2e_browser(options=None):
     browser.set_window_size(*E2E_WINDOW_SIZE)
     _live_browsers.append(browser)
     _untrack_when_closed(browser)
+    _capture_browser_info(browser)
     return browser
 
 
