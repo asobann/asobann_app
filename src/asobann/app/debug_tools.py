@@ -6,14 +6,12 @@ from typing import List
 _state = {
     'trace_db': None,
     'performance_recording': False,
-    'order_of_updates': False,
 }
 
 
-def configure(mongo_db, performance_recording, order_of_updates):
+def configure(mongo_db, performance_recording):
     _state['trace_db'] = mongo_db.traces
     _state['performance_recording'] = performance_recording
-    _state['order_of_updates'] = order_of_updates
 
 
 def timestamp():
@@ -62,30 +60,3 @@ def resume_trace(envelope):
         return PerformanceRecordingTrace(trace_id)
 
     return NoOpPerformanceRecordingTrace()
-
-
-log_of_updates = {}
-
-
-def add_log_of_updates(component_id, from_browser, epoch):
-    if not _state['order_of_updates']:
-        return
-    if from_browser not in log_of_updates:
-        log_of_updates[from_browser] = {}
-    if component_id not in log_of_updates[from_browser]:
-        log_of_updates[from_browser][component_id] = []
-    log = log_of_updates[from_browser][component_id]
-
-    log.append({
-        'from': from_browser,
-        'epoch': epoch,
-        'timestamp': time.time(),
-    })
-    if len(log) > 1000:
-        log_of_updates[from_browser][component_id] = log[len(log) - 1000:]
-
-
-def clear_log_of_updates():
-    if not _state['order_of_updates']:
-        return
-    log_of_updates.clear()

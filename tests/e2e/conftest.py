@@ -48,7 +48,6 @@ E2E_KNOWN_FLAKY = {
     # 2026-08-10: 全件実行を複数回まわしたところ、落ちる顔ぶれが毎回入れ替わった。
     'test_component.py::test_moving_box_does_not_lose_things_within',
     'test_session.py::TestOutOfSync::test_move_box_of_card_bit_by_bit',
-    'test_session.py::TestOutOfSync::test_order_of_updates_at_server',
     'test_craft_box.py::TestCraftBoxWithOtherPlayers::test_editing_json_is_sync',
 
     # 2026-08-11: helper.should_be_joined() を入れて頻度は明確に下がった（観戦者ガードで
@@ -156,7 +155,14 @@ def pytest_sessionfinish(session, exitstatus):
 
 
 def pytest_collection_modifyitems(items):
+    # このフックはこのconftest.py(tests/e2e/)が登録されるだけで、テストセッション全体の
+    # itemsを受け取る。パスで絞らないと、`uv run pytest`(引数無し。CLAUDE.mdが案内する
+    # 実行方法そのもの)でtests/e2eと一緒にunit/functional/apiも集められたとき、
+    # それらにまでflakyマーカーが付いてしまう。ユニットテストに意図的に適用していない
+    # (再試行すると本物の不具合を隠すため)という方針の実害ある違反になる。
     for item in items:
+        if 'tests/e2e/' not in str(item.path).replace('\\', '/'):
+            continue
         if item.get_closest_marker('flaky') is not None:
             continue
         reruns = E2E_KNOWN_FLAKY_RERUNS if _is_known_flaky(item) else E2E_RERUNS

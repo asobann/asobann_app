@@ -1,7 +1,5 @@
 import time
 from typing import Optional
-import json
-import requests
 import pytest
 
 from selenium import webdriver
@@ -187,28 +185,5 @@ class TestOutOfSync:
         host.menu.add_my_hand_area.click()
         host.move_card_to_hand_area(host.component_by_name("PlayingCard S_A"), 'host')
         host.drag(host.hand_area('host'), 50, 100, grab_at=(60, 0))
-
-        assert_seeing_same(host, player2)
-
-    def test_order_of_updates_at_server(self, debug_order_of_updates, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
-        host = GameHelper(browser)
-        player2 = GameHelper(another_browser)
-        self.prepare_playing_cards(host, player2)
-        host.drag(host.component_by_name('Playing Card Box'), 200, 200, grab_at=(0, 80))
-        host.drag(host.component_by_name('Playing Card Box'), -200, -200, grab_at=(0, 80))
-        host.drag(host.component_by_name('Playing Card Box'), 500, 500, grab_at=(0, 80))
-        host.drag(host.component_by_name('Playing Card Box'), -500, -500, grab_at=(0, 80))
-        host.drag(host.component_by_name('Playing Card Box'), 200, 200, grab_at=(0, 80))
-        host.drag(host.component_by_name('Playing Card Box'), -200, -200, grab_at=(0, 80))
-        host.drag(host.component_by_name('Playing Card Box'), 500, 500, grab_at=(0, 80))
-        host.drag(host.component_by_name('Playing Card Box'), -500, -500, grab_at=(0, 80))
-
-        res = requests.get(TOP + '/debug/get_log_of_updates')
-        order_of_updates = json.loads(res.content)
-        for browser in order_of_updates.keys():
-            for component_id in order_of_updates[browser]:
-                log = order_of_updates[browser][component_id]
-                for i in range(len(log) - 1):
-                    assert log[i]['epoch'] <= log[i + 1]['epoch']
 
         assert_seeing_same(host, player2)

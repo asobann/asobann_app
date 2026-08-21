@@ -229,7 +229,6 @@ async def create_app(testing=False):
     debug_tools.configure(
         app.mongo_db,
         performance_recording=app.config.get('DEBUG_PERFORMANCE_RECORDING', False),
-        order_of_updates=app.config.get('DEBUG_ORDER_OF_UPDATES', False),
     )
 
     from asobann.app.blueprints import table, kit, component
