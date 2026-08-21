@@ -58,6 +58,10 @@ jobs:
       # 自前で `set +e` して終了コードを拾う。
       - name: E2Eを実行する
         id: e2e
+        env:
+          # 既定はlocal(scripts/lib/container_tests.sh)。CIから来た実行だと
+          # 分かるようにする。実行履歴(.e2e-runs/*.json)のrun.originに残る。
+          ASOBANN_E2E_RUN_ORIGIN: ci
         run: |
           set +e
           ./scripts/run_e2e.sh --tolerate-flaky
@@ -76,11 +80,16 @@ jobs:
 
       # E2Eの実行そのものが失敗しても(mongo起動やビルドで死んだ場合を除き)pytestは
       # 最後まで走ってJSONを書く。always() で、失敗時ほど見たい記録を確実に残す。
+      #
+      # include-hidden-files が既定でfalseだと、.e2e-runs/自体がドット始まりの
+      # ディレクトリなので中身ごと除外される(actions/upload-artifact@v4の仕様)。
+      # 実際にこれが原因で最初の実行では"No files were found"になった。
       - name: 実行履歴をartifactに上げる
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-history
           path: .e2e-runs/*.json
+          include-hidden-files: true
           if-no-files-found: warn
           retention-days: 90
