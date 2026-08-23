@@ -2,7 +2,7 @@
 #
 # E2Eを1分のクールダウンを挟んで繰り返し実行し、実行履歴(.e2e-runs/*.json)を
 # 溜める。ベースラインの統計を一晩で確保するための道具(#128、
-# asobann_docsのworklog 20260820.e2e-observability-study/05-history-stats.md
+# asobann_docsのworklog 20260820.e2e-observability-study.WIP/05-history-stats.md
 # の「一晩の連続周回」案)。
 #
 # 無人実行を前提にしている。標準出力には「回数と経過時間」の1行だけを出す。
