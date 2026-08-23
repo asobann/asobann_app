@@ -144,19 +144,25 @@ class TestHandArea:
             lambda: (pos := host_card.pos()).left == expected_left and pos.top == expected_top,
             'card did not follow the hand area after it was dragged')
 
-        # host_card is still owned by host
-        assert '♠A' in host.component_by_name(C_A).face()
-        assert '♠A' not in another.component_by_name(C_A).face()
+        # host_card is still owned by host. Reading .face() right after the drag races
+        # the same render tick as the position check above, even though the value itself
+        # hasn't logically changed, so it needs eventually() too.
+        host.eventually(lambda: '♠A' in host.component_by_name(C_A).face(),
+                         'card face was not readable as up after the drag')
+        another.eventually(lambda: '♠A' not in another.component_by_name(C_A).face(),
+                            'card incorrectly became visible to the other player after the drag')
 
         host.double_click(host_card)
         host.eventually(lambda: '♠A' not in host.component_by_name(C_A).face(),
                          'card did not flip face-down')
-        assert '♠A' not in another.component_by_name(C_A).face()
+        another.eventually(lambda: '♠A' not in another.component_by_name(C_A).face(),
+                            'card incorrectly became visible to the other player')
 
         host.double_click(host_card)
         host.eventually(lambda: '♠A' in host.component_by_name(C_A).face(),
                          'card did not flip back face-up')
-        assert '♠A' not in another.component_by_name(C_A).face()
+        another.eventually(lambda: '♠A' not in another.component_by_name(C_A).face(),
+                            'card incorrectly became visible to the other player')
 
     def test_many_cards_on_hand_area_move_with_the_area(self, browser: webdriver.Firefox,
                                                         another_browser: webdriver.Firefox):
