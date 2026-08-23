@@ -12,6 +12,7 @@ from selenium.webdriver.firefox.options import Options
 import pytest
 import pytest_asyncio
 
+from . import helper
 from .helper import GameHelper, Uploader
 
 # These tests drive several real browsers against a live server and assert on state that
@@ -89,9 +90,9 @@ E2E_KNOWN_FLAKY = {
 # 握り潰さず必ず出力する。一覧に無いテストが1件でも落ちれば、これまでどおり赤くなる。
 E2E_TOLERATE_KNOWN_FLAKY = os.environ.get('E2E_TOLERATE_KNOWN_FLAKY') == '1'
 
-# 観戦モード(scripts/run_e2e.sh --watch)。卓ができたところで止めて、人間が自分の
-# ブラウザで同じ卓を開けるようにする。既定は無効で、そのときは何も変わらない。
-E2E_WATCH = os.environ.get('ASOBANN_E2E_WATCH') == '1'
+# 観戦モード(scripts/run_e2e.sh --watch)。止めるのは helper.py 側(卓を開いた直後)。
+# ここで見ているのは、リトライを止めることと、テストごとに1回だけ止めること。
+E2E_WATCH = helper.E2E_WATCH
 
 
 def _is_known_flaky_nodeid(nodeid: str) -> bool:
@@ -161,6 +162,11 @@ def pytest_sessionfinish(session, exitstatus):
     # must still fail the run.
     if known and not other:
         session.exitstatus = 0
+
+
+def pytest_runtest_setup(item):
+    # 観戦モードのポーズは1テストにつき1回。テストの頭で戻す。
+    helper.watch_paused = False
 
 
 def pytest_collection_modifyitems(items):
@@ -436,34 +442,9 @@ def browser(browser_window):
     return browser_window
 
 
-def _wait_for_human(nodeid, url):
-    """卓のURLを出して、人間がEnterを押すまで止まる。
-
-    **ホストが卓に参加し終えた後でなければ呼んではいけない。** play_session.js の
-    initializeTable は「プレイヤーが1人もいない卓を開いた人」を自動的にホストに
-    するので、参加確定より前に人間がURLを開くと、人間のブラウザがホストになって
-    テストが壊れる。GameHelper.player() は should_be_joined() まで待つので、
-    それが返った後ならプレイヤーは必ず1人以上いて、人間は観戦者になる。
-    """
-    print(f'\n===== 観戦できる。ブラウザで開くこと ({nodeid}) =====')
-    print(f'  {url}')
-    print('  見るだけにすること（操作するとテストが落ちる）')
-    print('Enterで続行 > ', end='', flush=True)
-    try:
-        input()
-    except (EOFError, OSError):
-        # -i（docker run）か -s（pytest）が欠けている。止まれないだけで、テスト
-        # そのものは続けられるので、何が足りないかだけ言って先へ進む。
-        print('\n止まれなかった。scripts/run_e2e.sh --watch 経由で実行すること'
-              '（docker run に -i、pytest に -s が要る）')
-
-
 @pytest.fixture
-def host(browser, request):
-    player = GameHelper.player(browser)
-    if E2E_WATCH:
-        _wait_for_human(request.node.nodeid, player.current_url)
-    return player
+def host(browser):
+    return GameHelper.player(browser)
 
 
 def browser_func(headless=False):
