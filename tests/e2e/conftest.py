@@ -12,6 +12,7 @@ from selenium.webdriver.firefox.options import Options
 import pytest
 import pytest_asyncio
 
+from . import helper
 from .helper import GameHelper, Uploader
 
 # These tests drive several real browsers against a live server and assert on state that
@@ -89,6 +90,10 @@ E2E_KNOWN_FLAKY = {
 # 握り潰さず必ず出力する。一覧に無いテストが1件でも落ちれば、これまでどおり赤くなる。
 E2E_TOLERATE_KNOWN_FLAKY = os.environ.get('E2E_TOLERATE_KNOWN_FLAKY') == '1'
 
+# 観戦モード(scripts/run_e2e.sh --watch)。止めるのは helper.py 側(卓を開いた直後)。
+# ここで見ているのは、リトライを止めることと、テストごとに1回だけ止めること。
+E2E_WATCH = helper.E2E_WATCH
+
 
 def _is_known_flaky_nodeid(nodeid: str) -> bool:
     # nodeid looks like 'tests/e2e/test_component.py::TestHandArea::test_x'
@@ -159,7 +164,17 @@ def pytest_sessionfinish(session, exitstatus):
         session.exitstatus = 0
 
 
+def pytest_runtest_setup(item):
+    # 観戦モードのポーズは1テストにつき1回。テストの頭で戻す。
+    helper.watch_paused = False
+
+
 def pytest_collection_modifyitems(items):
+    # 観戦モードではリトライしない。人間が見ている最中に落ちると、リトライのたびに
+    # 卓が作り直されてポーズがかかる。見たいのは1回ぶんの挙動なので邪魔にしかならない。
+    if E2E_WATCH:
+        return
+
     # このフックはこのconftest.py(tests/e2e/)が登録されるだけで、テストセッション全体の
     # itemsを受け取る。パスで絞らないと、`uv run pytest`(引数無し。CLAUDE.mdが案内する
     # 実行方法そのもの)でtests/e2eと一緒にunit/functional/apiも集められたとき、
@@ -285,6 +300,11 @@ def _final_outcome(attempts):
 
 
 def _write_history(session, exitstatus):
+    # 観戦モードの実行は記録しない。人間が任意の長さ止めるので所要時間に意味が無く、
+    # リトライも無効で、そもそも人間が見ているぶんタイミングが変わる。
+    # 「観戦した実行の結果を判定に使わない」という決めごとを、運用ではなくコードで守る。
+    if E2E_WATCH:
+        return
     out = _history_dir()
     if out is None or not _HISTORY_RUN:
         return

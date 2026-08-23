@@ -49,6 +49,56 @@ def _slowmo():
         time.sleep(E2E_SLOWMO)
 
 
+# 観戦モード（scripts/run_e2e.sh --watch）。卓が開いたところで止めて、人間が自分の
+# ブラウザで同じ卓を見られるようにする。既定は無効で、そのときは何も変わらない。
+E2E_WATCH = os.environ.get('ASOBANN_E2E_WATCH') == '1'
+
+# このテストで既に止まったか。1テストにつき1回だけ止める。
+# tests/e2e/conftest.py の pytest_runtest_setup がテストごとに False へ戻す。
+watch_paused = False
+
+
+def _pause_for_human(player):
+    """卓が開いてホストの参加が確定したところで、人間がEnterを押すまで止まる。
+
+    **止めてよいのは、誰かが卓に参加し終えた後だけ。** play_session.js の
+    initializeTable は「プレイヤーが1人もいない卓を開いた人」を自動的にホストに
+    するので、それより前に人間がURLを開くと人間のブラウザがホストになり、テストが
+    壊れる。だから参加が確定するまで待ってから止める。
+
+    ここ（go の直後）に置いているのは、**全テストが必ず通る唯一の場所**だから。
+    host fixture は半分ちょっとのテストしか使っておらず、残りは browser を直に
+    受け取って GameHelper を自分で作っている。
+    """
+    global watch_paused
+    if not E2E_WATCH or watch_paused:
+        return
+    if '/tables/' not in player.current_url:
+        return  # /customize などの卓でないページ
+
+    try:
+        player.should_be_joined()
+    except AssertionError:
+        # 参加しないまま卓を開くクライアント（観戦者のテストなど）が先に来た。
+        # ここで止めると人間がホストになってしまうので、止めない。**枠は使わない**ので、
+        # 後から参加するクライアントが来ればそこで止まる。
+        print('\n観戦モード: このクライアントは卓に参加しないので、ここでは止まらない')
+        return
+
+    watch_paused = True
+    print('\n===== 観戦できる。ブラウザで開くこと =====')
+    print(f'  {player.current_url}')
+    print('  見るだけにすること（操作するとテストが落ちる）')
+    print('Enterで続行 > ', end='', flush=True)
+    try:
+        input()
+    except (EOFError, OSError):
+        # -i（docker run）か -s（pytest）が欠けている。止まれないだけでテストは
+        # 続けられるので、何が足りないかだけ言って先へ進む。
+        print('\n止まれなかった。scripts/run_e2e.sh --watch 経由で実行すること'
+              '（docker run に -i、pytest に -s が要る）')
+
+
 # 「いま開いている卓で、このクライアントが参加済みか」を取るスクリプト。
 #
 # **必ず現在の卓のキーだけを見ること。** play_session.js のキーは
@@ -332,6 +382,8 @@ class GameHelper:
 
     def go(self, url):
         self.browser.get(url)
+        if E2E_WATCH:
+            _pause_for_human(self)
 
     def create_table(self, prepared_table):
         self.go(self.base_url + CUSTOMIZATION)
@@ -339,6 +391,11 @@ class GameHelper:
         input_element.clear()
         input_element.send_keys(str(prepared_table))
         self.browser.find_element(by=By.CSS_SELECTOR, value="input#create").click()
+        # go() を通らずに卓へ遷移する唯一の経路なので、観戦モードのポーズはここにも要る。
+        # クリックの直後はまだ遷移していないことがあるため、URLが変わるのを待ってから呼ぶ。
+        if E2E_WATCH:
+            WebDriverWait(self.browser, 5).until(expected_conditions.url_contains('/tables/'))
+            _pause_for_human(self)
 
     @property
     def current_url(self) -> str:
