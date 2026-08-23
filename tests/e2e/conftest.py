@@ -138,7 +138,21 @@ def _split_failures(terminalreporter):
     return known, other
 
 
+def pytest_report_header(config):
+    # 冒頭に「何で走らせるか」を出す。--dev のときにマウントの旨を出しているのと
+    # 同じ理由で、既定と違う条件で走っていることが出力から分かるようにする。
+    # ここで出せるのは指定値だけ（まだブラウザを起動していない）。実際に起動した
+    # ブラウザと版は pytest_terminal_summary が末尾に出す。
+    return f'browser: {E2E_BROWSER} (ASOBANN_E2E_BROWSER)'
+
+
 def pytest_terminal_summary(terminalreporter):
+    # 実際に起動したブラウザ。WebDriverのcapabilitiesから取っているので、
+    # 「環境変数が渡ったか」ではなく「何が動いたか」の記録になる。
+    if 'browser' in _HISTORY_RUN:
+        terminalreporter.write_line(
+            f"browser: {_HISTORY_RUN['browser']} {_HISTORY_RUN.get('browser_version', '')}".rstrip())
+
     known, other = _split_failures(terminalreporter)
     if not known:
         return
