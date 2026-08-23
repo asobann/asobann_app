@@ -81,7 +81,7 @@ docker run --rm --network loadtest_default -e MOZ_HEADLESS=1 \
 卓ができた時点で止まり、URLを表示する。
 
 ```
-===== 観戦できる。ブラウザで開くこと (tests/e2e/test_component.py::TestGlued::test_flipped_and_text_hides) =====
+===== 観戦できる。ブラウザで開くこと =====
   http://localhost:10011/tables/xxxxxx
   見るだけにすること（操作するとテストが落ちる）
 Enterで続行 >
@@ -107,6 +107,10 @@ Enterを押すとテストが先へ進む。ログとスクリーンショット
 
 **観戦モードではリトライしない**（`pytest_collection_modifyitems` が `flaky` マーカーを
 付けない）。人間が見ている最中に落ちてリトライされると、卓が作り直されて何度も止まる。
+
+**観戦モードの実行は履歴（`.e2e-runs/`）に記録しない。** 人間が任意の長さ止めるので
+所要時間に意味が無く、リトライも無効で、見ているぶんタイミングも変わる。下の
+「観戦した実行の結果を判定に使わない」を、運用ではなくコードで守るため。
 
 #### 知っておくこと
 

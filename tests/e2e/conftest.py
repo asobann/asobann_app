@@ -300,6 +300,11 @@ def _final_outcome(attempts):
 
 
 def _write_history(session, exitstatus):
+    # 観戦モードの実行は記録しない。人間が任意の長さ止めるので所要時間に意味が無く、
+    # リトライも無効で、そもそも人間が見ているぶんタイミングが変わる。
+    # 「観戦した実行の結果を判定に使わない」という決めごとを、運用ではなくコードで守る。
+    if E2E_WATCH:
+        return
     out = _history_dir()
     if out is None or not _HISTORY_RUN:
         return

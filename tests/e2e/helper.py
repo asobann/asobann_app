@@ -391,6 +391,11 @@ class GameHelper:
         input_element.clear()
         input_element.send_keys(str(prepared_table))
         self.browser.find_element(by=By.CSS_SELECTOR, value="input#create").click()
+        # go() を通らずに卓へ遷移する唯一の経路なので、観戦モードのポーズはここにも要る。
+        # クリックの直後はまだ遷移していないことがあるため、URLが変わるのを待ってから呼ぶ。
+        if E2E_WATCH:
+            WebDriverWait(self.browser, 5).until(expected_conditions.url_contains('/tables/'))
+            _pause_for_human(self)
 
     @property
     def current_url(self) -> str:
