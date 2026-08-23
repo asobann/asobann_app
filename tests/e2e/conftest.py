@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options
 
 import pytest
@@ -93,6 +94,15 @@ E2E_TOLERATE_KNOWN_FLAKY = os.environ.get('E2E_TOLERATE_KNOWN_FLAKY') == '1'
 # 観戦モード(scripts/run_e2e.sh --watch)。止めるのは helper.py 側(卓を開いた直後)。
 # ここで見ているのは、リトライを止めることと、テストごとに1回だけ止めること。
 E2E_WATCH = helper.E2E_WATCH
+
+# どのブラウザで走らせるか。既定は従来どおり firefox。
+#
+# **これは試し。** Firefox特有の挙動をどれだけ踏んでいるかを見るためのもので、
+# 常用の構成を変えるものではない。履歴には browser / browser_version が記録される
+# (_capture_browser_info)ので、後からブラウザ別に集計できる。
+E2E_BROWSER = os.environ.get('ASOBANN_E2E_BROWSER', 'firefox').lower()
+if E2E_BROWSER not in ('firefox', 'chrome'):
+    raise ValueError(f"ASOBANN_E2E_BROWSER must be 'firefox' or 'chrome', got {E2E_BROWSER!r}")
 
 
 def _is_known_flaky_nodeid(nodeid: str) -> bool:
@@ -343,8 +353,33 @@ E2E_WINDOW_SIZE = (1600, 1200)
 _live_browsers = []
 
 
+def _chrome_options():
+    """コンテナのChromiumを動かすのに要る最低限。
+
+    - `--no-sandbox`: コンテナはrootで動くので、サンドボックスがあると起動できない
+    - `--disable-dev-shm-usage`: dockerの /dev/shm は既定64MBで、Chromiumは共有メモリを
+      使い切ってタブごと落ちる。/tmp を使わせる
+    - `--window-size`: ヘッドレスChromiumの既定ビューポートは小さい。Firefox側で
+      set_window_size している理由(E2E_WINDOW_SIZE のコメント)と同じ問題を踏む
+    - `--headless=new`: Firefoxが MOZ_HEADLESS 環境変数で見ているのと同じ条件を使う。
+      run_e2e.sh はどちらのブラウザでもこの変数を立てる
+    """
+    options = ChromeOptions()
+    if os.environ.get('MOZ_HEADLESS') == '1':
+        options.add_argument('--headless=new')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--window-size={},{}'.format(*E2E_WINDOW_SIZE))
+    return options
+
+
 def new_e2e_browser(options=None):
-    browser = webdriver.Firefox(options=options) if options else webdriver.Firefox()
+    if E2E_BROWSER == 'chrome':
+        # Firefoxと違い、ヘッドレスもウィンドウサイズもオプションでしか渡せないので、
+        # 呼び出し側が options を持っていなくてもここで組む。
+        browser = webdriver.Chrome(options=_chrome_options())
+    else:
+        browser = webdriver.Firefox(options=options) if options else webdriver.Firefox()
     browser.set_window_size(*E2E_WINDOW_SIZE)
     _live_browsers.append(browser)
     _untrack_when_closed(browser)
@@ -416,6 +451,9 @@ def pytest_runtest_makereport(item, call):
 
 @pytest.fixture(scope='session')
 def firefox_driver():
+    if E2E_BROWSER == 'chrome':
+        # chromedriver はイメージに apt で入れてある(Dockerfile.e2e)。
+        return
     proc = subprocess.run("which geckodriver", stdout=subprocess.DEVNULL, shell=True)
     if proc.returncode == 0:
         return
@@ -453,6 +491,9 @@ def host(browser):
 
 
 def browser_func(headless=False):
+    # ここは負荷試験(tests/performance)専用の入口で、ASOBANN_E2E_BROWSER は見ない。
+    # Chromium対応はE2Eの試しなので、負荷試験の条件は動かさない。
+    #
     # 呼び出しごとに独立したOptionsにする。共有の firefox_options に足すと
     # 繰り返し呼ばれたとき -headless 引数が重複して溜まっていく。
     options = Options()
