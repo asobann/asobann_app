@@ -695,18 +695,19 @@ class GameHelper:
             """
         )
 
-    def double_click(self, component: "Component", modifier=[]):
+    def double_click(self, component: "Component", modifier=None):
         # 押した修飾キーは必ず離す。browser_window は scope='session' で
         # ウィンドウを使い回すので、離し忘れると以降の全テストにSHIFTが
         # 効いたままになる。そうなると double_click が shift+dblclick に
         # なり、flippability は素通り(めくれない)、rotatability が働いて
         # カードが斜めになる。pytest-randomly の順序次第で発現するので、
         # 長らく「フレーキー」に見えていた。
+        shift = modifier is not None and 'SHIFT' in modifier
         chain = ActionChains(self.browser)
-        if 'SHIFT' in modifier:
+        if shift:
             chain.key_down(Keys.SHIFT)
         chain.double_click(component.element)
-        if 'SHIFT' in modifier:
+        if shift:
             chain.key_up(Keys.SHIFT)
         chain.perform()
         _slowmo()
