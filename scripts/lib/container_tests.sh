@@ -50,6 +50,11 @@ BUILD=yes
 DEV=no
 MOUNT_SRC=no
 
+# 呼び出し側が docker run へ直接足したいフラグ。run_e2e.sh の --watch が
+# ポート公開(-p)と標準入力の接続(-i)を足すのに使う。-e は run_pytest の引数で
+# 渡せるので、ここに入れるのは環境変数以外のもの。
+DOCKER_EXTRA=()
+
 # 呼び出し側の "$@" をそのまま渡す。解釈しなかった引数を REMAINING_ARGS に残す。
 # 配列で返すのは、-k 'Test A' のような空白を含む指定を壊さないため。
 #
@@ -192,6 +197,7 @@ run_pytest() {
     # 手がかりが無いのは困るので、既定を詳細側にする。
     local rc=0
     docker run --rm --network "$NETWORK" "${envs[@]}" "${mounts[@]}" \
+        ${DOCKER_EXTRA[@]+"${DOCKER_EXTRA[@]}"} \
         "$TEST_IMAGE" python3 -m pytest -v -rR "$@" || rc=$?
 
     # || true は set -e への保険。save_artifacts 自身も失敗を握りつぶすが、

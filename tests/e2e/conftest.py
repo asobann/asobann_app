@@ -89,6 +89,10 @@ E2E_KNOWN_FLAKY = {
 # 握り潰さず必ず出力する。一覧に無いテストが1件でも落ちれば、これまでどおり赤くなる。
 E2E_TOLERATE_KNOWN_FLAKY = os.environ.get('E2E_TOLERATE_KNOWN_FLAKY') == '1'
 
+# 観戦モード(scripts/run_e2e.sh --watch)。卓ができたところで止めて、人間が自分の
+# ブラウザで同じ卓を開けるようにする。既定は無効で、そのときは何も変わらない。
+E2E_WATCH = os.environ.get('ASOBANN_E2E_WATCH') == '1'
+
 
 def _is_known_flaky_nodeid(nodeid: str) -> bool:
     # nodeid looks like 'tests/e2e/test_component.py::TestHandArea::test_x'
@@ -160,6 +164,11 @@ def pytest_sessionfinish(session, exitstatus):
 
 
 def pytest_collection_modifyitems(items):
+    # 観戦モードではリトライしない。人間が見ている最中に落ちると、リトライのたびに
+    # 卓が作り直されてポーズがかかる。見たいのは1回ぶんの挙動なので邪魔にしかならない。
+    if E2E_WATCH:
+        return
+
     # このフックはこのconftest.py(tests/e2e/)が登録されるだけで、テストセッション全体の
     # itemsを受け取る。パスで絞らないと、`uv run pytest`(引数無し。CLAUDE.mdが案内する
     # 実行方法そのもの)でtests/e2eと一緒にunit/functional/apiも集められたとき、
@@ -427,9 +436,34 @@ def browser(browser_window):
     return browser_window
 
 
+def _wait_for_human(nodeid, url):
+    """卓のURLを出して、人間がEnterを押すまで止まる。
+
+    **ホストが卓に参加し終えた後でなければ呼んではいけない。** play_session.js の
+    initializeTable は「プレイヤーが1人もいない卓を開いた人」を自動的にホストに
+    するので、参加確定より前に人間がURLを開くと、人間のブラウザがホストになって
+    テストが壊れる。GameHelper.player() は should_be_joined() まで待つので、
+    それが返った後ならプレイヤーは必ず1人以上いて、人間は観戦者になる。
+    """
+    print(f'\n===== 観戦できる。ブラウザで開くこと ({nodeid}) =====')
+    print(f'  {url}')
+    print('  見るだけにすること（操作するとテストが落ちる）')
+    print('Enterで続行 > ', end='', flush=True)
+    try:
+        input()
+    except (EOFError, OSError):
+        # -i（docker run）か -s（pytest）が欠けている。止まれないだけで、テスト
+        # そのものは続けられるので、何が足りないかだけ言って先へ進む。
+        print('\n止まれなかった。scripts/run_e2e.sh --watch 経由で実行すること'
+              '（docker run に -i、pytest に -s が要る）')
+
+
 @pytest.fixture
-def host(browser):
-    return GameHelper.player(browser)
+def host(browser, request):
+    player = GameHelper.player(browser)
+    if E2E_WATCH:
+        _wait_for_human(request.node.nodeid, player.current_url)
+    return player
 
 
 def browser_func(headless=False):
