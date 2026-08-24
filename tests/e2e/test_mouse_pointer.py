@@ -1,4 +1,4 @@
-from selenium import webdriver
+from selenium.webdriver.remote.webdriver import WebDriver
 from .helper import GameHelper, TOP
 
 
@@ -9,8 +9,8 @@ def move_mouse(helper: GameHelper):
 
 
 
-def test_observers_pointer_should_not_be_seen(debug_handler_wait, server, browser: webdriver.Firefox,
-                                               another_browser: webdriver.Firefox):
+def test_observers_pointer_should_not_be_seen(debug_handler_wait, server, browser: WebDriver,
+                                               another_browser: WebDriver):
     host = GameHelper(browser)
     another = GameHelper(another_browser)
 
@@ -23,8 +23,8 @@ def test_observers_pointer_should_not_be_seen(debug_handler_wait, server, browse
     host.should_not_have_text('nobody', timeout=5)
 
 
-def test_other_players_pointer_should_be_seen(debug_handler_wait, server, browser: webdriver.Firefox,
-                                               another_browser: webdriver.Firefox):
+def test_other_players_pointer_should_be_seen(debug_handler_wait, server, browser: WebDriver,
+                                               another_browser: WebDriver):
     host = GameHelper(browser)
     another = GameHelper(another_browser)
 

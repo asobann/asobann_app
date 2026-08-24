@@ -2,7 +2,7 @@ import pytest
 import time
 from pathlib import Path
 
-from selenium import webdriver
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import Select
@@ -52,7 +52,7 @@ def put_one_card_each_on_2_hand_areas(host, another):
 @pytest.mark.usefixtures("server")
 class TestHandArea:
 
-    def test_cards_in_hand_are_looks_facedown(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_cards_in_hand_are_looks_facedown(self, browser: WebDriver, another_browser: WebDriver):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
         put_one_card_each_on_2_hand_areas(host, another)
@@ -76,8 +76,8 @@ class TestHandArea:
         assert 'card_back.png' in host.component_by_name(C_K).face()
         assert 'card_up.png' in another.component_by_name(C_K).face()
 
-    def test_cannot_handle_cards_owned_by_someone_else(self, browser: webdriver.Firefox,
-                                                       another_browser: webdriver.Firefox):
+    def test_cannot_handle_cards_owned_by_someone_else(self, browser: WebDriver,
+                                                       another_browser: WebDriver):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
         put_one_card_each_on_2_hand_areas(host, another)
@@ -100,8 +100,8 @@ class TestHandArea:
         another.double_click(another.component_by_name(C_A))
         assert face == another.component_by_name(C_A).face()
 
-    def test_up_card_in_my_hand_become_down_when_moved_to_others_hand(self, browser: webdriver.Firefox,
-                                                                      another_browser: webdriver.Firefox):
+    def test_up_card_in_my_hand_become_down_when_moved_to_others_hand(self, browser: WebDriver,
+                                                                      another_browser: WebDriver):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
         put_one_card_each_on_2_hand_areas(host, another)
@@ -125,8 +125,8 @@ class TestHandArea:
         assert 'card_up.png' in host.component_by_name(C_K).face()
         assert 'card_back.png' in another.component_by_name(C_K).face()
 
-    def test_cards_on_hand_area_follows_when_hand_area_is_moved(self, browser: webdriver.Firefox,
-                                                                another_browser: webdriver.Firefox):
+    def test_cards_on_hand_area_follows_when_hand_area_is_moved(self, browser: WebDriver,
+                                                                another_browser: WebDriver):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
         put_one_card_each_on_2_hand_areas(host, another)
@@ -164,8 +164,8 @@ class TestHandArea:
         another.eventually(lambda: '♠A' not in another.component_by_name(C_A).face(),
                             'card incorrectly became visible to the other player')
 
-    def test_many_cards_on_hand_area_move_with_the_area(self, browser: webdriver.Firefox,
-                                                        another_browser: webdriver.Firefox):
+    def test_many_cards_on_hand_area_move_with_the_area(self, browser: WebDriver,
+                                                        another_browser: WebDriver):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
 
@@ -190,7 +190,7 @@ class TestHandArea:
         pos_another = [another.component_by_name(c).pos() for c in (c1, c2, c3)]
         assert pos_after == pos_another
 
-    def test_resizing_hand_area_updates_ownership(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_resizing_hand_area_updates_ownership(self, browser: WebDriver, another_browser: WebDriver):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
         put_one_card_each_on_2_hand_areas(host, another)
@@ -214,7 +214,7 @@ class TestHandArea:
         assert '♠Q' in host.component_by_name(C_Q).face()
         assert '♠Q' not in another.component_by_name(C_Q).face()
 
-    def test_cards_on_hand_area_have_visible_clue(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_cards_on_hand_area_have_visible_clue(self, browser: WebDriver, another_browser: WebDriver):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
 
@@ -224,7 +224,7 @@ class TestHandArea:
         assert host.component_by_name(C_K).owner()
         assert not host.component_by_name('PlayingCard H_A').owner()
 
-    def test_removing_hand_area(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_removing_hand_area(self, browser: WebDriver, another_browser: WebDriver):
         host = GameHelper(browser)
         another = GameHelper(another_browser)
         put_one_card_each_on_2_hand_areas(host, another)
@@ -237,7 +237,7 @@ class TestHandArea:
         assert not another.component_by_name(C_A).owner()
         assert not another.component_by_name(C_K).owner()
 
-    def test_adding_and_removing_hand_area_changes_menu(self, browser: webdriver.Firefox):
+    def test_adding_and_removing_hand_area_changes_menu(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
 
@@ -247,7 +247,7 @@ class TestHandArea:
         host.menu.remove_my_hand_area.click()
         assert not host.menu.remove_my_hand_area.is_visible()
 
-    def test_areas_boundary_is_correct(self, browser: webdriver.Firefox):
+    def test_areas_boundary_is_correct(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
         host.menu.add_my_hand_area.click()
@@ -281,7 +281,7 @@ class TestHandArea:
 
 @pytest.mark.usefixtures("server")
 class TestDice:
-    def test_add_dice_from_menu(self, browser: webdriver.Firefox):
+    def test_add_dice_from_menu(self, browser: WebDriver):
         host = GameHelper(browser)
         host.go(TOP)
         host.should_have_text("you are host")
@@ -293,7 +293,7 @@ class TestDice:
         assert host.component_by_name("Dice (Blue)").rect().height == 64
         assert host.component_by_name("Dice (Blue)").rect().width == 64
 
-    def test_show_number_of_dices_on_the_table(self, browser: webdriver.Firefox):
+    def test_show_number_of_dices_on_the_table(self, browser: WebDriver):
         host = GameHelper(browser)
         host.go(TOP)
         host.should_have_text("you are host")
@@ -306,14 +306,14 @@ class TestDice:
         host.should_have_text("2 on the table")
 
     @pytest.mark.skip
-    def test_add_by_dragging(self, browser: webdriver.Firefox):
+    def test_add_by_dragging(self, browser: WebDriver):
         pass
 
     @pytest.mark.skip
-    def test_roll(self, browser: webdriver.Firefox):
+    def test_roll(self, browser: WebDriver):
         pass
 
-    def test_remove_dice_from_table(self, browser: webdriver.Firefox):
+    def test_remove_dice_from_table(self, browser: WebDriver):
         host = GameHelper(browser)
         host.go(TOP)
         host.menu.add_kit.execute()
@@ -354,7 +354,7 @@ class TestCounter:
                 by=By.CSS_SELECTOR, value=".counterValue").text == expected,
             f'counter did not show {expected}')
 
-    def test_add_counter_from_menu(self, browser: webdriver.Firefox):
+    def test_add_counter_from_menu(self, browser: WebDriver):
         host = GameHelper(browser)
         counter = self.place_counter(host)
 
@@ -362,37 +362,37 @@ class TestCounter:
         assert host.component_by_name("Counter").rect().height == 96
         assert host.component_by_name("Counter").rect().width == 192
 
-    def test_initial_value(self, browser: webdriver.Firefox):
+    def test_initial_value(self, browser: WebDriver):
         host = GameHelper(browser)
         self.place_counter(host)
         TestCounter.should_show(host, "0")
 
     class TestCounting:
-        def test_add_1(self, browser: webdriver.Firefox):
+        def test_add_1(self, browser: WebDriver):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#addOne").click()
             TestCounter.should_show(host, "1")
 
-        def test_sub_1(self, browser: webdriver.Firefox):
+        def test_sub_1(self, browser: WebDriver):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#subOne").click()
             TestCounter.should_show(host, "-1")
 
-        def test_add_10(self, browser: webdriver.Firefox):
+        def test_add_10(self, browser: WebDriver):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#addTen").click()
             TestCounter.should_show(host, "10")
 
-        def test_sub_10(self, browser: webdriver.Firefox):
+        def test_sub_10(self, browser: WebDriver):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#subTen").click()
             TestCounter.should_show(host, "-10")
 
-        def test_reset(self, browser: webdriver.Firefox):
+        def test_reset(self, browser: WebDriver):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#subOne").click()
@@ -400,7 +400,7 @@ class TestCounter:
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#reset").click()
             TestCounter.should_show(host, "0")
 
-        def test_succession_of_buttons(self, browser: webdriver.Firefox):
+        def test_succession_of_buttons(self, browser: WebDriver):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#addOne").click()
@@ -409,7 +409,7 @@ class TestCounter:
             TestCounter.should_show(host, "12")
 
     class TestWithOtherPlayers:
-        def test_add_1(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+        def test_add_1(self, browser: WebDriver, another_browser: WebDriver):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
             player = GameHelper(another_browser)
@@ -421,7 +421,7 @@ class TestCounter:
             TestCounter.should_show(host, "1")
             TestCounter.should_show(player, "1")
 
-        def test_add_on_both(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+        def test_add_on_both(self, browser: WebDriver, another_browser: WebDriver):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
             player = GameHelper(another_browser)
@@ -526,7 +526,7 @@ def should_keep_relative_positions(host, before):
             f'{list(drifted.items())[:5]}') from None
 
 
-def test_moving_box_does_not_lose_things_within(server, browser: webdriver.Firefox):
+def test_moving_box_does_not_lose_things_within(server, browser: WebDriver):
     host = GameHelper(browser)
     prepare_table_with_cards(host)
 
@@ -558,7 +558,7 @@ def test_moving_box_does_not_lose_things_within(server, browser: webdriver.Firef
     should_keep_relative_positions(host, before['offsets'])
 
 
-def test_dragging_button_does_not_move_component(server, browser: webdriver.Firefox):
+def test_dragging_button_does_not_move_component(server, browser: WebDriver):
     host = GameHelper(browser)
     prepare_table_with_cards(host)
 
@@ -568,7 +568,7 @@ def test_dragging_button_does_not_move_component(server, browser: webdriver.Fire
     assert left_before == left_after
 
 
-def test_dragging_button_does_not_scroll(server, browser: webdriver.Firefox):
+def test_dragging_button_does_not_scroll(server, browser: WebDriver):
     host = GameHelper(browser)
     prepare_table_with_cards(host)
 
@@ -589,7 +589,7 @@ class TestEditable:
         host.menu.add_kit_from_list("Note")
         return host.component_by_name("Note")
 
-    def test_add_note_from_menu(self, browser: webdriver.Firefox):
+    def test_add_note_from_menu(self, browser: WebDriver):
         host = GameHelper(browser)
         note = self.place_note(host)
 
@@ -597,7 +597,7 @@ class TestEditable:
         assert note.rect().width == 100
         assert note.rect().height == 75
 
-    def test_editing(self, browser: webdriver.Firefox):
+    def test_editing(self, browser: WebDriver):
         host = GameHelper(browser)
         note = self.place_note(host)
         host.double_click(note)
@@ -605,7 +605,7 @@ class TestEditable:
         note.element.find_element(by=By.CSS_SELECTOR, value='button').click()
         assert 'The Quick Brown Fox Jumps Over A Lazy Dog' in note.face()
 
-    def test_editing_is_shared(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_editing_is_shared(self, browser: WebDriver, another_browser: WebDriver):
         host = GameHelper(browser)
         note = self.place_note(host)
 
@@ -624,7 +624,7 @@ class TestEditable:
 
 @pytest.mark.usefixtures("server")
 class TestRotation:
-    def test_rotate_card(self, browser: webdriver.Firefox):
+    def test_rotate_card(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
 
