@@ -7,6 +7,7 @@
 #
 # 追加するのはテストを走らせるための道具だけ:
 #   - firefox-esr / geckodriver (ブラウザ操作)
+#   - chromium / chromium-driver (ASOBANN_E2E_BROWSER=chrome のときだけ使う。試し)
 #   - pytest / selenium / pytest-rerunfailures (テスト実行)
 #   - requests / pillow (helper.py の Uploader と画像アップロードのテストが使う)
 #
@@ -27,8 +28,21 @@
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 
+# Chromium も載せる(ASOBANN_E2E_BROWSER=chrome のとき使う)。**試し。**
+# 既定は firefox のままなので、入れておくだけでは何も変わらない。
+#
+# 両方入れているのは、同じイメージで両方を走らせて比べたいから。ブラウザごとに
+# イメージを分けると「イメージが違うから結果も違うのでは」を排除できなくなる。
+# 増えるのは400MBほどで、ローカルとCIでしか使わないイメージなので許容する。
+#
+# chromium-driver は chromium と同じ版がbookwormのリポジトリから入るので、
+# ブラウザとドライバの版ずれが起きない(geckodriverはURL直指定で、ずれうる)。
+#
+# 1回の apt-get install にまとめている(レイヤ数とビルド時間を減らすため)。
+# geckodriver だけは apt に無く curl 直取得なので、そちらは別RUNのまま。
 RUN apt-get -y update \
- && apt-get install -y --no-install-recommends firefox-esr curl ca-certificates \
+ && apt-get install -y --no-install-recommends \
+        firefox-esr curl ca-certificates chromium chromium-driver \
  && rm -rf /var/lib/apt/lists/*
 RUN curl -L https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-linux64.tar.gz \
     | tar zx -C /usr/local/bin

@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options
 
 import pytest
@@ -47,43 +48,63 @@ E2E_RERUNS_DELAY = 2
 #     あるものとして監視し、イシュー化する（自動化はまだで、今は人かAIが気づいたら対応する）
 #   - 動機は、フレーキーの調査・対応はコストが高くROIが低いこと。いちいち気にせず、
 #     気にすべきときにシグナルが上がる状態を保つのが肝心
+# どのブラウザで走らせるか。既定は従来どおり firefox。
+#
+# E2E_KNOWN_FLAKY より前に置く必要がある。一覧はブラウザ別の辞書で、キーに使うため。
+E2E_BROWSER = os.environ.get('ASOBANN_E2E_BROWSER', 'firefox').lower()
+if E2E_BROWSER not in ('firefox', 'chrome'):
+    raise ValueError(f"ASOBANN_E2E_BROWSER must be 'firefox' or 'chrome', got {E2E_BROWSER!r}")
+
 E2E_KNOWN_FLAKY_RERUNS = 5
+
+# **ブラウザ別に持つ。** 一覧の価値は「載っていないテストが落ちたら本物」という対比に
+# あり、単一の一覧にしてブラウザで和集合を取ると、その対比が両方のブラウザで鈍る。
+# 実際 Chrome では Firefox の常連8件(SHIFT離し忘れ、#166で解消)も #167(座標が
+# 数万px飛ぶ環境ドリフト)も一度も再現していない。Firefox一覧をそのままChromeにも
+# 適用すると、Chromeで実際に落ちた TestCounter の2件(#170で解消)のような、
+# ブラウザ固有の新しい欠陥がフレーキー扱いで隠れてしまう。
+#
+# Chromeは #170 が入るまでの既知の欠陥を解消した状態から始めるので、空で始める。
+# 「載っていないテストが落ちたら本物」という対比を最初から最も強い状態で使うため。
 E2E_KNOWN_FLAKY = {
-    # 2026-08-10: 全件実行を複数回まわしたところ、落ちる顔ぶれが毎回入れ替わった。
-    'test_component.py::test_moving_box_does_not_lose_things_within',
-    'test_session.py::TestOutOfSync::test_move_box_of_card_bit_by_bit',
-    'test_craft_box.py::TestCraftBoxWithOtherPlayers::test_editing_json_is_sync',
+    'firefox': {
+        # 2026-08-10: 全件実行を複数回まわしたところ、落ちる顔ぶれが毎回入れ替わった。
+        'test_component.py::test_moving_box_does_not_lose_things_within',
+        'test_session.py::TestOutOfSync::test_move_box_of_card_bit_by_bit',
+        'test_craft_box.py::TestCraftBoxWithOtherPlayers::test_editing_json_is_sync',
 
-    # 2026-08-11: helper.should_be_joined() を入れて頻度は明確に下がった（観戦者ガードで
-    # 操作が無言に捨てられていた分は消えた。#127）が、全89件ではまだ再発する。
-    # 一度は一覧から外したものの、根拠が部分実行1回だけだったので戻した。上の出入りの
-    # ルールのとおり、連続で成功することを確認してから外すこと。
-    # なお test_flipped_and_image_change は setup 側で落ちることもある（キット追加の
-    # timeout）。他のTestGluedでは同じsetupが通っているので、これもフレーキーとして扱う。
-    'test_component.py::TestGlued::test_flipped_and_text_hides',
-    'test_component.py::TestGlued::test_flipped_and_image_change',
-    'test_component.py::TestGlued::test_put_in_hand_area_and_text_hides',
+        # 2026-08-11: helper.should_be_joined() を入れて頻度は明確に下がった（観戦者
+        # ガードで操作が無言に捨てられていた分は消えた。#127）が、全89件ではまだ再発する。
+        # 一度は一覧から外したものの、根拠が部分実行1回だけだったので戻した。上の出入りの
+        # ルールのとおり、連続で成功することを確認してから外すこと。
+        # なお test_flipped_and_image_change は setup 側で落ちることもある（キット追加の
+        # timeout）。他のTestGluedでは同じsetupが通っているので、これもフレーキーとして扱う。
+        'test_component.py::TestGlued::test_flipped_and_text_hides',
+        'test_component.py::TestGlued::test_flipped_and_image_change',
+        'test_component.py::TestGlued::test_put_in_hand_area_and_text_hides',
 
-    # 2026-08-11に追加: 元から落ちていたが未登録だった。textarea が出ないことがある。
-    'test_component.py::TestEditable::test_editing',
-    'test_component.py::TestEditable::test_editing_is_shared',
+        # 2026-08-11に追加: 元から落ちていたが未登録だった。textarea が出ないことがある。
+        'test_component.py::TestEditable::test_editing',
+        'test_component.py::TestEditable::test_editing_is_shared',
 
-    # 2026-08-11: asyncio移行(Quart化)後の全件実行2回で一覧外の失敗として出た。
-    # いずれも単独実行では毎回グリーン(出入りのルールどおり確認済み)なので、フル
-    # スイート実行特有のタイミング競合と判断してここに追加する。2回とも顔ぶれが
-    # 完全に入れ替わっており、特定の一貫した壊れ方ではない。
-    'test_component.py::TestHandArea::test_cards_on_hand_area_follows_when_hand_area_is_moved',
-    'test_component.py::TestHandArea::test_cards_in_hand_are_looks_facedown',
-    'test_component.py::TestHandArea::test_resizing_hand_area_updates_ownership',
-    'test_component.py::TestHandArea::test_up_card_in_my_hand_become_down_when_moved_to_others_hand',
-    'test_component.py::TestHandArea::test_many_cards_on_hand_area_move_with_the_area',
-    'test_playing_card_kit.py::test_load_playing_card_kit',
-    'test_cardistry.py::TestSpreadOutAndCollect::test_can_collect_cards_in_hand_area',
+        # 2026-08-11: asyncio移行(Quart化)後の全件実行2回で一覧外の失敗として出た。
+        # いずれも単独実行では毎回グリーン(出入りのルールどおり確認済み)なので、フル
+        # スイート実行特有のタイミング競合と判断してここに追加する。2回とも顔ぶれが
+        # 完全に入れ替わっており、特定の一貫した壊れ方ではない。
+        'test_component.py::TestHandArea::test_cards_on_hand_area_follows_when_hand_area_is_moved',
+        'test_component.py::TestHandArea::test_cards_in_hand_are_looks_facedown',
+        'test_component.py::TestHandArea::test_resizing_hand_area_updates_ownership',
+        'test_component.py::TestHandArea::test_up_card_in_my_hand_become_down_when_moved_to_others_hand',
+        'test_component.py::TestHandArea::test_many_cards_on_hand_area_move_with_the_area',
+        'test_playing_card_kit.py::test_load_playing_card_kit',
+        'test_cardistry.py::TestSpreadOutAndCollect::test_can_collect_cards_in_hand_area',
 
-    # 2026-08-11: フロントエンド依存の全面最新化(webpack/jest/redom等)後の全件実行で
-    # 一覧外の失敗として出た。単独実行では毎回グリーン(確認済み)。
-    'test_cardistry.py::TestSpreadOutAndCollect::test_can_ignore_cards_in_hand_area',
-    'test_cardistry.py::TestFlipAll::test_to_face_down_if_any_are_face_up',
+        # 2026-08-11: フロントエンド依存の全面最新化(webpack/jest/redom等)後の全件実行で
+        # 一覧外の失敗として出た。単独実行では毎回グリーン(確認済み)。
+        'test_cardistry.py::TestSpreadOutAndCollect::test_can_ignore_cards_in_hand_area',
+        'test_cardistry.py::TestFlipAll::test_to_face_down_if_any_are_face_up',
+    },
+    'chrome': set(),
 }
 
 # CI では、既知フレーキーが全リトライ落ちしてもビルドを赤くしたくない。ただし結果は
@@ -106,7 +127,7 @@ def _is_known_flaky_nodeid(nodeid: str) -> bool:
     #
     # パラメータ化テストを一覧に載せたくなったら、'[' の前で切って比べる形に
     # 変えること（今は該当が無いので単純な等価比較にしてある）。
-    return nodeid in {f'tests/e2e/{entry}' for entry in E2E_KNOWN_FLAKY}
+    return nodeid in {f'tests/e2e/{entry}' for entry in E2E_KNOWN_FLAKY[E2E_BROWSER]}
 
 
 def _is_known_flaky(item) -> bool:
@@ -128,7 +149,21 @@ def _split_failures(terminalreporter):
     return known, other
 
 
+def pytest_report_header(config):
+    # 冒頭に「何で走らせるか」を出す。--dev のときにマウントの旨を出しているのと
+    # 同じ理由で、既定と違う条件で走っていることが出力から分かるようにする。
+    # ここで出せるのは指定値だけ（まだブラウザを起動していない）。実際に起動した
+    # ブラウザと版は pytest_terminal_summary が末尾に出す。
+    return f'browser: {E2E_BROWSER} (ASOBANN_E2E_BROWSER)'
+
+
 def pytest_terminal_summary(terminalreporter):
+    # 実際に起動したブラウザ。WebDriverのcapabilitiesから取っているので、
+    # 「環境変数が渡ったか」ではなく「何が動いたか」の記録になる。
+    if 'browser' in _HISTORY_RUN:
+        terminalreporter.write_line(
+            f"browser: {_HISTORY_RUN['browser']} {_HISTORY_RUN.get('browser_version', '')}".rstrip())
+
     known, other = _split_failures(terminalreporter)
     if not known:
         return
@@ -136,7 +171,7 @@ def pytest_terminal_summary(terminalreporter):
     for nodeid in known:
         terminalreporter.write_line(f'  {nodeid}')
     terminalreporter.write_line(
-        'これらは tests/e2e/conftest.py の E2E_KNOWN_FLAKY に載っている。'
+        f"これらは tests/e2e/conftest.py の E2E_KNOWN_FLAKY['{E2E_BROWSER}'] に載っている。"
         '毎回すべて落ちるならフレーキーではなく壊れているので、一覧から外して調べること。')
     if E2E_TOLERATE_KNOWN_FLAKY:
         if other:
@@ -241,7 +276,7 @@ def pytest_sessionstart(session):
         'known_flaky_reruns': E2E_KNOWN_FLAKY_RERUNS,
         'reruns_delay': E2E_RERUNS_DELAY,
         'tolerate_known_flaky': E2E_TOLERATE_KNOWN_FLAKY,
-        'known_flaky_list': sorted(E2E_KNOWN_FLAKY),
+        'known_flaky_list': sorted(E2E_KNOWN_FLAKY[E2E_BROWSER]),
         'headless': os.environ.get('MOZ_HEADLESS') == '1',
         'slowmo': float(os.environ.get('ASOBANN_E2E_SLOWMO', '0')),
     })
@@ -343,8 +378,33 @@ E2E_WINDOW_SIZE = (1600, 1200)
 _live_browsers = []
 
 
+def _chrome_options():
+    """コンテナのChromiumを動かすのに要る最低限。
+
+    - `--no-sandbox`: コンテナはrootで動くので、サンドボックスがあると起動できない
+    - `--disable-dev-shm-usage`: dockerの /dev/shm は既定64MBで、Chromiumは共有メモリを
+      使い切ってタブごと落ちる。/tmp を使わせる
+    - `--window-size`: ヘッドレスChromiumの既定ビューポートは小さい。Firefox側で
+      set_window_size している理由(E2E_WINDOW_SIZE のコメント)と同じ問題を踏む
+    - `--headless=new`: Firefoxが MOZ_HEADLESS 環境変数で見ているのと同じ条件を使う。
+      run_e2e.sh はどちらのブラウザでもこの変数を立てる
+    """
+    options = ChromeOptions()
+    if os.environ.get('MOZ_HEADLESS') == '1':
+        options.add_argument('--headless=new')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--window-size={},{}'.format(*E2E_WINDOW_SIZE))
+    return options
+
+
 def new_e2e_browser(options=None):
-    browser = webdriver.Firefox(options=options) if options else webdriver.Firefox()
+    if E2E_BROWSER == 'chrome':
+        # Firefoxと違い、ヘッドレスもウィンドウサイズもオプションでしか渡せないので、
+        # 呼び出し側が options を持っていなくてもここで組む。
+        browser = webdriver.Chrome(options=_chrome_options())
+    else:
+        browser = webdriver.Firefox(options=options) if options else webdriver.Firefox()
     browser.set_window_size(*E2E_WINDOW_SIZE)
     _live_browsers.append(browser)
     _untrack_when_closed(browser)
@@ -416,6 +476,17 @@ def pytest_runtest_makereport(item, call):
 
 @pytest.fixture(scope='session')
 def firefox_driver():
+    if E2E_BROWSER == 'chrome':
+        # chromedriver はイメージに apt で入れてある(Dockerfile.e2e)。無い環境で
+        # 走らせると webdriver.Chrome() 側の例外になり「chromedriverが無い」だと
+        # 分かりにくいので、ここで先に確かめて分かりやすいメッセージで落とす。
+        proc = subprocess.run("which chromedriver", stdout=subprocess.DEVNULL, shell=True)
+        if proc.returncode != 0:
+            raise RuntimeError(
+                'chromedriver が見つからない。ASOBANN_E2E_BROWSER=chrome で走らせるには、'
+                'Dockerfile.e2e で入れている chromium-driver が要る '
+                '(scripts/build_e2e_image.sh でビルドしたイメージを使うこと)。')
+        return
     proc = subprocess.run("which geckodriver", stdout=subprocess.DEVNULL, shell=True)
     if proc.returncode == 0:
         return
@@ -453,6 +524,9 @@ def host(browser):
 
 
 def browser_func(headless=False):
+    # ここは負荷試験(tests/performance)専用の入口で、ASOBANN_E2E_BROWSER は見ない。
+    # Chromium対応はE2Eの試しなので、負荷試験の条件は動かさない。
+    #
     # 呼び出しごとに独立したOptionsにする。共有の firefox_options に足すと
     # 繰り返し呼ばれたとき -headless 引数が重複して溜まっていく。
     options = Options()

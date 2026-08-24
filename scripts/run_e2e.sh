@@ -25,6 +25,7 @@
 #
 # 環境変数:
 #   ASOBANN_E2E_SLOWMO=秒数  操作の合間に待つ。結果が不安定化する可能性がある
+#   ASOBANN_E2E_BROWSER=chrome  Firefoxのかわりに Chromium で走らせる（試し。既定 firefox）
 #
 # 例:
 #   ./scripts/run_e2e.sh                                  # 全件
@@ -35,6 +36,7 @@
 #   ./scripts/run_e2e.sh --tolerate-flaky                 # CIと同じ扱い
 #   ./scripts/run_e2e.sh --watch --dev -p no:randomly \
 #       tests/e2e/test_component.py::TestGlued::test_flipped_and_text_hides
+#   ASOBANN_E2E_BROWSER=chrome ./scripts/run_e2e.sh       # Chromiumで全件
 #
 # 既定で -v を渡すので、テスト名が1件ずつ出る。簡潔にしたいときは -q を足す
 # （pytestの -q と -v は打ち消し合う）。
@@ -84,7 +86,7 @@ if [ "$WATCH" = yes ]; then
 fi
 
 # 切り分け用のつまみ。ホスト側で設定されていればコンテナへ渡す。
-for name in ASOBANN_E2E_SLOWMO; do
+for name in ASOBANN_E2E_SLOWMO ASOBANN_E2E_BROWSER; do
     if [ -n "${!name:-}" ]; then
         envs+=(-e "$name=${!name}")
     fi

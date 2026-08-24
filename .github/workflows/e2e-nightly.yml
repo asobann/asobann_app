@@ -18,6 +18,19 @@ name: E2E (日次)
 # public リポジトリの schedule トリガーは60日間リポジトリの更新が無いと
 # 自動停止する。今のところ実害は無いはずだが、動いていないと気づいたら
 # これを疑うこと。
+#
+# Firefox と Chromium の両方を、**同一ジョブで逐次**実行する(matrixで2ジョブに
+# 分けない)。理由は2つ:
+#   - .e2e-runs/*.json を1つのartifactにまとめて上げられる。matrixにすると
+#     artifact名をジョブごとに変える必要があり(actions/upload-artifactは
+#     同名artifactの重複を許さない)、fetch-ci が探す名前(e2e-history)と
+#     食い違って取り込めなくなる
+#   - run(1回のスイート実行)はブラウザ・シード・実行順を1組として意味を持つ。
+#     ジョブを分けても行儀は変わらないが、逐次のほうがログを1本で追える
+#
+# E2E_KNOWN_FLAKY はブラウザ別(tests/e2e/conftest.py)。既知フレーキーの扱いが
+# ブラウザごとに独立しているのは意図どおりで、和集合にすると「載っていないテストが
+# 落ちたら本物」という対比が両方のブラウザで鈍る。
 
 on:
   schedule:
@@ -32,7 +45,9 @@ jobs:
   e2e:
     name: E2E日次実行(失敗してもジョブは赤くしない)
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # 2ブラウザぶん(手元実測: Firefoxのフルスイート約13分、Chromium約9分)。
+    # CIはホストより遅いので、単純な合計より余裕を見る。
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@v4
@@ -56,8 +71,12 @@ jobs:
       # `run:` のシェルは既定で `-e` が効くので、pytestが非0で終わっても
       # ステップ自体は失敗させたい……が、このジョブは失敗させたくないので
       # 自前で `set +e` して終了コードを拾う。
-      - name: E2Eを実行する
-        id: e2e
+      #
+      # 1回目(Firefox)がイメージをビルドし、2回目(Chromium)は --no-build で
+      # それを使い回す。Chromiumはイメージ内に既に同居している(Dockerfile.e2e)ので、
+      # ブラウザを切り替えるためだけの再ビルドは要らない。
+      - name: E2Eを実行する(Firefox)
+        id: e2e_firefox
         env:
           # 既定はlocal(scripts/lib/container_tests.sh)。CIから来た実行だと
           # 分かるようにする。実行履歴(.e2e-runs/*.json)のrun.originに残る。
@@ -68,15 +87,30 @@ jobs:
           echo "exit_code=$?" >> "$GITHUB_OUTPUT"
           exit 0
 
+      - name: E2Eを実行する(Chromium)
+        id: e2e_chrome
+        env:
+          ASOBANN_E2E_RUN_ORIGIN: ci
+          ASOBANN_E2E_BROWSER: chrome
+        run: |
+          set +e
+          ./scripts/run_e2e.sh --no-build --tolerate-flaky
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          exit 0
+
       - name: 結果をサマリーに書く
         if: always()
         run: |
-          code="${{ steps.e2e.outputs.exit_code }}"
-          if [ "$code" = "0" ]; then
-            echo "✅ E2E成功(既知フレーキーの扱いも含む)" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "⚠️ E2E失敗(終了コード $code)。一覧に無いテストが落ちた可能性がある。ログを確認すること" >> "$GITHUB_STEP_SUMMARY"
-          fi
+          write_line() {
+            local label="$1" code="$2"
+            if [ "$code" = "0" ]; then
+              echo "✅ E2E成功($label、既知フレーキーの扱いも含む)" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "⚠️ E2E失敗($label、終了コード $code)。一覧に無いテストが落ちた可能性がある。ログを確認すること" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          }
+          write_line "Firefox" "${{ steps.e2e_firefox.outputs.exit_code }}"
+          write_line "Chromium" "${{ steps.e2e_chrome.outputs.exit_code }}"
 
       # E2Eの実行そのものが失敗しても(mongo起動やビルドで死んだ場合を除き)pytestは
       # 最後まで走ってJSONを書く。always() で、失敗時ほど見たい記録を確実に残す。
