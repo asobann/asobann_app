@@ -446,18 +446,21 @@ def test_unmovable_component_can_be_dragged_to_scroll(server, browser):
 # (table要素・table.location・element.location・element.size)で、55要素だと200往復・
 # 秒単位かかる。その間に描画ティック(50ms)が何度も挟まるので、箱とカードが別の瞬間の
 # 値になる。1px単位のズレを見るには、ページ内で同時に読む必要がある。
+# **丸めるのは引き算のあと。** 先に丸めてから引くと round(a) - round(b) になり、
+# 座標が小数のとき round(a - b) と1ずれる(box=10.5, card=110.4 なら 110-11=99 だが
+# 実際の差は99.9で100)。1pxのズレを見る道具が、自分の丸めで1pxずれては意味がない。
 CARDS_RELATIVE_TO_BOX = """
 const box = document.querySelector('.component[data-component-name="Playing Card Box"]');
 if (!box) { return {box: null, offsets: {}}; }
-const px = (v) => Math.round(parseFloat(v || '0'));
+const px = (v) => parseFloat(v || '0');
 const bx = px(box.style.left), by = px(box.style.top);
 const offsets = {};
 for (const el of document.querySelectorAll('.component')) {
     const name = el.getAttribute('data-component-name') || '';
     if (!name.startsWith('PlayingCard ') && !name.startsWith('JOKER')) { continue; }
-    offsets[name] = [px(el.style.left) - bx, px(el.style.top) - by];
+    offsets[name] = [Math.round(px(el.style.left) - bx), Math.round(px(el.style.top) - by)];
 }
-return {box: [bx, by], offsets: offsets};
+return {box: [Math.round(bx), Math.round(by)], offsets: offsets};
 """
 
 
