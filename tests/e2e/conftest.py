@@ -477,7 +477,15 @@ def pytest_runtest_makereport(item, call):
 @pytest.fixture(scope='session')
 def firefox_driver():
     if E2E_BROWSER == 'chrome':
-        # chromedriver はイメージに apt で入れてある(Dockerfile.e2e)。
+        # chromedriver はイメージに apt で入れてある(Dockerfile.e2e)。無い環境で
+        # 走らせると webdriver.Chrome() 側の例外になり「chromedriverが無い」だと
+        # 分かりにくいので、ここで先に確かめて分かりやすいメッセージで落とす。
+        proc = subprocess.run("which chromedriver", stdout=subprocess.DEVNULL, shell=True)
+        if proc.returncode != 0:
+            raise RuntimeError(
+                'chromedriver が見つからない。ASOBANN_E2E_BROWSER=chrome で走らせるには、'
+                'Dockerfile.e2e で入れている chromium-driver が要る '
+                '(scripts/build_e2e_image.sh でビルドしたイメージを使うこと)。')
         return
     proc = subprocess.run("which geckodriver", stdout=subprocess.DEVNULL, shell=True)
     if proc.returncode == 0:
