@@ -334,6 +334,26 @@ class TestCounter:
         host.menu.add_kit_from_list("Counter")
         return host.component_by_name("Counter")
 
+    @staticmethod
+    def should_show(helper, expected):
+        """カウンタの表示が expected になるまで待つ。
+
+        ボタンを押した直後に読むと、sync_table.js の75msの送信ティックと必ず競合する
+        (tests/e2e/README.md「待ちを入れるときは eventually() を使う」)。このクラスは
+        全体が「クリックした次の行で読む」書き方になっていて、Firefoxではたまたま
+        読み取りが勝っていたが、Chromiumでは TestWithOtherPlayers と TestOverSession が
+        実際に落ちた(assert '1' == '11' / assert '0' == '1')。
+
+        毎回 component_by_name で引き直すのは、相手プレイヤー側ではコンポーネント自体が
+        まだ生えていないことがあるのと、再読み込みのあとは古い参照が stale になるため。
+        wait=False にしてあるのは、待つのは外側の eventually の仕事だから
+        (中でも待つと5秒待ちが二重になり、ポーリングにならない)。
+        """
+        helper.eventually(
+            lambda: helper.component_by_name("Counter", wait=False).element.find_element(
+                by=By.CSS_SELECTOR, value=".counterValue").text == expected,
+            f'counter did not show {expected}')
+
     def test_add_counter_from_menu(self, browser: webdriver.Firefox):
         host = GameHelper(browser)
         counter = self.place_counter(host)
@@ -344,41 +364,41 @@ class TestCounter:
 
     def test_initial_value(self, browser: webdriver.Firefox):
         host = GameHelper(browser)
-        counter = self.place_counter(host)
-        assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "0"
+        self.place_counter(host)
+        TestCounter.should_show(host, "0")
 
     class TestCounting:
         def test_add_1(self, browser: webdriver.Firefox):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#addOne").click()
-            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "1"
+            TestCounter.should_show(host, "1")
 
         def test_sub_1(self, browser: webdriver.Firefox):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#subOne").click()
-            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "-1"
+            TestCounter.should_show(host, "-1")
 
         def test_add_10(self, browser: webdriver.Firefox):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#addTen").click()
-            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "10"
+            TestCounter.should_show(host, "10")
 
         def test_sub_10(self, browser: webdriver.Firefox):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#subTen").click()
-            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "-10"
+            TestCounter.should_show(host, "-10")
 
         def test_reset(self, browser: webdriver.Firefox):
             host = GameHelper(browser)
             counter = TestCounter.place_counter(host)
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#subOne").click()
-            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "-1"
+            TestCounter.should_show(host, "-1")
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#reset").click()
-            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "0"
+            TestCounter.should_show(host, "0")
 
         def test_succession_of_buttons(self, browser: webdriver.Firefox):
             host = GameHelper(browser)
@@ -386,7 +406,7 @@ class TestCounter:
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#addOne").click()
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#addOne").click()
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#addTen").click()
-            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "12"
+            TestCounter.should_show(host, "12")
 
     class TestWithOtherPlayers:
         def test_add_1(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
@@ -398,8 +418,8 @@ class TestCounter:
             player.should_have_text("you are Player 2")
 
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#addOne").click()
-            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "1"
-            assert player.component_by_name("Counter").element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "1"
+            TestCounter.should_show(host, "1")
+            TestCounter.should_show(player, "1")
 
         def test_add_on_both(self, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
             host = GameHelper(browser)
@@ -412,9 +432,8 @@ class TestCounter:
             counter.element.find_element(by=By.CSS_SELECTOR, value="button#addOne").click()
             player.component_by_name("Counter").element.find_element(by=By.CSS_SELECTOR, value="button#addTen").click()
 
-            assert counter.element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "11"
-            assert player.component_by_name("Counter").element.find_element(by=By.CSS_SELECTOR, value=
-                ".counterValue").text == "11"
+            TestCounter.should_show(host, "11")
+            TestCounter.should_show(player, "11")
 
     class TestOverSession:
         def test_counter_is_retained_between_sessions(self, browser):
@@ -424,7 +443,7 @@ class TestCounter:
             url = host.current_url
 
             host.go(url)
-            assert host.component_by_name("Counter").element.find_element(by=By.CSS_SELECTOR, value=".counterValue").text == "1"
+            TestCounter.should_show(host, "1")
 
 
 def test_unmovable_component_can_be_dragged_to_scroll(server, browser):
