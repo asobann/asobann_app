@@ -87,8 +87,8 @@ ASOBANN_E2E_BROWSER=chrome ./scripts/run_e2e.sh
 Chromiumを足した経緯: #167 の調査で、ドラッグ中にコンポーネントが数万px飛ぶ現象が
 Firefox(geckodriver)特有と見られることが分かった。Chromiumで実測したところ明確に
 安定していた。「速いから競合を踏まないだけ」ではないことも、テスト1件あたりの所要
-時間がほぼ同じであることから確認済み。実測値は asobann_docs
-`worklogs/20260824.e2e-browser-strategy/`(private)を参照。
+時間がほぼ同じであることから確認済み。決定の理由は asobann_docs の **ADR 0016**、
+実測値は同 `worklogs/20260824.e2e-browser-strategy/`(private)を参照。
 
 `E2E_KNOWN_FLAKY` はブラウザ別の辞書(`{browser: {nodeid, ...}}`)。一覧の価値は
 「載っていないテストが落ちたら本物」という対比にあり、単一の一覧のまま両ブラウザを
