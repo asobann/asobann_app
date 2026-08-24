@@ -1,20 +1,20 @@
 from pathlib import Path
 import pytest
-from selenium import webdriver
+from selenium.webdriver.remote.webdriver import WebDriver
 from ..helper import GameHelper, Uploader
 
 
 @pytest.mark.usefixtures("server")
 @pytest.mark.usefixtures("default_kits_and_components")
 class TestUploadKit:
-    def test_success(self, browser: webdriver.Firefox, uploader: Uploader):
+    def test_success(self, browser: WebDriver, uploader: Uploader):
         host = GameHelper.player(browser)
         uploader.upload_kit_from_file_with_craft_box(host, 'test_menu_kit.json')
 
         host.menu.add_kit.execute()
         host.menu.should_see_kit("Test Kit")
 
-    def test_cancel(self, browser: webdriver.Firefox):
+    def test_cancel(self, browser: WebDriver):
         host = GameHelper.player(browser)
 
         host.menu.open_craft_box.execute()
@@ -24,7 +24,7 @@ class TestUploadKit:
         host.menu.add_kit.execute()
         host.menu.should_not_see_kit("Test Kit")
 
-    def test_no_jsonfile(self, browser: webdriver.Firefox):
+    def test_no_jsonfile(self, browser: WebDriver):
         host = GameHelper.player(browser)
 
         host.menu.open_craft_box.execute()
@@ -36,7 +36,7 @@ class TestUploadKit:
         host.menu.should_not_see_kit("Test Kit")
 
     class TestUploadImage:
-        def test_one_image(self, browser: webdriver.Firefox, uploader: Uploader):
+        def test_one_image(self, browser: WebDriver, uploader: Uploader):
             host = GameHelper.player(browser)
             uploader.upload_kit_from_file_with_craft_box(host, 'test_menu_kit_with_one_image.json', ['example.png'])
 
@@ -46,7 +46,7 @@ class TestUploadKit:
 
             assert '/images/uploaded/example.png' in host.component_by_name('Test Component').face()
 
-        def test_one_glued_image_fragment(self, browser: webdriver.Firefox, uploader: Uploader):
+        def test_one_glued_image_fragment(self, browser: WebDriver, uploader: Uploader):
             host = GameHelper.player(browser)
             uploader.upload_kit_from_file_with_craft_box(host, 'test_menu_kit_with_glued_image_fragment.json', ['example.png'])
 
@@ -57,25 +57,25 @@ class TestUploadKit:
             assert '/images/uploaded/example.png' in host.component_by_name('Test Component').face()
 
         @pytest.mark.skip
-        def test_image(self, browser: webdriver.Firefox):
+        def test_image(self, browser: WebDriver):
             pass
 
         @pytest.mark.skip
-        def test_faceup_image(self, browser: webdriver.Firefox):
+        def test_faceup_image(self, browser: WebDriver):
             pass
 
         @pytest.mark.skip
-        def test_facedown_image(self, browser: webdriver.Firefox):
+        def test_facedown_image(self, browser: WebDriver):
             pass
 
         @pytest.mark.skip
-        def test_multiple_images(self, browser: webdriver.Firefox):
+        def test_multiple_images(self, browser: WebDriver):
             pass
 
 
 @pytest.mark.usefixtures("server")
 class TestCounterKit:
-    def test_upload_and_use(self, browser: webdriver.Firefox, uploader: Uploader):
+    def test_upload_and_use(self, browser: WebDriver, uploader: Uploader):
         host = GameHelper.player(browser)
         uploader.upload_kit_from_file_with_craft_box(host, 'test_counter_kit.json')
 

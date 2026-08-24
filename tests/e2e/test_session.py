@@ -2,7 +2,7 @@ import time
 from typing import Optional
 import pytest
 
-from selenium import webdriver
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import Select
@@ -15,7 +15,7 @@ from selenium.common.exceptions import NoSuchElementException
 from .helper import compo_pos, Rect, GameHelper, TOP
 
 
-def test_reload_retain_player(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+def test_reload_retain_player(server, browser: WebDriver, another_browser: WebDriver):
     host = GameHelper(browser)
     host.go(TOP)
 
@@ -38,7 +38,7 @@ def test_reload_retain_player(server, browser: webdriver.Firefox, another_browse
     assert not host.menu.join_item.is_visible()
 
 
-def test_late_comer_shall_see_the_same_table(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+def test_late_comer_shall_see_the_same_table(server, browser: WebDriver, another_browser: WebDriver):
     host = GameHelper(browser)
     host.go(TOP)
     host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
@@ -69,7 +69,7 @@ def test_late_comer_shall_see_the_same_table(server, browser: webdriver.Firefox,
     assert_seeing_same(host, player)
 
 
-def test_removing_kit_yields_no_error(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+def test_removing_kit_yields_no_error(server, browser: WebDriver, another_browser: WebDriver):
     host = GameHelper(browser)
     host.go(TOP)
     host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
@@ -88,7 +88,7 @@ def test_removing_kit_yields_no_error(server, browser: webdriver.Firefox, anothe
     assert_seeing_same(host, player)
 
 
-def test_removing_hand_area_is_propagated(server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+def test_removing_hand_area_is_propagated(server, browser: WebDriver, another_browser: WebDriver):
     host = GameHelper(browser)
     host.go(TOP)
     host.drag(host.component_by_name("usage"), 0, -200, 'lower right corner')
@@ -145,7 +145,7 @@ class TestOutOfSync:
         player2.menu.join("Player 2")
         player2.should_have_text("you are Player 2")
 
-    def test_single_card(self, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_single_card(self, server, browser: WebDriver, another_browser: WebDriver):
         host = GameHelper(browser)
         player2 = GameHelper(another_browser)
         self.prepare_playing_cards(host, player2)
@@ -155,7 +155,7 @@ class TestOutOfSync:
 
         assert_seeing_same(host, player2)
 
-    def test_move_box_of_card_bit_by_bit(self, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_move_box_of_card_bit_by_bit(self, server, browser: WebDriver, another_browser: WebDriver):
         host = GameHelper(browser)
         player2 = GameHelper(another_browser)
         self.prepare_playing_cards(host, player2)
@@ -168,7 +168,7 @@ class TestOutOfSync:
 
         assert_seeing_same(host, player2)
 
-    def test_move_box_of_card_long(self, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_move_box_of_card_long(self, server, browser: WebDriver, another_browser: WebDriver):
         host = GameHelper(browser)
         player2 = GameHelper(another_browser)
         self.prepare_playing_cards(host, player2)
@@ -177,7 +177,7 @@ class TestOutOfSync:
 
         assert_seeing_same(host, player2)
 
-    def test_a_card_on_hand_area(self, server, browser: webdriver.Firefox, another_browser: webdriver.Firefox):
+    def test_a_card_on_hand_area(self, server, browser: WebDriver, another_browser: WebDriver):
         host = GameHelper(browser)
         player2 = GameHelper(another_browser)
         self.prepare_playing_cards(host, player2)

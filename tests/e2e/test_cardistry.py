@@ -1,7 +1,7 @@
 import re
 import pytest
 
-from selenium import webdriver
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.alert import Alert
 
 from .helper import compo_pos, Rect, GameHelper, TOP
@@ -26,7 +26,7 @@ def prepare_table_with_cards(host):
 
 @pytest.mark.usefixtures("server")
 class TestShuffle:
-    def test_shuffle_randomizes_z_index(self, browser: webdriver.Firefox):
+    def test_shuffle_randomizes_z_index(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
 
@@ -38,7 +38,7 @@ class TestShuffle:
                             / len(before_order))
         assert average_distance > 10
 
-    def test_shuffle_order_cards_by_1px(self, browser: webdriver.Firefox):
+    def test_shuffle_order_cards_by_1px(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
         host.box_by_name('Playing Card Box').shuffle.click()
@@ -54,7 +54,7 @@ class TestShuffle:
                 # somehow there were cases where two cards separate 2 px but looks ok
                 assert abs(pos1.left - pos2.left) < 3 and abs(pos1.top - pos2.top) < 3
 
-    def test_shuffle_only_the_cards_on_the_box(self, browser: webdriver.Firefox):
+    def test_shuffle_only_the_cards_on_the_box(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
 
@@ -80,7 +80,7 @@ class TestShuffle:
 
 @pytest.mark.usefixtures("server")
 class TestSpreadOutAndCollect:
-    def test_spread_out_moves_every_card(self, browser: webdriver.Firefox):
+    def test_spread_out_moves_every_card(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
 
@@ -91,7 +91,7 @@ class TestSpreadOutAndCollect:
 
         assert all([before[n] != after[n] for n in before.keys()])
 
-    def test_spread_out_never_make_overlaps(self, browser: webdriver.Firefox):
+    def test_spread_out_never_make_overlaps(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
 
@@ -103,7 +103,7 @@ class TestSpreadOutAndCollect:
             for rr in rects:
                 assert not r.touch(rr)
 
-    def test_spread_out_then_collect_does_not_change_order(self, browser: webdriver.Firefox):
+    def test_spread_out_then_collect_does_not_change_order(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
 
@@ -115,7 +115,7 @@ class TestSpreadOutAndCollect:
 
         assert before_order == after_order
 
-    def test_collect_moves_back_every_card(self, browser: webdriver.Firefox):
+    def test_collect_moves_back_every_card(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
 
@@ -125,7 +125,7 @@ class TestSpreadOutAndCollect:
         box_area = host.box_by_name('Playing Card Box').rect()
         assert all((c.rect().within(box_area) for c in playing_cards(host)))
 
-    def test_can_ignore_cards_in_hand_area(self, browser: webdriver.Firefox):
+    def test_can_ignore_cards_in_hand_area(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
         host.menu.add_my_hand_area.click()
@@ -141,7 +141,7 @@ class TestSpreadOutAndCollect:
         after = card.rect()
         assert before == after
 
-    def test_can_collect_cards_in_hand_area(self, browser: webdriver.Firefox):
+    def test_can_collect_cards_in_hand_area(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
         host.menu.add_my_hand_area.click()
@@ -157,7 +157,7 @@ class TestSpreadOutAndCollect:
         after = card.rect()
         assert before != after
 
-    def test_ignore_cards_in_stowage(self, browser: webdriver.Firefox):
+    def test_ignore_cards_in_stowage(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
 
@@ -174,14 +174,14 @@ class TestSpreadOutAndCollect:
 
 @pytest.mark.usefixtures("server")
 class TestFlipAll:
-    def test_to_face_up(self, browser: webdriver.Firefox):
+    def test_to_face_up(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
 
         host.box_by_name('Playing Card Box').flipAll.click()
         assert all(('card_up' in c.face() for c in playing_cards(host)))
 
-    def test_to_face_down(self, browser: webdriver.Firefox):
+    def test_to_face_down(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
 
@@ -189,7 +189,7 @@ class TestFlipAll:
         host.box_by_name('Playing Card Box').flipAll.click()
         assert all(('card_back' in c.face() for c in playing_cards(host)))
 
-    def test_to_face_down_if_any_are_face_up(self, browser: webdriver.Firefox):
+    def test_to_face_down_if_any_are_face_up(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
 
@@ -197,7 +197,7 @@ class TestFlipAll:
         host.box_by_name('Playing Card Box').flipAll.click()
         assert all(('card_back' in c.face() for c in playing_cards(host)))
 
-    def test_only_cards_in_box(self, browser: webdriver.Firefox):
+    def test_only_cards_in_box(self, browser: WebDriver):
         host = GameHelper(browser)
         prepare_table_with_cards(host)
 

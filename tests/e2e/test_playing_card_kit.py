@@ -2,7 +2,7 @@ import pytest
 import time
 from pathlib import Path
 
-from selenium import webdriver
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import Select
@@ -15,7 +15,7 @@ from selenium.common.exceptions import NoSuchElementException
 from .helper import compo_pos, Rect, GameHelper, STAGING_TOP
 
 
-def test_create_empty_table(server, browser: webdriver.Firefox):
+def test_create_empty_table(server, browser: WebDriver):
     host = GameHelper(browser)
     host.create_table(0)
 
@@ -24,7 +24,7 @@ def test_create_empty_table(server, browser: webdriver.Firefox):
     assert host.count_components() == 0
 
 
-def test_load_playing_card_kit(server, browser: webdriver.Firefox):
+def test_load_playing_card_kit(server, browser: WebDriver):
     host = GameHelper(browser)
     host.create_table(0)
 
@@ -40,7 +40,7 @@ def test_load_playing_card_kit(server, browser: webdriver.Firefox):
     assert host.component_by_name("PlayingCard S_A").pos() == (64 + 100, 164 + 200)
 
 
-def test_load_and_remove_playing_card_kit(server, browser: webdriver.Firefox):
+def test_load_and_remove_playing_card_kit(server, browser: WebDriver):
     host = GameHelper(browser)
     host.create_table(0)
 
@@ -57,7 +57,7 @@ def test_load_and_remove_playing_card_kit(server, browser: webdriver.Firefox):
 
 
 @pytest.mark.loadtest
-def test_load_playing_card_kit_on_staging(server, browser: webdriver.Firefox):
+def test_load_playing_card_kit_on_staging(server, browser: WebDriver):
     host = GameHelper(browser)
     host.go(STAGING_TOP + "/customize")
     input_element = host.browser.find_element(by=By.CSS_SELECTOR, value="input#prepared_table")
