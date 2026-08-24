@@ -48,43 +48,63 @@ E2E_RERUNS_DELAY = 2
 #     あるものとして監視し、イシュー化する（自動化はまだで、今は人かAIが気づいたら対応する）
 #   - 動機は、フレーキーの調査・対応はコストが高くROIが低いこと。いちいち気にせず、
 #     気にすべきときにシグナルが上がる状態を保つのが肝心
+# どのブラウザで走らせるか。既定は従来どおり firefox。
+#
+# E2E_KNOWN_FLAKY より前に置く必要がある。一覧はブラウザ別の辞書で、キーに使うため。
+E2E_BROWSER = os.environ.get('ASOBANN_E2E_BROWSER', 'firefox').lower()
+if E2E_BROWSER not in ('firefox', 'chrome'):
+    raise ValueError(f"ASOBANN_E2E_BROWSER must be 'firefox' or 'chrome', got {E2E_BROWSER!r}")
+
 E2E_KNOWN_FLAKY_RERUNS = 5
+
+# **ブラウザ別に持つ。** 一覧の価値は「載っていないテストが落ちたら本物」という対比に
+# あり、単一の一覧にしてブラウザで和集合を取ると、その対比が両方のブラウザで鈍る。
+# 実際 Chrome では Firefox の常連8件(SHIFT離し忘れ、#166で解消)も #167(座標が
+# 数万px飛ぶ環境ドリフト)も一度も再現していない。Firefox一覧をそのままChromeにも
+# 適用すると、Chromeで実際に落ちた TestCounter の2件(#170で解消)のような、
+# ブラウザ固有の新しい欠陥がフレーキー扱いで隠れてしまう。
+#
+# Chromeは #170 が入るまでの既知の欠陥を解消した状態から始めるので、空で始める。
+# 「載っていないテストが落ちたら本物」という対比を最初から最も強い状態で使うため。
 E2E_KNOWN_FLAKY = {
-    # 2026-08-10: 全件実行を複数回まわしたところ、落ちる顔ぶれが毎回入れ替わった。
-    'test_component.py::test_moving_box_does_not_lose_things_within',
-    'test_session.py::TestOutOfSync::test_move_box_of_card_bit_by_bit',
-    'test_craft_box.py::TestCraftBoxWithOtherPlayers::test_editing_json_is_sync',
+    'firefox': {
+        # 2026-08-10: 全件実行を複数回まわしたところ、落ちる顔ぶれが毎回入れ替わった。
+        'test_component.py::test_moving_box_does_not_lose_things_within',
+        'test_session.py::TestOutOfSync::test_move_box_of_card_bit_by_bit',
+        'test_craft_box.py::TestCraftBoxWithOtherPlayers::test_editing_json_is_sync',
 
-    # 2026-08-11: helper.should_be_joined() を入れて頻度は明確に下がった（観戦者ガードで
-    # 操作が無言に捨てられていた分は消えた。#127）が、全89件ではまだ再発する。
-    # 一度は一覧から外したものの、根拠が部分実行1回だけだったので戻した。上の出入りの
-    # ルールのとおり、連続で成功することを確認してから外すこと。
-    # なお test_flipped_and_image_change は setup 側で落ちることもある（キット追加の
-    # timeout）。他のTestGluedでは同じsetupが通っているので、これもフレーキーとして扱う。
-    'test_component.py::TestGlued::test_flipped_and_text_hides',
-    'test_component.py::TestGlued::test_flipped_and_image_change',
-    'test_component.py::TestGlued::test_put_in_hand_area_and_text_hides',
+        # 2026-08-11: helper.should_be_joined() を入れて頻度は明確に下がった（観戦者
+        # ガードで操作が無言に捨てられていた分は消えた。#127）が、全89件ではまだ再発する。
+        # 一度は一覧から外したものの、根拠が部分実行1回だけだったので戻した。上の出入りの
+        # ルールのとおり、連続で成功することを確認してから外すこと。
+        # なお test_flipped_and_image_change は setup 側で落ちることもある（キット追加の
+        # timeout）。他のTestGluedでは同じsetupが通っているので、これもフレーキーとして扱う。
+        'test_component.py::TestGlued::test_flipped_and_text_hides',
+        'test_component.py::TestGlued::test_flipped_and_image_change',
+        'test_component.py::TestGlued::test_put_in_hand_area_and_text_hides',
 
-    # 2026-08-11に追加: 元から落ちていたが未登録だった。textarea が出ないことがある。
-    'test_component.py::TestEditable::test_editing',
-    'test_component.py::TestEditable::test_editing_is_shared',
+        # 2026-08-11に追加: 元から落ちていたが未登録だった。textarea が出ないことがある。
+        'test_component.py::TestEditable::test_editing',
+        'test_component.py::TestEditable::test_editing_is_shared',
 
-    # 2026-08-11: asyncio移行(Quart化)後の全件実行2回で一覧外の失敗として出た。
-    # いずれも単独実行では毎回グリーン(出入りのルールどおり確認済み)なので、フル
-    # スイート実行特有のタイミング競合と判断してここに追加する。2回とも顔ぶれが
-    # 完全に入れ替わっており、特定の一貫した壊れ方ではない。
-    'test_component.py::TestHandArea::test_cards_on_hand_area_follows_when_hand_area_is_moved',
-    'test_component.py::TestHandArea::test_cards_in_hand_are_looks_facedown',
-    'test_component.py::TestHandArea::test_resizing_hand_area_updates_ownership',
-    'test_component.py::TestHandArea::test_up_card_in_my_hand_become_down_when_moved_to_others_hand',
-    'test_component.py::TestHandArea::test_many_cards_on_hand_area_move_with_the_area',
-    'test_playing_card_kit.py::test_load_playing_card_kit',
-    'test_cardistry.py::TestSpreadOutAndCollect::test_can_collect_cards_in_hand_area',
+        # 2026-08-11: asyncio移行(Quart化)後の全件実行2回で一覧外の失敗として出た。
+        # いずれも単独実行では毎回グリーン(出入りのルールどおり確認済み)なので、フル
+        # スイート実行特有のタイミング競合と判断してここに追加する。2回とも顔ぶれが
+        # 完全に入れ替わっており、特定の一貫した壊れ方ではない。
+        'test_component.py::TestHandArea::test_cards_on_hand_area_follows_when_hand_area_is_moved',
+        'test_component.py::TestHandArea::test_cards_in_hand_are_looks_facedown',
+        'test_component.py::TestHandArea::test_resizing_hand_area_updates_ownership',
+        'test_component.py::TestHandArea::test_up_card_in_my_hand_become_down_when_moved_to_others_hand',
+        'test_component.py::TestHandArea::test_many_cards_on_hand_area_move_with_the_area',
+        'test_playing_card_kit.py::test_load_playing_card_kit',
+        'test_cardistry.py::TestSpreadOutAndCollect::test_can_collect_cards_in_hand_area',
 
-    # 2026-08-11: フロントエンド依存の全面最新化(webpack/jest/redom等)後の全件実行で
-    # 一覧外の失敗として出た。単独実行では毎回グリーン(確認済み)。
-    'test_cardistry.py::TestSpreadOutAndCollect::test_can_ignore_cards_in_hand_area',
-    'test_cardistry.py::TestFlipAll::test_to_face_down_if_any_are_face_up',
+        # 2026-08-11: フロントエンド依存の全面最新化(webpack/jest/redom等)後の全件実行で
+        # 一覧外の失敗として出た。単独実行では毎回グリーン(確認済み)。
+        'test_cardistry.py::TestSpreadOutAndCollect::test_can_ignore_cards_in_hand_area',
+        'test_cardistry.py::TestFlipAll::test_to_face_down_if_any_are_face_up',
+    },
+    'chrome': set(),
 }
 
 # CI では、既知フレーキーが全リトライ落ちしてもビルドを赤くしたくない。ただし結果は
@@ -94,15 +114,6 @@ E2E_TOLERATE_KNOWN_FLAKY = os.environ.get('E2E_TOLERATE_KNOWN_FLAKY') == '1'
 # 観戦モード(scripts/run_e2e.sh --watch)。止めるのは helper.py 側(卓を開いた直後)。
 # ここで見ているのは、リトライを止めることと、テストごとに1回だけ止めること。
 E2E_WATCH = helper.E2E_WATCH
-
-# どのブラウザで走らせるか。既定は従来どおり firefox。
-#
-# **これは試し。** Firefox特有の挙動をどれだけ踏んでいるかを見るためのもので、
-# 常用の構成を変えるものではない。履歴には browser / browser_version が記録される
-# (_capture_browser_info)ので、後からブラウザ別に集計できる。
-E2E_BROWSER = os.environ.get('ASOBANN_E2E_BROWSER', 'firefox').lower()
-if E2E_BROWSER not in ('firefox', 'chrome'):
-    raise ValueError(f"ASOBANN_E2E_BROWSER must be 'firefox' or 'chrome', got {E2E_BROWSER!r}")
 
 
 def _is_known_flaky_nodeid(nodeid: str) -> bool:
@@ -116,7 +127,7 @@ def _is_known_flaky_nodeid(nodeid: str) -> bool:
     #
     # パラメータ化テストを一覧に載せたくなったら、'[' の前で切って比べる形に
     # 変えること（今は該当が無いので単純な等価比較にしてある）。
-    return nodeid in {f'tests/e2e/{entry}' for entry in E2E_KNOWN_FLAKY}
+    return nodeid in {f'tests/e2e/{entry}' for entry in E2E_KNOWN_FLAKY[E2E_BROWSER]}
 
 
 def _is_known_flaky(item) -> bool:
@@ -160,7 +171,7 @@ def pytest_terminal_summary(terminalreporter):
     for nodeid in known:
         terminalreporter.write_line(f'  {nodeid}')
     terminalreporter.write_line(
-        'これらは tests/e2e/conftest.py の E2E_KNOWN_FLAKY に載っている。'
+        f"これらは tests/e2e/conftest.py の E2E_KNOWN_FLAKY['{E2E_BROWSER}'] に載っている。"
         '毎回すべて落ちるならフレーキーではなく壊れているので、一覧から外して調べること。')
     if E2E_TOLERATE_KNOWN_FLAKY:
         if other:
@@ -265,7 +276,7 @@ def pytest_sessionstart(session):
         'known_flaky_reruns': E2E_KNOWN_FLAKY_RERUNS,
         'reruns_delay': E2E_RERUNS_DELAY,
         'tolerate_known_flaky': E2E_TOLERATE_KNOWN_FLAKY,
-        'known_flaky_list': sorted(E2E_KNOWN_FLAKY),
+        'known_flaky_list': sorted(E2E_KNOWN_FLAKY[E2E_BROWSER]),
         'headless': os.environ.get('MOZ_HEADLESS') == '1',
         'slowmo': float(os.environ.get('ASOBANN_E2E_SLOWMO', '0')),
     })
