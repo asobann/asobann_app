@@ -9,7 +9,8 @@
 - `config_test.py` の `MONGO_URI` が **`mongodb://admin:password@mongo:27017/test`** をハードコード。
   ホスト名 `mongo` はdocker-composeのサービス名なので、**そのネットワーク内でしか解決しない**
 - `tests/conftest.py` がサーバ起動に `sys.executable` を使う(テストとサーバが同じ環境に同居している前提)
-- firefox と geckodriver が要る
+- firefox と geckodriver が要る(既定のブラウザ。chromium/chromium-driverも
+  同居しており、`ASOBANN_E2E_BROWSER=chrome` で切り替えられる。後述)
 
 なお `helper.py` の `STAGING_TOP` は死んだHeroku URLで、**このテストはstagingには向けられない**。
 
@@ -70,6 +71,29 @@ docker run --rm --network loadtest_default -e MOZ_HEADLESS=1 \
 `MOZ_HEADLESS=1` を環境変数で渡すのは、`another_browser_window` と `browser_factory` が
 `webdriver.Firefox()` をオプション無しで呼んでいて `--headless` が渡らないため。
 環境変数ならどの経路でも効く。
+
+### 判定ブラウザを選ぶ: `ASOBANN_E2E_BROWSER`
+
+既定は Firefox。Chromium で走らせるにはこう。
+
+```sh
+ASOBANN_E2E_BROWSER=chrome ./scripts/run_e2e.sh
+```
+
+イメージには firefox-esr/geckodriver と chromium/chromium-driver の**両方**が同居して
+いる(`Dockerfile.e2e`)。ブラウザごとにイメージを分けると「イメージが違うから結果も
+違うのでは」を排除できなくなるため。
+
+Chromiumを足した経緯: #167 の調査で、ドラッグ中にコンポーネントが数万px飛ぶ現象が
+Firefox(geckodriver)特有と見られることが分かった。Chromiumで実測したところ明確に
+安定していた。「速いから競合を踏まないだけ」ではないことも、テスト1件あたりの所要
+時間がほぼ同じであることから確認済み。実測値は asobann_docs
+`worklogs/20260824.e2e-browser-strategy/`(private)を参照。
+
+`E2E_KNOWN_FLAKY` はブラウザ別の辞書(`{browser: {nodeid, ...}}`)。一覧の価値は
+「載っていないテストが落ちたら本物」という対比にあり、単一の一覧のまま両ブラウザを
+走らせると和集合になって対比が両方で鈍るため。日次CIはFirefox→Chromiumの順に
+同一ジョブで両方走らせる(下記「CIでの扱い」)。
 
 ### 実行中の卓を人間が見る: `--watch`
 
@@ -154,6 +178,9 @@ Enterを押すとテストが先へ進む。ログとスクリーンショット
 | 通常のE2Eテスト | 3 | 通常の揺れを吸収する |
 | `E2E_KNOWN_FLAKY` に載っているもの | 5 | 既知の不安定。確実に評価を確定させる |
 
+`E2E_KNOWN_FLAKY` は `ASOBANN_E2E_BROWSER` ごとの辞書。フレーキーの顔ぶれはブラウザで
+違う(理由は上の「判定ブラウザを選ぶ」)ので、一覧もブラウザ別に持つ。
+
 **一覧の価値は対比にある。** 載っていないテストが落ちたら、それは本当に何かが壊れた
 という強い信号になる。この区別があることで、asyncio移行の安全網として使える。
 
@@ -216,6 +243,12 @@ Enterを押すとテストが先へ進む。ログとスクリーンショット
   フレーキーだったときにだけ許す)
 
 開発中は変更の影響を見たいので、この変数は立てずに走らせる。
+
+日次CI(`.github/workflows/e2e-nightly.yml`)は Firefox → Chromium の順に**同一ジョブで
+逐次**実行する。matrixで2ジョブに分けていないのは、`actions/upload-artifact` が同名
+artifactの重複を許さず、ジョブごとに名前を変えると `scripts/e2e_history.py fetch-ci`
+が探す名前(`e2e-history`固定)と食い違って取り込めなくなるため。2回目(Chromium)は
+`--no-build` でイメージを使い回す。
 
 ### 実行順序はランダム
 
