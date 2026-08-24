@@ -459,12 +459,91 @@ def test_unmovable_component_can_be_dragged_to_scroll(server, browser):
     assert host.view_origin() == (100, 100)
 
 
+# 箱と、その中のカードの相対位置を1回のスクリプトで読む。
+#
+# **1要素ずつ読んではいけない。** Component.rect() は1枚あたりWebDriverの往復4回
+# (table要素・table.location・element.location・element.size)で、55要素だと200往復・
+# 秒単位かかる。その間に描画ティック(50ms)が何度も挟まるので、箱とカードが別の瞬間の
+# 値になる。1px単位のズレを見るには、ページ内で同時に読む必要がある。
+# **丸めるのは引き算のあと。** 先に丸めてから引くと round(a) - round(b) になり、
+# 座標が小数のとき round(a - b) と1ずれる(box=10.5, card=110.4 なら 110-11=99 だが
+# 実際の差は99.9で100)。1pxのズレを見る道具が、自分の丸めで1pxずれては意味がない。
+CARDS_RELATIVE_TO_BOX = """
+const box = document.querySelector('.component[data-component-name="Playing Card Box"]');
+if (!box) { return {box: null, offsets: {}}; }
+const px = (v) => parseFloat(v || '0');
+const bx = px(box.style.left), by = px(box.style.top);
+const offsets = {};
+for (const el of document.querySelectorAll('.component')) {
+    const name = el.getAttribute('data-component-name') || '';
+    if (!name.startsWith('PlayingCard ') && !name.startsWith('JOKER')) { continue; }
+    offsets[name] = [Math.round(px(el.style.left) - bx), Math.round(px(el.style.top) - by)];
+}
+return {box: [Math.round(bx), Math.round(by)], offsets: offsets};
+"""
+
+
+def settled_cards_in_box(host, count):
+    """カードが出そろって位置が動かなくなるまで待ってから、スナップショットを返す。
+
+    キット追加の直後は、まだカードが生えている途中だったり、箱の中へ収まる位置が
+    確定していなかったりする。そこで撮った値を基準にすると、以後の比較が全部ズレる。
+    """
+    host.eventually(
+        lambda: len(host.browser.execute_script(CARDS_RELATIVE_TO_BOX)['offsets']) == count,
+        f'{count}枚のカードが揃わなかった')
+
+    last = {}
+
+    def unchanged_since_last_read():
+        nonlocal last
+        now = host.browser.execute_script(CARDS_RELATIVE_TO_BOX)
+        settled = now == last
+        last = now
+        return settled
+
+    host.eventually(unchanged_since_last_read, 'カードの初期配置が落ち着かなかった')
+    return last
+
+
+def should_keep_relative_positions(host, before):
+    """箱に対するカードの相対位置が変わっていないことを、待ってから確かめる。
+
+    ズレたときは、どのカードがどれだけズレたかを出す。1pxのズレを見るための道具なので、
+    「ズレた」だけでは診断に足りない。
+    """
+    def read():
+        return host.browser.execute_script(CARDS_RELATIVE_TO_BOX)['offsets']
+
+    try:
+        host.eventually(lambda: read() == before, 'cards drifted relative to the box')
+    except AssertionError:
+        after = read()
+        drifted = {name: (before[name], after.get(name))
+                   for name in sorted(before) if after.get(name) != before[name]}
+        raise AssertionError(
+            f'{len(drifted)}枚が箱に対してズレた (before, after): '
+            f'{list(drifted.items())[:5]}') from None
+
+
 def test_moving_box_does_not_lose_things_within(server, browser: webdriver.Firefox):
     host = GameHelper(browser)
     prepare_table_with_cards(host)
 
+    # 箱に対するカードの相対位置を控えておく。箱をいくら動かしても、ここは1pxも
+    # 変わらないはず。実際に「気づくと箱の上のものがちょっとズレている」ことがある。
+    before = settled_cards_in_box(host, 54)
+
     for i in range(10):
         host.drag(host.component_by_name('Playing Card Box'), 10, 10, grab_at=(0, 80))
+
+    # 最後のドラッグが反映されるまで待つ。何も同期的には反映されない
+    # (tests/e2e/README.md「待ちを入れるときは eventually() を使う」)ので、
+    # 待たずに読むと以降のassertは送信75ms・描画50msのティックと競合する。
+    expected_box = [before['box'][0] + 100, before['box'][1] + 100]
+    host.eventually(
+        lambda: host.browser.execute_script(CARDS_RELATIVE_TO_BOX)['box'] == expected_box,
+        f'box did not reach {expected_box} after 10 drags')
 
     box_rect = [c for c in host.all_components() if c.name == 'Playing Card Box'][0].rect()
     cards = [c for c in host.all_components()
@@ -473,6 +552,10 @@ def test_moving_box_does_not_lose_things_within(server, browser: webdriver.Firef
     for card in cards:
         assert box_rect.left <= card.rect().left and card.rect().right <= box_rect.right
         assert box_rect.top <= card.rect().top and card.rect().bottom <= box_rect.bottom
+
+    # 上の「枠から出ない」だけでは、狙っている「ちょっとズレる」は捕まらない。ズレが
+    # 箱からはみ出すまで累積して初めて気づくので、1pxのズレは何十回積んでも通ってしまう。
+    should_keep_relative_positions(host, before['offsets'])
 
 
 def test_dragging_button_does_not_move_component(server, browser: webdriver.Firefox):
