@@ -39,3 +39,26 @@ async def test_googleanalytics_available_in_prod(app, client):
     assert b'Google Analytics' in data
     assert b'UA-' not in data
     assert b'id=dummy-id' in data
+
+
+async def test_noindex_header_on_index(client):
+    resp = await client.get('/')
+    assert 'noindex, nofollow' == resp.headers['X-Robots-Tag']
+
+
+async def test_noindex_header_on_table(client):
+    resp = await client.get('/tables/0123abc')
+    assert 'noindex, nofollow' == resp.headers['X-Robots-Tag']
+
+
+async def test_noindex_meta_on_table(client):
+    resp = await client.get('/tables/0123abc')
+    data = await resp.get_data()
+    assert b'<meta name="robots" content="noindex,nofollow"/>' in data
+
+
+async def test_noindex_on_customize(client):
+    resp = await client.get('/customize')
+    assert 'noindex, nofollow' == resp.headers['X-Robots-Tag']
+    data = await resp.get_data()
+    assert b'<meta name="robots" content="noindex,nofollow"/>' in data

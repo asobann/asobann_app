@@ -240,6 +240,13 @@ async def create_app(testing=False):
         from asobann.app.blueprints import debug
         app.register_blueprint(debug.blueprint)
 
+    # asobann.yattom.jp は検索結果に出す必要がない。特に /tables/<tablename> は
+    # 個別のプレイセッションで、インデックスされても意味がない。issue #177。
+    @app.after_request
+    async def add_noindex_header(response):
+        response.headers['X-Robots-Tag'] = 'noindex, nofollow'
+        return response
+
     @app.route('/')
     async def index():
         tablename = tables.generate_new_tablename()
