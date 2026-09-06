@@ -55,3 +55,10 @@ async def test_noindex_meta_on_table(client):
     resp = await client.get('/tables/0123abc')
     data = await resp.get_data()
     assert b'<meta name="robots" content="noindex,nofollow"/>' in data
+
+
+async def test_noindex_on_customize(client):
+    resp = await client.get('/customize')
+    assert 'noindex, nofollow' == resp.headers['X-Robots-Tag']
+    data = await resp.get_data()
+    assert b'<meta name="robots" content="noindex,nofollow"/>' in data
