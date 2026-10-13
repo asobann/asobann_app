@@ -213,7 +213,7 @@ websocket-client==1.9.0
     # via selenium
 websockets==17.0.1
     # via uvicorn
-werkzeug==3.1.8
+werkzeug==3.1.9
     # via
     #   flask
     #   quart
