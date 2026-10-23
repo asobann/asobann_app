@@ -116,7 +116,7 @@ parso==0.8.7
     # via jedi
 pexpect==4.9.0 ; sys_platform != 'emscripten' and sys_platform != 'win32'
     # via ipython
-pillow==12.3.0
+pillow==13.0.0
 pluggy==1.6.0
     # via pytest
 priority==2.0.0
