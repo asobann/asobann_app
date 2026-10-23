@@ -196,7 +196,7 @@ trio-websocket==0.12.2
 typer==0.27.1
 typing-extensions==4.16.0
     # via selenium
-urllib3==2.7.0
+urllib3==2.8.0
     # via
     #   botocore
     #   requests
