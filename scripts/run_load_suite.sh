@@ -278,5 +278,5 @@ echo "suite '$LABEL' complete. See $OUT_DIR/suite.json"
 # most recent config's numbers actually show up instead of "n/a".
 echo "waiting for CloudWatch metrics to settle..."
 sleep 120
-AWS_PROFILE=asobann uv run --no-project --with boto3 python scripts/summarize_load_suite.py "$OUT_DIR" \
+AWS_PROFILE=asobann-readonly uv run --no-project --with boto3 python scripts/summarize_load_suite.py "$OUT_DIR" \
     | tee "$OUT_DIR/summary.md"

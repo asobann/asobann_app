@@ -7,9 +7,9 @@ Usage:
     uv run --no-project --with boto3 python scripts/summarize_load_suite.py results/baseline
     uv run --no-project --with boto3 python scripts/summarize_load_suite.py results/baseline results/after-fix
 
-Requires AWS credentials for the account staging lives in. Set AWS_PROFILE=asobann
-(boto3 does not read --profile; the default profile points at the old prod account
-and this script will fail to find the staging cluster if it's used by mistake).
+Requires AWS credentials for the account staging lives in. Set AWS_PROFILE=asobann-readonly
+(boto3 does not read --profile; there is no default profile, so forgetting it fails
+with missing credentials).
 Also requires CloudWatch metrics to have settled - run this a few minutes after the
 suite finishes, not immediately.
 """
