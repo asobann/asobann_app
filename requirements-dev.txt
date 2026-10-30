@@ -45,7 +45,7 @@ colorama==0.4.6 ; sys_platform == 'win32'
     #   ipython
     #   pytest
     #   typer
-dnspython==2.8.0
+dnspython==2.9.0
     # via
     #   asobann
     #   pymongo
