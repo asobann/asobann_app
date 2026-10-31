@@ -21,7 +21,7 @@
 #                回すときはこれを使う（ビルドが要らない分、大幅に速い）
 #   --mount-src  src/ だけマウントする（--dev に含まれる）
 #
-# mongoは deploy/loadtest の compose で起動したまま残る。毎回上げ直さない。
+# mongoは deploy/loadtest の compose のものを、毎回データを消して起動し直す。
 #
 # 例:
 #   ./scripts/run_functional.sh                                # functional + api 全件
