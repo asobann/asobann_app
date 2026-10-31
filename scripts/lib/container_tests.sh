@@ -16,7 +16,7 @@
 #   parse_common_flags   --no-build / --dev を解釈する（残りは呼び出し側へ返す）
 #                        スクリプト固有のフラグは EXTRA_FLAG_HANDLER で足す
 #   default_targets      対象が指定されていなければ既定のテストパスを補う
-#   ensure_mongo         mongoが無ければ起動する
+#   ensure_mongo         mongoのデータを消して起動し直す
 #   ensure_image         イメージをビルドする、または存在を確かめる
 #   run_pytest           テストコンテナでpytestを実行する
 
@@ -33,7 +33,6 @@ APP_DIR=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)
 TEST_IMAGE=${TEST_IMAGE:-${E2E_IMAGE:-"asobann-e2e:$("$APP_DIR/scripts/build_image.sh" --print-tag)"}}
 NETWORK=${NETWORK:-loadtest_default}
 MONGO_COMPOSE="$APP_DIR/deploy/loadtest/docker-compose.yml"
-MONGO_CONTAINER=loadtest-mongo-1
 
 # 失敗時のスクリーンショットの置き場。作業ツリーの中だが .gitignore してある。
 # tmp/ はコンテナへマウントする作業用で毎回消す。保存用は実行ごとの日時ディレクトリ。
@@ -110,11 +109,22 @@ default_targets() {
 
 # テストは config_test.py のハードコードにより mongo:27017 を見る。deploy/loadtest の
 # composeがサービス名 mongo でそれを提供するので、それを使い回す。
+#
+# 毎回データを全部消してから起動し直す。テストは前のデータに頼らないので、残す
+# 理由が無い。残すと、イメージ(mongo latest)の更新で古いデータを開けなくなり、
+# mongoが起動しなくなる（2026-10-30、9.0が8.2のデータを開けずに止まった）。
+# 負荷試験とは同時に実行しない前提（同じ mongodata を使うので、そちらのデータも消える）。
+#
+# 中身はコンテナ内のmongodbユーザー所有でホストから消せないので、コンテナで消す。
+# コンテナを作り直さなくても、空のデータで起動すれば管理ユーザーは作り直される。
 ensure_mongo() {
-    if ! docker ps --format '{{.Names}}' | grep -qx "$MONGO_CONTAINER"; then
-        echo "mongo が起動していないので起動する"
-        docker compose -f "$MONGO_COMPOSE" up -d mongo
-    fi
+    local data_dir
+    data_dir="$(dirname "$MONGO_COMPOSE")/mongodata"
+    echo "mongo のデータを消して起動し直す"
+    docker compose -f "$MONGO_COMPOSE" stop mongo
+    mkdir -p "$data_dir"
+    docker run --rm -v "$data_dir:/d" mongo sh -c 'rm -rf /d/* /d/.[!.]*'
+    docker compose -f "$MONGO_COMPOSE" up -d mongo
 }
 
 ensure_image() {
