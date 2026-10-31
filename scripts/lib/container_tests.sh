@@ -33,7 +33,6 @@ APP_DIR=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)
 TEST_IMAGE=${TEST_IMAGE:-${E2E_IMAGE:-"asobann-e2e:$("$APP_DIR/scripts/build_image.sh" --print-tag)"}}
 NETWORK=${NETWORK:-loadtest_default}
 MONGO_COMPOSE="$APP_DIR/deploy/loadtest/docker-compose.yml"
-MONGO_CONTAINER=loadtest-mongo-1
 
 # 失敗時のスクリーンショットの置き場。作業ツリーの中だが .gitignore してある。
 # tmp/ はコンテナへマウントする作業用で毎回消す。保存用は実行ごとの日時ディレクトリ。
